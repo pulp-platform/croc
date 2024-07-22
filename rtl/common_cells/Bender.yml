@@ -1,0 +1,73 @@
+package:
+  name: common_cells
+  authors:
+    - "Florian Zaruba <zarubaf@iis.ee.ethz.ch>"
+    - "Fabian Schuiki <fschuiki@iis.ee.ethz.ch>"
+    - "Michael Schaffner <schaffner@iis.ee.ethz.ch>"
+    - "Andreas Kurth <akurth@iis.ee.ethz.ch>"
+    - "Manuel Eggimann <meggimann@iis.ee.ethz.ch>"
+    - "Stefan Mach <smach@iis.ee.ethz.ch>"
+    - "Wolfgang Roenninger <wroennin@student.ethz.ch>"
+    - "Thomas Benz <tbenz@iis.ee.ethz.ch>"
+
+dependencies:
+  common_verification: { git: "https://github.com/pulp-platform/common_verification.git", version: 0.2.0 }
+  tech_cells_generic: { git: "https://github.com/pulp-platform/tech_cells_generic.git", version: 0.2.11 }
+
+export_include_dirs:
+  - include
+
+sources:
+  # Source files grouped in levels. Files in level 0 have no dependencies on files in this package.
+  # Files in level 1 only depend on files in level 0, files in level 2 on files in levels 1 and 0,
+  # etc. Files within a level are ordered alphabetically.
+
+  # Level 0
+
+  - target: not(all(xilinx,vivado_ipx))
+    files:
+      - cdc_reset_ctrlr_pkg.sv
+      - cf_math_pkg.sv
+      - delta_counter.sv
+      - fifo_v3.sv
+      - rr_arb_tree.sv
+      - rstgen_bypass.sv
+      - spill_register_flushable.sv
+      - sync.sv
+      # Level 1
+      - addr_decode_dync.sv
+      - cdc_4phase.sv
+      # Level 2
+      - addr_decode.sv
+  - target: not(all(xilinx,vivado_ipx))
+    files:
+      - lzc.sv
+      - rstgen.sv
+      - spill_register.sv
+      # Level 2
+      - cdc_reset_ctrlr.sv
+      # Level 3
+      - cdc_2phase_clearable.sv
+      # Level 4
+
+  - target: simulation
+    files:
+
+  - target: test
+    files:
+      # Level 0
+      # Level 1
+
+
+  - target: synth_test
+    files:
+      # Level 0
+      # Level 1
+
+  # Deprecated modules
+  # Level 0
+  # Level 1
+  - deprecated/fifo_v2.sv
+  # Level 2
+
+  # Depend on deprecated modules

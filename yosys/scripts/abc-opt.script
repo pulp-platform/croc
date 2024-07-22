@@ -1,0 +1,70 @@
+# Copyright (c) 2022 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Authors:
+# - Philippe Sauter <phsauter@ethz.ch>
+#
+# Optimization script utilizing 'Lazy Mans Synthesis'
+# Requires the library of 6-input records (src/rec6Lib...)
+# https://people.eecs.berkeley.edu/~alanmi/publications/2012/iccad12_lms.pdf
+
+print_stats
+
+# strash can fix some yosys-convertion edge-cases, good idea to run first
+strash
+
+rec_start3 {REC_AIG}
+
+# main optimization iteration:
+alias &opt_iter "&st; &if -y -K 6; &syn2; &if -K 6; &st; &b -d"
+# &if -y -K 6; &syn2; &if -K 6, see LMS paper
+# &dc2 AIG rewriting (greedy minimization)
+# &b   balance structure for depth
+# &st  structural hashing
+# &dc  compute structural choices
+# &nf  select choice and map to tech
+# &ps  print statistics
+# mapping iteration
+alias &map_iter "&st; &nf {D}; &ps"
+
+# initial mapping iteration
+&get -n
+echo "Initial network:"
+&ps
+echo "High effort delay optimization..."
+&opt_iter; &opt_iter; &ps;
+&opt_iter; &opt_iter; &ps;
+&opt_iter; &opt_iter; &ps;
+&opt_iter; &opt_iter; &ps;
+&put
+
+# according to https://people.eecs.berkeley.edu/~alanmi/abc/
+# it can take up to 10-ish iterations for convergence
+# in my experience it seems to get 99% there after 5-6 with a lower runtime
+&get -n
+echo "Opt+mapping Iterations..."
+&opt_iter; &map_iter;
+&opt_iter; &map_iter;
+&opt_iter; &map_iter;
+&opt_iter; &map_iter;
+&opt_iter; &map_iter;
+&opt_iter; &map_iter;
+&opt_iter; &map_iter;
+&opt_iter; &map_iter;
+&put
+ 
+
+topo
+stime
+
+echo "buffering for delay and fanout..."
+buffer -p
+echo "resizing cells..."
+upsize {D}
+dnsize {D}
+upsize {D}
+dnsize {D}
+
+echo "Final timing:"
+stime

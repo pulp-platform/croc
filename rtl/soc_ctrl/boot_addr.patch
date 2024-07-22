@@ -1,0 +1,23 @@
+diff --git a/rtl/soc_ctrl/safety_soc_ctrl_reg_top.sv b/rtl/soc_ctrl/safety_soc_ctrl_reg_top.sv
+index 72ef442..ce0d906 100644
+--- a/rtl/soc_ctrl/safety_soc_ctrl_reg_top.sv
++++ b/rtl/soc_ctrl/safety_soc_ctrl_reg_top.sv
+@@ -10,7 +10,8 @@
+ module safety_soc_ctrl_reg_top #(
+   parameter type reg_req_t = logic,
+   parameter type reg_rsp_t = logic,
+-  parameter int AW = 4
++  parameter int AW = 4,
++  parameter int unsigned BootAddrDefault = 32'h0
+ ) (
+   input logic clk_i,
+   input logic rst_ni,
+@@ -83,7 +84,7 @@ module safety_soc_ctrl_reg_top #(
+   prim_subreg #(
+     .DW      (32),
+     .SWACCESS("RW"),
+-    .RESVAL  (32'h10000000)
++    .RESVAL  (BootAddrDefault)
+   ) u_bootaddr (
+     .clk_i   (clk_i    ),
+     .rst_ni  (rst_ni  ),

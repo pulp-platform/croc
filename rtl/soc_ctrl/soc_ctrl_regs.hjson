@@ -1,0 +1,68 @@
+# Copyright 2024 ETH Zurich and University of Bologna
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
+{
+  name: "safety_soc_ctrl",
+  clock_primary: "clk_i",
+  reset_primary: "rst_ni",
+  bus_interfaces: [
+    { protocol: "reg_iface",
+      direction: "device"
+    }
+  ],
+
+  regwidth: "32",
+  registers: [
+    { name: "bootaddr",
+      desc: "Core Boot Address",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0",
+          name: "bootaddr",
+          desc: "Boot Address",
+          resval: 0x1000_0000
+        }
+      ]
+
+    },
+    { name: "fetchen",
+      desc: "Core Fetch Enable",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      fields: [
+        { bits: "0",
+          name: "fetchen",
+          desc: "Fetch Enable",
+          resval: 0
+        }
+      ]
+    },
+    { name: "corestatus",
+      desc: "Core Return Status (return value, EOC)",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0",
+          name: "core_status",
+          desc: "Core Return Status (EOC(bit[31]) and status(bit[30:0]))",
+          resval: 0
+        }
+      ]
+    }
+    { name: "bootmode",
+      desc: "Core Boot Mode",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      fields: [
+        { bits: "0",
+          name: "bootmode",
+          desc: "Boot Mode",
+          resval: 0x0
+        }
+      ]
+
+    },
+  ],
+}

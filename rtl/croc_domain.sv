@@ -1,0 +1,570 @@
+// Copyright 2024 ETH Zurich and University of Bologna.
+// Copyright and related rights are licensed under the Solderpad Hardware
+// License, Version 0.51 (the "License"); you may not use this file except in
+// compliance with the License.  You may obtain a copy of the License at
+// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
+// or agreed to in writing, software, hardware and materials distributed under
+// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
+// specific language governing permissions and limitations under the License.
+
+module croc_domain import croc_pkg::*; #() (
+  input  logic      clk_i,
+  input  logic      ref_clk_i,
+  input  logic      rst_ni,
+  input  logic      test_enable_i,
+
+  input  logic      jtag_tck_i,
+  input  logic      jtag_tdi_i,
+  output logic      jtag_tdo_o,
+  input  logic      jtag_tms_i,
+  input  logic      jtag_trst_ni,
+
+  input  logic      uart_rx_i,
+  output logic      uart_tx_o,
+
+  output sbr_obi_req_t xbar_user_obi_req_o,
+  input  sbr_obi_rsp_t xbar_user_obi_rsp_i,
+
+  input  logic irq0_i,
+  input  logic [NumExternalIrqs-1:0] interrupts_i,
+  output logic core_sleep_o
+);
+
+  // -----------------
+  // Control Signals
+  // -----------------
+  logic debug_req;
+  logic fetch_enable;
+  logic [31:0] boot_addr;
+
+  // interrupts (irqs)
+  logic uart_irq;
+  logic timer0_irq0;
+  logic timer0_irq1;
+  logic [31:0] interrupts;
+  always_comb begin
+    interrupts = '0;
+    interrupts[0] = irq0_i;
+    interrupts[1] = timer0_irq1;
+    interrupts[2] = uart_irq;
+    interrupts[3+:NumExternalIrqs] = interrupts_i;
+  end
+
+  // ----------------------------
+  // Manager buses into crossbar
+  // ----------------------------
+
+  // Core instr bus
+  mgr_obi_req_t core_instr_obi_req;
+  mgr_obi_rsp_t core_instr_obi_rsp;
+  assign core_instr_obi_req.a.aid = '0;
+  assign core_instr_obi_req.a.a_optional = '0;
+  assign core_instr_obi_req.a.we = '0;
+  assign core_instr_obi_req.a.be = '1;
+  assign core_instr_obi_req.a.wdata = '0;
+
+  // Core data bus
+  mgr_obi_req_t core_data_obi_req;
+  mgr_obi_rsp_t core_data_obi_rsp;
+  assign core_data_obi_req.a.aid = '0;
+  assign core_data_obi_req.a.a_optional = '0;
+
+  // dbg req bus
+  mgr_obi_req_t dbg_req_obi_req;
+  mgr_obi_rsp_t dbg_req_obi_rsp;
+  assign dbg_req_obi_req.a.aid = '0;
+  assign dbg_req_obi_req.a.a_optional = '0;
+
+
+  // ----------------------------------
+  // Subordinate buses out of crossbar
+  // ----------------------------------
+  // Main xbar subordinate buses, must align with addr map indices!
+  sbr_obi_req_t [NumSubordinates-1:0] all_sbr_obi_req;
+  sbr_obi_rsp_t [NumSubordinates-1:0] all_sbr_obi_rsp;
+
+  // user bus defined in module port
+
+  // mem bank buses
+  sbr_obi_req_t [NumBanks-1:0] xbar_mem_bank_obi_req;
+  sbr_obi_rsp_t [NumBanks-1:0] xbar_mem_bank_obi_rsp;
+
+  // periph bus
+  sbr_obi_req_t xbar_periph_obi_req;
+  sbr_obi_rsp_t xbar_periph_obi_rsp;
+
+  assign xbar_user_obi_req_o         = all_sbr_obi_req[XbarUser];
+  assign all_sbr_obi_rsp[XbarUser]   = xbar_user_obi_rsp_i;
+
+  assign xbar_periph_obi_req         = all_sbr_obi_req[XbarPeriph];
+  assign all_sbr_obi_rsp[XbarPeriph] = xbar_periph_obi_rsp;
+
+  for (genvar i = 0; i < NumBanks; i++) begin : gen_xbar_sbr_connect
+    assign xbar_mem_bank_obi_req[i]     = all_sbr_obi_req[XbarBank0+i];
+    assign all_sbr_obi_rsp[XbarBank0+i] = xbar_mem_bank_obi_rsp[i];
+  end
+
+
+  // -----------------
+  // Peripheral buses
+  // -----------------
+  sbr_obi_req_t [NumPeriphs-1:0] all_periph_obi_req;
+  sbr_obi_rsp_t [NumPeriphs-1:0] all_periph_obi_rsp;
+
+  // Error bus
+  sbr_obi_req_t error_obi_req;
+  sbr_obi_rsp_t error_obi_rsp;
+
+  // Debug mem bus
+  sbr_obi_req_t dbg_mem_obi_req;
+  sbr_obi_rsp_t dbg_mem_obi_rsp;
+
+  // SoC control bus
+  sbr_obi_req_t soc_ctrl_obi_req;
+  sbr_obi_rsp_t soc_ctrl_obi_rsp;
+
+  // UART periph bus
+  sbr_obi_req_t uart_obi_req;
+  sbr_obi_rsp_t uart_obi_rsp;
+
+  // Timer periph bus
+  sbr_obi_req_t timer_obi_req;
+  sbr_obi_rsp_t timer_obi_rsp;
+  
+  assign error_obi_req                        = all_periph_obi_req[PeriphErrorSlv];
+  assign all_periph_obi_rsp[PeriphErrorSlv]   = error_obi_rsp;
+  assign dbg_mem_obi_req                      = all_periph_obi_req[PeriphDebug];
+  assign all_periph_obi_rsp[PeriphDebug]      = dbg_mem_obi_rsp;
+  assign soc_ctrl_obi_req                     = all_periph_obi_req[PeriphSocCtrl];
+  assign all_periph_obi_rsp[PeriphSocCtrl]    = soc_ctrl_obi_rsp;
+  assign uart_obi_req                         = all_periph_obi_req[PeriphUart];
+  assign all_periph_obi_rsp[PeriphUart]       = uart_obi_rsp;
+  assign timer_obi_req                        = all_periph_obi_req[PeriphTimer];
+  assign all_periph_obi_rsp[PeriphTimer]      = timer_obi_rsp;
+
+
+  // -----------------
+  // Core
+  // -----------------
+  core_wrap #(
+  ) i_core_wrap (
+    .clk_i,
+    .rst_ni,
+    .ref_clk_i,
+    .test_enable_i,
+
+    .irqs_i           ( interrupts   ),
+    .timer0_irq_i     ( timer0_irq0 ),
+
+    .boot_addr_i      ( boot_addr   ),
+
+    .instr_req_o      ( core_instr_obi_req.req     ),
+    .instr_gnt_i      ( core_instr_obi_rsp.gnt     ),
+    .instr_rvalid_i   ( core_instr_obi_rsp.rvalid  ),
+    .instr_addr_o     ( core_instr_obi_req.a.addr  ),
+    .instr_rdata_i    ( core_instr_obi_rsp.r.rdata ),
+    .instr_err_i      ( core_instr_obi_rsp.r.err   ),
+
+    .data_req_o       ( core_data_obi_req.req      ),
+    .data_gnt_i       ( core_data_obi_rsp.gnt      ),
+    .data_rvalid_i    ( core_data_obi_rsp.rvalid   ),
+    .data_we_o        ( core_data_obi_req.a.we     ),
+    .data_be_o        ( core_data_obi_req.a.be     ),
+    .data_addr_o      ( core_data_obi_req.a.addr   ),
+    .data_wdata_o     ( core_data_obi_req.a.wdata  ),
+    .data_rdata_i     ( core_data_obi_rsp.r.rdata  ),
+    .data_err_i       ( core_data_obi_rsp.r.err    ),
+
+    .debug_req_i      ( debug_req    ),
+    .fetch_enable_i   ( fetch_enable ),
+
+    .core_sleep_o     ( core_sleep_o )
+  );
+
+  // -----------------
+  // Debug Module
+  // -----------------
+
+  localparam dm::hartinfo_t HARTINFO = '{
+    zero1: '0,
+    nscratch: 2,
+    zero0: '0,
+    dataaccess: 1'b1,
+    datasize: dm::DataCount,
+    dataaddr: dm::DataAddr
+  };
+  dm::hartinfo_t hartinfo = HARTINFO;
+
+  logic dmi_rst_n, dmi_req_valid, dmi_req_ready, dmi_resp_valid, dmi_resp_ready;
+  dm::dmi_req_t dmi_req;
+  dm::dmi_resp_t dmi_resp;
+
+  dmi_jtag #(
+    .IdcodeValue ( PulpJtagIdCode )
+  ) i_dmi_jtag (
+    .clk_i,
+    .rst_ni,
+    .testmode_i       ( test_enable_i  ),
+
+    .dmi_rst_no       ( dmi_rst_n      ),
+    .dmi_req_o        ( dmi_req        ),
+    .dmi_req_valid_o  ( dmi_req_valid  ),
+    .dmi_req_ready_i  ( dmi_req_ready  ),
+
+    .dmi_resp_i       ( dmi_resp       ),
+    .dmi_resp_ready_o ( dmi_resp_ready ),
+    .dmi_resp_valid_i ( dmi_resp_valid ),
+
+    .tck_i            ( jtag_tck_i     ),
+    .tms_i            ( jtag_tms_i     ),
+    .trst_ni          ( jtag_trst_ni   ),
+    .td_i             ( jtag_tdi_i     ),
+    .td_o             ( jtag_tdo_o     ),
+    .tdo_oe_o         ()
+  );
+
+  dm_top #(
+    .BusWidth       ( MgrObiCfg.DataWidth ),
+    .ReadByteEnable ( 0 )
+  ) i_dm_top (
+    .clk_i,
+    .rst_ni,
+    .testmode_i           ( test_enable_i ),
+    .ndmreset_o           (),
+    .dmactive_o           (),
+    .debug_req_o          ( debug_req ),
+    .unavailable_i        ( 1'b0      ),
+    .hartinfo_i           ( hartinfo  ),
+
+    .slave_req_i          ( dbg_mem_obi_req.req     ),
+    .slave_we_i           ( dbg_mem_obi_req.a.we    ),
+    .slave_addr_i         ( dbg_mem_obi_req.a.addr  ),
+    .slave_be_i           ( dbg_mem_obi_req.a.be    ),
+    .slave_wdata_i        ( dbg_mem_obi_req.a.wdata ),
+    .slave_rdata_o        ( dbg_mem_obi_rsp.r.rdata ),
+
+    .master_req_o         ( dbg_req_obi_req.req     ),
+    .master_add_o         ( dbg_req_obi_req.a.addr  ),
+    .master_we_o          ( dbg_req_obi_req.a.we    ),
+    .master_wdata_o       ( dbg_req_obi_req.a.wdata ),
+    .master_be_o          ( dbg_req_obi_req.a.be    ),
+    .master_gnt_i         ( dbg_req_obi_rsp.gnt     ),
+    .master_r_valid_i     ( dbg_req_obi_rsp.rvalid  ),
+    .master_r_err_i       ( dbg_req_obi_rsp.r.err   ),
+    .master_r_other_err_i ( 1'b0                    ),
+    .master_r_rdata_i     ( dbg_req_obi_rsp.r.rdata ),
+
+    .dmi_rst_ni           ( dmi_rst_n      ),
+    .dmi_req_valid_i      ( dmi_req_valid  ),
+    .dmi_req_ready_o      ( dmi_req_ready  ),
+    .dmi_req_i            ( dmi_req        ),
+
+    .dmi_resp_valid_o     ( dmi_resp_valid ),
+    .dmi_resp_ready_i     ( dmi_resp_ready ),
+    .dmi_resp_o           ( dmi_resp       )
+  );
+
+  // as of 28.05.2024 Verilator has trouble with non-blocking assignments
+  // to only parts of a struct (here rvalid and r.rid)
+  // -> we need to use intermediary signals to avoid this
+  logic dbg_mem_obi_rsp_rvalid;
+  logic dbg_mem_obi_rsp_r_rid;
+
+  assign dbg_mem_obi_rsp.gnt = 1'b1;
+  assign dbg_mem_obi_rsp.r.err = '0;
+  assign dbg_mem_obi_rsp.r.r_optional = '0;
+  assign dbg_mem_obi_rsp.rvalid = dbg_mem_obi_rsp_rvalid;
+  assign dbg_mem_obi_rsp.r.rid = dbg_mem_obi_rsp_r_rid;
+  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_dbg_mem
+    if(!rst_ni) begin
+      dbg_mem_obi_rsp_rvalid <= '0;
+      dbg_mem_obi_rsp_r_rid <= '0;
+    end else begin
+      dbg_mem_obi_rsp_rvalid <= dbg_mem_obi_req.req;
+      dbg_mem_obi_rsp_r_rid <= dbg_mem_obi_req.a.aid;
+    end
+  end
+
+  // -----------------
+  // Main Interconnect
+  // -----------------
+
+  obi_xbar #(
+    .SbrPortObiCfg      ( MgrObiCfg        ),
+    .MgrPortObiCfg      ( SbrObiCfg        ),
+    .sbr_port_obi_req_t ( mgr_obi_req_t    ),
+    .sbr_port_a_chan_t  ( mgr_obi_a_chan_t ),
+    .sbr_port_obi_rsp_t ( mgr_obi_rsp_t    ),
+    .sbr_port_r_chan_t  ( mgr_obi_r_chan_t ),
+    .mgr_port_obi_req_t ( sbr_obi_req_t    ),
+    .mgr_port_obi_rsp_t ( sbr_obi_rsp_t    ),
+    .NumSbrPorts        ( NumManagers      ),
+    .NumMgrPorts        ( NumSubordinates  ),
+    .NumMaxTrans        ( 2                ),
+    .NumAddrRules       ( NumRules         ),
+    .addr_map_rule_t    ( addr_map_rule_t  ),
+    .UseIdForRouting    ( 1'b0             ),
+    .Connectivity       ( '1               )
+  ) i_main_xbar (
+    .clk_i,
+    .rst_ni,
+    .testmode_i       ( test_enable_i ),
+
+    .sbr_ports_req_i  ( {core_instr_obi_req, core_data_obi_req, dbg_req_obi_req} ),
+    .sbr_ports_rsp_o  ( {core_instr_obi_rsp, core_data_obi_rsp, dbg_req_obi_rsp} ),
+    .mgr_ports_req_o  ( all_sbr_obi_req ),
+    .mgr_ports_rsp_i  ( all_sbr_obi_rsp ),
+
+    .addr_map_i       ( main_addr_map ),
+    .en_default_idx_i ( 3'b111 ),
+    .default_idx_i    ( '0 )
+  );
+
+  // -----------------
+  // Memories
+  // -----------------
+
+  for (genvar i = 0; i < NumBanks; i++) begin : gen_sram_bank
+    logic bank_req, bank_we, bank_gnt, bank_single_err;
+    logic [SbrObiCfg.DataWidth-1:0] bank_addr;
+    logic [SbrObiCfg.DataWidth-1:0] bank_wdata, bank_rdata;
+    logic [SbrObiCfg.DataWidth/8-1:0] bank_be;
+
+    obi_sram_shim #(
+      .ObiCfg    ( SbrObiCfg     ),
+      .obi_req_t ( sbr_obi_req_t ),
+      .obi_rsp_t ( sbr_obi_rsp_t )
+    ) i_sram_shim (
+      .clk_i,
+      .rst_ni,
+
+      .obi_req_i ( xbar_mem_bank_obi_req[i] ),
+      .obi_rsp_o ( xbar_mem_bank_obi_rsp[i] ),
+
+      .req_o   ( bank_req   ),
+      .we_o    ( bank_we    ),
+      .addr_o  ( bank_addr  ),
+      .wdata_o ( bank_wdata ),
+      .be_o    ( bank_be    ),
+
+      .gnt_i   ( bank_gnt   ),
+      .rdata_i ( bank_rdata )
+    );
+
+    tc_sram #(
+      .NumWords  ( BankNumWords ),
+      .DataWidth ( 32 ),
+      .NumPorts  (  1 ),
+      .Latency   (  1 )
+    ) i_sram (
+      .clk_i,
+      .rst_ni,
+
+      .req_i   ( bank_req   ),
+      .we_i    ( bank_we    ),
+      .addr_i  ( bank_addr  ),
+
+      .wdata_i ( bank_wdata ),
+      .be_i    ( bank_be    ),
+      .rdata_o ( bank_rdata )
+    );
+
+    assign bank_gnt = 1'b1;
+  end
+
+
+  // -----------------
+  // Peripherals
+  // -----------------
+
+  // demultiplex to peripherals according to address map
+  logic [cf_math_pkg::idx_width(NumPeriphs)-1:0] periph_idx;
+
+  addr_decode #(
+    .NoIndices ( NumPeriphs      ),
+    .NoRules   ( NumPeriphRules  ),
+    .addr_t    ( logic[SbrObiCfg.DataWidth-1:0] ),
+    .rule_t    ( addr_map_rule_t ),
+    .Napot     ( 1'b0 )
+  ) i_addr_decode_periphs (
+    .addr_i           ( xbar_periph_obi_req.a.addr ),
+    .addr_map_i       ( periph_addr_map ),
+    .idx_o            ( periph_idx      ),
+    .dec_valid_o      (),
+    .dec_error_o      (),
+    .en_default_idx_i ( 1'b1 ),
+    .default_idx_i    ( '0 )
+  );
+
+  obi_demux #(
+    .ObiCfg      ( SbrObiCfg     ),
+    .obi_req_t   ( sbr_obi_req_t ),
+    .obi_rsp_t   ( sbr_obi_rsp_t ),
+    .NumMgrPorts ( NumPeriphs    ),
+    .NumMaxTrans ( 2 )
+  ) i_obi_demux (
+    .clk_i,
+    .rst_ni,
+
+    .sbr_port_select_i ( periph_idx     ),
+    .sbr_port_req_i    ( xbar_periph_obi_req ),
+    .sbr_port_rsp_o    ( xbar_periph_obi_rsp ),
+
+    .mgr_ports_req_o   ( all_periph_obi_req ),
+    .mgr_ports_rsp_i   ( all_periph_obi_rsp )
+  );
+
+  // Error subordinate
+  obi_err_sbr #(
+    .ObiCfg      ( SbrObiCfg     ),
+    .obi_req_t   ( sbr_obi_req_t ),
+    .obi_rsp_t   ( sbr_obi_rsp_t ),
+    .NumMaxTrans ( 1             ),
+    .RspData     ( 32'hBADCAB1E  )
+  ) i_err_sbr (
+    .clk_i,
+    .rst_ni,
+    .testmode_i ( test_enable_i ),
+    .obi_req_i  ( error_obi_req ),
+    .obi_rsp_o  ( error_obi_rsp )
+  );
+
+  // SoC Control
+  reg_req_t soc_ctrl_reg_req;
+  reg_rsp_t soc_ctrl_reg_rsp;
+
+  periph_to_reg #(
+    .AW    ( SbrObiCfg.AddrWidth ),
+    .DW    ( SbrObiCfg.DataWidth ),
+    .BW    ( 8 ),
+    .IW    ( SbrObiCfg.IdWidth   ),
+    .req_t ( reg_req_t  ),
+    .rsp_t ( reg_rsp_t  )
+  ) i_soc_ctrl_translate (
+    .clk_i,
+    .rst_ni,
+
+    .req_i     ( soc_ctrl_obi_req.req     ),
+    .add_i     ( soc_ctrl_obi_req.a.addr  ),
+    .wen_i     ( ~soc_ctrl_obi_req.a.we   ),
+    .wdata_i   ( soc_ctrl_obi_req.a.wdata ),
+    .be_i      ( soc_ctrl_obi_req.a.be    ),
+    .id_i      ( soc_ctrl_obi_req.a.aid   ),
+
+    .gnt_o     ( soc_ctrl_obi_rsp.gnt     ),
+    .r_rdata_o ( soc_ctrl_obi_rsp.r.rdata ),
+    .r_opc_o   ( soc_ctrl_obi_rsp.r.err   ),
+    .r_id_o    ( soc_ctrl_obi_rsp.r.rid   ),
+    .r_valid_o ( soc_ctrl_obi_rsp.rvalid  ),
+
+    .reg_req_o ( soc_ctrl_reg_req ),
+    .reg_rsp_i ( soc_ctrl_reg_rsp )
+  );
+  assign soc_ctrl_obi_rsp.r.r_optional = '0;
+
+  soc_ctrl_reg_pkg::soc_ctrl_reg2hw_t soc_ctrl_reg2hw;
+  soc_ctrl_reg_pkg::soc_ctrl_hw2reg_t soc_ctrl_hw2reg;
+  assign fetch_enable = soc_ctrl_reg2hw.fetchen.q;
+  assign boot_addr = soc_ctrl_reg2hw.bootaddr.q;
+  assign soc_ctrl_hw2reg = '0;
+
+  soc_ctrl_reg_top #(
+    .reg_req_t       ( reg_req_t   ),
+    .reg_rsp_t       ( reg_rsp_t   ),
+    .BootAddrDefault ( MemBaseAddr )
+  ) i_soc_ctrl (
+    .clk_i,
+    .rst_ni,
+    .reg_req_i ( soc_ctrl_reg_req ),
+    .reg_rsp_o ( soc_ctrl_reg_rsp ),
+    .reg2hw    ( soc_ctrl_reg2hw  ),
+    .hw2reg    ( soc_ctrl_hw2reg  ),
+    .devmode_i ( 1'b0             )
+  );
+
+  // UART
+  reg_req_t uart_reg_req;
+  reg_rsp_t uart_reg_rsp;
+
+  periph_to_reg #(
+    .AW    ( SbrObiCfg.AddrWidth ),
+    .DW    ( SbrObiCfg.DataWidth ),
+    .BW    ( 8 ),
+    .IW    ( SbrObiCfg.IdWidth   ),
+    .req_t ( reg_req_t  ),
+    .rsp_t ( reg_rsp_t  )
+  ) i_uart_translate (
+    .clk_i,
+    .rst_ni,
+
+    .req_i     ( uart_obi_req.req     ),
+    .add_i     ( uart_obi_req.a.addr  ),
+    .wen_i     ( ~uart_obi_req.a.we   ),
+    .wdata_i   ( uart_obi_req.a.wdata ),
+    .be_i      ( uart_obi_req.a.be    ),
+    .id_i      ( uart_obi_req.a.aid   ),
+
+    .gnt_o     ( uart_obi_rsp.gnt     ),
+    .r_rdata_o ( uart_obi_rsp.r.rdata ),
+    .r_opc_o   ( uart_obi_rsp.r.err   ),
+    .r_id_o    ( uart_obi_rsp.r.rid   ),
+    .r_valid_o ( uart_obi_rsp.rvalid  ),
+
+    .reg_req_o ( uart_reg_req ),
+    .reg_rsp_i ( uart_reg_rsp )
+  );
+  assign uart_obi_rsp.r.r_optional = '0;
+
+  reg_uart_wrap #(
+    .AddrWidth  ( 32 ),
+    .reg_req_t  ( reg_req_t ),
+    .reg_rsp_t  ( reg_rsp_t )
+  ) i_uart (
+    .clk_i,
+    .rst_ni,
+    .reg_req_i  ( uart_reg_req ),
+    .reg_rsp_o  ( uart_reg_rsp ),
+    .intr_o     ( uart_irq ),
+    .out2_no    ( ),
+    .out1_no    ( ),
+    .rts_no     ( ),
+    .dtr_no     ( ),
+    .cts_ni     ( 1'b0 ),
+    .dsr_ni     ( 1'b0 ),
+    .dcd_ni     ( 1'b0 ),
+    .rin_ni     ( 1'b0 ),
+    .sin_i      ( uart_rx_i ),
+    .sout_o     ( uart_tx_o )
+  );
+
+  // Timer
+  timer_unit #(
+    .ID_WIDTH   ( SbrObiCfg.IdWidth )
+  ) i_timer (
+    .clk_i,
+    .rst_ni,
+    .ref_clk_i,
+    
+    .req_i      ( timer_obi_req.req     ),
+    .addr_i     ( timer_obi_req.a.addr  ),
+    .wen_i      ( timer_obi_req.a.we    ),
+    .wdata_i    ( timer_obi_req.a.wdata ),
+    .be_i       ( timer_obi_req.a.be    ),
+    .id_i       ( timer_obi_req.a.aid   ),
+    .gnt_o      ( timer_obi_rsp.gnt     ),
+    
+    .r_valid_o  ( timer_obi_rsp.rvalid  ),
+    .r_opc_o    ( ),
+    .r_id_o     ( timer_obi_rsp.r.rid   ),
+    .r_rdata_o  ( timer_obi_rsp.r.rdata ),
+    .event_lo_i ('0 ),
+    .event_hi_i ('0 ),
+    .irq_lo_o   ( timer0_irq0           ),
+    .irq_hi_o   ( timer0_irq1           ),
+    .busy_o     (                       )
+  );
+  assign timer_obi_rsp.r.err        = 1'b0;
+  assign timer_obi_rsp.r.r_optional = 1'b0;
+
+endmodule

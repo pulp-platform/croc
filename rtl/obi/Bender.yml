@@ -1,0 +1,30 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
+package:
+  name: obi
+  authors:
+    - "Michael Rogenmoser <michaero@iis.ee.ethz.ch>"
+
+dependencies:
+  common_cells: { git: "https://github.com/pulp-platform/common_cells.git", version: 1.37.0 }
+  common_verification: { git: "https://github.com/pulp-platform/common_verification.git", version: 0.2.3 }
+
+export_include_dirs:
+  - include
+
+sources:
+  # Level 1
+  - obi_pkg.sv
+  # Level 2
+  - obi_intf.sv
+  # Level 3
+  - obi_demux.sv
+  - obi_err_sbr.sv
+  - obi_mux.sv
+  - obi_sram_shim.sv
+  # Level 4
+  - obi_xbar.sv
+  - target: test
+    files:

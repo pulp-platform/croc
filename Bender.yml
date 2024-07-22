@@ -1,0 +1,43 @@
+# Copyright 2024 ETH Zurich and University of Bologna
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
+package:
+  name: croc_soc
+  authors:
+    - "Philippe Sauter <phsauter@iis.ee.ethz.ch>"
+
+dependencies:
+  common_cells:         { git: "https://github.com/pulp-platform/common_cells.git",         version: 1.36.0 }
+  common_verification:  { git: "https://github.com/pulp-platform/common_verification.git",  rev: e118011    }
+  riscv-dbg:            { git: "https://github.com/pulp-platform/riscv-dbg.git",            rev: "verilator-phsauter" }
+  tech_cells_generic:   { git: "https://github.com/pulp-platform/tech_cells_generic.git",   version: 0.2.13 }
+  register_interface:   { git: "https://github.com/pulp-platform/register_interface.git",   version: 0.4.1  }
+  ibex:                 { git: "https://github.com/pulp-platform/ibex.git",                 rev: "pulpissimo-v6.1.2" }
+  apb:                  { git: "https://github.com/pulp-platform/apb.git",                  version: 0.2.4  }
+  timer_unit:           { git: "https://github.com/pulp-platform/timer_unit.git",           version: 1.0.3  }
+  obi:                  { git: "https://github.com/pulp-platform/obi.git",                  version: 0.1.2  }
+  apb_uart:             { git: "https://github.com/pulp-platform/apb_uart.git",             version: 0.2.1  }
+
+sources:
+  # Level 0
+  - rtl/croc_pkg.sv
+  - rtl/soc_ctrl/soc_ctrl_reg_pkg.sv
+  - target: ihp13
+    files:
+      - ihp13/tech_cells.sv
+      - ihp13/tc_sram.sv
+  # Level 1
+  - rtl/core_wrap.sv
+  - rtl/soc_ctrl/soc_ctrl_reg_top.sv
+  # Level 2
+  - rtl/croc_domain.sv
+  - rtl/user_domain.sv
+  # Level 3
+  - rtl/croc_soc.sv
+  # Level 4
+  - rtl/croc_chip.sv
+
+  - target: any(simulation, verilator)
+    files:
+      - rtl/tb_croc_soc.sv
