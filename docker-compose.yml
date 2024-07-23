@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  pulp-docker:
+    image: phsauter/pulp-croc-osic-tools:dev
+    user: "${UID}:${GID}"
+    volumes:
+      - ./:/fosic/designs/croc
+    stdin_open: true
+    tty: true
+    working_dir: /fosic/designs/croc
+    entrypoint: /bin/bash

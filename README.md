@@ -47,7 +47,25 @@ source ethz.env
 ```
 
 ### Other systems
-You need to install the required tools
+**Note: this has currently only been tested on Ubuntu Linux.**  
+
+#### Docker (easy) 
+There are two possible ways, the easiest way is to install docker and work in the docker container, you can follow the install guides on the [Docker Website](https://docs.docker.com/desktop/):
+
+It is a good idea to grant non-root (`sudo`) users access to docker, this is decribed in the [Docker Article](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user).
+
+Finally, you can navigate to this directory, open a terminal and type:
+```sh
+# Linux/Mac
+./docker.sh
+# Windows
+./docker_windows.bat
+```
+
+Now you should be in a Ubuntu environment with all tools pre-installed for you.
+
+#### Native install (hard)
+You need to build/install the required tools manually:
 
 - [Bender](https://github.com/pulp-platform/bender#installation): Dependency manager
 - [Morty](https://github.com/pulp-platform/morty#install): SystemVerilog pickler
@@ -63,7 +81,6 @@ You need to install the required tools
 The SoC is fully functional as-is and a simple software example is provided for simulation.
 To run the synthesis and place & route flow execute:
 ```sh
-make checkout
 make pickle
 make yosys
 make openroad
