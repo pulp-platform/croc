@@ -2,7 +2,7 @@ version: '3'
 
 services:
   pulp-docker:
-    image: phsauter/pulp-croc-osic-tools:dev
+    image: hpretl/iic-osic-tools:pulp
     user: "${UID}:${GID}"
     volumes:
       - ./:/fosic/designs/croc

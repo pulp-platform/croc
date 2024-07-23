@@ -59,10 +59,11 @@ Finally, you can navigate to this directory, open a terminal and type:
 # Linux/Mac
 ./docker.sh
 # Windows
-./docker_windows.bat
+./start_x.bat
 ```
 
-Now you should be in a Ubuntu environment with all tools pre-installed for you.
+Now you should be in a Ubuntu environment with all tools pre-installed for you.  
+If something does not work, refer to the upstream [IIC-OSIC-Tools](https://github.com/iic-jku/IIC-OSIC-TOOLS/tree/main)
 
 #### Native install (hard)
 You need to build/install the required tools manually:
@@ -81,6 +82,7 @@ You need to build/install the required tools manually:
 The SoC is fully functional as-is and a simple software example is provided for simulation.
 To run the synthesis and place & route flow execute:
 ```sh
+make checkout
 make pickle
 make yosys
 make openroad
