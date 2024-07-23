@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # Authors:
-# - Philippe Sauter <phsauter@ethz.ch>
+# - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
 # target clock-period in pico-seconds
 export YOSYS_TARGET_PERIOD_PS := 10000

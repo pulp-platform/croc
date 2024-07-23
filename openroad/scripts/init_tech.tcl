@@ -5,7 +5,7 @@
 # Authors:
 # - Tobias Senti <tsenti@ethz.ch>
 # - Jannis Schönleber <janniss@iis.ee.ethz.ch>
-# - Philippe Sauter   <phsauter@ethz.ch>
+# - Philippe Sauter   <phsauter@iis.ee.ethz.ch>
 
 # Initialize the PDK
 

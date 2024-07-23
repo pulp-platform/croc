@@ -4,7 +4,7 @@
 
 # Authors:
 # - Jannis Schönleber <janniss@iis.ee.ethz.ch>
-# - Philippe Sauter   <phsauter@ethz.ch>
+# - Philippe Sauter   <phsauter@iis.ee.ethz.ch>
 
 # Helper macros to save and load checkpoints
 set time [elapsed_run_time]

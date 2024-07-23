@@ -4,6 +4,7 @@
 
 # Authors:
 # - Jannis Schönleber <janniss@iis.ee.ethz.ch>
+# - Philippe Sauter   <phsauter@iis.ee.ethz.ch>
 
 # Helper scripts writing reports
 

@@ -4,6 +4,8 @@ A simple SoC for education using PULP IPs. Croc includes all scripts necessary t
 
 As it is oriented towards education, it forgoes some configurability to increase readability of the RTL and scripts.
 
+Croc is developed as part of the PULP project, a joint effort between ETH Zurich and the University of Bologna.
+
 ## Architecture
 
 ![Croc block diagram](doc/croc_arch.svg)

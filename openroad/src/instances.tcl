@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: SHL-0.51
 
 # Authors:
-# - Philippe Sauter <phsauter@ethz.ch>
+# - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
 # Automatic collection of SRAMs and delay-line macros
 # Used for automatic macro placement

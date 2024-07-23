@@ -1,3 +1,10 @@
+# Copyright (c) 2024 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Authors:
+# - Philippe Sauter <phsauter@iis.ee.ethz.ch>
+
 #
 # - Every "Offset: xxx" line defines a possible placement location/slot for one pad.
 # - The "#pin no.: nn" comment shows the corresponding pin number for the QFN32 package.

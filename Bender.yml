@@ -25,7 +25,7 @@ sources:
   - rtl/soc_ctrl/soc_ctrl_reg_pkg.sv
   - target: ihp13
     files:
-      - ihp13/tech_cells.sv
+      - ihp13/tc_clk.sv
       - ihp13/tc_sram.sv
   # Level 1
   - rtl/core_wrap.sv
