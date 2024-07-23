@@ -1,3 +1,11 @@
+# Copyright (c) 2024 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Authors:
+# - Paul Scheffler <paulsc@iis.ee.ethz.ch>
+# - Philippe Sauter <phsauter@iis.ee.ethz.ch>
+
 .globl _start
 .section .text._start
 _start:
