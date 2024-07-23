@@ -43,12 +43,19 @@ clean-deps:
 .PHONY: checkout clean-deps
 
 
-##########################
-# Hardware Configuration #
-##########################
-HW_ALL := $(CROC_HW_DIR)/soc_ctrl/soc_ctrl_reg_pkg.sv \
-          $(CROC_HW_DIR)/soc_ctrl/soc_ctrl_reg_top.sv
+############
+# Software #
+############
 
+SW := /sw/bin/helloworld.hex
+
+$(SW):
+	$(MAKE) -C $(CROC_ROOT)/sw/ compile
+
+## Build the helloworld software
+software: $(SW)
+
+.PHONY: software
 
 ##############
 # Simulation #
@@ -61,23 +68,24 @@ $(CROC_ROOT)/vsim/compile_rtl.tcl: Bender.lock Bender.yml
 	$(BENDER) script vsim -t rtl -t vsim -t simulation -t verilator -DSYNTHESIS -DSIMULATION > $@
 
 ## Simulate using Verilator
-verilator: $(CROC_ROOT)/verilator/croc.f
+verilator: $(CROC_ROOT)/verilator/croc.f $(SW)
 	cd $(CROC_ROOT)/verilator; $(VERILATOR) -f croc.f --top tb_croc_soc $(VERILATOR_ARGS)
 	cd $(CROC_ROOT)/verilator; ./obj_dir/Vtb_croc_soc
 
 ## Simulate using Questasim/Modelsim/vsim
-vsim: $(CROC_ROOT)/vsim/compile_rtl.tcl
+vsim: $(CROC_ROOT)/vsim/compile_rtl.tcl $(SW)
 	rm -rf $(CROC_ROOT)/vsim/work
 	cd $(CROC_ROOT)/vsim; $(VSIM) -c -do "source $<; exit"
 	cd $(CROC_ROOT)/vsim; $(VSIM) -gui tb_croc_soc $(VSIM_ARGS)
 
-vsim-yosys: $(CROC_ROOT)/vsim/compile_rtl.tcl
+vsim-yosys: $(CROC_ROOT)/vsim/compile_rtl.tcl $(SW)
 	rm -rf $(CROC_ROOT)/vsim/work
 	sed -i 's/ croc_soc__[[:digit:]]\+/ croc_soc/' yosys/out/croc_debug.yosys.v
 	cd $(CROC_ROOT)/vsim; $(VSIM) -c -do "source $<; source compile_tech.tcl; source compile_yosys.tcl; exit"
 	cd $(CROC_ROOT)/vsim; $(VSIM) -gui tb_croc_soc $(VSIM_ARGS)
 
 .PHONY: verilator vsim
+
 
 ####################
 # Open Source Flow #
@@ -115,17 +123,9 @@ include yosys/yosys.mk
 include openroad/openroad.mk
 
 
-###########
-# PHONIES #
-###########
-
-.PHONY: hw-all
-hw-all: $(HW_ALL)
-
-.PHONY: sim-all
-sim-all: $(SIM_ALL)
-
-
+#################
+# Documentation #
+#################
 
 .PHONY: help
 help: Makefile
