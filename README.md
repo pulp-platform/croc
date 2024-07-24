@@ -49,6 +49,30 @@ If possible, the memory map should be remain compatible with [Cheshire's memory 
 | `32'h1000_0000` | `+SRAM_SIZE`    | Memory banks (SRAM)                        |
 
 
+
+## Flow
+```mermaid
+graph LR;
+	Bender-->Morty;
+	Morty-->SVase;
+	SVase-->SV2V;
+	SV2V-->Yosys;
+	Yosys-->OpenRoad;
+```
+1. Bender provides a list of SystemVerilog files
+2. These files are pickled into one context using Morty
+3. The pickled file is simplified using SVase
+4. The simplified SystemVerilog code is run through SV2V
+5. This gives us synthesizable Verilog which is then loaded into Yosys
+6. In Yosys the Verilog RTL goes through various passes and is mapped to the technology cells
+7. The netlist, constraints and floorplan are loaded into OpenRoad for Place&Route
+
+### Results
+Cell/Module placement                      |  Routing
+:-----------------------------------------:|:------------------------------------:
+![Chip module view](doc/croc_modules.png)  |  ![Chip routed](doc/croc_routed.png)
+
+
 ## Requirements
 
 ### ETHZ systems
@@ -115,23 +139,31 @@ The most important make targets are documented, you can list them with:
 make help
 ```
 
+## Bender
+The dependency manager [Bender](https://github.com/pulp-platform/bender) is used in most pulp-platform IPs.
+Usually each dependency would be in a seperate repository, each with a `Bender.yml` file to describe where the RTL files are, how you can use this dependency and which additional dependency it has.
+In the top level repository (like this SoC) you also have a `Bender.yml` file but you will commonly find a `Bender.lock` file. It contains the resolved tree of dependencies with specific commits for each. Whenever you run a command using Bender, this is the file it uses to figure out where things are.
 
-### Flow
-```mermaid
-graph LR;
-	Bender-->Morty;
-	Morty-->SVase;
-	SVase-->SV2V;
-	SV2V-->Yosys;
-	Yosys-->OpenRoad;
-```
-1. Bender provides a list of SystemVerilog files
-2. These files are pickled into one context using Morty
-3. The pickled file is simplified using SVase
-4. The simplified SystemVerilog code is run through SV2V
-5. This gives us synthesizable Verilog which is then loaded into Yosys
-6. In Yosys the Verilog RTL goes through various passes and is mapped to the technology cells
-7. The netlist, constraints and floorplan are loaded into OpenRoad for Place&Route
+Below is a small guide aimed at the usecase for this project. The Bender repo has a more extensive [Command Guide](https://github.com/pulp-platform/bender?tab=readme-ov-file#commands).
+
+### Checkout
+Using the command `bender checkout` Bender will check the lock file and download the specified commits from the repositories (usually into a hidden `.bender` directory). 
+
+### Update
+Running `bender update` on the other hand will resolve the entire tree again and re-generate the lock file (you usually have to resolve some version/revision conflicts if multiple things use the same dependency).
+
+**Remember:** always test everything again if you generate a new `Bender.lock`, it is the same as modifying RTL.
+
+### Local Versions
+For this repository the dependencies are already 'checked out' into `rtl/<IP>`. Only the used RTL files and the `Bender.yml` files are there though, not the entire repository. 
+To do so, we tell Bender that we have local versions of the dependencies and it should use them instead, this is done in the `Bender.local` file.
+
+If you do not wish to use these local version and would rather use the repositories directly, you can rename your `Bender.local` and then run `bender update` to re-generate the `Bender.lock` file. To resolve version/revision conflicts, check if there is a reason given for a specific version in the various `Bender.yml`, read the changelog between two versions and if you have problems, contact the maintainers.
+
+For your convenience, a resolved lockfile called `Bender.lock_repos` is provided. You can rename your existing `Bender.lock` to eg `Bender.lock.bak` and then rename `Bender.lock_repos` to `Bender.lock`, finally run `bender checkout` to checkout all needed repositories.
+
+### Targets
+Another thing we use are targets (in the `Bender.yml`), together they build different views/contexts of your RTL. For example without defining any targets the technology independent cells/memories are used (in `rtl/tech_cells_generic/`) but if we use the target `ihp13` then the same modules contain a technology-specific implementation (in `ihp13/`). Similar contexts are built for different simulators and other things.
 
 ## License
 Unless specified otherwise in the respective file headers, all code checked into this repository is made available under a permissive license. All hardware sources and tool scripts are licensed under the Solderpad Hardware License 0.51 (see `LICENSE.md`). All software sources are licensed under Apache 2.0.
