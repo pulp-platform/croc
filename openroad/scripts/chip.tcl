@@ -39,17 +39,17 @@ report_checks -format end -no_line_splits                >> ${report_dir}/${proj
 report_checks -format end -no_line_splits                >> ${report_dir}/${proj_name}_checks.rpt
 
 # Size of the chip
-set chipW            2000.0
-set chipH            2000.0
+set chipW            1760.0
+set chipH            1760.0
 
 # thickness of annular ring for pads (length of a pad)
-set padRing           310.0
-set coreMargin [expr $padRing + 35]
+set padRing           180.0
+set coreMargin [expr $padRing + 35]; # space for power ring
 
 utl::report "Initialize Chip"
 initialize_floorplan -die_area "0 0 $chipW $chipH" \
                      -core_area "$coreMargin $coreMargin [expr $chipW-$coreMargin] [expr $chipH-$coreMargin]" \
-                     -sites "CoreSite"
+                     -site "CoreSite"
 
 utl::report "Create Floorplan"
 source scripts/floorplan.tcl
@@ -59,10 +59,10 @@ source scripts/power_grid.tcl
 save_checkpoint ${proj_name}.power_grid
 report_image "${proj_name}.power" true
 
-
 ###############################################################################
 # Initial Repair Netlist                                                      #
 ###############################################################################
+set_default_view
 # Set layers used for estimate_parasitics
 set_wire_rc -clock -layer Metal4
 set_wire_rc -signal -layer Metal4
@@ -162,7 +162,8 @@ utl::report "Clock Tree Synthesis"
 set_wire_rc -clock -layer Metal4
 clock_tree_synthesis -buf_list $ctsBuf -root_buf $ctsBufRoot \
                      -sink_clustering_enable \
-                     -obstruction_aware
+                     -obstruction_aware \
+                     -balance_levels
 
 # Repair wire length between clock pad and clock-tree root
 utl::report "Repair clock nets"
@@ -267,3 +268,13 @@ utl::report "Saving detailed route"
 save_checkpoint ${proj_name}.drt
 report_design_area
 report_image "${proj_name}.drt" true false false true
+
+
+utl::report "Filler placement"
+filler_placement $stdfill
+report_image "${proj_name}.final" true true false true
+utl::report "Write output"
+write_def     out/${proj_name}.def
+write_verilog out/${proj_name}.v
+write_db      out/${proj_name}.odb
+write_sdc     out/${proj_name}.sdc

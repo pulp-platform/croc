@@ -14,8 +14,7 @@ TECH_IOCELLS_DIR 	:= $(PDK_DIR)/ihp-sg13g2/libs.ref/sg13g2_io
 
 TECH_CELLS 	:= $(TECH_CELLS_DIR)/lib/sg13g2_stdcell_typ_1p20V_25C.lib
 TECH_MACROS	:= $(wildcard $(TECH_MACROS_DIR)/lib/*_typ_1p20V_25C.lib) \
-				$(TECH_IOCELLS_DIR)/liberty/sg13g2_iocell_typ_1p2V_3p3V_25C.lib \
-				$(TECH_DIR)/sg13g2_iocell/sg13g2_iocell_typ_1p2V_3p3V_25C.lib
+				$(TECH_IOCELLS_DIR)/liberty/sg13g2_iocell_typ_1p2V_3p3V_25C.lib
 
 TECH_CELL_TIEHI_CELL	:= sg13g2_tiehi
 TECH_CELL_TIEHI_PIN 	:= L_HI

@@ -33,8 +33,8 @@ if {[info exists power_grid_defined]} {
 add_global_connection -net {VDD} -inst_pattern {.*} -pin_pattern {VDD} -power
 add_global_connection -net {VSS} -inst_pattern {.*} -pin_pattern {VSS} -ground
 # pads
-add_global_connection -net {VDD} -inst_pattern {.*} -pin_pattern {VDDCORE} -power
-add_global_connection -net {VSS} -inst_pattern {.*} -pin_pattern {VSSCORE} -ground
+add_global_connection -net {VDD} -inst_pattern {.*} -pin_pattern {vdd} -power
+add_global_connection -net {VSS} -inst_pattern {.*} -pin_pattern {vss} -ground
 # rams
 add_global_connection -net {VDD} -inst_pattern {.*} -pin_pattern {VDDARRAY} -power
 add_global_connection -net {VDD} -inst_pattern {.*} -pin_pattern {VDDARRAY!} -power
@@ -42,8 +42,8 @@ add_global_connection -net {VDD} -inst_pattern {.*} -pin_pattern {VDD!} -power
 add_global_connection -net {VSS} -inst_pattern {.*} -pin_pattern {VSS!} -ground
 
 # pads
-add_global_connection -net {VDDIO} -inst_pattern {.*} -pin_pattern {VDDPAD} -power
-add_global_connection -net {VSSIO} -inst_pattern {.*} -pin_pattern {VSSPAD} -ground
+add_global_connection -net {VDDIO} -inst_pattern {.*} -pin_pattern {iovdd} -power
+add_global_connection -net {VSSIO} -inst_pattern {.*} -pin_pattern {iovss} -ground
 
 # connection
 global_connect
@@ -69,9 +69,9 @@ set pgcrOffset [expr ($PowRingSpace - $pgcrSpacing - 2 * $pgcrWidth) / 2]
 
 # TopMetal2 Core Power Grid
 set tpg2Width     6; # arbitrary number
-set tpg2Pitch   150; # same as pad-pitch
+set tpg2Pitch   188; # same as pad-pitch
 set tpg2Spacing  65; # big enough to skip over a pad
-set tpg2Offset   20; # offset from leftX of core
+set tpg2Offset   32; # offset from leftX of core
 
 # Macro Power Rings -> M3 and M2
 ## Spacing must be larger than pitch of M2/M3

@@ -36,43 +36,43 @@ module croc_chip import croc_pkg::*; #() (
     logic soc_irq0_i;
     logic soc_status_o;
 
-    ixc013_i16x pad_clk_i         (.PAD(clk_i),           .DOUT(soc_clk_i));
-    ixc013_i16x pad_rst_ni        (.PAD(rst_ni),          .DOUT(soc_rst_ni));
-    ixc013_i16x pad_ref_clk_i     (.PAD(ref_clk_i),       .DOUT(soc_ref_clk_i));
+    sg13g2_IOPadIn        pad_clk_i         (.pad(clk_i),           .p2c(soc_clk_i));
+    sg13g2_IOPadIn        pad_rst_ni        (.pad(rst_ni),          .p2c(soc_rst_ni));
+    sg13g2_IOPadIn        pad_ref_clk_i     (.pad(ref_clk_i),       .p2c(soc_ref_clk_i));
     assign soc_test_enable_i = '0;
 
-    ixc013_i16x pad_jtag_tck_i    (.PAD(jtag_tck_i),      .DOUT(soc_jtag_tck_i));
-    ixc013_i16x pad_jtag_trst_ni  (.PAD(jtag_trst_ni),    .DOUT(soc_jtag_trst_ni));
-    ixc013_i16x pad_jtag_tms_i    (.PAD(jtag_tms_i),      .DOUT(soc_jtag_tms_i));
-    ixc013_i16x pad_jtag_tdi_i    (.PAD(jtag_tdi_i),      .DOUT(soc_jtag_tdi_i));
-    ixc013_b16m pad_jtag_tdo_o    (.PAD(jtag_tdo_o),      .DIN(soc_jtag_tdi_i), .DOUT(), .OEN(1'b0));
+    sg13g2_IOPadIn        pad_jtag_tck_i    (.pad(jtag_tck_i),      .p2c(soc_jtag_tck_i));
+    sg13g2_IOPadIn        pad_jtag_trst_ni  (.pad(jtag_trst_ni),    .p2c(soc_jtag_trst_ni));
+    sg13g2_IOPadIn        pad_jtag_tms_i    (.pad(jtag_tms_i),      .p2c(soc_jtag_tms_i));
+    sg13g2_IOPadIn        pad_jtag_tdi_i    (.pad(jtag_tdi_i),      .p2c(soc_jtag_tdi_i));
+    sg13g2_IOPadOut16mA   pad_jtag_tdo_o    (.pad(jtag_tdo_o),      .c2p(soc_jtag_tdo_o));
 
-    ixc013_i16x pad_uart_rx_i     (.PAD(uart_rx_i),       .DOUT(soc_uart_rx_i));
-    ixc013_b16m pad_uart_tx_o     (.PAD(uart_tx_o),       .DIN(soc_uart_tx_o), .DOUT(), .OEN(1'b0));
+    sg13g2_IOPadIn        pad_uart_rx_i     (.pad(uart_rx_i),       .p2c(soc_uart_rx_i));
+    sg13g2_IOPadOut16mA   pad_uart_tx_o     (.pad(uart_tx_o),       .c2p(soc_uart_tx_o));
 
-    ixc013_i16x pad_irq0_i        (.PAD(irq0_i),          .DOUT(soc_irq0_i));
-    ixc013_b16m pad_status_o      (.PAD(status_o),        .DIN(soc_status_o), .DOUT(), .OEN(1'b0));
+    sg13g2_IOPadInOut16mA pad_irq0_i        (.pad(irq0_i),          .p2c(soc_irq0_i),   .c2p(), .c2p_en(1'b0));
+    sg13g2_IOPadInOut16mA pad_status_o      (.pad(status_o),        .c2p(soc_status_o), .p2c(), .c2p_en(1'b1));
 
-    (* dont_touch = "true" *)vddcore pad_vdd0();
-    (* dont_touch = "true" *)vddcore pad_vdd1();
-    (* dont_touch = "true" *)vddcore pad_vdd2();
-    (* dont_touch = "true" *)vddcore pad_vdd3();
+    (* dont_touch = "true" *)sg13g2_IOPadVdd pad_vdd0();
+    (* dont_touch = "true" *)sg13g2_IOPadVdd pad_vdd1();
+    (* dont_touch = "true" *)sg13g2_IOPadVdd pad_vdd2();
+    (* dont_touch = "true" *)sg13g2_IOPadVdd pad_vdd3();
 
-    (* dont_touch = "true" *)gndcore pad_vss0();
-    (* dont_touch = "true" *)gndcore pad_vss1();
-    (* dont_touch = "true" *)gndcore pad_vss2();
-    (* dont_touch = "true" *)gndcore pad_vss3();
+    (* dont_touch = "true" *)sg13g2_IOPadVss pad_vss0();
+    (* dont_touch = "true" *)sg13g2_IOPadVss pad_vss1();
+    (* dont_touch = "true" *)sg13g2_IOPadVss pad_vss2();
+    (* dont_touch = "true" *)sg13g2_IOPadVss pad_vss3();
 
-    (* dont_touch = "true" *)vddpad pad_vddio0();
-    (* dont_touch = "true" *)vddpad pad_vddio1();
-    (* dont_touch = "true" *)vddpad pad_vddio2();
-    (* dont_touch = "true" *)vddpad pad_vddio3();
+    (* dont_touch = "true" *)sg13g2_IOPadIOVdd pad_vddio0();
+    (* dont_touch = "true" *)sg13g2_IOPadIOVdd pad_vddio1();
+    (* dont_touch = "true" *)sg13g2_IOPadIOVdd pad_vddio2();
+    (* dont_touch = "true" *)sg13g2_IOPadIOVdd pad_vddio3();
 
-    (* dont_touch = "true" *)gndpad pad_vssio0();
-    (* dont_touch = "true" *)gndpad pad_vssio1();
-    (* dont_touch = "true" *)gndpad pad_vssio2();
-    (* dont_touch = "true" *)gndpad pad_vssio3();
-    (* dont_touch = "true" *)gndpad pad_vssio4();
+    (* dont_touch = "true" *)sg13g2_IOPadIOVss pad_vssio0();
+    (* dont_touch = "true" *)sg13g2_IOPadIOVss pad_vssio1();
+    (* dont_touch = "true" *)sg13g2_IOPadIOVss pad_vssio2();
+    (* dont_touch = "true" *)sg13g2_IOPadIOVss pad_vssio3();
+    (* dont_touch = "true" *)sg13g2_IOPadIOVss pad_vssio4();
 
   croc_soc #()
   i_croc_soc (

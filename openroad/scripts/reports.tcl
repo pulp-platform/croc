@@ -243,6 +243,9 @@ proc report_image { report_name {full_die false} {place false} {cts false} {rout
       gui::set_heatmap Placement DisplayMax 200
       set_default_view
       gui::set_display_controls "Layers/*"                        visible false
+      gui::set_display_controls "Nets/*"                          visible true
+      gui::set_display_controls "Nets/Power"                      visible false
+      gui::set_display_controls "Nets/Ground"                     visible false
       gui::set_display_controls "Heat Maps/Routing Congestion"    visible true
       save_image -area $area -resolution $resolution $report_dir/${report_name}.congestion.png
   }
@@ -273,14 +276,13 @@ proc set_default_view { } {
   gui::set_display_controls "*"                       visible false
   gui::set_display_controls "Layers/*"                visible true
   gui::set_display_controls "Nets/*"                  visible true
-  gui::set_display_controls "Instances/*"             visible false
-  gui::set_display_controls "Instances/StdCells/*"    visible true
-  gui::set_display_controls "Instances/Macro"         visible true
-  gui::set_display_controls "Instances/Pads/*"        visible true
-  gui::set_display_controls "Instances/Physical/*"    visible true
-  gui::set_display_controls "Misc/Instances/names"    visible true
+  gui::set_display_controls "Shape Types/*"           visible true
+  gui::set_display_controls "Instances/*"             visible true
+  gui::set_display_controls "Timing Path/*"           visible false
+  gui::set_display_controls "Misc/Instances/Names"    visible true
   gui::set_display_controls "Misc/Scale bar"          visible true
   gui::set_display_controls "Misc/Highlight selected" visible true
   gui::set_display_controls "Misc/Detailed view"      visible true
+  gui::set_display_controls "Misc/Module view"        visible false
   gui::set_display_controls "Heat Maps/*"             visible false
 }
