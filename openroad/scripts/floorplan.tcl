@@ -106,13 +106,13 @@ set floor_midpointY   [expr $floor_bottomY + ($floor_topY - $floor_bottomY)/2]
 utl::report "Place Macros"
 
 # Bank0
-set X [expr $floor_leftX]
-set Y [expr $floor_topY - $RamSize256x48_H]
+set X [expr $floor_midpointX - $RamSize256x64_W/2]
+set Y [expr $floor_topY - $RamSize256x64_H]
 placeInstance $bank0_sram0 $X $Y R0
 
 # Bank1
-set X [expr $floor_leftX]
-set Y [expr $Y - $RamSize256x48_H - 14]
+set X [expr $X]
+set Y [expr $Y - $RamSize256x64_H - 15]
 placeInstance $bank1_sram0 $X $Y R0
 
 
