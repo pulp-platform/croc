@@ -18,11 +18,9 @@ VLOG_ARGS  = -svinputport=compat
 VSIM_ARGS  = -t 1ns -voptargs=+acc
 VSIM_ARGS += -suppress vsim-3009 -suppress vsim-8683 -suppress vsim-8386
 
-VERILATOR_ARGS  = -Wno-fatal --binary -j 8
+VERILATOR_ARGS  = --binary -j 0 -Wno-fatal
+VERILATOR_ARGS += -Wno-style
 VERILATOR_ARGS += --timing --autoflush --trace --trace-structs
-
-CROC_ROOT    ?= $(realpath .)
-CROC_HW_DIR  ?= $(CROC_ROOT)/rtl
 
 default: help
 
@@ -50,73 +48,77 @@ clean-deps:
 SW := /sw/bin/helloworld.hex
 
 $(SW):
-	$(MAKE) -C $(CROC_ROOT)/sw/ compile
+	$(MAKE) -C sw/ compile
 
 ## Build the helloworld software
 software: $(SW)
 
 .PHONY: software
 
-##############
-# Simulation #
-##############
+##################
+# RTL Simulation #
+##################
 
-$(CROC_ROOT)/verilator/croc.f: Bender.lock Bender.yml
-	$(BENDER) script verilator -t rtl -t verilator -t verilator_test -DSYNTHESIS -DVERILATOR > $@
+verilator/croc.f: Bender.lock Bender.yml
+	$(BENDER) script verilator -t rtl -t verilator -DSYNTHESIS -DVERILATOR > $@
 
-$(CROC_ROOT)/vsim/compile_rtl.tcl: Bender.lock Bender.yml
+vsim/compile_rtl.tcl: Bender.lock Bender.yml
 	$(BENDER) script vsim -t rtl -t vsim -t simulation -t verilator -DSYNTHESIS -DSIMULATION > $@
 
-## Simulate using Verilator
-verilator: $(CROC_ROOT)/verilator/croc.f $(SW)
-	cd $(CROC_ROOT)/verilator; $(VERILATOR) -f croc.f --top tb_croc_soc $(VERILATOR_ARGS)
-	cd $(CROC_ROOT)/verilator; ./obj_dir/Vtb_croc_soc
+vsim/compile_netlist.tcl: Bender.lock Bender.yml
+	$(BENDER) script vsim -t ihp13 -t vsim -t simulation -t verilator -t netlist_yosys -DSYNTHESIS -DSIMULATION > $@
 
-## Simulate using Questasim/Modelsim/vsim
-vsim: $(CROC_ROOT)/vsim/compile_rtl.tcl $(SW)
-	rm -rf $(CROC_ROOT)/vsim/work
-	cd $(CROC_ROOT)/vsim; $(VSIM) -c -do "source $<; exit"
-	cd $(CROC_ROOT)/vsim; $(VSIM) -gui tb_croc_soc $(VSIM_ARGS)
+## Simulate RTL using Verilator
+verilator: verilator/croc.f $(SW)
+	cd verilator; $(VERILATOR) $(VERILATOR_ARGS) --top tb_croc_soc -f croc.f
+	cd verilator; ./obj_dir/Vtb_croc_soc
 
-vsim-yosys: $(CROC_ROOT)/vsim/compile_rtl.tcl $(SW)
-	rm -rf $(CROC_ROOT)/vsim/work
-	sed -i 's/ croc_soc__[[:digit:]]\+/ croc_soc/' yosys/out/croc_debug.yosys.v
-	cd $(CROC_ROOT)/vsim; $(VSIM) -c -do "source $<; source compile_tech.tcl; source compile_yosys.tcl; exit"
-	cd $(CROC_ROOT)/vsim; $(VSIM) -gui tb_croc_soc $(VSIM_ARGS)
+## Simulate RTL using Questasim/Modelsim/vsim
+vsim: vsim/compile_rtl.tcl $(SW)
+	rm -rf vsim/work
+	cd vsim; $(VSIM) -c -do "source compile_rtl.tcl; exit"
+	cd vsim; $(VSIM) -gui tb_croc_soc $(VSIM_ARGS)
 
-.PHONY: verilator vsim
+## Simulate netlist using Questasim/Modelsim/vsim
+vsim-yosys: vsim/compile_netlist.tcl $(SW) yosys/out/croc_yosys_debug.v
+	rm -rf vsim/work
+	cd vsim; $(VSIM) -c -do "source compile_netlist.tcl; source compile_tech.tcl; exit"
+	cd vsim; $(VSIM) -gui tb_croc_soc $(VSIM_ARGS)
+
+.PHONY: verilator vsim vsim-yosys verilator-yosys
 
 
 ####################
 # Open Source Flow #
 ####################
-CROC_OUT       ?= $(CROC_ROOT)/pickle
 TOP_DESIGN     ?= croc_chip
+DUT_DESIGN	   ?= croc_soc
 BENDER_TARGERS ?= asic ihp13 rtl synthesis verilator
 MORTY_DEFINES  ?= VERILATOR SYNTHESIS MORTY TARGET_ASIC TARGET_SYNTHESIS
 
 # list of source files
-$(CROC_OUT)/croc_sources.json: Bender.yml
-	mkdir -p $(CROC_OUT)
+pickle/croc_sources.json: Bender.lock Bender.yml rtl/*/Bender.yml
+	mkdir -p pickle
 	$(BENDER) sources -f $(foreach t,$(BENDER_TARGERS),-t $(t)) > $@
 
 # pickle source files into one file/context
-$(CROC_OUT)/croc_morty.sv: $(CROC_OUT)/croc_sources.json $(CROC_HW_DIR)/* ihp13/*.sv
+pickle/croc_morty.sv: pickle/croc_sources.json rtl/* ihp13/*.sv
 	$(MORTY) -q -f $< -o $@ $(foreach d,$(MORTY_DEFINES),-D $(d)=1)
 
 # simplify SystemVerilog by propagating parameters and unfolding generate statements
-$(CROC_OUT)/croc_svase.sv: $(CROC_OUT)/croc_morty.sv
+pickle/croc_svase.sv: pickle/croc_morty.sv
 	$(SVASE) $(TOP_DESIGN) $@ $<
 	sed -i 's/module $(TOP_DESIGN)__[[:digit:]]\+/module $(TOP_DESIGN)/' $@
+	sed -i 's/ $(DUT_DESIGN)__[[:digit:]]\+ / $(DUT_DESIGN) /' $@
 
 # convert SystemVerilog to Verilog
-$(CROC_OUT)/croc_sv2v.v: $(CROC_OUT)/croc_svase.sv
+pickle/croc_sv2v.v: pickle/croc_svase.sv
 	$(SV2V) --oversized-numbers --write $@ $<
 
 .PHONY: pickle
 
 ## Generate verilog file for synthesis
-pickle: $(CROC_OUT)/croc_sv2v.v
+pickle: pickle/croc_sv2v.v
 
 include ihp13/technology.mk
 include yosys/yosys.mk
