@@ -26,6 +26,9 @@ module tb_croc_soc #(
     logic uart_rx_i;
     logic uart_tx_o;
 
+    logic irq0_i;
+    logic status_o;
+
     // Register addresses
     localparam bit [31:0] BootAddrAddr   = croc_pkg::SocCtrlAddrOffset
                                            + soc_ctrl_reg_pkg::SOC_CTRL_BOOTADDR_OFFSET;
@@ -244,7 +247,10 @@ module tb_croc_soc #(
         .jtag_trst_ni  ( jtag_trst_ni ),
 
         .uart_rx_i     ( uart_rx_i ),
-        .uart_tx_o     ( uart_tx_o )
+        .uart_tx_o     ( uart_tx_o ),
+
+        .irq0_i        ( irq0_i   ),
+        .status_o      ( status_o )
     );
 
 
@@ -260,6 +266,9 @@ module tb_croc_soc #(
         // $dumpfile("croc.vcd");
         // $dumpvars(1,i_croc_soc);
 
+        uart_rx_i = 1'b0;
+        irq0_i    = 1'b0;
+        
         // wait for reset
         #ClkPeriod;
 

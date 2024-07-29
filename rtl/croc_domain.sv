@@ -221,9 +221,9 @@ module croc_domain import croc_pkg::*; #() (
     .tdo_oe_o         ()
   );
 
-  dm_top #(
-    .BusWidth       ( MgrObiCfg.DataWidth ),
-    .ReadByteEnable ( 0 )
+  dm_obi_top #(
+    .BusWidth   ( SbrObiCfg.DataWidth ),
+    .IdWidth    ( SbrObiCfg.IdWidth   )
   ) i_dm_top (
     .clk_i,
     .rst_ni,
@@ -239,18 +239,22 @@ module croc_domain import croc_pkg::*; #() (
     .slave_addr_i         ( dbg_mem_obi_req.a.addr  ),
     .slave_be_i           ( dbg_mem_obi_req.a.be    ),
     .slave_wdata_i        ( dbg_mem_obi_req.a.wdata ),
+    .slave_aid_i          ( dbg_mem_obi_req.a.aid   ),
+    .slave_gnt_o          ( dbg_mem_obi_rsp.gnt     ),
+    .slave_rvalid_o       ( dbg_mem_obi_rsp.rvalid  ),
     .slave_rdata_o        ( dbg_mem_obi_rsp.r.rdata ),
+    .slave_rid_o          ( dbg_mem_obi_rsp.r.rid   ),
 
     .master_req_o         ( dbg_req_obi_req.req     ),
-    .master_add_o         ( dbg_req_obi_req.a.addr  ),
+    .master_addr_o        ( dbg_req_obi_req.a.addr  ),
     .master_we_o          ( dbg_req_obi_req.a.we    ),
     .master_wdata_o       ( dbg_req_obi_req.a.wdata ),
     .master_be_o          ( dbg_req_obi_req.a.be    ),
     .master_gnt_i         ( dbg_req_obi_rsp.gnt     ),
-    .master_r_valid_i     ( dbg_req_obi_rsp.rvalid  ),
-    .master_r_err_i       ( dbg_req_obi_rsp.r.err   ),
-    .master_r_other_err_i ( 1'b0                    ),
-    .master_r_rdata_i     ( dbg_req_obi_rsp.r.rdata ),
+    .master_rvalid_i      ( dbg_req_obi_rsp.rvalid  ),
+    .master_rdata_i       ( dbg_req_obi_rsp.r.rdata ),
+    .master_err_i         ( dbg_req_obi_rsp.r.err   ),
+    .master_other_err_i   ( 1'b0                    ),
 
     .dmi_rst_ni           ( dmi_rst_n      ),
     .dmi_req_valid_i      ( dmi_req_valid  ),
@@ -261,27 +265,9 @@ module croc_domain import croc_pkg::*; #() (
     .dmi_resp_ready_i     ( dmi_resp_ready ),
     .dmi_resp_o           ( dmi_resp       )
   );
-
-  // as of 28.05.2024 Verilator has trouble with non-blocking assignments
-  // to only parts of a struct (here rvalid and r.rid)
-  // -> we need to use intermediary signals to avoid this
-  logic dbg_mem_obi_rsp_rvalid;
-  logic dbg_mem_obi_rsp_r_rid;
-
-  assign dbg_mem_obi_rsp.gnt = 1'b1;
-  assign dbg_mem_obi_rsp.r.err = '0;
-  assign dbg_mem_obi_rsp.r.r_optional = '0;
-  assign dbg_mem_obi_rsp.rvalid = dbg_mem_obi_rsp_rvalid;
-  assign dbg_mem_obi_rsp.r.rid = dbg_mem_obi_rsp_r_rid;
-  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_dbg_mem
-    if(!rst_ni) begin
-      dbg_mem_obi_rsp_rvalid <= '0;
-      dbg_mem_obi_rsp_r_rid <= '0;
-    end else begin
-      dbg_mem_obi_rsp_rvalid <= dbg_mem_obi_req.req;
-      dbg_mem_obi_rsp_r_rid <= dbg_mem_obi_req.a.aid;
-    end
-  end
+  // unused
+  assign dbg_mem_obi_rsp.r.r_optional = 1'b0;
+  assign dbg_mem_obi_rsp.r.err        = 1'b0;
 
   // -----------------
   // Main Interconnect
