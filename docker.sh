@@ -6,7 +6,7 @@
 # Authors:
 # - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
-IMG=hpretl/hpretl/iic-osic-tools:pulp
+IMG=hpretl/iic-osic-tools:pulp
 
 docker pull $IMG
 
