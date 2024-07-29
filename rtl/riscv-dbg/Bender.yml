@@ -32,6 +32,7 @@ sources:
   - dm_top.sv
   - dmi_jtag.sv
   # Level 4:
+  - dm_obi_top.sv
 
   - target: simulation
     files:

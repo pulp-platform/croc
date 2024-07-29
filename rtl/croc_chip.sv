@@ -25,6 +25,7 @@ module croc_chip import croc_pkg::*; #() (
     logic soc_clk_i;
     logic soc_rst_ni;
     logic soc_ref_clk_i;
+    logic soc_test_enable_i;
 
     logic soc_jtag_tck_i;
     logic soc_jtag_trst_ni;
@@ -38,6 +39,7 @@ module croc_chip import croc_pkg::*; #() (
     ixc013_i16x pad_clk_i         (.PAD(clk_i),           .DOUT(soc_clk_i));
     ixc013_i16x pad_rst_ni        (.PAD(rst_ni),          .DOUT(soc_rst_ni));
     ixc013_i16x pad_ref_clk_i     (.PAD(ref_clk_i),       .DOUT(soc_ref_clk_i));
+    assign soc_test_enable_i = '0;
 
     ixc013_i16x pad_jtag_tck_i    (.PAD(jtag_tck_i),      .DOUT(soc_jtag_tck_i));
     ixc013_i16x pad_jtag_trst_ni  (.PAD(jtag_trst_ni),    .DOUT(soc_jtag_trst_ni));
@@ -74,15 +76,16 @@ module croc_chip import croc_pkg::*; #() (
 
   croc_soc #()
   i_croc_soc (
-    .clk_i          ( soc_clk_i        ),
-    .ref_clk_i      ( soc_rst_ni       ),
-    .rst_ni         ( soc_ref_clk_i    ),
+    .clk_i          ( soc_clk_i         ),
+    .ref_clk_i      ( soc_rst_ni        ),
+    .rst_ni         ( soc_ref_clk_i     ),
+    .test_enable_i  ( soc_test_enable_i ),
 
-    .jtag_tck_i     ( soc_jtag_tck_i   ),
-    .jtag_tdi_i     ( soc_jtag_tdi_i   ),
-    .jtag_tdo_o     ( soc_jtag_tdo_o   ),
-    .jtag_tms_i     ( soc_jtag_tms_i   ),
-    .jtag_trst_ni   ( soc_jtag_trst_ni ),
+    .jtag_tck_i     ( soc_jtag_tck_i    ),
+    .jtag_tdi_i     ( soc_jtag_tdi_i    ),
+    .jtag_tdo_o     ( soc_jtag_tdo_o    ),
+    .jtag_tms_i     ( soc_jtag_tms_i    ),
+    .jtag_trst_ni   ( soc_jtag_trst_ni  ),
 
     .uart_rx_i      ( soc_uart_rx_i ),
     .uart_tx_o      ( soc_uart_tx_o ),
