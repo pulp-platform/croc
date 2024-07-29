@@ -11,7 +11,7 @@
 RISCV_XLEN    ?= 32
 RISCV_MARCH   ?= rv$(RISCV_XLEN)i
 RISCV_MABI    ?= ilp32
-RISCV_PREFIX  ?= riscv64-unknown-elf-
+RISCV_PREFIX  ?= riscv64-unknown-linux-gnu-
 RISCV_CC      ?= $(RISCV_PREFIX)gcc
 RISCV_CXX     ?= $(RISCV_PREFIX)g++
 RISCV_OBJDUMP ?= $(RISCV_PREFIX)objdump
