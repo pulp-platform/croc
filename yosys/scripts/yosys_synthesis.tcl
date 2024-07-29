@@ -137,7 +137,7 @@ yosys clean -purge
 
 # -----------------------------------------------------------------------------
 # prep for openROAD
-yosys write_verilog -norename -noexpr -attr2comment ${build_dir}/${proj_name}_debug.yosys.v
+yosys write_verilog -norename -noexpr -attr2comment ${build_dir}/${proj_name}_yosys_debug.v
 
 yosys splitnets -ports -format __v
 yosys setundef -zero

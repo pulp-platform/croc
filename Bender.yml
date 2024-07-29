@@ -21,22 +21,32 @@ dependencies:
 
 sources:
   # Level 0
-  - rtl/croc_pkg.sv
-  - rtl/soc_ctrl/soc_ctrl_reg_pkg.sv
   - target: ihp13
     files:
       - ihp13/tc_clk.sv
       - ihp13/tc_sram.sv
-  # Level 1
-  - rtl/core_wrap.sv
-  - rtl/soc_ctrl/soc_ctrl_reg_top.sv
-  # Level 2
-  - rtl/croc_domain.sv
-  - rtl/user_domain.sv
-  # Level 3
-  - rtl/croc_soc.sv
-  # Level 4
-  - rtl/croc_chip.sv
+
+  - rtl/croc_pkg.sv
+  - rtl/soc_ctrl/soc_ctrl_reg_pkg.sv
+
+    # RTL
+  - target: not(netlist_yosys)
+    files:
+      # Level 1
+      - rtl/core_wrap.sv
+      - rtl/soc_ctrl/soc_ctrl_reg_top.sv
+      # Level 2
+      - rtl/croc_domain.sv
+      - rtl/user_domain.sv
+      # Level 3
+      - rtl/croc_soc.sv
+      # Level 4
+      - rtl/croc_chip.sv
+  
+  # netlist for simulation
+  - target: netlist_yosys
+    files:
+      - yosys/out/croc_yosys_debug.v
 
   - target: any(simulation, verilator)
     files:

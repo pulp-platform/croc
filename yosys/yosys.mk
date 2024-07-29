@@ -26,11 +26,14 @@ PICKLE_OUT		:= $(YOSYS_DIR)/../pickle
 
 VLOG_FILES  	:= $(PICKLE_OUT)/$(RTL_NAME)_sv2v.v
 NETLIST			:= $(YOSYS_OUT)/$(RTL_NAME)_yosys.v
-
-synth: yosys
+NETLIST_DEBUG	:= $(YOSYS_OUT)/$(RTL_NAME)_debug_yosys.v
 
 ## Synthesize netlist using Yosys
-yosys: $(VLOG_FILES)
+yosys: $(NETLIST)
+
+synth: $(NETLIST)
+
+$(NETLIST) $(NETLIST_DEBUG): $(VLOG_FILES)
 	@mkdir -p $(YOSYS_OUT)
 	@mkdir -p $(YOSYS_WORK)
 	@mkdir -p $(YOSYS_REPORTS)
