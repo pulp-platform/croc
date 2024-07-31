@@ -189,6 +189,11 @@ module ibex_ex_block #(
         .valid_o            ( multdiv_valid         ),
         .multdiv_result_o   ( multdiv_result        )
     );
+  end else if (RV32M == RV32MNone) begin : gen_multidiv_none
+    multdiv_alu_operand_a = '0;
+    multdiv_alu_operand_b = '0;
+    multdiv_result_o = '0;
+    multdiv_valid = 1'b0;
   end
 
   // Multiplier/divider may require multiple cycles. The ALU output is valid in the same cycle
