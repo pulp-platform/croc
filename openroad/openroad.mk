@@ -22,6 +22,7 @@ NETLIST		?= $(CROC_ROOT)/yosys/out/$(PROJ_NAME)_yosys.v
 
 SAVE	 ?= $(OPENROAD_DIR)/save
 REPORTS	 ?= $(OPENROAD_DIR)/reports
+OUT  	 ?= $(OPENROAD_DIR)/out
 
 backend: openroad
 
@@ -29,6 +30,7 @@ backend: openroad
 openroad:
 	mkdir -p $(SAVE)
 	mkdir -p $(REPORTS)
+	mkdir -p $(OUT)
 	echo $(CROC_ROOT)
 	cd $(OPENROAD_DIR) && \
 	NETLIST="$(NETLIST)" \
@@ -37,7 +39,7 @@ openroad:
 	SAVE="$(SAVE)" \
 	REPORTS="$(REPORTS)" \
 	PDK="$(CROC_ROOT)/ihp13/pdk" \
-	$(OPENROAD) scripts/chip.tcl -gui \
+	$(OPENROAD) scripts/chip.tcl \
 		-log $(PROJ_NAME).log \
 		2>&1 | TZ=UTC gawk '{ print strftime("[%Y-%m-%d %H:%M %Z]"), $$0 }';
 

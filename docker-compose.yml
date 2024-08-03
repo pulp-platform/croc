@@ -10,6 +10,9 @@ version: '3'
 services:
   pulp-docker:
     image: hpretl/iic-osic-tools:pulp
+    environment:
+      - UID=${UID}
+      - GID=${GID}
     user: "${UID}:${GID}"
     volumes:
       - ./:/fosic/designs/croc
