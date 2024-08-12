@@ -58,6 +58,7 @@ graph LR;
 	SVase-->SV2V;
 	SV2V-->Yosys;
 	Yosys-->OpenRoad;
+	OpenRoad-->klayout;
 ```
 1. Bender provides a list of SystemVerilog files
 2. These files are pickled into one context using Morty
@@ -66,6 +67,7 @@ graph LR;
 5. This gives us synthesizable Verilog which is then loaded into Yosys
 6. In Yosys the Verilog RTL goes through various passes and is mapped to the technology cells
 7. The netlist, constraints and floorplan are loaded into OpenRoad for Place&Route
+8. The design as def is read by klayout and the geometry of the cells and macros are merged
 
 ### Results
 Cell/Module placement                      |  Routing
@@ -121,7 +123,10 @@ make checkout
 make pickle
 make yosys
 make openroad
+make klayout
 ```
+_Note_: The bonding pads, metal fill and seal ring (all done in klayout) are currently still missing
+
 
 To simulate you can use:
 ```sh

@@ -124,6 +124,10 @@ include ihp13/technology.mk
 include yosys/yosys.mk
 include openroad/openroad.mk
 
+klayout/croc_chip.gds: openroad/out/croc.def klayout/*.sh klayout/*.py
+	./klayout/def2gds.sh
+
+klayout: klayout/croc_chip.gds
 
 #################
 # Documentation #
