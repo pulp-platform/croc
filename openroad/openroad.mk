@@ -23,11 +23,14 @@ NETLIST		?= $(CROC_ROOT)/yosys/out/$(PROJ_NAME)_yosys.v
 SAVE	 ?= $(OPENROAD_DIR)/save
 REPORTS	 ?= $(OPENROAD_DIR)/reports
 OUT  	 ?= $(OPENROAD_DIR)/out
+OUT_FILES = $(OUT)/$(PROJ_NAME).def $(OUT)/$(PROJ_NAME).v $(OUT)/$(PROJ_NAME).sdc $(OUT)/$(PROJ_NAME).odb
 
-backend: openroad
+backend: $(OUT)/$(PROJ_NAME).def
+
+openroad: $(OUT)/$(PROJ_NAME).def
 
 ## Place & Route flow using OpenROAD
-openroad:
+$(OUT_FILES): $(NETLIST) scripts/*.tcl src/*.tcl src/*.sdc
 	mkdir -p $(SAVE)
 	mkdir -p $(REPORTS)
 	mkdir -p $(OUT)
