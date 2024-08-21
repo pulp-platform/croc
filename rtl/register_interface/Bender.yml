@@ -3,6 +3,7 @@ package:
   authors: ["Fabian Schuiki <fschuiki@iis.ee.ethz.ch>", "Florian Zaruba <zarubaf@iis.ee.ethz.ch>"]
 
 dependencies:
+  axi: { git: "https://github.com/pulp-platform/axi.git", version: 0.38.0 }
   apb: { git: "https://github.com/pulp-platform/apb.git", version: 0.2.2}
   common_cells: { git: "https://github.com/pulp-platform/common_cells.git", version: 1.21.0 }
   common_verification: { git: "https://github.com/pulp-platform/common_verification.git", version: 0.2.3 }
@@ -12,17 +13,35 @@ export_include_dirs:
 
 sources:
   # Level 0
-  - reg_intf.sv
-  - lowrisc_opentitan/prim_subreg_arb.sv
+  - src/reg_intf.sv
+  - vendor/lowrisc_opentitan/src/prim_subreg_arb.sv
+  - vendor/lowrisc_opentitan/src/prim_subreg_ext.sv
   # Level 1
-  - periph_to_reg.sv
-  - reg_to_apb.sv
-  - lowrisc_opentitan/prim_subreg.sv
+  - src/apb_to_reg.sv
+  - src/axi_to_reg.sv
+  - src/periph_to_reg.sv
+  - src/reg_cut.sv
+  - src/reg_cdc.sv
+  - src/reg_demux.sv
+  - src/reg_err_slv.sv
+  - src/reg_filter_empty_writes.sv
+  - src/reg_mux.sv
+  - src/reg_to_apb.sv
+  - src/reg_to_mem.sv
+  - src/reg_uniform.sv
+  - src/reg_to_tlul.sv
+  - vendor/lowrisc_opentitan/src/prim_subreg_shadow.sv
+  - vendor/lowrisc_opentitan/src/prim_subreg.sv
   # Level 2
+  - src/axi_lite_to_reg.sv
   - target: test
     files:
+      - src/reg_test.sv
   - target: register_interface_test
     files:
+      - src/test/test_regs_reg_pkg.sv
+      - src/test/test_regs_reg_top.sv
+      - src/test/tb_simple_registers.sv
 
 vendor_package:
   - name: lowrisc_opentitan

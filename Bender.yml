@@ -8,16 +8,7 @@ package:
     - "Philippe Sauter <phsauter@iis.ee.ethz.ch>"
 
 dependencies:
-  common_cells:         { git: "https://github.com/pulp-platform/common_cells.git",         version: 1.36.0 }
-  common_verification:  { git: "https://github.com/pulp-platform/common_verification.git",  rev: "verilator-fix"      }
-  riscv-dbg:            { git: "https://github.com/pulp-platform/riscv-dbg.git",            rev: "verilator-phsauter" }
-  tech_cells_generic:   { git: "https://github.com/pulp-platform/tech_cells_generic.git",   version: 0.2.13 }
-  register_interface:   { git: "https://github.com/pulp-platform/register_interface.git",   version: 0.4.1  }
-  ibex:                 { git: "https://github.com/pulp-platform/ibex.git",                 rev: "pulpissimo-v6.1.2"  }
-  apb:                  { git: "https://github.com/pulp-platform/apb.git",                  version: 0.2.4  }
-  timer_unit:           { git: "https://github.com/pulp-platform/timer_unit.git",           version: 1.0.3  }
-  obi:                  { git: "https://github.com/pulp-platform/obi.git",                  version: 0.1.2  }
-  apb_uart:             { git: "https://github.com/pulp-platform/apb_uart.git",             version: 0.2.1  }
+  # see vendor_package at the bottom
 
 sources:
   # Level 0
@@ -51,3 +42,127 @@ sources:
   - target: any(simulation, verilator)
     files:
       - rtl/tb_croc_soc.sv
+
+vendor_package:
+  #################################
+  # commonly used building blocks #
+  #################################
+  - name: common_cells
+    target_dir: rtl/common_cells
+    upstream: { git: "https://github.com/pulp-platform/common_cells.git", rev: "c27bce39ebb2e6bae52f60960814a2afca7bd4cb" } # v1.37.0
+    patch_dir: "rtl/patches/common_cells"
+    exclude_from_upstream:
+      - "src/deprecated"
+    mapping:
+      - { from: 'src/',                      to: '',                      patch_dir: 'src/' }
+      - { from: 'src/deprecated/fifo_v2.sv', to: 'deprecated/fifo_v2.sv', patch_dir: 'src/' }
+      - { from: 'include/common_cells/',     to: 'include/common_cells/', patch_dir: 'include/' }
+      - { from: 'README.md',                 to: 'README.md',             patch_dir: '' }
+      - { from: 'Bender.yml',                to: 'Bender.yml',            patch_dir: '' }
+
+  - name: common_verification
+    target_dir: rtl/common_verification
+    upstream: { git: "https://github.com/pulp-platform/common_verification.git", rev: "e1180111e2bb9def1eb790d96a3a65993b84536f" } # branch verilator-fix
+    patch_dir: "rtl/patches/common_verification"
+    mapping:
+      - { from: 'src/clk_rst_gen.sv', to: 'clk_rst_gen.sv', patch_dir: 'src/' }
+      - { from: 'Bender.yml',         to: 'Bender.yml',     patch_dir: '' }
+
+  - name: tech_cells_generic
+    target_dir: rtl/tech_cells_generic
+    upstream: { git: "https://github.com/pulp-platform/tech_cells_generic.git", rev: "7968dd6e6180df2c644636bc6d2908a49f2190cf" } # v0.2.13
+    patch_dir: "rtl/patches/tech_cells_generic"
+    mapping:
+      - { from: 'src/rtl/',   to: '',           patch_dir: 'rtl/' }
+      - { from: 'src/fpga/',  to: 'fpga/',      patch_dir: 'fpga/' }
+      - { from: 'Bender.yml', to: 'Bender.yml', patch_dir: '' }
+      - { from: 'README.md',  to: 'README.md',  patch_dir: '' }
+
+
+  #############################
+  # interconnects / protocols #
+  #############################
+  - name: obi
+    target_dir: rtl/obi
+    upstream: { git: "https://github.com/pulp-platform/obi.git", rev: "c2141a653c755461ff44f61d12aeb5d99fc8e760" } # v0.1.3
+    patch_dir: "rtl/patches/obi"
+    exclude_from_upstream:
+      - "src/test"
+    mapping:
+      - { from: 'src/',        to: '',            patch_dir: 'src/' }
+      - { from: 'include/obi', to: 'include/obi', patch_dir: 'include/' }
+      - { from: 'Bender.yml',  to: 'Bender.yml',  patch_dir: '' }
+      - { from: 'Readme.md',   to: 'Readme.md',   patch_dir: '' }
+
+  - name: register_interface
+    target_dir: rtl/register_interface
+    upstream: { git: "https://github.com/pulp-platform/register_interface.git", rev: "3b2bf592100b769977c76e51812c55cd742882f6" } # v0.4.1
+    patch_dir: "rtl/patches/register_interface"
+    mapping:
+      - { from: 'src/periph_to_reg.sv',         to: 'periph_to_reg.sv',            patch_dir: 'src/' }
+      - { from: 'src/reg_intf.sv',              to: 'reg_intf.sv',                 patch_dir: 'src/' }
+      - { from: 'src/reg_to_apb.sv',            to: 'reg_to_apb.sv',               patch_dir: 'src/' }
+      - { from: 'include/register_interface/',  to: 'include/register_interface/', patch_dir: 'include/' }
+      - { from: 'vendor/lowrisc_opentitan/src', to: 'lowrisc_opentitan',           patch_dir: 'vendor/' }
+      - { from: 'Bender.yml',                   to: 'Bender.yml',                  patch_dir: '' }
+      - { from: 'README.md',                    to: 'README.md',                   patch_dir: '' }
+
+  - name: apb
+    target_dir: rtl/apb
+    upstream: { git: "https://github.com/pulp-platform/apb.git", rev: "77ddf073f194d44b9119949d2421be59789e69ae" } # v0.2.4
+    patch_dir: "rtl/patches/apb"
+    mapping:
+      - { from: 'src/apb_pkg.sv', to: 'apb_pkg.sv',   patch_dir: 'src/' }
+      - { from: 'include/apb/',   to: 'include/apb/', patch_dir: 'include/' }
+      - { from: 'Bender.yml',     to: 'Bender.yml',   patch_dir: '' }
+      - { from: 'README.md',      to: 'README.md',    patch_dir: '' }
+
+
+  ###############
+  # peripherals #
+  ###############
+  - name: riscv-dbg
+    target_dir: rtl/riscv-dbg
+    upstream: { git: "https://github.com/pulp-platform/riscv-dbg.git", rev: "8ef87abf81cab39ad7b52435aa2a3357678fa1d6" } # branch verilator-phsauter
+    patch_dir: "rtl/patches/riscv-dbg"
+    mapping:
+      - { from: 'src/',                               to: '',                                   patch_dir: 'src/' }
+      - { from: 'debug_rom/debug_rom.sv',             to: 'debug_rom/debug_rom.sv',             patch_dir: 'debug_rom/' }
+      - { from: 'debug_rom/debug_rom_one_scratch.sv', to: 'debug_rom/debug_rom_one_scratch.sv', patch_dir: 'debug_rom/' }
+      - { from: 'tb/jtag_dmi/jtag_test_simple.sv',    to: 'tb/jtag_test_simple.sv',             patch_dir: 'tb/' }
+      - { from: 'Bender.yml',                         to: 'Bender.yml',                         patch_dir: '' }
+      - { from: 'README.md',                          to: 'README.md',                          patch_dir: '' }
+
+  - name: timer_unit
+    target_dir: rtl/timer_unit
+    upstream: { git: "https://github.com/pulp-platform/timer_unit.git", rev: 4c69615c89db9397a9747d6f6d6a36727854f0bc } # v1.0.3
+    patch_dir: "rtl/patches/timer_unit"
+    mapping:
+      - { from: 'rtl/',               to: '',               patch_dir: 'rtl/' }
+      - { from: 'Bender.yml',         to: 'Bender.yml',     patch_dir: '' }
+      - { from: 'doc/timer_unit.pdf', to: 'timer_unit.pdf', patch_dir: 'doc/' }
+
+  - name: apb_uart
+    target_dir: rtl/apb_uart
+    upstream: { git: "https://github.com/pulp-platform/apb_uart.git", rev: "6c7dde3d749ac8274377745c105da8c8b8cd27c6"  } # v0.2.1
+    patch_dir: "rtl/patches/apb_uart"
+    exclude_from_upstream:
+      - "src/vhdl_orig"
+    mapping:
+      - { from: 'src/',        to: '',            patch_dir: 'src/' }
+      - { from: 'Bender.yml',  to: 'Bender.yml',  patch_dir: '' }
+
+
+  #########
+  # core  #
+  #########
+  - name: ibex
+    target_dir: rtl/ibex
+    upstream: { git: "https://github.com/pulp-platform/ibex.git", rev: "b18f7ef178ed07f5085051f96042c670a919fd5c" } # pulpissimo-v6.1.2
+    patch_dir: "rtl/patches/ibex"
+    mapping:
+      - { from: 'rtl/',                                     to: '',                 patch_dir: 'rtl/' }
+      - { from: 'README.md',                                to: 'README.md',        patch_dir: '' }
+      - { from: 'Bender.yml',                               to: 'Bender.yml',       patch_dir: '' }
+      - { from: 'doc/03_reference/images/blockdiagram.svg', to: 'blockdiagram.svg', patch_dir: '' }
+      - { from: 'vendor/lowrisc_ip/ip/prim/rtl/',           to: 'lowrisc_prim/',    patch_dir: 'lowrisc_prim/' }

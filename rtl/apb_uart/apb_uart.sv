@@ -254,7 +254,7 @@ always @(posedge CLK or posedge iRST)
 always @(posedge CLK or posedge iRST)
   if ((iRST ==  1'b1))
     begin
-       iIER[7:0] <= 0;
+       iIER[3:0] <= 0;
     end
   else
     begin
@@ -262,13 +262,13 @@ always @(posedge CLK or posedge iRST)
          begin
             iIER[3:0] <= PWDATA[3:0];
          end
-        iIER[7:4] <= '0;
     end
 
 assign /*432*/ iIER_ERBI = iIER[0]; // 434
 assign /*432*/ iIER_ETBEI = iIER[1]; // 434
 assign /*432*/ iIER_ELSI = iIER[2]; // 434
 assign /*432*/ iIER_EDSSI = iIER[3]; // 434
+assign iIER[7:4] = 0;
 
 uart_interrupt UART_IIC (
 	.CLK(CLK),
@@ -422,15 +422,14 @@ assign /*432*/ iLCR_DLAB = iLCR[7]; // 434
 always @(posedge CLK or posedge iRST)
   if ((iRST ==  1'b1))
     begin
-       iMCR[7:0] <= 0;
+       iMCR[5:0] <= 0;
     end
   else
     begin
        if ((iMCRWrite ==  1'b1))
-        begin
-          iMCR[5:0] <= PWDATA[5:0];
-        end
-        iMCR[7:6] <= 0;
+         begin
+            iMCR[5:0] <= PWDATA[5:0];
+         end
     end
 
 assign /*432*/ iMCR_DTR = iMCR[0]; // 434
@@ -439,6 +438,7 @@ assign /*432*/ iMCR_OUT1 = iMCR[2]; // 434
 assign /*432*/ iMCR_OUT2 = iMCR[3]; // 434
 assign /*432*/ iMCR_LOOP = iMCR[4]; // 434
 assign /*432*/ iMCR_AFE = iMCR[5]; // 434
+assign iMCR[7:6] = 0;
 
 always @(posedge CLK or posedge iRST)
   if ((iRST ==  1'b1))
@@ -877,7 +877,7 @@ always @(posedge CLK or posedge iRST)
 
 always @(PADDR or iLCR_DLAB or iRBR or iDLL or iDLM or iIER or iIIR or iLCR or iMCR or iLSR or iMSR or iSCR)
   begin
-      case (PADDR)
+     case (PADDR)
        3'b000:
          begin
             if ((iLCR_DLAB ==  1'b0))
@@ -937,10 +937,11 @@ always @(PADDR or iLCR_DLAB or iRBR or iDLL or iDLM or iIER or iIIR or iLCR or i
             PRDATA[7:0] <= iRBR;
          end
        
-      endcase
-      PRDATA[31:8] <= '0;
+     endcase
+
   end
 
+assign PRDATA[31:8] = 24'b0;
 assign /*432*/ PREADY =  1'b1; // 434
 assign /*432*/ PSLVERR =  1'b0; // 434
 

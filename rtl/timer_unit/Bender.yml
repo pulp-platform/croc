@@ -3,7 +3,8 @@ package:
 
 sources:
   # Level 0
-  - timer_unit_counter.sv
-  - timer_unit_counter_presc.sv
+  - rtl/timer_unit_counter.sv
+  - rtl/timer_unit_counter_presc.sv
   # Level 1
-  - timer_unit.sv
+  - rtl/apb_timer_unit.sv
+  - rtl/timer_unit.sv
