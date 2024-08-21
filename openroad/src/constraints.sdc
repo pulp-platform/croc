@@ -19,8 +19,8 @@ source src/instances.tcl
 #############################
 
 # As a default, drive multiple GPIO pads and be driven by one.
-# accomodate for driving up to 12 pads plus 7pF trace
-set_load [expr 12 * 1.10943 + 7.0] [all_outputs]
+# accomodate for driving up to 2 74HC pads plus a 5pF trace
+set_load [expr 2 * 5.0 + 5.0] [all_outputs]
 set_driving_cell [all_inputs] -lib_cell sg13g2_IOPadOut16mA -pin pad
 
 
@@ -29,8 +29,8 @@ set_driving_cell [all_inputs] -lib_cell sg13g2_IOPadOut16mA -pin pad
 ##################
 puts "Clocks..."
 
-# We target 60 MHz
-set TCK_SYS 16.0
+# We target 100 MHz
+set TCK_SYS 10.0
 create_clock -name clk_sys -period $TCK_SYS [get_ports clk_i]
 
 set TCK_JTG 40.0
@@ -108,10 +108,10 @@ set_max_delay $TCK_JTG  -from [get_ports jtag_trst_ni]
 puts "GPIO..."
 
 set_input_delay  -min -add_delay -clock clk_sys [ expr $TCK_SYS * 0.10 ] [get_ports irq0_i]
-set_input_delay  -max -add_delay -clock clk_sys [ expr $TCK_SYS * 0.35 ] [get_ports irq0_i]
+set_input_delay  -max -add_delay -clock clk_sys [ expr $TCK_SYS * 0.30 ] [get_ports irq0_i]
 
 set_output_delay -min -add_delay -clock clk_sys [ expr $TCK_SYS * 0.10 ] [get_ports status_o]
-set_output_delay -max -add_delay -clock clk_sys [ expr $TCK_SYS * 0.35 ] [get_ports status_o]
+set_output_delay -max -add_delay -clock clk_sys [ expr $TCK_SYS * 0.30 ] [get_ports status_o]
 
 
 ##########
@@ -120,6 +120,6 @@ set_output_delay -max -add_delay -clock clk_sys [ expr $TCK_SYS * 0.35 ] [get_po
 puts "UART..."
 
 set_input_delay  -min -add_delay -clock clk_sys [ expr $TCK_SYS * 0.10 ] [get_ports uart_rx_i]
-set_input_delay  -max -add_delay -clock clk_sys [ expr $TCK_SYS * 0.35 ] [get_ports uart_rx_i]
+set_input_delay  -max -add_delay -clock clk_sys [ expr $TCK_SYS * 0.30 ] [get_ports uart_rx_i]
 set_output_delay -min -add_delay -clock clk_sys [ expr $TCK_SYS * 0.10 ] [get_ports uart_tx_o]
-set_output_delay -max -add_delay -clock clk_sys [ expr $TCK_SYS * 0.35 ] [get_ports uart_tx_o]
+set_output_delay -max -add_delay -clock clk_sys [ expr $TCK_SYS * 0.30 ] [get_ports uart_tx_o]
