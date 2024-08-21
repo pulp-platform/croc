@@ -19,12 +19,12 @@ sources:
   - obi_pkg.sv
   # Level 2
   - obi_intf.sv
+  - obi_rready_converter.sv
   # Level 3
+  - obi_atop_resolver.sv
   - obi_demux.sv
   - obi_err_sbr.sv
   - obi_mux.sv
   - obi_sram_shim.sv
   # Level 4
   - obi_xbar.sv
-  - target: test
-    files:

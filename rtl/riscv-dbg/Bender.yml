@@ -27,6 +27,7 @@ sources:
     - dmi_jtag_tap.sv
   - target: all(xilinx, bscane)
     files:
+    - dmi_bscane_tap.sv
   # Level 3:
   - dm_sba.sv
   - dm_top.sv
@@ -36,12 +37,13 @@ sources:
 
   - target: simulation
     files:
+    - dmi_test.sv
 
   - target: test
     files:
     # Level 1
-    # Level 3
+    - dmi_intf.sv
 
   - target: verilator
     files:
-    - tb/jtag_dmi/jtag_test_simple.sv
+    - tb/jtag_test_simple.sv

@@ -1,0 +1,253 @@
+From 7d5da0d5176680ac6181c0af3a4db8be707ca4b4 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Wed, 21 Aug 2024 14:01:26 +0200
+Subject: [PATCH] adjust Bender source paths
+
+---
+ Bender.yml | 223 +++++++++++++++++++----------------------------------
+ 1 file changed, 79 insertions(+), 144 deletions(-)
+
+diff --git a/Bender.yml b/Bender.yml
+index f5a5a21..208fc3b 100644
+--- a/Bender.yml
++++ b/Bender.yml
+@@ -23,157 +23,92 @@ sources:
+   # etc. Files within a level are ordered alphabetically.
+ 
+   # Level 0
+-  - src/binary_to_gray.sv
++  - binary_to_gray.sv
+ 
+   - target: not(all(xilinx,vivado_ipx))
+     files:
+-      - src/cb_filter_pkg.sv
+-      - src/cc_onehot.sv
+-      - src/cdc_reset_ctrlr_pkg.sv
+-      - src/cf_math_pkg.sv
+-      - src/clk_int_div.sv
+-      - src/credit_counter.sv
+-      - src/delta_counter.sv
+-      - src/ecc_pkg.sv
+-      - src/edge_propagator_tx.sv
+-      - src/exp_backoff.sv
+-      - src/fifo_v3.sv
+-      - src/gray_to_binary.sv
+-      - src/isochronous_4phase_handshake.sv
+-      - src/isochronous_spill_register.sv
+-      - src/lfsr.sv
+-      - src/lfsr_16bit.sv
+-      - src/lfsr_8bit.sv
+-      - src/lossy_valid_to_stream.sv
+-      - src/mv_filter.sv
+-      - src/onehot_to_bin.sv
+-      - src/plru_tree.sv
+-      - src/passthrough_stream_fifo.sv
+-      - src/popcount.sv
+-      - src/rr_arb_tree.sv
+-      - src/rstgen_bypass.sv
+-      - src/serial_deglitch.sv
+-      - src/shift_reg.sv
+-      - src/shift_reg_gated.sv
+-      - src/spill_register_flushable.sv
+-      - src/stream_demux.sv
+-      - src/stream_filter.sv
+-      - src/stream_fork.sv
+-      - src/stream_intf.sv
+-      - src/stream_join_dynamic.sv
+-      - src/stream_mux.sv
+-      - src/stream_throttle.sv
+-      - src/sub_per_hash.sv
+-      - src/sync.sv
+-      - src/sync_wedge.sv
+-      - src/unread.sv
+-      - src/read.sv
++      - cb_filter_pkg.sv
++      - cc_onehot.sv
++      - cdc_reset_ctrlr_pkg.sv
++      - cf_math_pkg.sv
++      - clk_int_div.sv
++      - credit_counter.sv
++      - delta_counter.sv
++      - ecc_pkg.sv
++      - edge_propagator_tx.sv
++      - exp_backoff.sv
++      - fifo_v3.sv
++      - gray_to_binary.sv
++      - isochronous_4phase_handshake.sv
++      - isochronous_spill_register.sv
++      - lfsr.sv
++      - lfsr_16bit.sv
++      - lfsr_8bit.sv
++      - lossy_valid_to_stream.sv
++      - mv_filter.sv
++      - onehot_to_bin.sv
++      - plru_tree.sv
++      - passthrough_stream_fifo.sv
++      - popcount.sv
++      - rr_arb_tree.sv
++      - rstgen_bypass.sv
++      - serial_deglitch.sv
++      - shift_reg.sv
++      - shift_reg_gated.sv
++      - spill_register_flushable.sv
++      - stream_demux.sv
++      - stream_filter.sv
++      - stream_fork.sv
++      - stream_intf.sv
++      - stream_join_dynamic.sv
++      - stream_mux.sv
++      - stream_throttle.sv
++      - sub_per_hash.sv
++      - sync.sv
++      - sync_wedge.sv
++      - unread.sv
++      - read.sv
+       # Level 1
+-      - src/addr_decode_dync.sv
+-      - src/cdc_2phase.sv
+-      - src/cdc_4phase.sv
+-      - src/clk_int_div_static.sv
++      - addr_decode_dync.sv
++      - cdc_2phase.sv
++      - cdc_4phase.sv
++      - clk_int_div_static.sv
+       # Level 2
+-      - src/addr_decode.sv
+-      - src/addr_decode_napot.sv
+-      - src/multiaddr_decode.sv
++      - addr_decode.sv
++      - addr_decode_napot.sv
++      - multiaddr_decode.sv
+   - target: not(all(xilinx,vivado_ipx))
+     files:
+-      - src/cb_filter.sv
+-      - src/cdc_fifo_2phase.sv
+-      - src/clk_mux_glitch_free.sv
+-      - src/counter.sv
+-      - src/ecc_decode.sv
+-      - src/ecc_encode.sv
+-      - src/edge_detect.sv
+-      - src/lzc.sv
+-      - src/max_counter.sv
+-      - src/rstgen.sv
+-      - src/spill_register.sv
+-      - src/stream_delay.sv
+-      - src/stream_fifo.sv
+-      - src/stream_fork_dynamic.sv
+-      - src/stream_join.sv
++      - cb_filter.sv
++      - cdc_fifo_2phase.sv
++      - clk_mux_glitch_free.sv
++      - counter.sv
++      - ecc_decode.sv
++      - ecc_encode.sv
++      - edge_detect.sv
++      - lzc.sv
++      - max_counter.sv
++      - rstgen.sv
++      - spill_register.sv
++      - stream_delay.sv
++      - stream_fifo.sv
++      - stream_fork_dynamic.sv
++      - stream_join.sv
+       # Level 2
+-      - src/cdc_reset_ctrlr.sv
+-      - src/cdc_fifo_gray.sv
+-      - src/fall_through_register.sv
+-      - src/id_queue.sv
+-      - src/stream_to_mem.sv
+-      - src/stream_arbiter_flushable.sv
+-      - src/stream_fifo_optimal_wrap.sv
+-      - src/stream_register.sv
+-      - src/stream_xbar.sv
++      - cdc_reset_ctrlr.sv
++      - cdc_fifo_gray.sv
++      - fall_through_register.sv
++      - id_queue.sv
++      - stream_to_mem.sv
++      - stream_arbiter_flushable.sv
++      - stream_fifo_optimal_wrap.sv
++      - stream_register.sv
++      - stream_xbar.sv
+       # Level 3
+-      - src/cdc_fifo_gray_clearable.sv
+-      - src/cdc_2phase_clearable.sv
+-      - src/mem_to_banks_detailed.sv
+-      - src/stream_arbiter.sv
+-      - src/stream_omega_net.sv
++      - cdc_fifo_gray_clearable.sv
++      - cdc_2phase_clearable.sv
++      - mem_to_banks_detailed.sv
++      - stream_arbiter.sv
++      - stream_omega_net.sv
+       # Level 4
+-      - src/mem_to_banks.sv
+-
+-  - target: simulation
+-    files:
+-      - src/deprecated/sram.sv
+-
+-  - target: test
+-    files:
+-      # Level 0
+-      - test/addr_decode_tb.sv
+-      - test/cb_filter_tb.sv
+-      - test/cdc_2phase_tb.sv
+-      - test/cdc_2phase_clearable_tb.sv
+-      - test/cdc_fifo_tb.sv
+-      - test/cdc_fifo_clearable_tb.sv
+-      - test/fifo_tb.sv
+-      - test/graycode_tb.sv
+-      - test/id_queue_tb.sv
+-      - test/passthrough_stream_fifo_tb.sv
+-      - test/popcount_tb.sv
+-      - test/rr_arb_tree_tb.sv
+-      - test/stream_test.sv
+-      - test/stream_register_tb.sv
+-      - test/stream_to_mem_tb.sv
+-      - test/sub_per_hash_tb.sv
+-      # Level 1
+-      - test/isochronous_crossing_tb.sv
+-      - test/stream_omega_net_tb.sv
+-      - test/stream_xbar_tb.sv
+-      - test/clk_int_div_tb.sv
+-      - test/clk_int_div_static_tb.sv
+-      - test/clk_mux_glitch_free_tb.sv
+-      - test/lossy_valid_to_stream_tb.sv
+-
+-
+-  - target: synth_test
+-    files:
+-      # Level 0
+-      - test/cdc_2phase_synth.sv
+-      - test/id_queue_synth.sv
+-      - test/stream_arbiter_synth.sv
+-      - test/ecc_synth.sv
+-      # Level 1
+-      - test/synth_bench.sv
+-
+-  # Deprecated modules
+-  # Level 0
+-  - src/deprecated/clock_divider_counter.sv
+-  - src/deprecated/clk_div.sv
+-  - src/deprecated/find_first_one.sv
+-  - src/deprecated/generic_LFSR_8bit.sv
+-  - src/deprecated/generic_fifo.sv
+-  - src/deprecated/prioarbiter.sv
+-  - src/deprecated/pulp_sync.sv
+-  - src/deprecated/pulp_sync_wedge.sv
+-  - src/deprecated/rrarbiter.sv
+-  # Level 1
+-  - src/deprecated/clock_divider.sv
+-  - src/deprecated/fifo_v2.sv
+-  # Level 2
+-  - src/deprecated/fifo_v1.sv
+-
+-  # Depend on deprecated modules
+-  - src/edge_propagator_ack.sv
+-  - src/edge_propagator.sv
+-  - src/edge_propagator_rx.sv
++      - mem_to_banks.sv
+-- 
+2.25.1
+

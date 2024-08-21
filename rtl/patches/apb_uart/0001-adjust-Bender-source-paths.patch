@@ -1,0 +1,48 @@
+From f753ef201beb917408327d3cafc28b6228af3fb1 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Wed, 21 Aug 2024 11:56:27 +0200
+Subject: [PATCH] adjust Bender source paths
+
+---
+ Bender.yml | 28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
+
+diff --git a/Bender.yml b/Bender.yml
+index 40ec53d..60d59b6 100644
+--- a/Bender.yml
++++ b/Bender.yml
+@@ -10,17 +10,17 @@ dependencies:
+   register_interface: { git: "https://github.com/pulp-platform/register_interface", version: 0.3.6 }
+ 
+ sources:
+-  - src/slib_clock_div.sv
+-  - src/slib_counter.sv
+-  - src/slib_edge_detect.sv
+-  - src/slib_fifo.sv
+-  - src/slib_input_filter.sv
+-  - src/slib_input_sync.sv
+-  - src/slib_mv_filter.sv
+-  - src/uart_baudgen.sv
+-  - src/uart_interrupt.sv
+-  - src/uart_receiver.sv
+-  - src/uart_transmitter.sv
+-  - src/apb_uart.sv
+-  - src/apb_uart_wrap.sv
+-  - src/reg_uart_wrap.sv
++  - slib_clock_div.sv
++  - slib_counter.sv
++  - slib_edge_detect.sv
++  - slib_fifo.sv
++  - slib_input_filter.sv
++  - slib_input_sync.sv
++  - slib_mv_filter.sv
++  - uart_baudgen.sv
++  - uart_interrupt.sv
++  - uart_receiver.sv
++  - uart_transmitter.sv
++  - apb_uart.sv
++  - apb_uart_wrap.sv
++  - reg_uart_wrap.sv
+-- 
+2.25.1
+

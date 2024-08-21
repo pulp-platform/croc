@@ -1,0 +1,35 @@
+From 0ea6ebe0cb3ca697cbc0c45eb0237da8e6430058 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Wed, 21 Aug 2024 12:00:43 +0200
+Subject: [PATCH] Replace deprecated fifo_v2
+
+---
+ dm_csrs.sv | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/dm_csrs.sv b/dm_csrs.sv
+index a945a70..fc5dec4 100644
+--- a/dm_csrs.sv
++++ b/dm_csrs.sv
+@@ -590,7 +590,7 @@ module dm_csrs #(
+   assign ndmreset_o = dmcontrol_q.ndmreset;
+ 
+   // response FIFO
+-  fifo_v2 #(
++  fifo_v3 #(
+     .dtype            ( logic [$bits(dmi_resp_o)-1:0] ),
+     .DEPTH            ( 2                             )
+   ) i_fifo (
+@@ -601,8 +601,7 @@ module dm_csrs #(
+     .testmode_i       ( testmode_i           ),
+     .full_o           ( resp_queue_full      ),
+     .empty_o          ( resp_queue_empty     ),
+-    .alm_full_o       (                      ),
+-    .alm_empty_o      (                      ),
++    .usage_o          (                      ),
+     .data_i           ( resp_queue_inp       ),
+     .push_i           ( resp_queue_push      ),
+     .data_o           ( dmi_resp_o           ),
+-- 
+2.25.1
+

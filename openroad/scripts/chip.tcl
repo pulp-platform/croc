@@ -9,11 +9,11 @@
 
 # The main OpenRoad chip flow
 
-set proj_name croc
-set netlist ../yosys/out/croc_yosys.v
-set top_design croc_chip
-set report_dir reports
-set save_dir save
+set proj_name $::env(PROJ_NAME)
+set netlist $::env(NETLIST)
+set top_design $::env(TOP_DESIGN)
+set report_dir $::env(REPORTS)
+set save_dir $::env(SAVE)
 set time [elapsed_run_time]
 set step_by_step_debug 0
 
@@ -62,13 +62,13 @@ report_image "${proj_name}.power" true
 ###############################################################################
 # Initial Repair Netlist                                                      #
 ###############################################################################
-set_default_view
+# set_default_view
 # Set layers used for estimate_parasitics
 set_wire_rc -clock -layer Metal4
 set_wire_rc -signal -layer Metal4
 # don't touch any clock-tree related nets as 
 # repair_timing can insert a 'split0000' buffer which then prevents CTS from running
-set clock_nets [get_nets -of_objects [get_pins -of_objects "*__reg" -filter "name == CLK"]]
+set clock_nets [get_nets -of_objects [get_pins -of_objects "*_reg" -filter "name == CLK"]]
 set_dont_touch $clock_nets
 set_dont_use $dont_use_cells
 
@@ -278,3 +278,5 @@ write_def     out/${proj_name}.def
 write_verilog out/${proj_name}.v
 write_db      out/${proj_name}.odb
 write_sdc     out/${proj_name}.sdc
+
+exit

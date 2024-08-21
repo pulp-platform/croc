@@ -104,6 +104,8 @@ yosys clean -purge
 
 
 # -----------------------------------------------------------------------------
+# split internal nets
+yosys splitnets -format __v
 # rename DFFs from the driven signal
 yosys rename -wire -suffix _reg t:*DFF*
 yosys select -write ${report_dir}/${proj_name}_registers.rpt t:*DFF*

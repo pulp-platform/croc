@@ -1,0 +1,29 @@
+From cb29a2d6b00b7b92981d95c5202dfe23d41d3974 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Wed, 21 Aug 2024 12:26:12 +0200
+Subject: [PATCH] adjust Bender source paths
+
+---
+ Bender.yml | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/Bender.yml b/Bender.yml
+index 1e1f780..9661475 100644
+--- a/Bender.yml
++++ b/Bender.yml
+@@ -3,8 +3,8 @@ package:
+ 
+ sources:
+   # Level 0
+-  - rtl/timer_unit_counter.sv
+-  - rtl/timer_unit_counter_presc.sv
++  - timer_unit_counter.sv
++  - timer_unit_counter_presc.sv
+   # Level 1
+-  - rtl/apb_timer_unit.sv
+-  - rtl/timer_unit.sv
++  - apb_timer_unit.sv
++  - timer_unit.sv
+-- 
+2.25.1
+

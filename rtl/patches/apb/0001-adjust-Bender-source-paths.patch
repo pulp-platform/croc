@@ -1,0 +1,45 @@
+From ae01bcbabee08187a13963f9c760b0e009a60b3b Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Wed, 21 Aug 2024 12:12:10 +0200
+Subject: [PATCH] adjust Bender source paths
+
+---
+ Bender.yml | 24 +-----------------------
+ 1 file changed, 1 insertion(+), 23 deletions(-)
+
+diff --git a/Bender.yml b/Bender.yml
+index f73f9a6..1320858 100644
+--- a/Bender.yml
++++ b/Bender.yml
+@@ -16,26 +16,4 @@ sources:
+   # package. Files in level 1 only depend on files in level 0, files in level 2 on files in
+   # levels 1 and 0, etc. Files within a level are ordered alphabetically.
+   # Level 0
+-  - src/apb_pkg.sv
+-  # Level 1
+-  - src/apb_intf.sv
+-  # Level 2
+-  - src/apb_err_slv.sv
+-  - src/apb_regs.sv
+-  - src/apb_cdc.sv
+-  - src/apb_demux.sv
+-
+-  - target: simulation
+-    files:
+-      - src/apb_test.sv
+-
+-  - target: test
+-    files:
+-      - test/tb_apb_regs.sv
+-      - test/tb_apb_cdc.sv
+-      - test/tb_apb_demux.sv
+-
+-  - target: synth_test
+-    files:
+-      # Level 0
+-      - test/synth_bench.sv
++  - apb_pkg.sv
+\ No newline at end of file
+-- 
+2.25.1
+

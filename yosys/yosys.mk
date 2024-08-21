@@ -22,7 +22,7 @@ include $(YOSYS_DIR)/project-synth.mk
 TOP_DESIGN		?= croc_chip
 RTL_NAME		?= croc
 
-PICKLE_OUT		:= $(YOSYS_DIR)/../pickle
+PICKLE_OUT		:= $(realpath $(YOSYS_DIR)/..)/pickle
 
 VLOG_FILES  	:= $(PICKLE_OUT)/$(RTL_NAME)_sv2v.v
 NETLIST			:= $(YOSYS_OUT)/$(RTL_NAME)_yosys.v
@@ -53,6 +53,6 @@ clean:
 	rm -rf $(YOSYS_OUT)
 	rm -rf $(YOSYS_WORK)
 	rm -rf $(YOSYS_REPORTS) 
-	rm -f $(YOSYS_OUT_DIR)/*.log
+	rm -f $(YOSYS_DIR)/$(RTL_NAME).log
 
 .PHONY: clean yosys synth

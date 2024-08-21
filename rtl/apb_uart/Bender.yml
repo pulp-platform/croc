@@ -22,4 +22,5 @@ sources:
   - uart_receiver.sv
   - uart_transmitter.sv
   - apb_uart.sv
+  - apb_uart_wrap.sv
   - reg_uart_wrap.sv

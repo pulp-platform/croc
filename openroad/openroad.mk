@@ -10,32 +10,34 @@ OPENROAD 		?= openroad
 
 # Directories
 # directory of the path to the last called Makefile (this one)
-OPENROAD_DIR    := $(realpath $(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
-CROC_ROOT		?= $(realpath $(OPENROAD_DIR)/..)
+OR_DIR    := $(realpath $(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
 
 # Project variables
-# if you are running the entire flow these are set by iguana.mk
+# if you are running the entire flow these are set by the top level Makefile
 # in that case do not change them here
 TOP_DESIGN 	?= croc_chip
 PROJ_NAME	?= croc
-NETLIST		?= $(CROC_ROOT)/yosys/out/$(PROJ_NAME)_yosys.v
+NETLIST		?= $(realpath $(OR_DIR)/../yosys/out/$(PROJ_NAME)_yosys.v)
 
-SAVE	 ?= $(OPENROAD_DIR)/save
-REPORTS	 ?= $(OPENROAD_DIR)/reports
-OUT  	 ?= $(OPENROAD_DIR)/out
-OUT_FILES = $(OUT)/$(PROJ_NAME).def $(OUT)/$(PROJ_NAME).v $(OUT)/$(PROJ_NAME).sdc $(OUT)/$(PROJ_NAME).odb
+SAVE	 	 ?= $(OR_DIR)/save
+REPORTS	 	 ?= $(OR_DIR)/reports
+OR_OUT  	 ?= $(OR_DIR)/out
+OR_OUT_FILES  = $(OR_OUT)/$(PROJ_NAME).def $(OR_OUT)/$(PROJ_NAME).v $(OR_OUT)/$(PROJ_NAME).sdc $(OR_OUT)/$(PROJ_NAME).odb
 
-backend: $(OUT)/$(PROJ_NAME).def
+backend: $(OR_OUT)/$(PROJ_NAME).def
 
-openroad: $(OUT)/$(PROJ_NAME).def
+openroad: $(OR_OUT)/$(PROJ_NAME).def
+
+test: 
+	echo $(OR_OUT_FILES)
 
 ## Place & Route flow using OpenROAD
-$(OUT_FILES): $(NETLIST) scripts/*.tcl src/*.tcl src/*.sdc
+$(OR_OUT_FILES): $(NETLIST) $(OR_DIR)/scripts/*.tcl $(OR_DIR)/src/*.tcl $(OR_DIR)/src/*.sdc
 	mkdir -p $(SAVE)
 	mkdir -p $(REPORTS)
-	mkdir -p $(OUT)
+	mkdir -p $(OR_OUT)
 	echo $(CROC_ROOT)
-	cd $(OPENROAD_DIR) && \
+	cd $(OR_DIR) && \
 	NETLIST="$(NETLIST)" \
 	TOP_DESIGN="$(TOP_DESIGN)" \
 	PROJ_NAME="$(PROJ_NAME)" \
@@ -46,4 +48,4 @@ $(OUT_FILES): $(NETLIST) scripts/*.tcl src/*.tcl src/*.sdc
 		-log $(PROJ_NAME).log \
 		2>&1 | TZ=UTC gawk '{ print strftime("[%Y-%m-%d %H:%M %Z]"), $$0 }';
 
-.PHONY: backend openroad
+.PHONY: backend openroad clean

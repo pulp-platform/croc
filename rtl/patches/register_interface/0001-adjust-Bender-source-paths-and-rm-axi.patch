@@ -1,0 +1,80 @@
+From 556aeafc5b229eab650749e5d256b8c499ff2bb0 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Wed, 21 Aug 2024 14:25:41 +0200
+Subject: [PATCH] adjust Bender source paths and rm axi
+
+---
+ Bender.yml | 52 +++++++---------------------------------------------
+ 1 file changed, 7 insertions(+), 45 deletions(-)
+
+diff --git a/Bender.yml b/Bender.yml
+index 3e739cd..831a0b8 100644
+--- a/Bender.yml
++++ b/Bender.yml
+@@ -3,7 +3,6 @@ package:
+   authors: ["Fabian Schuiki <fschuiki@iis.ee.ethz.ch>", "Florian Zaruba <zarubaf@iis.ee.ethz.ch>"]
+ 
+ dependencies:
+-  axi: { git: "https://github.com/pulp-platform/axi.git", version: 0.38.0 }
+   apb: { git: "https://github.com/pulp-platform/apb.git", version: 0.2.2}
+   common_cells: { git: "https://github.com/pulp-platform/common_cells.git", version: 1.21.0 }
+   common_verification: { git: "https://github.com/pulp-platform/common_verification.git", version: 0.2.3 }
+@@ -13,48 +12,11 @@ export_include_dirs:
+ 
+ sources:
+   # Level 0
+-  - src/reg_intf.sv
+-  - vendor/lowrisc_opentitan/src/prim_subreg_arb.sv
+-  - vendor/lowrisc_opentitan/src/prim_subreg_ext.sv
++  - reg_intf.sv
++  - lowrisc_opentitan/prim_subreg_arb.sv
++  - lowrisc_opentitan/prim_subreg_ext.sv
+   # Level 1
+-  - src/apb_to_reg.sv
+-  - src/axi_to_reg.sv
+-  - src/periph_to_reg.sv
+-  - src/reg_cut.sv
+-  - src/reg_cdc.sv
+-  - src/reg_demux.sv
+-  - src/reg_err_slv.sv
+-  - src/reg_filter_empty_writes.sv
+-  - src/reg_mux.sv
+-  - src/reg_to_apb.sv
+-  - src/reg_to_mem.sv
+-  - src/reg_uniform.sv
+-  - src/reg_to_tlul.sv
+-  - vendor/lowrisc_opentitan/src/prim_subreg_shadow.sv
+-  - vendor/lowrisc_opentitan/src/prim_subreg.sv
+-  # Level 2
+-  - src/axi_lite_to_reg.sv
+-  - target: test
+-    files:
+-      - src/reg_test.sv
+-  - target: register_interface_test
+-    files:
+-      - src/test/test_regs_reg_pkg.sv
+-      - src/test/test_regs_reg_top.sv
+-      - src/test/tb_simple_registers.sv
+-
+-vendor_package:
+-  - name: lowrisc_opentitan
+-    target_dir: "vendor/lowrisc_opentitan"
+-    upstream: { git: "https://github.com/lowRISC/opentitan.git", rev: "47a0f4798febd9e53dd131ef8c8c2b0255d8c139" }
+-    exclude_from_upstream:
+-      - "ci/*"
+-    patch_dir: "vendor/patches/lowrisc_opentitan"
+-    mapping:
+-      - {from: 'util/regtool.py', to: 'util/regtool.py', patch_dir: 'regtool'}
+-      - {from: 'util/reggen', to: 'util/reggen', patch_dir: 'reggen'}
+-      - {from: 'util/topgen', to: 'util/topgen'}
+-      - {from: 'hw/ip/prim/rtl/prim_subreg.sv', to: 'src/prim_subreg.sv' }
+-      - {from: 'hw/ip/prim/rtl/prim_subreg_arb.sv', to: 'src/prim_subreg_arb.sv' }
+-      - {from: 'hw/ip/prim/rtl/prim_subreg_ext.sv', to: 'src/prim_subreg_ext.sv' }
+-      - {from: 'hw/ip/prim/rtl/prim_subreg_shadow.sv', to: 'src/prim_subreg_shadow.sv' }
++  - periph_to_reg.sv
++  - reg_to_apb.sv
++  - lowrisc_opentitan/prim_subreg_shadow.sv
++  - lowrisc_opentitan/prim_subreg.sv
+-- 
+2.25.1
+

@@ -69,6 +69,12 @@ graph LR;
 7. The netlist, constraints and floorplan are loaded into OpenRoad for Place&Route
 8. The design as def is read by klayout and the geometry of the cells and macros are merged
 
+The final gds is still missing the following things:
+- metal density fill
+- pads
+- sealring
+All are added in klayout once your design is final.
+
 ### Results
 Cell/Module placement                      |  Routing
 :-----------------------------------------:|:------------------------------------:
@@ -160,12 +166,14 @@ Running `bender update` on the other hand will resolve the entire tree again and
 **Remember:** always test everything again if you generate a new `Bender.lock`, it is the same as modifying RTL.
 
 ### Local Versions
-For this repository the dependencies are already 'checked out' into `rtl/<IP>`. Only the used RTL files and the `Bender.yml` files are there though, not the entire repository. 
-To do so, we tell Bender that we have local versions of the dependencies and it should use them instead, this is done in the `Bender.local` file.
+For this repository, we use a subcommand called `bendor vendor` together with the `vendor_package` section in `Bender.yml`.
+`bendor vendor` can be used to Benderize arbitrary repositories with RTL in it. The dependencies are already 'checked out' into `rtl/<IP>`. Each file or directory from the repository is mapped to a local path in this repo.
+Fixes and changes to each IPs `rtl/<IP>/Bender.yml` are managed by `bender vendor` in `rtl/patches`.
 
-If you do not wish to use these local version and would rather use the repositories directly, you can rename your `Bender.local` and then run `bender update` to re-generate the `Bender.lock` file. To resolve version/revision conflicts, check if there is a reason given for a specific version in the various `Bender.yml`, read the changelog between two versions and if you have problems, contact the maintainers.
+If you need to update a dependency or map another file you need to edit the coresponding `vendor_package` section in `Bender.yml` and then run `bender vendor init`. Then you might need to change `rtl/<IP>/Bender.yml` to list your new file in the sources. 
+To save a fix/change as a patch, stage it in git and then run `bender vendor patch`. When prompted, add a commit message (this is used as the patches file name). Finally, commit both the patch file and the new `rtl/<IP>`.
 
-For your convenience, a resolved lockfile called `Bender.lock_repos` is provided. You can rename your existing `Bender.lock` to eg `Bender.lock.bak` and then rename `Bender.lock_repos` to `Bender.lock`, finally run `bender checkout` to checkout all needed repositories.
+**Note:** using `bender vendor` in this repository to change the local versions of the IPs requires an up-to-date version of Bender, specifically it needs to include [PR 179](https://github.com/pulp-platform/bender/pull/179).
 
 ### Targets
 Another thing we use are targets (in the `Bender.yml`), together they build different views/contexts of your RTL. For example without defining any targets the technology independent cells/memories are used (in `rtl/tech_cells_generic/`) but if we use the target `ihp13` then the same modules contain a technology-specific implementation (in `ihp13/`). Similar contexts are built for different simulators and other things.

@@ -23,51 +23,92 @@ sources:
   # etc. Files within a level are ordered alphabetically.
 
   # Level 0
+  - binary_to_gray.sv
 
   - target: not(all(xilinx,vivado_ipx))
     files:
+      - cb_filter_pkg.sv
+      - cc_onehot.sv
       - cdc_reset_ctrlr_pkg.sv
       - cf_math_pkg.sv
+      - clk_int_div.sv
+      - credit_counter.sv
       - delta_counter.sv
+      - ecc_pkg.sv
+      - edge_propagator_tx.sv
+      - exp_backoff.sv
       - fifo_v3.sv
+      - gray_to_binary.sv
+      - isochronous_4phase_handshake.sv
+      - isochronous_spill_register.sv
+      - lfsr.sv
+      - lfsr_16bit.sv
+      - lfsr_8bit.sv
+      - lossy_valid_to_stream.sv
+      - mv_filter.sv
+      - onehot_to_bin.sv
+      - plru_tree.sv
+      - passthrough_stream_fifo.sv
+      - popcount.sv
       - rr_arb_tree.sv
       - rstgen_bypass.sv
+      - serial_deglitch.sv
+      - shift_reg.sv
+      - shift_reg_gated.sv
       - spill_register_flushable.sv
+      - stream_demux.sv
+      - stream_filter.sv
+      - stream_fork.sv
+      - stream_intf.sv
+      - stream_join_dynamic.sv
+      - stream_mux.sv
+      - stream_throttle.sv
+      - sub_per_hash.sv
       - sync.sv
+      - sync_wedge.sv
+      - unread.sv
+      - read.sv
       # Level 1
       - addr_decode_dync.sv
+      - cdc_2phase.sv
       - cdc_4phase.sv
+      - clk_int_div_static.sv
       # Level 2
       - addr_decode.sv
+      - addr_decode_napot.sv
+      - multiaddr_decode.sv
   - target: not(all(xilinx,vivado_ipx))
     files:
+      - cb_filter.sv
+      - cdc_fifo_2phase.sv
+      - clk_mux_glitch_free.sv
+      - counter.sv
+      - ecc_decode.sv
+      - ecc_encode.sv
+      - edge_detect.sv
       - lzc.sv
+      - max_counter.sv
       - rstgen.sv
       - spill_register.sv
+      - stream_delay.sv
+      - stream_fifo.sv
+      - stream_fork_dynamic.sv
+      - stream_join.sv
       # Level 2
       - cdc_reset_ctrlr.sv
+      - cdc_fifo_gray.sv
+      - fall_through_register.sv
+      - id_queue.sv
+      - stream_to_mem.sv
+      - stream_arbiter_flushable.sv
+      - stream_fifo_optimal_wrap.sv
+      - stream_register.sv
+      - stream_xbar.sv
       # Level 3
+      - cdc_fifo_gray_clearable.sv
       - cdc_2phase_clearable.sv
+      - mem_to_banks_detailed.sv
+      - stream_arbiter.sv
+      - stream_omega_net.sv
       # Level 4
-
-  - target: simulation
-    files:
-
-  - target: test
-    files:
-      # Level 0
-      # Level 1
-
-
-  - target: synth_test
-    files:
-      # Level 0
-      # Level 1
-
-  # Deprecated modules
-  # Level 0
-  # Level 1
-  - deprecated/fifo_v2.sv
-  # Level 2
-
-  # Depend on deprecated modules
+      - mem_to_banks.sv

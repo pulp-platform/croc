@@ -1,0 +1,71 @@
+From cacd80b094ef7cfe00e53811e7ea73bdb415ec58 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Wed, 21 Aug 2024 12:20:56 +0200
+Subject: [PATCH] adjust Bender source paths
+
+---
+ Bender.yml | 30 +++++++++++++-----------------
+ 1 file changed, 13 insertions(+), 17 deletions(-)
+
+diff --git a/Bender.yml b/Bender.yml
+index 0e13a62..e6c362c 100644
+--- a/Bender.yml
++++ b/Bender.yml
+@@ -15,39 +15,35 @@ dependencies:
+ sources:
+   files:
+   # Level 1:
+-  - src/dm_pkg.sv
++  - dm_pkg.sv
+   - debug_rom/debug_rom.sv
+   - debug_rom/debug_rom_one_scratch.sv
+   # Level 2:
+-  - src/dm_csrs.sv
+-  - src/dm_mem.sv
+-  - src/dmi_cdc.sv
++  - dm_csrs.sv
++  - dm_mem.sv
++  - dmi_cdc.sv
+   - target: not(all(xilinx, bscane))
+     files:
+-    - src/dmi_jtag_tap.sv
++    - dmi_jtag_tap.sv
+   - target: all(xilinx, bscane)
+     files:
+-    - src/dmi_bscane_tap.sv
++    - dmi_bscane_tap.sv
+   # Level 3:
+-  - src/dm_sba.sv
+-  - src/dm_top.sv
+-  - src/dmi_jtag.sv
++  - dm_sba.sv
++  - dm_top.sv
++  - dmi_jtag.sv
+   # Level 4:
+-  - src/dm_obi_top.sv
++  - dm_obi_top.sv
+ 
+   - target: simulation
+     files:
+-    - src/dmi_test.sv
++    - dmi_test.sv
+ 
+   - target: test
+     files:
+     # Level 1
+-    - src/dmi_intf.sv
+-    - tb/jtag_dmi/jtag_intf.sv
+-    - tb/jtag_dmi/jtag_test.sv
+-    # Level 3
+-    - tb/jtag_dmi/tb_jtag_dmi.sv
++    - dmi_intf.sv
+ 
+   - target: verilator
+     files:
+-    - tb/jtag_dmi/jtag_test_simple.sv
+\ No newline at end of file
++    - tb/jtag_test_simple.sv
+\ No newline at end of file
+-- 
+2.25.1
+

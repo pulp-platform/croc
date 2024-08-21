@@ -1,0 +1,49 @@
+From d7f9580a4931e8a9a771c0c290a72bd5e5c58d3e Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Wed, 21 Aug 2024 12:14:07 +0200
+Subject: [PATCH] adjust Bender source paths
+
+---
+ Bender.yml | 26 +++++++++-----------------
+ 1 file changed, 9 insertions(+), 17 deletions(-)
+
+diff --git a/Bender.yml b/Bender.yml
+index eebd068..2277327 100644
+--- a/Bender.yml
++++ b/Bender.yml
+@@ -16,23 +16,15 @@ export_include_dirs:
+ 
+ sources:
+   # Level 1
+-  - src/obi_pkg.sv
++  - obi_pkg.sv
+   # Level 2
+-  - src/obi_intf.sv
+-  - src/obi_rready_converter.sv
++  - obi_intf.sv
++  - obi_rready_converter.sv
+   # Level 3
+-  - src/obi_atop_resolver.sv
+-  - src/obi_demux.sv
+-  - src/obi_err_sbr.sv
+-  - src/obi_mux.sv
+-  - src/obi_sram_shim.sv
++  - obi_atop_resolver.sv
++  - obi_demux.sv
++  - obi_err_sbr.sv
++  - obi_mux.sv
++  - obi_sram_shim.sv
+   # Level 4
+-  - src/obi_xbar.sv
+-  - target: test
+-    files:
+-      - src/test/obi_asserter.sv
+-      - src/test/obi_test.sv
+-      - src/test/obi_sim_mem.sv
+-      - src/test/tb_obi_xbar.sv
+-      - src/test/atop_golden_mem_pkg.sv
+-      - src/test/tb_obi_atop_resolver.sv
++  - obi_xbar.sv
+-- 
+2.25.1
+

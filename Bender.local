@@ -3,7 +3,6 @@ overrides:
   tech_cells_generic: { path: "rtl/tech_cells_generic" }
   common_cells: { path: "rtl/common_cells" }
   apb: { path: "rtl/apb" }
-  axi: { path: "rtl/axi" }
   register_interface: { path: "rtl/register_interface" }
   apb_uart: { path: "rtl/apb_uart" }
   ibex: { path: "rtl/ibex" }

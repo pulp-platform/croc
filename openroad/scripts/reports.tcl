@@ -207,33 +207,27 @@ proc report_image { report_name {full_die false} {place false} {cts false} {rout
   # initial visibility to avoid any previous settings
 
   # overview
+  set controls [default_view]
   utl::report "saving image to $report_dir/${report_name}.png"
-  save_image -area $area -resolution $resolution $report_dir/${report_name}.overview.png
+  generate_image $area $resolution $controls $report_dir/${report_name}.png
 
   if { $place } {
-      #placement view
-      set_default_view
-      gui::set_display_controls "Layers/*"                visible false
-      gui::set_display_controls "Instances/Physical/*"    visible false
-      save_image -area $area -resolution $resolution $report_dir/${report_name}.placement.png
-
       # hierarchical placement view
-      set_default_view
-      gui::set_display_controls "Layers/*"                visible false
-      gui::set_display_controls "Instances/Physical/*"    visible false
-      gui::set_display_controls "Misc/Module view"        visible true
-      save_image -area $area -resolution $resolution $report_dir/${report_name}.amoeba.png
+      set controls [default_view]
+      lappend controls [list "Layers/*"             false]
+      lappend controls [list "Instances/Physical/*" false]
+      lappend controls [list "Misc/Module view"     true ]
+      generate_image $area $resolution $controls $report_dir/${report_name}.place.png
 
       # placement density view
       gui::set_heatmap Placement ShowLegend   1
       gui::set_heatmap Placement DisplayMin   0
       gui::set_heatmap Placement DisplayMax 100
-      set_default_view
-      gui::set_display_controls "Layers/*"                        visible false
-      gui::set_display_controls "Instances/Physical/*"            visible false
-      # activating this at all (even if it is later turned-off, means it will hang in repair_design)
-      # gui::set_display_controls "Heat Maps/Placement Density"     visible true
-      save_image -area $area -resolution $resolution $report_dir/${report_name}.density.png
+      set controls [default_view]
+      lappend controls [list "Layers/*"                    false]
+      lappend controls [list "Instances/Physical/*"        false]
+      lappend controls [list "Heat Maps/Placement Density" false]
+      generate_image $area $resolution $controls $report_dir/${report_name}.density.png
   }
 
   if { $routing } {
@@ -241,35 +235,56 @@ proc report_image { report_name {full_die false} {place false} {cts false} {rout
       gui::set_heatmap Placement ShowLegend   1
       gui::set_heatmap Placement DisplayMin  50
       gui::set_heatmap Placement DisplayMax 200
-      set_default_view
-      gui::set_display_controls "Layers/*"                        visible false
-      gui::set_display_controls "Nets/*"                          visible true
-      gui::set_display_controls "Nets/Power"                      visible false
-      gui::set_display_controls "Nets/Ground"                     visible false
-      gui::set_display_controls "Heat Maps/Routing Congestion"    visible true
-      save_image -area $area -resolution $resolution $report_dir/${report_name}.congestion.png
+      set controls [default_view]
+      lappend controls [list "Nets/*"                       true ]
+      lappend controls [list "Nets/Power"                   false]
+      lappend controls [list "Nets/Ground"                  false]
+      lappend controls [list "Heat Maps/Routing Congestion" true ]
+      generate_image $area $resolution $controls $report_dir/${report_name}.congestion.png
   }
 
   if { $cts } {
       # clock view: all clock nets and buffers
-      set_default_view
-      gui::set_display_controls "Nets/*"                          visible false
-      gui::set_display_controls "Nets/Clock"                      visible true
-      gui::set_display_controls "Instances/*"                     visible false
-      gui::set_display_controls "Instances/StdCells/Clock tree/*" visible true
-      select -name "clk*" -type Inst
-      save_image -area $area -resolution $resolution $report_dir/${report_name}.clocks.png
-      gui::clear_selections
+      lappend controls [list "Nets/*"                          false]
+      lappend controls [list "Nets/Clock"                      true ]
+      lappend controls [list "Instances/*"                     false]
+      lappend controls [list "Instances/StdCells/Clock tree/*" true ]
+      generate_image $area $resolution $controls $report_dir/${report_name}.clocks.png
 
-      # foreach clock [get_clocks *] {
-      #     if { [llength [get_property $clock sources]] > 0 } {
-      #         set clock_name [get_name $clock]
-      #         gui::save_clocktree_image $report_dir/${report_name}.clock_${clock_name}.png $clock_name
-      #     }
-      # }
+      foreach clock [get_clocks *] {
+          if { [llength [get_property $clock sources]] > 0 } {
+              set clock_name [get_name $clock]
+              gui::save_clocktree_image $report_dir/${report_name}_cts_${clock_name}.png $clock_name
+          }
+      }
   }
+}
 
-  set_default_view
+# expects a list of {key value} pairs in controls
+proc generate_image { area resolution controls file } {
+  set cmd [list save_image -area $area -resolution $resolution]
+  foreach opt $controls {
+    lappend cmd -display_option $opt
+  }
+  lappend cmd $file
+  eval $cmd
+}
+
+proc default_view { } { 
+  set controls ""
+  lappend controls [list "*"                       false]
+  lappend controls [list "Layers/*"                true ]
+  lappend controls [list "Nets/*"                  true ]
+  lappend controls [list "Shape Types/*"           true ]
+  lappend controls [list "Instances/*"             true ]
+  lappend controls [list "Timing Path/*"           false]
+  lappend controls [list "Misc/Instances/Names"    true ]
+  lappend controls [list "Misc/Scale bar"          true ]
+  lappend controls [list "Misc/Highlight selected" true ]
+  lappend controls [list "Misc/Detailed view"      true ]
+  lappend controls [list "Misc/Module view"        false]
+  lappend controls [list "Heat Maps/*"             false]
+  return $controls
 }
 
 proc set_default_view { } {

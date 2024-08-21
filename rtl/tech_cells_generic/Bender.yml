@@ -19,15 +19,7 @@ sources:
 
   - target: all(any(fpga, tech_cells_generic_include_xilinx_xpm), not(tech_cells_generic_exclude_xilinx_xpm))
     files:
+      - fpga/pad_functional_xilinx.sv
+      - fpga/tc_clk_xilinx.sv
+      - fpga/tc_sram_xilinx.sv
       - tc_sram_impl.sv
-
-  - target: all(any(not(synthesis), tech_cells_generic_include_deprecated), not(tech_cells_generic_exclude_deprecated))
-    files:
-      
-  - target: all(any(not(synthesis), tech_cells_generic_include_pwr_cells), not(tech_cells_generic_exclude_pwr_cells))
-    files:
-
-  - target: all(any(test, tech_cells_generic_include_tb_cells), not(tech_cells_generic_exclude_tb_cells))
-    files:
-
-  # These simply wrap tc_* cells and are fine to use in any case
