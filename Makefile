@@ -5,6 +5,7 @@
 # Authors:
 # - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
+# Tools
 BENDER	  ?= bender
 MORTY 	  ?= morty
 SVASE 	  ?= svase
@@ -14,16 +15,7 @@ VERILATOR ?= verilator
 VSIM      ?= vsim
 REGGEN    ?= $(PYTHON3) $(shell $(BENDER) path register_interface)/vendor/lowrisc_opentitan/util/regtool.py
 
-VLOG_ARGS  = -svinputport=compat
-VSIM_ARGS  = -t 1ns -voptargs=+acc
-VSIM_ARGS += -suppress vsim-3009 -suppress vsim-8683 -suppress vsim-8386
-
-VERILATOR_ARGS  = --binary -j 0 -Wno-fatal
-VERILATOR_ARGS += -Wno-style
-VERILATOR_ARGS += --timing --autoflush --trace --trace-structs
-
 default: help
-
 
 ################
 # Dependencies #
@@ -36,7 +28,7 @@ checkout:
 ## Reset dependencies (without updating Bender.lock)
 clean-deps:
 	rm -rf .bender
-	cd $(CROC_ROOT) && git submodule deinit -f --all
+	git submodule deinit -f --all
 
 .PHONY: checkout clean-deps
 
@@ -44,7 +36,6 @@ clean-deps:
 ############
 # Software #
 ############
-
 SW := /sw/bin/helloworld.hex
 
 $(SW):
@@ -58,20 +49,16 @@ software: $(SW)
 ##################
 # RTL Simulation #
 ##################
-
-verilator/croc.f: Bender.lock Bender.yml
-	$(BENDER) script verilator -t rtl -t verilator -DSYNTHESIS -DVERILATOR > $@
+# Questasim/Modelsim/vsim
+VLOG_ARGS  = -svinputport=compat
+VSIM_ARGS  = -t 1ns -voptargs=+acc
+VSIM_ARGS += -suppress vsim-3009 -suppress vsim-8683 -suppress vsim-8386
 
 vsim/compile_rtl.tcl: Bender.lock Bender.yml
 	$(BENDER) script vsim -t rtl -t vsim -t simulation -t verilator -DSYNTHESIS -DSIMULATION > $@
 
 vsim/compile_netlist.tcl: Bender.lock Bender.yml
 	$(BENDER) script vsim -t ihp13 -t vsim -t simulation -t verilator -t netlist_yosys -DSYNTHESIS -DSIMULATION > $@
-
-## Simulate RTL using Verilator
-verilator: verilator/croc.f $(SW)
-	cd verilator; $(VERILATOR) $(VERILATOR_ARGS) --top tb_croc_soc -f croc.f
-	cd verilator; ./obj_dir/Vtb_croc_soc
 
 ## Simulate RTL using Questasim/Modelsim/vsim
 vsim: vsim/compile_rtl.tcl $(SW)
@@ -84,6 +71,20 @@ vsim-yosys: vsim/compile_netlist.tcl $(SW) yosys/out/croc_yosys_debug.v
 	rm -rf vsim/work
 	cd vsim; $(VSIM) -c -do "source compile_netlist.tcl; source compile_tech.tcl; exit"
 	cd vsim; $(VSIM) -gui tb_croc_soc $(VSIM_ARGS)
+
+
+# Verilator
+VERILATOR_ARGS  = --binary -j 0 -Wno-fatal
+VERILATOR_ARGS += -Wno-style
+VERILATOR_ARGS += --timing --autoflush --trace --trace-structs
+
+verilator/croc.f: Bender.lock Bender.yml
+	$(BENDER) script verilator -t rtl -t verilator -DSYNTHESIS -DVERILATOR > $@
+
+## Simulate RTL using Verilator
+verilator: verilator/croc.f $(SW)
+	cd verilator; $(VERILATOR) $(VERILATOR_ARGS) --top tb_croc_soc -f croc.f
+	cd verilator; ./obj_dir/Vtb_croc_soc
 
 .PHONY: verilator vsim vsim-yosys verilator-yosys
 
@@ -129,11 +130,13 @@ klayout/croc_chip.gds: openroad/out/croc.def klayout/*.sh klayout/*.py
 
 klayout: klayout/croc_chip.gds
 
+.PHONY: klayout
+
+
 #################
 # Documentation #
 #################
 
-.PHONY: help
 help: Makefile
 	@printf "Available targets:\n------------------\n"
 	@for mkfile in $(MAKEFILE_LIST); do \
@@ -147,3 +150,5 @@ help: Makefile
 		} \
 		{ lastLine = $$0 }' $$mkfile; \
 	done
+
+.PHONY: help

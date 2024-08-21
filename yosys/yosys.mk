@@ -53,6 +53,6 @@ clean:
 	rm -rf $(YOSYS_OUT)
 	rm -rf $(YOSYS_WORK)
 	rm -rf $(YOSYS_REPORTS) 
-	rm -f $(YOSYS_OUT_DIR)/*.log
+	rm -f $(YOSYS_DIR)/$(RTL_NAME).log
 
 .PHONY: clean yosys synth
