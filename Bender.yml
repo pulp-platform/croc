@@ -55,7 +55,6 @@ vendor_package:
       - "src/deprecated"
     mapping:
       - { from: 'src/',                      to: '',                      patch_dir: 'src/' }
-      - { from: 'src/deprecated/fifo_v2.sv', to: 'deprecated/fifo_v2.sv', patch_dir: 'src/' }
       - { from: 'include/common_cells/',     to: 'include/common_cells/', patch_dir: 'include/' }
       - { from: 'README.md',                 to: 'README.md',             patch_dir: '' }
       - { from: 'Bender.yml',                to: 'Bender.yml',            patch_dir: '' }

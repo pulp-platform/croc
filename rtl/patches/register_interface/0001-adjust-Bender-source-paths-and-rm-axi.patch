@@ -1,17 +1,25 @@
-From 818494147d7239705cb87a540681316b69687b7c Mon Sep 17 00:00:00 2001
+From 556aeafc5b229eab650749e5d256b8c499ff2bb0 Mon Sep 17 00:00:00 2001
 From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
-Date: Wed, 21 Aug 2024 14:04:43 +0200
-Subject: [PATCH] adjust Bender source paths
+Date: Wed, 21 Aug 2024 14:25:41 +0200
+Subject: [PATCH] adjust Bender source paths and rm axi
 
 ---
- Bender.yml | 51 +++++++--------------------------------------------
- 1 file changed, 7 insertions(+), 44 deletions(-)
+ Bender.yml | 52 +++++++---------------------------------------------
+ 1 file changed, 7 insertions(+), 45 deletions(-)
 
 diff --git a/Bender.yml b/Bender.yml
-index 3e739cd..0bf1df0 100644
+index 3e739cd..831a0b8 100644
 --- a/Bender.yml
 +++ b/Bender.yml
-@@ -13,48 +13,11 @@ export_include_dirs:
+@@ -3,7 +3,6 @@ package:
+   authors: ["Fabian Schuiki <fschuiki@iis.ee.ethz.ch>", "Florian Zaruba <zarubaf@iis.ee.ethz.ch>"]
+ 
+ dependencies:
+-  axi: { git: "https://github.com/pulp-platform/axi.git", version: 0.38.0 }
+   apb: { git: "https://github.com/pulp-platform/apb.git", version: 0.2.2}
+   common_cells: { git: "https://github.com/pulp-platform/common_cells.git", version: 1.21.0 }
+   common_verification: { git: "https://github.com/pulp-platform/common_verification.git", version: 0.2.3 }
+@@ -13,48 +12,11 @@ export_include_dirs:
  
  sources:
    # Level 0
