@@ -24,7 +24,7 @@ module croc_soc import croc_pkg::*; #() (
   output logic status_o
 );
 
-  logic synced_rst_n;
+  logic synced_rst_n, synced_irq0;
 
   rstgen i_rstgen (
     .clk_i,
@@ -33,6 +33,16 @@ module croc_soc import croc_pkg::*; #() (
     .rst_no      ( synced_rst_n  ),
     .init_no ( )
   );
+
+  sync #(
+      .STAGES     (    2 ),
+      .ResetValue ( 1'b0 )
+    ) i_ext_intr_sync (
+      .clk_i,
+      .rst_ni   ( synced_rst_n ),
+      .serial_i ( irq0_i       ),
+      .serial_o ( synced_irq0  )
+    );
 
 sbr_obi_req_t xbar_user_obi_req;
 sbr_obi_rsp_t xbar_user_obi_rsp;
@@ -59,9 +69,9 @@ croc_domain #(
   .xbar_user_obi_req_o ( xbar_user_obi_req ),
   .xbar_user_obi_rsp_i ( xbar_user_obi_rsp ),
 
-  .irq0_i       ( irq0_i     ),
-  .interrupts_i ( interrupts ),
-  .core_sleep_o ( status_o   )
+  .irq0_i       ( synced_irq0 ),
+  .interrupts_i ( interrupts  ),
+  .core_sleep_o ( status_o    )
 );
 
 user_domain #(    
