@@ -9,11 +9,11 @@
 
 # The main OpenRoad chip flow
 
-set proj_name croc
-set netlist ../yosys/out/croc_yosys.v
-set top_design croc_chip
-set report_dir reports
-set save_dir save
+set proj_name $::env(PROJ_NAME)
+set netlist $::env(NETLIST)
+set top_design $::env(TOP_DESIGN)
+set report_dir $::env(REPORTS)
+set save_dir $::env(SAVE)
 set time [elapsed_run_time]
 set step_by_step_debug 0
 

@@ -22,7 +22,7 @@ include $(YOSYS_DIR)/project-synth.mk
 TOP_DESIGN		?= croc_chip
 RTL_NAME		?= croc
 
-PICKLE_OUT		:= $(YOSYS_DIR)/../pickle
+PICKLE_OUT		:= $(realpath $(YOSYS_DIR)/..)/pickle
 
 VLOG_FILES  	:= $(PICKLE_OUT)/$(RTL_NAME)_sv2v.v
 NETLIST			:= $(YOSYS_OUT)/$(RTL_NAME)_yosys.v

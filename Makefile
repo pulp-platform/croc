@@ -15,6 +15,11 @@ VERILATOR ?= verilator
 VSIM      ?= vsim
 REGGEN    ?= $(PYTHON3) $(shell $(BENDER) path register_interface)/vendor/lowrisc_opentitan/util/regtool.py
 
+# Directories
+# directory of the path to the last called Makefile (this one)
+PROJ_DIR  := $(realpath $(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
+
+
 default: help
 
 ################
@@ -96,36 +101,37 @@ TOP_DESIGN     ?= croc_chip
 DUT_DESIGN	   ?= croc_soc
 BENDER_TARGERS ?= asic ihp13 rtl synthesis verilator
 MORTY_DEFINES  ?= VERILATOR SYNTHESIS MORTY TARGET_ASIC TARGET_SYNTHESIS
+PICKLE_OUT	   ?= $(PROJ_DIR)/pickle
 
 # list of source files
-pickle/croc_sources.json: Bender.lock Bender.yml rtl/*/Bender.yml
+$(PICKLE_OUT)/croc_sources.json: Bender.lock Bender.yml rtl/*/Bender.yml
 	mkdir -p pickle
 	$(BENDER) sources -f $(foreach t,$(BENDER_TARGERS),-t $(t)) > $@
 
 # pickle source files into one file/context
-pickle/croc_morty.sv: pickle/croc_sources.json rtl/* ihp13/*.sv
+$(PICKLE_OUT)/croc_morty.sv: $(PICKLE_OUT)/croc_sources.json rtl/* ihp13/*.sv
 	$(MORTY) -q -f $< -o $@ $(foreach d,$(MORTY_DEFINES),-D $(d)=1)
 
 # simplify SystemVerilog by propagating parameters and unfolding generate statements
-pickle/croc_svase.sv: pickle/croc_morty.sv
+$(PICKLE_OUT)/croc_svase.sv: $(PICKLE_OUT)/croc_morty.sv
 	$(SVASE) $(TOP_DESIGN) $@ $<
 	sed -i 's/module $(TOP_DESIGN)__[[:digit:]]\+/module $(TOP_DESIGN)/' $@
 	sed -i 's/ $(DUT_DESIGN)__[[:digit:]]\+ / $(DUT_DESIGN) /' $@
 
 # convert SystemVerilog to Verilog
-pickle/croc_sv2v.v: pickle/croc_svase.sv
+$(PICKLE_OUT)/croc_sv2v.v: $(PICKLE_OUT)/croc_svase.sv
 	$(SV2V) --oversized-numbers --write $@ $<
 
 .PHONY: pickle
 
 ## Generate verilog file for synthesis
-pickle: pickle/croc_sv2v.v
+pickle: $(PICKLE_OUT)/croc_sv2v.v
 
 include ihp13/technology.mk
 include yosys/yosys.mk
 include openroad/openroad.mk
 
-klayout/croc_chip.gds: openroad/out/croc.def klayout/*.sh klayout/*.py
+klayout/croc_chip.gds: $(OR_OUT)/croc.def klayout/*.sh klayout/*.py
 	./klayout/def2gds.sh
 
 klayout: klayout/croc_chip.gds

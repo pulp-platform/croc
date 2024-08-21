@@ -19,20 +19,23 @@ TOP_DESIGN 	?= croc_chip
 PROJ_NAME	?= croc
 NETLIST		?= $(realpath $(OR_DIR)/../yosys/out/$(PROJ_NAME)_yosys.v)
 
-SAVE	 ?= $(OR_DIR)/save
-REPORTS	 ?= $(OR_DIR)/reports
-OUT  	 ?= $(OR_DIR)/out
-OUT_FILES = $(OUT)/$(PROJ_NAME).def $(OUT)/$(PROJ_NAME).v $(OUT)/$(PROJ_NAME).sdc $(OUT)/$(PROJ_NAME).odb
+SAVE	 	 ?= $(OR_DIR)/save
+REPORTS	 	 ?= $(OR_DIR)/reports
+OR_OUT  	 ?= $(OR_DIR)/out
+OR_OUT_FILES  = $(OR_OUT)/$(PROJ_NAME).def $(OR_OUT)/$(PROJ_NAME).v $(OR_OUT)/$(PROJ_NAME).sdc $(OR_OUT)/$(PROJ_NAME).odb
 
-backend: $(OUT)/$(PROJ_NAME).def
+backend: $(OR_OUT)/$(PROJ_NAME).def
 
-openroad: $(OUT)/$(PROJ_NAME).def
+openroad: $(OR_OUT)/$(PROJ_NAME).def
+
+test: 
+	echo $(OR_OUT_FILES)
 
 ## Place & Route flow using OpenROAD
-$(OUT_FILES): $(NETLIST) $(OR_DIR)/scripts/*.tcl $(OR_DIR)/src/*.tcl $(OR_DIR)/src/*.sdc
+$(OR_OUT_FILES): $(NETLIST) $(OR_DIR)/scripts/*.tcl $(OR_DIR)/src/*.tcl $(OR_DIR)/src/*.sdc
 	mkdir -p $(SAVE)
 	mkdir -p $(REPORTS)
-	mkdir -p $(OUT)
+	mkdir -p $(OR_OUT)
 	echo $(CROC_ROOT)
 	cd $(OR_DIR) && \
 	NETLIST="$(NETLIST)" \
