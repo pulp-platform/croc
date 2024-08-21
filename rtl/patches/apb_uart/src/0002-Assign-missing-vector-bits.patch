@@ -1,0 +1,91 @@
+From c264e0b71fc240a31fab080164ad41e6c24314f9 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Wed, 21 Aug 2024 11:55:22 +0200
+Subject: [PATCH] Assign missing vector bits
+
+---
+ apb_uart.sv | 21 ++++++++++-----------
+ 1 file changed, 10 insertions(+), 11 deletions(-)
+
+diff --git a/apb_uart.sv b/apb_uart.sv
+index 6e7d2b9..0372a46 100644
+--- a/apb_uart.sv
++++ b/apb_uart.sv
+@@ -254,7 +254,7 @@ always @(posedge CLK or posedge iRST)
+ always @(posedge CLK or posedge iRST)
+   if ((iRST ==  1'b1))
+     begin
+-       iIER[3:0] <= 0;
++       iIER[7:0] <= 0;
+     end
+   else
+     begin
+@@ -262,13 +262,13 @@ always @(posedge CLK or posedge iRST)
+          begin
+             iIER[3:0] <= PWDATA[3:0];
+          end
++        iIER[7:4] <= '0;
+     end
+ 
+ assign /*432*/ iIER_ERBI = iIER[0]; // 434
+ assign /*432*/ iIER_ETBEI = iIER[1]; // 434
+ assign /*432*/ iIER_ELSI = iIER[2]; // 434
+ assign /*432*/ iIER_EDSSI = iIER[3]; // 434
+-assign iIER[7:4] = 0;
+ 
+ uart_interrupt UART_IIC (
+ 	.CLK(CLK),
+@@ -422,14 +422,15 @@ assign /*432*/ iLCR_DLAB = iLCR[7]; // 434
+ always @(posedge CLK or posedge iRST)
+   if ((iRST ==  1'b1))
+     begin
+-       iMCR[5:0] <= 0;
++       iMCR[7:0] <= 0;
+     end
+   else
+     begin
+        if ((iMCRWrite ==  1'b1))
+-         begin
+-            iMCR[5:0] <= PWDATA[5:0];
+-         end
++        begin
++          iMCR[5:0] <= PWDATA[5:0];
++        end
++        iMCR[7:6] <= 0;
+     end
+ 
+ assign /*432*/ iMCR_DTR = iMCR[0]; // 434
+@@ -438,7 +439,6 @@ assign /*432*/ iMCR_OUT1 = iMCR[2]; // 434
+ assign /*432*/ iMCR_OUT2 = iMCR[3]; // 434
+ assign /*432*/ iMCR_LOOP = iMCR[4]; // 434
+ assign /*432*/ iMCR_AFE = iMCR[5]; // 434
+-assign iMCR[7:6] = 0;
+ 
+ always @(posedge CLK or posedge iRST)
+   if ((iRST ==  1'b1))
+@@ -877,7 +877,7 @@ always @(posedge CLK or posedge iRST)
+ 
+ always @(PADDR or iLCR_DLAB or iRBR or iDLL or iDLM or iIER or iIIR or iLCR or iMCR or iLSR or iMSR or iSCR)
+   begin
+-     case (PADDR)
++      case (PADDR)
+        3'b000:
+          begin
+             if ((iLCR_DLAB ==  1'b0))
+@@ -937,11 +937,10 @@ always @(PADDR or iLCR_DLAB or iRBR or iDLL or iDLM or iIER or iIIR or iLCR or i
+             PRDATA[7:0] <= iRBR;
+          end
+        
+-     endcase
+-
++      endcase
++      PRDATA[31:8] <= '0;
+   end
+ 
+-assign PRDATA[31:8] = 24'b0;
+ assign /*432*/ PREADY =  1'b1; // 434
+ assign /*432*/ PSLVERR =  1'b0; // 434
+ 
+-- 
+2.25.1
+

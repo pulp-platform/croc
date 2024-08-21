@@ -1,0 +1,25 @@
+From 342fbd22d648915c80fff8551aa72e470139572b Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Wed, 21 Aug 2024 11:54:22 +0200
+Subject: [PATCH] Add missing parameter keyword
+
+---
+ slib_mv_filter.sv | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/slib_mv_filter.sv b/slib_mv_filter.sv
+index d5b50a9..363b89e 100644
+--- a/slib_mv_filter.sv
++++ b/slib_mv_filter.sv
+@@ -32,7 +32,7 @@
+ // Boston, MA  02111-1307  USA
+ //
+ 
+-module slib_mv_filter #(parameter WIDTH = 4, THRESHOLD = 10) (
++module slib_mv_filter #(parameter WIDTH = 4, parameter THRESHOLD = 10) (
+ 	input wire		CLK,
+ 	input wire		RST,
+ 	input wire		SAMPLE,
+-- 
+2.25.1
+

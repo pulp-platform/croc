@@ -32,7 +32,7 @@
 // Boston, MA  02111-1307  USA
 //
 
-module slib_mv_filter #(parameter WIDTH = 4, THRESHOLD = 10) (
+module slib_mv_filter #(parameter WIDTH = 4, parameter THRESHOLD = 10) (
 	input wire		CLK,
 	input wire		RST,
 	input wire		SAMPLE,

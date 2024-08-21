@@ -7,81 +7,81 @@ dependencies:
 sources:
   # All register file implementations are included in compilation by default,
   # please select the appropriate version when instantiating ibex_core.
-  - rtl/ibex_register_file_latch.sv
-  - rtl/ibex_register_file_ff.sv
-  - rtl/ibex_register_file_fpga.sv
+  - ibex_register_file_latch.sv
+  - ibex_register_file_ff.sv
+  - ibex_register_file_fpga.sv
 
   - target: not(all(any(test, ibex_include_tracer), not(ibex_exclude_tracer)))
     include_dirs:
       - rtl
-      - vendor/lowrisc_ip/ip/prim/rtl
+      - lowrisc_prim
 
     files:
       # Source files grouped in levels. Files in level 0 have no dependencies on files in this
       # package. Files in level 1 only depend on files in level 0, files in level 2 on files in
       # levels 1 and 0, etc. Files within a level are ordered alphabetically.
       # Level 0
-      - rtl/ibex_pkg.sv
-      - vendor/lowrisc_ip/ip/prim/rtl/prim_assert.sv
+      - ibex_pkg.sv
+      - lowrisc_prim/prim_assert.sv
       # Level 1
-      - rtl/ibex_alu.sv
-      - rtl/ibex_compressed_decoder.sv
-      - rtl/ibex_controller.sv
-      - rtl/ibex_counter.sv
-      - rtl/ibex_csr.sv
-      - rtl/ibex_decoder.sv
-      - rtl/ibex_fetch_fifo.sv
-      - rtl/ibex_load_store_unit.sv
-      - rtl/ibex_multdiv_fast.sv
-      - rtl/ibex_multdiv_slow.sv
-      - rtl/ibex_pmp.sv
-      - rtl/ibex_wb_stage.sv
+      - ibex_alu.sv
+      - ibex_compressed_decoder.sv
+      - ibex_controller.sv
+      - ibex_counter.sv
+      - ibex_csr.sv
+      - ibex_decoder.sv
+      - ibex_fetch_fifo.sv
+      - ibex_load_store_unit.sv
+      - ibex_multdiv_fast.sv
+      - ibex_multdiv_slow.sv
+      - ibex_pmp.sv
+      - ibex_wb_stage.sv
       # Level 2
-      - rtl/ibex_cs_registers.sv
-      - rtl/ibex_ex_block.sv
-      - rtl/ibex_id_stage.sv
-      - rtl/ibex_prefetch_buffer.sv
+      - ibex_cs_registers.sv
+      - ibex_ex_block.sv
+      - ibex_id_stage.sv
+      - ibex_prefetch_buffer.sv
       # Level 3
-      - rtl/ibex_if_stage.sv
+      - ibex_if_stage.sv
       # Level 4
-      - rtl/ibex_core.sv
+      - ibex_core.sv
 
   # In case we target RTL simulation, recompile the whole core with the RISC-V
   # formal interface so the tracer module works (`define RVFI).
   - target: all(any(test, ibex_include_tracer), not(ibex_exclude_tracer))  
     include_dirs:
       - rtl
-      - vendor/lowrisc_ip/ip/prim/rtl
+      - lowrisc_prim
     defines:
       RVFI: true
     files:
       # Level 0
-      - rtl/ibex_pkg.sv
-      - rtl/ibex_register_file_ff.sv
-      - vendor/lowrisc_ip/ip/prim/rtl/prim_assert.sv
+      - ibex_pkg.sv
+      - ibex_register_file_ff.sv
+      - lowrisc_prim/prim_assert.sv
       # Level 1
-      - rtl/ibex_alu.sv
-      - rtl/ibex_compressed_decoder.sv
-      - rtl/ibex_controller.sv
-      - rtl/ibex_counter.sv
-      - rtl/ibex_csr.sv
-      - rtl/ibex_decoder.sv
-      - rtl/ibex_fetch_fifo.sv
-      - rtl/ibex_load_store_unit.sv
-      - rtl/ibex_multdiv_fast.sv
-      - rtl/ibex_multdiv_slow.sv
-      - rtl/ibex_pmp.sv
-      - rtl/ibex_tracer_pkg.sv
-      - rtl/ibex_wb_stage.sv
+      - ibex_alu.sv
+      - ibex_compressed_decoder.sv
+      - ibex_controller.sv
+      - ibex_counter.sv
+      - ibex_csr.sv
+      - ibex_decoder.sv
+      - ibex_fetch_fifo.sv
+      - ibex_load_store_unit.sv
+      - ibex_multdiv_fast.sv
+      - ibex_multdiv_slow.sv
+      - ibex_pmp.sv
+      - ibex_tracer_pkg.sv
+      - ibex_wb_stage.sv
       # Level 2
-      - rtl/ibex_cs_registers.sv
-      - rtl/ibex_ex_block.sv
-      - rtl/ibex_id_stage.sv
-      - rtl/ibex_prefetch_buffer.sv
-      - rtl/ibex_tracer.sv
+      - ibex_cs_registers.sv
+      - ibex_ex_block.sv
+      - ibex_id_stage.sv
+      - ibex_prefetch_buffer.sv
+      - ibex_tracer.sv
       # Level 3
-      - rtl/ibex_if_stage.sv
+      - ibex_if_stage.sv
       # Level 4
-      - rtl/ibex_core.sv
+      - ibex_core.sv
       # Level 5
-      - rtl/ibex_core_tracing.sv
+      - ibex_core_tracing.sv
