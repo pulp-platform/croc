@@ -13,7 +13,7 @@ sources:
 
   - target: not(all(any(test, ibex_include_tracer), not(ibex_exclude_tracer)))
     include_dirs:
-      - rtl
+      - ./
       - lowrisc_prim
 
     files:
@@ -50,7 +50,7 @@ sources:
   # formal interface so the tracer module works (`define RVFI).
   - target: all(any(test, ibex_include_tracer), not(ibex_exclude_tracer))  
     include_dirs:
-      - rtl
+      - ./
       - lowrisc_prim
     defines:
       RVFI: true
