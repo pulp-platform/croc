@@ -24,8 +24,9 @@ index 57d62e2b..59c3a6f3 100644
  
    - target: not(all(any(test, ibex_include_tracer), not(ibex_exclude_tracer)))
      include_dirs:
-       - rtl
+-      - rtl
 -      - vendor/lowrisc_ip/ip/prim/rtl
++      - ./
 +      - lowrisc_prim
  
      files:
@@ -82,8 +83,9 @@ index 57d62e2b..59c3a6f3 100644
    # formal interface so the tracer module works (`define RVFI).
    - target: all(any(test, ibex_include_tracer), not(ibex_exclude_tracer))  
      include_dirs:
-       - rtl
+-      - rtl
 -      - vendor/lowrisc_ip/ip/prim/rtl
++      - ./
 +      - lowrisc_prim
      defines:
        RVFI: true

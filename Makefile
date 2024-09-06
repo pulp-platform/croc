@@ -99,7 +99,7 @@ verilator: verilator/croc.f $(SW)
 ####################
 TOP_DESIGN     ?= croc_chip
 DUT_DESIGN	   ?= croc_soc
-BENDER_TARGERS ?= asic ihp13 rtl synthesis verilator
+BENDER_TARGETS ?= asic ihp13 rtl synthesis verilator
 MORTY_DEFINES  ?= VERILATOR SYNTHESIS MORTY TARGET_ASIC TARGET_SYNTHESIS
 PICKLE_OUT	   ?= $(PROJ_DIR)/pickle
 
