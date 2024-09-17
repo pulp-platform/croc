@@ -106,7 +106,7 @@ PICKLE_OUT	   ?= $(PROJ_DIR)/pickle
 # list of source files
 $(PICKLE_OUT)/croc_sources.json: Bender.lock Bender.yml rtl/*/Bender.yml
 	mkdir -p pickle
-	$(BENDER) sources -f $(foreach t,$(BENDER_TARGERS),-t $(t)) > $@
+	$(BENDER) sources -f $(foreach t,$(BENDER_TARGETS),-t $(t)) > $@
 
 # pickle source files into one file/context
 $(PICKLE_OUT)/croc_morty.sv: $(PICKLE_OUT)/croc_sources.json rtl/* ihp13/*.sv
