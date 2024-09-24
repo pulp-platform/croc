@@ -192,7 +192,7 @@ module ibex_ex_block #(
   end else if (RV32M == RV32MNone) begin : gen_multidiv_none
     assign multdiv_alu_operand_a = '0;
     assign multdiv_alu_operand_b = '0;
-    assign multdiv_result_o = '0;
+    assign multdiv_result = '0;
     assign multdiv_valid = 1'b0;
   end
 
