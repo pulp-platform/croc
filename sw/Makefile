@@ -11,7 +11,7 @@
 RISCV_XLEN    ?= 32
 RISCV_MARCH   ?= rv$(RISCV_XLEN)i
 RISCV_MABI    ?= ilp32
-RISCV_PREFIX  ?= riscv64-unknown-linux-gnu-
+RISCV_PREFIX  ?= riscv64-unknown-elf-
 RISCV_CC      ?= $(RISCV_PREFIX)gcc
 RISCV_CXX     ?= $(RISCV_PREFIX)g++
 RISCV_OBJDUMP ?= $(RISCV_PREFIX)objdump
@@ -21,7 +21,7 @@ RISCV_AR      ?= $(RISCV_PREFIX)ar
 RISCV_LD      ?= $(RISCV_PREFIX)ld
 RISCV_STRIP   ?= $(RISCV_PREFIX)strip
 
-RISCV_FLAGS    ?= -march=$(RISCV_MARCH) -mabi=$(RISCV_MABI)  -mcmodel=medany -static -std=gnu99 -O0 -ffast-math -nostdlib -DITERATIONS=10 -ffunction-sections
+RISCV_FLAGS    ?= -march=$(RISCV_MARCH) -mabi=$(RISCV_MABI) -mcmodel=medany -static -std=gnu99 -O0 -ffast-math -nostdlib -DITERATIONS=10 -ffunction-sections
 RISCV_CCFLAGS  ?= $(RISCV_FLAGS)
 RISCV_CXXFLAGS ?= $(RISCV_FLAGS)
 RISCV_LDFLAGS  ?= -static -nostartfiles -lm -lgcc $(RISCV_FLAGS)
