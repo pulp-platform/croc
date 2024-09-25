@@ -82,6 +82,7 @@ Cell/Module placement                      |  Routing
 
 
 ## Requirements
+We are using the excelent docker container maintained by Harald Pretl. If you get stuck with installing the tools, we urge you to check the [Tool Repository](https://github.com/iic-jku/IIC-OSIC-TOOLS) or consult the [Guide](https://kwantaekim.github.io/2024/05/25/OSE-Docker).
 
 ### ETHZ systems
 An environment setup for bash is provided.
@@ -90,20 +91,26 @@ source ethz.env
 ```
 
 ### Other systems
-**Note: this has currently only been tested on Ubuntu Linux.**  
+**Note: this has currently only been tested on Ubuntu and RHEL Linux.**
 
 #### Docker (easy) 
-There are two possible ways, the easiest way is to install docker and work in the docker container, you can follow the install guides on the [Docker Website](https://docs.docker.com/desktop/):
+There are two possible ways, the easiest way is to install docker and work in the docker container, you can follow the install guides on the [Docker Website](https://docs.docker.com/desktop/).  
+**Note:** We may not support the latest version. The currently supported version (tag) is **2024.09**.
 
 It is a good idea to grant non-root (`sudo`) users access to docker, this is decribed in the [Docker Article](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user).
 
 Finally, you can navigate to this directory, open a terminal and type:
 ```sh
-# Linux/Mac
-./docker.sh
-# Windows
-./start_x.bat
+# Linux only (starts and enters docker container in shell)
+./start_linux.sh
+# Linux/Mac (starts VNC server on localhost:5901)
+./start_vnc.sh
+# Windows (starts VNC server on localhost:5901)
+./start_vnc.bat
 ```
+
+If you use the VNC option, open a browser and type `localhost` in the address bar. 
+This should connect you to the VNC server (test by right-clicking somewhere).
 
 Now you should be in a Ubuntu environment with all tools pre-installed for you.  
 If something does not work, refer to the upstream [IIC-OSIC-Tools](https://github.com/iic-jku/IIC-OSIC-TOOLS/tree/main)

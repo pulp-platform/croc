@@ -9,7 +9,7 @@ version: '3'
 
 services:
   pulp-docker:
-    image: hpretl/iic-osic-tools:pulp
+    image: hpretl/iic-osic-tools:2024.09
     environment:
       - UID=${UID}
       - GID=${GID}
