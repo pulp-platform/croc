@@ -17,7 +17,7 @@ strash
 rec_start3 {REC_AIG}
 
 # main optimization iteration:
-alias &opt_iter "&st; &if -y -K 6; &syn2; &if -K 6; &st; &b -d"
+alias &opt_iter "&st; &if -y -K 6; &syn2; &if -K 6; &st; &b"
 # &if -y -K 6; &syn2; &if -K 6, see LMS paper
 # &dc2 AIG rewriting (greedy minimization)
 # &b   balance structure for depth
