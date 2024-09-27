@@ -20,6 +20,15 @@ REM ========================================================================
 SETLOCAL
 
 SET DESIGNS=%~dp0
+REM Convert Windows path to Unix style for Docker compatibility
+FOR /f "tokens=1,* delims=:" %%A IN ("%DESIGNS%") DO (
+    SET DRIVE_LETTER=%%A
+    SET PATH_REMAINDER=%%B
+)
+
+SET DRIVE_LETTER=%DRIVE_LETTER:~0,1%
+SET DESIGNS_UNIX=%DRIVE_LETTER%:%PATH_REMAINDER%
+SET DESIGNS_UNIX=%DESIGNS_UNIX:\=/%
 
 SET DEFAULT_DESIGNS=%USERPROFILE%\eda\designs
 
@@ -82,14 +91,6 @@ IF DEFINED DOCKER_EXTRA_PARAMS (
 
 IF "%DISP%"=="" SET DISP=host.docker.internal:0
 
-where /q xhost
-IF ERRORLEVEL 1 (
-    ECHO xhost is not detected / not in PATH. Please verify X-server access control!
-) ELSE (
-    ECHO Using xhost to enable localhost access to the X-server.
-    %ECHO_IF_DRY_RUN% xhost +localhost
-)
-
 docker container inspect %CONTAINER_NAME% 2>&1 | find "Status" | find /i "running"
 IF NOT ERRORLEVEL 1 (
     ECHO Container is running! Stop with \"docker stop %CONTAINER_NAME%\" and remove with \"docker rm %CONTAINER_NAME%\" if required.
@@ -99,6 +100,6 @@ IF NOT ERRORLEVEL 1 (
         echo Container %CONTAINER_NAME% exists. Restart with \"docker start %CONTAINER_NAME%\" or remove with \"docker rm %CONTAINER_NAME%\" if required.
     ) ELSE (
         echo Container does not exist, creating %CONTAINER_NAME% ...
-        %ECHO_IF_DRY_RUN% docker run -d --user %CONTAINER_USER%:%CONTAINER_GROUP% %PARAMS% -v "%DESIGNS%":/foss/designs --name %CONTAINER_NAME% %DOCKER_USER%/%DOCKER_IMAGE%:%DOCKER_TAG%
+        %ECHO_IF_DRY_RUN% docker run -d --user %CONTAINER_USER%:%CONTAINER_GROUP% %PARAMS% -v "%DESIGNS_UNIX%":/foss/designs --name %CONTAINER_NAME% %DOCKER_USER%/%DOCKER_IMAGE%:%DOCKER_TAG%
     )
 )
