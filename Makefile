@@ -11,7 +11,7 @@ MORTY 	  ?= morty
 SVASE 	  ?= svase
 SV2V  	  ?= sv2v
 PYTHON3   ?= python3
-VERILATOR ?= verilator
+VERILATOR ?= /foss/tools/bin/verilator
 VSIM      ?= vsim
 REGGEN    ?= $(PYTHON3) $(shell $(BENDER) path register_interface)/vendor/lowrisc_opentitan/util/regtool.py
 
@@ -89,9 +89,11 @@ verilator/croc.f: Bender.lock Bender.yml
 	$(BENDER) script verilator -t rtl -t verilator -DSYNTHESIS -DVERILATOR > $@
 
 ## Simulate RTL using Verilator
-verilator: verilator/croc.f $(SW)
-	cd verilator; $(VERILATOR) $(VERILATOR_ARGS) --top tb_croc_soc -f croc.f
-	cd verilator; ./obj_dir/Vtb_croc_soc
+verilator/obj_dir/Vtb_croc_soc: verilator/croc.f $(SW)
+	cd verilator; $(VERILATOR) $(VERILATOR_ARGS) -CFLAGS "-O0" --top tb_croc_soc -f croc.f
+
+verilator: verilator/obj_dir/Vtb_croc_soc
+	cd verilator; obj_dir/Vtb_croc_soc
 
 .PHONY: verilator vsim vsim-yosys verilator-yosys
 

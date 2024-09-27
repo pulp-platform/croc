@@ -5,6 +5,8 @@
 // Authors:
 // - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
+//`define TRACE_WAVE
+
 module tb_croc_soc #(
     parameter time         ClkPeriod     = 100ns,
     parameter time         ClkPeriodJtag = 100ns,
@@ -180,6 +182,7 @@ module tb_croc_soc #(
         bit [31:0] data;
         bit [7:0] byte_data;
         int byte_count;
+        dm::sbcs_t sbcs = dm::sbcs_t'{sbautoincrement: 1'b1, sbaccess: 2, default: '0};
 
         file = $fopen(filename, "r");
         if (file == 0) begin
@@ -187,6 +190,9 @@ module tb_croc_soc #(
                 $fatal(1, "Error: Failed to open file %s", filename);
         end
         end
+
+        $display("@%t | [JTAG] Loading binary from %s", $time, filename);
+        jtag_dbg.write_dmi(dm::SBCS, sbcs);
 
         // line by line
         while (!$feof(file)) begin
@@ -200,6 +206,8 @@ module tb_croc_soc #(
                 if (status != 1) begin
                     $fatal(1, "Error: Incorrect address line format in file %s", filename);
                 end
+                $display("@%t | [JTAG] Writing to memory @%08x ", $time, addr);
+                jtag_dbg.write_dmi(dm::SBAddress0, addr);
                 continue;
             end
 
@@ -214,7 +222,7 @@ module tb_croc_soc #(
                 end
 
                 // Shift in the byte to the correct position in the data word
-                data = {data[23:0], byte_data}; // Combine bytes into a 32-bit word
+                data = {byte_data, data[31:8]}; // Combine bytes into a 32-bit word
                 byte_count++;
 
                 // remove the byte from the line (2 numbers + 1 space)
@@ -222,13 +230,14 @@ module tb_croc_soc #(
 
                 // write a complete word via jtag
                 if (byte_count == 4) begin
-                    jtag_write_reg32(addr, data, 1'b0);
+                    jtag_write(dm::SBData0, data);
                     addr += 4;
                     data = 32'h0;
                     byte_count = 0;
                 end
             end
         end
+        jtag_dbg.write_dmi(dm::SBCS, JtagInitSbcs);
         $fclose(file);
     endtask
 
@@ -279,8 +288,10 @@ module tb_croc_soc #(
     initial begin
         $timeformat(-9, 0, "ns", 12); // 1: scale (ns=-9), 2: decimals, 3: suffix, 4: print-field width
         // configure VCD dump
-        // $dumpfile("croc.vcd");
-        // $dumpvars(1,i_croc_soc);
+        `ifdef TRACE_WAVE
+        $dumpfile("croc.vcd");
+        $dumpvars(1,i_croc_soc);
+        `endif
 
         uart_rx_i = 1'b0;
         irq0_i    = 1'b0;
@@ -305,7 +316,9 @@ module tb_croc_soc #(
 
         // finish simulation
         repeat(50) @(posedge clk);
-        // $dumpflush;
+        `ifdef TRACE
+        $dumpflush;
+        `endif
         $finish();
     end
 
