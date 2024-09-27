@@ -66,7 +66,10 @@ vsim/compile_netlist.tcl: Bender.lock Bender.yml
 	$(BENDER) script vsim -t ihp13 -t vsim -t simulation -t verilator -t netlist_yosys -DSYNTHESIS -DSIMULATION > $@
 
 ## Simulate RTL using Questasim/Modelsim/vsim
-vsim: vsim/compile_rtl.tcl $(SW)
+prepare_vsim: vsim/compile_rtl.tcl $(SW)
+
+## Simulate RTL using Questasim/Modelsim/vsim
+run_vsim: 
 	rm -rf vsim/work
 	cd vsim; $(VSIM) -c -do "source compile_rtl.tcl; exit"
 	cd vsim; $(VSIM) -gui tb_croc_soc $(VSIM_ARGS)
