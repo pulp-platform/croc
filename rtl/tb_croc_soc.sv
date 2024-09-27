@@ -178,6 +178,8 @@ module tb_croc_soc #(
         string line;
         bit [31:0] addr;
         bit [31:0] data;
+        bit [7:0] byte_data;
+        int byte_count;
 
         file = $fopen(filename, "r");
         if (file == 0) begin
@@ -189,27 +191,41 @@ module tb_croc_soc #(
         // line by line
         while (!$feof(file)) begin
             if ($fgets(line, file) == 0) begin
-                break;
+                break; // End of file
             end
-            // lines starting with @ are addresses
+            
+            // '@' indicates address
             if (line[0] == "@") begin
                 status = $sscanf(line, "@%h", addr);
                 if (status != 1) begin
                     $fatal(1, "Error: Incorrect address line format in file %s", filename);
                 end
-            end else begin
-                // otherwise it contains space separated 32bit data blocks
-                while (line.len() > 0) begin
-                    status = $sscanf(line, "%h", data); // extract one 32bit block
-                    if (status != 1) begin
-                        break; // No more data to read on this line
-                    end
+                continue;
+            end
 
+            byte_count = 0;
+            data = 32'h0;
+
+            // Loop through the line to read bytes
+            while (line.len() > 0) begin
+                status = $sscanf(line, "%h", byte_data); // Extract one byte
+                if (status != 1) begin
+                    break; // No more data to read on this line
+                end
+
+                // Shift in the byte to the correct position in the data word
+                data = {data[23:0], byte_data}; // Combine bytes into a 32-bit word
+                byte_count++;
+
+                // remove the byte from the line (2 numbers + 1 space)
+                line = line.substr(3, line.len()-1);
+
+                // write a complete word via jtag
+                if (byte_count == 4) begin
                     jtag_write_reg32(addr, data, 1'b0);
                     addr += 4;
-
-                    // remove the processed 32-bit value from the line
-                    line = line.substr(8 + 1, line.len()-1);
+                    data = 32'h0;
+                    byte_count = 0;
                 end
             end
         end

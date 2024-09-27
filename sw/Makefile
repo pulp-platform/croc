@@ -55,7 +55,7 @@ $(BINDIR)/%.dump: $(BINDIR)/%.elf
 	$(RISCV_OBJDUMP) -D -s $< >$@
 
 $(BINDIR)/%.hex: $(BINDIR)/%.elf
-	$(RISCV_OBJCOPY) --reverse-bytes 4 -O verilog --verilog-data-width 4 $< $@
+	$(RISCV_OBJCOPY) -O verilog $< $@
 
 # keep dumps
 
