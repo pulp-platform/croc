@@ -49,6 +49,8 @@ $(SW):
 ## Build the helloworld software
 software: $(SW)
 
+sw: $(SW)
+
 .PHONY: software
 
 ##################
