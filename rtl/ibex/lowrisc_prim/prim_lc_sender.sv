@@ -8,7 +8,7 @@
 // for each bit in the life cycle control signal such that tools do not
 // optimize the multibit encoding.
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 
 module prim_lc_sender (
   input                       clk_i,

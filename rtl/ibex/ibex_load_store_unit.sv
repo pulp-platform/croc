@@ -11,7 +11,7 @@
  * and to align bytes and halfwords.
  */
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 
 module ibex_load_store_unit
 (

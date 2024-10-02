@@ -21,7 +21,7 @@
 //             - https://csrc.nist.gov/csrc/media/events/lightweight-cryptography-workshop-2015/
 //               documents/papers/session7-maene-paper.pdf
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 module prim_present #(
   parameter int DataWidth = 64,  // {32, 64}
   parameter int KeyWidth  = 128, // {64, 80, 128}

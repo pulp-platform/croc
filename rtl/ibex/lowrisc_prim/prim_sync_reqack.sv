@@ -22,7 +22,7 @@
 //     REQ is starting to be propagated to the destination side. The module is thus not suitable
 //     for high-bandwidth communication.
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 
 module prim_sync_reqack (
   input  clk_src_i,       // REQ side, SRC domain

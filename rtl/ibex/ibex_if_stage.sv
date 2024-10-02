@@ -10,7 +10,7 @@
  * the read instruction.
  */
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 
 module ibex_if_stage #(
     parameter int unsigned DmHaltAddr        = 32'h1A110800,

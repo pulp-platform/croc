@@ -12,7 +12,7 @@
  * 16x16 kernel multiplier and Long Division
  */
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 
 module ibex_multdiv_fast #(
     parameter ibex_pkg::rv32m_e RV32M = ibex_pkg::RV32MFast

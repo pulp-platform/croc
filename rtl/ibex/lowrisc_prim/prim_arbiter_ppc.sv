@@ -23,7 +23,7 @@
 //
 // See also: prim_arbiter_tree
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 
 module prim_arbiter_ppc #(
   parameter int unsigned N  = 8,

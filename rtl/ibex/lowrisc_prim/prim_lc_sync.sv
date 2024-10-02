@@ -8,7 +8,7 @@
 // Should be used exactly as recommended in the life cycle controller spec:
 // https://docs.opentitan.org/hw/ip/lc_ctrl/doc/index.html#control-signal-propagation
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 
 module prim_lc_sync #(
   // Number of separately buffered output signals.

@@ -1,0 +1,51 @@
+From 07de45efb7e6fcbd20b943da6453bfe67ef51516 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Wed, 2 Oct 2024 09:58:32 +0200
+Subject: [PATCH] ibex: move includes to separate dir
+
+---
+ Bender.yml | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
+
+diff --git a/Bender.yml b/Bender.yml
+index 7155f17d..8e923aad 100644
+--- a/Bender.yml
++++ b/Bender.yml
+@@ -13,8 +13,7 @@ sources:
+ 
+   - target: not(all(any(test, ibex_include_tracer), not(ibex_exclude_tracer)))
+     include_dirs:
+-      - ./
+-      - lowrisc_prim
++      - include/lowrisc_prim
+ 
+     files:
+       # Source files grouped in levels. Files in level 0 have no dependencies on files in this
+@@ -22,7 +21,6 @@ sources:
+       # levels 1 and 0, etc. Files within a level are ordered alphabetically.
+       # Level 0
+       - ibex_pkg.sv
+-      - lowrisc_prim/prim_assert.sv
+       # Level 1
+       - ibex_alu.sv
+       - ibex_compressed_decoder.sv
+@@ -50,15 +48,13 @@ sources:
+   # formal interface so the tracer module works (`define RVFI).
+   - target: all(any(test, ibex_include_tracer), not(ibex_exclude_tracer))  
+     include_dirs:
+-      - ./
+-      - lowrisc_prim
++      - include/lowrisc_prim
+     defines:
+       RVFI: true
+     files:
+       # Level 0
+       - ibex_pkg.sv
+       - ibex_register_file_ff.sv
+-      - lowrisc_prim/prim_assert.sv
+       # Level 1
+       - ibex_alu.sv
+       - ibex_compressed_decoder.sv
+-- 
+2.25.1
+

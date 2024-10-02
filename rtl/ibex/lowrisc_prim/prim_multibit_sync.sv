@@ -35,7 +35,7 @@
 // Note: CDC tools will likely flag this module due to re-convergent logic.
 //
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 
 module prim_multibit_sync #(
   // Width of the multibit signal.

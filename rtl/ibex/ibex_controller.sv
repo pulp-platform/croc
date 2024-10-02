@@ -7,7 +7,7 @@
  * Main controller of the processor
  */
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 
 module ibex_controller #(
     parameter bit WritebackStage  = 0,

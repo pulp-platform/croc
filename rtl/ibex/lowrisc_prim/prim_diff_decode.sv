@@ -15,7 +15,7 @@
 //
 // See also: prim_alert_sender, prim_alert_receiver, alert_handler
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 
 module prim_diff_decode #(
   // enables additional synchronization logic

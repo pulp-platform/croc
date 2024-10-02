@@ -22,7 +22,7 @@
 //             - https://eprint.iacr.org/2015/372.pdf
 //             - https://eprint.iacr.org/2014/656.pdf
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 module prim_prince #(
   parameter int DataWidth     = 64,
   parameter int KeyWidth      = 128,

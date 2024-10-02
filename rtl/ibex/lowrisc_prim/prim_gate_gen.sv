@@ -31,7 +31,7 @@
 // If valid_i constantly set to 1'b1, the gate generator produces around 2.5% smaller designs for
 // the configurations listed in the table above.
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 module prim_gate_gen #(
   parameter int DataWidth = 32,
   parameter int NumGates = 1000
