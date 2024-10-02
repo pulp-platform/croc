@@ -11,7 +11,7 @@
  * a simple passthrough to write data direct to the register file.
  */
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 
 module ibex_wb_stage #(
   parameter bit WritebackStage = 1'b0

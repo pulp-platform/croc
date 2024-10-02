@@ -4,7 +4,7 @@
 //
 // ROM wrapper with rvalid register
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 
 module prim_rom_adv #(
   // Parameters passed on the the ROM primitive.

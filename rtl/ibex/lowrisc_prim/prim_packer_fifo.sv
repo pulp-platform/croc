@@ -39,7 +39,7 @@
 // depth_o    0000000000|1111111111|00000000000000000000000000000000000000000
 
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 
 module prim_packer_fifo #(
   parameter int InW  = 32,

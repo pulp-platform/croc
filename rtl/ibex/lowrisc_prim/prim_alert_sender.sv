@@ -28,7 +28,7 @@
 //
 // See also: prim_alert_receiver, prim_diff_decode, alert_handler
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 
 module prim_alert_sender
   import prim_alert_pkg::*;

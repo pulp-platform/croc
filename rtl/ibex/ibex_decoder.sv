@@ -11,7 +11,7 @@
  * assertions only.
  */
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 
 module ibex_decoder #(
     parameter bit RV32E               = 0,

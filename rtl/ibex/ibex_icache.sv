@@ -8,7 +8,7 @@
  * Provides an instruction cache along with cache management, instruction buffering and prefetching
  */
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 
 module ibex_icache #(
   parameter bit          BranchPredictor = 1'b0,

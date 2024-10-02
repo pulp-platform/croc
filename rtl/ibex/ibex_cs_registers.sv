@@ -10,7 +10,7 @@
  * Specification, draft version 1.11
  */
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 
 module ibex_cs_registers #(
     parameter bit               DbgTriggerEn      = 0,

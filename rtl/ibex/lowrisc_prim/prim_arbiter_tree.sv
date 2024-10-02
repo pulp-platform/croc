@@ -30,7 +30,7 @@
 //
 // See also: prim_arbiter_ppc
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 
 module prim_arbiter_tree #(
   parameter int N   = 8,

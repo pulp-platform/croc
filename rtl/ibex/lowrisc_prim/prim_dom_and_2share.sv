@@ -23,7 +23,7 @@
 // Q1 = t{1,1} + sig(j>1,1)(...) + sig(j<1,1)(t{1,j} + Z{j})
 //    = a1&b1  + (0              + a1&b0 + z0)
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 
 module prim_dom_and_2share #(
   parameter int DW = 64, // Input width

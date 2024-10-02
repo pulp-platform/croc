@@ -11,7 +11,7 @@
 // requests.
 //
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 
 module prim_edn_req
   import prim_alert_pkg::*;

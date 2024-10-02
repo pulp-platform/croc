@@ -6,8 +6,8 @@
 //  - Provides default clk and rst options to simplify code
 //  - Provides boiler plate template for common assertions
 
-`ifndef PRIM_ASSERT_SV
-`define PRIM_ASSERT_SV
+`ifndef PRIM_ASSERT_SVH
+`define PRIM_ASSERT_SVH
 
 ///////////////////
 // Helper macros //

@@ -24,7 +24,7 @@
 // https://ieeexplore.ieee.org/document/542803
 
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 
 module prim_gf_mult #(
   parameter int Width = 32,

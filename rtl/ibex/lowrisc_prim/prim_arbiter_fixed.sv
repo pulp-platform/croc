@@ -11,7 +11,7 @@
 //
 // See also: prim_arbiter_ppc, prim_arbiter_tree
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 
 module prim_arbiter_fixed #(
   parameter int N   = 8,

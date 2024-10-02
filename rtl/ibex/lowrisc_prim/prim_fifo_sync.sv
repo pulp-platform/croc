@@ -4,7 +4,7 @@
 //
 // Generic synchronous fifo for use in a variety of devices.
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 
 module prim_fifo_sync #(
   parameter int unsigned Width       = 16,

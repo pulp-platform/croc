@@ -21,7 +21,7 @@
 //
 // See also: prim_cipher_pkg, prim_prince
 
-`include "prim_assert.sv"
+`include "prim_assert.svh"
 
 module prim_ram_1p_scr #(
   parameter  int Depth                = 16*1024, // Needs to be a power of 2 if NumAddrScrRounds > 0.
