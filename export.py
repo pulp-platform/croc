@@ -23,6 +23,7 @@ PACKAGE_REGEX = r'\n *package +([A-Za-z_0-9]+) *;'
 INTERFACE_REGEX = r'\n *interface +([A-Za-z_0-9]+).*?;'
 IMPORT_REGEX = r'\n *import +([A-Za-z_0-9]+).*?;'
 INCLUDE_REGEX = r'`include +"([A-Za-z_0-9-.:+/]+)"'
+TIME_REGX = r'(timeunit +[0-9]+ *[a-z]+|timeprecision +[0-9]+ *[a-z]+|timescale +[0-9]+ *[a-z]+)'
 
 
 def handle_include(includes: OrderedDict, entry: str, coe: bool):
@@ -33,6 +34,7 @@ def handle_include(includes: OrderedDict, entry: str, coe: bool):
         print(f'[ERROR] Include path does not exist: {inc_path}', file=sys.stderr)
         if not coe:
             sys.exit(-1)
+        return
 
     # extract files
     contains_file = False
@@ -80,7 +82,12 @@ def handle_source(sources: OrderedDict, entry: str, coe: bool):
         print(f'[ERROR] Source file does not exist: {entry}', file=sys.stderr)
         if not coe:
             sys.exit(-4)
+        return
 
+    # check for testbench files by name...
+    if '_tb' in source or 'tb_' in source:
+        print(f'[WARN ] Including testbench file', file=sys.stderr)
+        print(f'[WARN ]   {entry}', file=sys.stderr)
 
     # get modules, interfaces, packages
     with open(entry, 'r', encoding='utf8') as src_file:
@@ -89,6 +96,13 @@ def handle_source(sources: OrderedDict, entry: str, coe: bool):
         packages = re.findall(PACKAGE_REGEX, content, re.DOTALL | re.MULTILINE)
         interfaces = re.findall(INTERFACE_REGEX, content, re.DOTALL | re.MULTILINE)
         includes = re.findall(INCLUDE_REGEX, content, re.DOTALL | re.MULTILINE)
+        timedirs = re.findall(TIME_REGX, content, re.DOTALL | re.MULTILINE)
+
+    # check if file contains time directives
+    if len(timedirs) > 0:
+        for timedir in timedirs:
+            print(f'[WARN ] Not supported time directive: {timedir}', file=sys.stderr)
+            print(f'[WARN ]   {entry}', file=sys.stderr)
 
     # check for duplicate packages
     for pkg in packages:
