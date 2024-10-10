@@ -1,0 +1,56 @@
+digraph "delta_counter__2820661119834649917" {
+label="delta_counter__2820661119834649917";
+rankdir="LR";
+remincross=true;
+n11 [ shape=diamond, label="counter_d", color="black", fontcolor="black" ];
+n12 [ shape=diamond, label="counter_q", color="black", fontcolor="black" ];
+n13 [ shape=octagon, label="overflow_o", color="black", fontcolor="black" ];
+n14 [ shape=octagon, label="q_o", color="black", fontcolor="black" ];
+n15 [ shape=octagon, label="d_i", color="black", fontcolor="black" ];
+n16 [ shape=octagon, label="delta_i", color="black", fontcolor="black" ];
+n17 [ shape=octagon, label="down_i", color="black", fontcolor="black" ];
+n18 [ shape=octagon, label="load_i", color="black", fontcolor="black" ];
+n19 [ shape=octagon, label="en_i", color="black", fontcolor="black" ];
+n20 [ shape=octagon, label="clear_i", color="black", fontcolor="black" ];
+n21 [ shape=octagon, label="rst_ni", color="black", fontcolor="black" ];
+n22 [ shape=octagon, label="clk_i", color="black", fontcolor="black" ];
+n23 [ shape=diamond, label="_sv2v_0", color="black", fontcolor="black" ];
+{ rank="source"; n15; n16; n17; n18; n19; n20; n21; n22;}
+{ rank="sink"; n13; n14;}
+c26 [ shape=record, label="{{<p24> A}|$logic_not$../pickle/croc_sv2v.v:50$26\n$logic_not|{<p25> Y}}",  ];
+c28 [ shape=record, label="{{<p24> A|<p27> B}|$add$../pickle/croc_sv2v.v:46$24\n$add|{<p25> Y}}",  ];
+c29 [ shape=record, label="{{<p24> A|<p27> B}|$sub$../pickle/croc_sv2v.v:44$23\n$sub|{<p25> Y}}",  ];
+p0 [shape=box, style=rounded, label="PROC $proc$../pickle/croc_sv2v.v:0$27\n../pickle/croc_sv2v.v:0.0-0.0"];
+p1 [shape=box, style=rounded, label="PROC $proc$../pickle/croc_sv2v.v:49$25\n../pickle/croc_sv2v.v:49.2-53.27"];
+x3 [ shape=record, style=rounded, label="0 -&gt; 1:1 |<s0> 0:0 - 0:0 ", color="black", fontcolor="black" ];
+p2 [shape=box, style=rounded, label="PROC $proc$../pickle/croc_sv2v.v:34$22\n../pickle/croc_sv2v.v:34.2-48.5"];
+x4 [ shape=record, style=rounded, label="<s0> 0:0 - 0:0 ", color="black", fontcolor="black" ];
+x5 [ shape=record, style=rounded, label="<s0> 1:1 - 0:0 ", color="black", fontcolor="black" ];
+p2:e -> n11:w [color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+n11:e -> p1:w [color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+p1:e -> n12:w [color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+n12:e -> c28:p24:w [color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+n12:e -> c29:p24:w [color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+n12:e -> p1:w [color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+n12:e -> p2:w [color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+n12:e -> x4:s0:w [color="black", fontcolor="black", label=""];
+n12:e -> x5:s0:w [color="black", fontcolor="black", label=""];
+x5:e -> n13:w [color="black", fontcolor="black", label=""];
+x4:e -> n14:w [color="black", fontcolor="black", label=""];
+n15:e -> x3:s0:w [color="black", fontcolor="black", label=""];
+n16:e -> c28:p27:w [color="black", fontcolor="black", label=""];
+n16:e -> c29:p27:w [color="black", fontcolor="black", label=""];
+n17:e -> p2:w [color="black", fontcolor="black", label=""];
+n18:e -> p2:w [color="black", fontcolor="black", label=""];
+n19:e -> p2:w [color="black", fontcolor="black", label=""];
+c26:p25:e -> p1:w [color="black", fontcolor="black", label=""];
+n20:e -> p2:w [color="black", fontcolor="black", label=""];
+n21:e -> c26:p24:w [color="black", fontcolor="black", label=""];
+n21:e -> p1:w [color="black", fontcolor="black", label=""];
+n22:e -> p1:w [color="black", fontcolor="black", label=""];
+p0:e -> n23:w [color="black", fontcolor="black", label=""];
+n23:e -> p2:w [color="black", fontcolor="black", label=""];
+c28:p25:e -> p2:w [color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+c29:p25:e -> p2:w [color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+x3:e -> p2:w [color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+}

@@ -5,7 +5,7 @@
 // Authors:
 // - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
-//`define TRACE_WAVE
+`define TRACE_WAVE
 
 module tb_croc_soc #(
     parameter time         ClkPeriod     = 100ns,
@@ -152,6 +152,40 @@ module tb_croc_soc #(
         $display("@%t | [JTAG] Read 0x%h from 0x%h", $time, data, addr);
     endtask
 
+    task automatic jtag_read_string(
+        input logic [31:0] addr,
+        input int unsigned idle_cycles = 10
+    );
+        logic done = 1'b0;
+        logic [31:0] data;
+        const dm::sbcs_t sbcs = dm::sbcs_t'{sbreadonaddr: 1'b1, sbaccess: 2, default: '0};
+        jtag_write(dm::SBCS, sbcs, 0, 1);
+        while(!done) begin
+            jtag_write(dm::SBAddress0, addr[31:0]);
+            jtag_dbg.wait_idle(idle_cycles);
+            jtag_dbg.read_dmi_exp_backoff(dm::SBData0, data);
+            for (int i=0; i<4; i++) begin
+                $display("@%t | [JTAG] Read %s", $time, data[8*i +: 8]);
+                done = done | data[8*i +: 8] == 8'h0;
+            end
+            addr = addr + 'h4;
+        end
+    endtask
+
+    // task automatic jtag_read_rom(
+    //     input logic [31:0] addr,
+    //     output logic [31:0] data,
+    //     input int unsigned idle_cycles = 10
+    // );
+    //     //logic [31:0] data;
+    //     automatic dm::sbcs_t sbcs = dm::sbcs_t'{sbreadonaddr: 1'b1, sbaccess: 2, default: '0};
+    //     jtag_write(dm::SBCS, sbcs, 0, 1);
+    //     jtag_write(dm::SBAddress0, addr[31:0]);
+    //     jtag_dbg.wait_idle(idle_cycles);
+    //     jtag_dbg.read_dmi_exp_backoff(dm::SBData0, data);
+    //     $display("@%t | [JTAG] Read 0x%h from ROM address 0x%h", $time, data, addr);
+    // endtask
+
     task automatic jtag_write_reg32(
         input logic [31:0] addr,
         input logic [31:0] data,
@@ -182,7 +216,7 @@ module tb_croc_soc #(
         bit [31:0] data;
         bit [7:0] byte_data;
         int byte_count;
-        dm::sbcs_t sbcs = dm::sbcs_t'{sbautoincrement: 1'b1, sbaccess: 2, default: '0};
+        const dm::sbcs_t sbcs = dm::sbcs_t'{sbautoincrement: 1'b1, sbaccess: 2, default: '0};
 
         file = $fopen(filename, "r");
         if (file == 0) begin
@@ -284,6 +318,7 @@ module tb_croc_soc #(
     /////////////////
 
     logic [31:0] tb_data;
+    logic [31:0] rom_data;
 
     initial begin
         $timeformat(-9, 0, "ns", 12); // 1: scale (ns=-9), 2: decimals, 3: suffix, 4: print-field width
@@ -304,6 +339,9 @@ module tb_croc_soc #(
 
         // write test value to sram
         jtag_write_reg32(croc_pkg::MemBaseAddr, 32'h1234_5678, 1'b1);
+
+        // read value from rom
+        jtag_read_string(32'h1000_1000);
 
         // load binary to sram
         jtag_load_hex("../sw/bin/helloworld.hex");

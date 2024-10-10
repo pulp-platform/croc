@@ -1,0 +1,3 @@
+select @delta
+write_verilog -norename -noexpr -selected delta.v 
+select -clear
