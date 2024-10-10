@@ -29,7 +29,7 @@ Many configurations are in the configuration object:
 | `PulpJtagIdCode`    | `32'h1_0000_db3` | Debug module ID code                                  |
 | `NumExternalIrqs`   | `4`              | Number of external interrupts into Croc domain        |
 | `BankNumWords`      | `512`            | Number of 32bit words in a memory bank                |
-| `NumBanks`          | `2`              | Number of memory banks                                |
+| `CrocNumBanks`      | `2`              | Number of memory banks                                |
 
 ## Bootmodes
 

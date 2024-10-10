@@ -20,8 +20,11 @@ module croc_domain import croc_pkg::*; #() (
   input  logic      uart_rx_i,
   output logic      uart_tx_o,
 
-  output sbr_obi_req_t xbar_user_obi_req_o,
-  input  sbr_obi_rsp_t xbar_user_obi_rsp_i,
+  output sbr_obi_req_t xbar_user_sbr_obi_req_o, //this is the user as sbr
+  input  sbr_obi_rsp_t xbar_user_sbr_obi_rsp_i,
+
+  input  mgr_obi_req_t xbar_croc_sbr_obi_req_i, //this is the croc as sbr
+  output mgr_obi_rsp_t xbar_croc_sbr_obi_rsp_o,
 
   input  logic irq0_i,
   input  logic [NumExternalIrqs-1:0] interrupts_i,
@@ -73,31 +76,33 @@ module croc_domain import croc_pkg::*; #() (
   assign dbg_req_obi_req.a.aid = '0;
   assign dbg_req_obi_req.a.a_optional = '0;
 
+  // User Domain as Manager bus :TODO
+
 
   // ----------------------------------
   // Subordinate buses out of crossbar
   // ----------------------------------
   // Main xbar subordinate buses, must align with addr map indices!
-  sbr_obi_req_t [NumSubordinates-1:0] all_sbr_obi_req;
-  sbr_obi_rsp_t [NumSubordinates-1:0] all_sbr_obi_rsp;
+  sbr_obi_req_t [CrocNumSubordinates-1:0] all_sbr_obi_req;
+  sbr_obi_rsp_t [CrocNumSubordinates-1:0] all_sbr_obi_rsp;
 
   // user bus defined in module port
 
   // mem bank buses
-  sbr_obi_req_t [NumBanks-1:0] xbar_mem_bank_obi_req;
-  sbr_obi_rsp_t [NumBanks-1:0] xbar_mem_bank_obi_rsp;
+  sbr_obi_req_t [CrocNumBanks-1:0] xbar_mem_bank_obi_req;
+  sbr_obi_rsp_t [CrocNumBanks-1:0] xbar_mem_bank_obi_rsp;
 
   // periph bus
   sbr_obi_req_t xbar_periph_obi_req;
   sbr_obi_rsp_t xbar_periph_obi_rsp;
 
-  assign xbar_user_obi_req_o         = all_sbr_obi_req[XbarUser];
-  assign all_sbr_obi_rsp[XbarUser]   = xbar_user_obi_rsp_i;
+  assign xbar_user_sbr_obi_req_o      = all_sbr_obi_req[XbarUser];
+  assign all_sbr_obi_rsp[XbarUser]   = xbar_user_sbr_obi_rsp_i;
 
   assign xbar_periph_obi_req         = all_sbr_obi_req[XbarPeriph];
   assign all_sbr_obi_rsp[XbarPeriph] = xbar_periph_obi_rsp;
 
-  for (genvar i = 0; i < NumBanks; i++) begin : gen_xbar_sbr_connect
+  for (genvar i = 0; i < CrocNumBanks; i++) begin : gen_xbar_sbr_connect
     assign xbar_mem_bank_obi_req[i]     = all_sbr_obi_req[XbarBank0+i];
     assign all_sbr_obi_rsp[XbarBank0+i] = xbar_mem_bank_obi_rsp[i];
   end
@@ -151,8 +156,8 @@ module croc_domain import croc_pkg::*; #() (
     .ref_clk_i,
     .test_enable_i,
 
-    .irqs_i           ( interrupts   ),
-    .timer0_irq_i     ( timer0_irq0 ),
+    .irqs_i           ( interrupts    ),
+    .timer0_irq_i     ( timer0_irq0   ),
 
     .boot_addr_i      ( boot_addr   ),
 
@@ -274,41 +279,41 @@ module croc_domain import croc_pkg::*; #() (
   // -----------------
 
   obi_xbar #(
-    .SbrPortObiCfg      ( MgrObiCfg        ),
-    .MgrPortObiCfg      ( SbrObiCfg        ),
-    .sbr_port_obi_req_t ( mgr_obi_req_t    ),
-    .sbr_port_a_chan_t  ( mgr_obi_a_chan_t ),
-    .sbr_port_obi_rsp_t ( mgr_obi_rsp_t    ),
-    .sbr_port_r_chan_t  ( mgr_obi_r_chan_t ),
-    .mgr_port_obi_req_t ( sbr_obi_req_t    ),
-    .mgr_port_obi_rsp_t ( sbr_obi_rsp_t    ),
-    .NumSbrPorts        ( NumManagers      ),
-    .NumMgrPorts        ( NumSubordinates  ),
-    .NumMaxTrans        ( 2                ),
-    .NumAddrRules       ( NumRules         ),
-    .addr_map_rule_t    ( addr_map_rule_t  ),
-    .UseIdForRouting    ( 1'b0             ),
-    .Connectivity       ( '1               )
+    .SbrPortObiCfg      ( MgrObiCfg             ),
+    .MgrPortObiCfg      ( SbrObiCfg             ),
+    .sbr_port_obi_req_t ( mgr_obi_req_t         ),
+    .sbr_port_a_chan_t  ( mgr_obi_a_chan_t      ),
+    .sbr_port_obi_rsp_t ( mgr_obi_rsp_t         ),
+    .sbr_port_r_chan_t  ( mgr_obi_r_chan_t      ),
+    .mgr_port_obi_req_t ( sbr_obi_req_t         ),
+    .mgr_port_obi_rsp_t ( sbr_obi_rsp_t         ),
+    .NumSbrPorts        ( CrocNumManagers       ),
+    .NumMgrPorts        ( CrocNumSubordinates   ),
+    .NumMaxTrans        ( 2                     ),
+    .NumAddrRules       ( CrocNumRules          ),
+    .addr_map_rule_t    ( addr_map_rule_t       ),
+    .UseIdForRouting    ( 1'b0                  ),
+    .Connectivity       ( '1                    )
   ) i_main_xbar (
     .clk_i,
     .rst_ni,
     .testmode_i       ( test_enable_i ),
 
-    .sbr_ports_req_i  ( {core_instr_obi_req, core_data_obi_req, dbg_req_obi_req} ),
-    .sbr_ports_rsp_o  ( {core_instr_obi_rsp, core_data_obi_rsp, dbg_req_obi_rsp} ),
-    .mgr_ports_req_o  ( all_sbr_obi_req ),
+    .sbr_ports_req_i  ( {core_instr_obi_req, core_data_obi_req, dbg_req_obi_req, xbar_croc_sbr_obi_req_i } ), //von den Managerns an Sbr
+    .sbr_ports_rsp_o  ( {core_instr_obi_rsp, core_data_obi_rsp, dbg_req_obi_rsp, xbar_croc_sbr_obi_rsp_o } ),
+    .mgr_ports_req_o  ( all_sbr_obi_req ), //umgeleiteitet: Request vom richtigen manager an richtigen user
     .mgr_ports_rsp_i  ( all_sbr_obi_rsp ),
 
-    .addr_map_i       ( main_addr_map ),
-    .en_default_idx_i ( 3'b111 ),
-    .default_idx_i    ( '0 )
+    .addr_map_i       ( croc_addr_map   ),
+    .en_default_idx_i ( 3'b111          ),
+    .default_idx_i    ( '0              )
   );
 
   // -----------------
   // Memories
   // -----------------
 
-  for (genvar i = 0; i < NumBanks; i++) begin : gen_sram_bank
+  for (genvar i = 0; i < CrocNumBanks; i++) begin : gen_sram_bank
     logic bank_req, bank_we, bank_gnt, bank_single_err;
     logic [SbrObiCfg.DataWidth-1:0] bank_addr;
     logic [SbrObiCfg.DataWidth-1:0] bank_wdata, bank_rdata;
@@ -365,15 +370,15 @@ module croc_domain import croc_pkg::*; #() (
   logic [cf_math_pkg::idx_width(NumPeriphs)-1:0] periph_idx;
 
   addr_decode #(
-    .NoIndices ( NumPeriphs      ),
-    .NoRules   ( NumPeriphRules  ),
+    .NoIndices ( NumPeriphs                     ),
+    .NoRules   ( NumPeriphRules                 ),
     .addr_t    ( logic[SbrObiCfg.DataWidth-1:0] ),
-    .rule_t    ( addr_map_rule_t ),
-    .Napot     ( 1'b0 )
+    .rule_t    ( addr_map_rule_t                ),
+    .Napot     ( 1'b0                           )
   ) i_addr_decode_periphs (
-    .addr_i           ( xbar_periph_obi_req.a.addr ),
-    .addr_map_i       ( periph_addr_map ),
-    .idx_o            ( periph_idx      ),
+    .addr_i           ( xbar_periph_obi_req.a.addr  ),
+    .addr_map_i       ( periph_addr_map             ),
+    .idx_o            ( periph_idx                  ),
     .dec_valid_o      (),
     .dec_error_o      (),
     .en_default_idx_i ( 1'b1 ),
@@ -385,14 +390,14 @@ module croc_domain import croc_pkg::*; #() (
     .obi_req_t   ( sbr_obi_req_t ),
     .obi_rsp_t   ( sbr_obi_rsp_t ),
     .NumMgrPorts ( NumPeriphs    ),
-    .NumMaxTrans ( 2 )
+    .NumMaxTrans ( 2             )
   ) i_obi_demux (
     .clk_i,
     .rst_ni,
 
-    .sbr_port_select_i ( periph_idx     ),
-    .sbr_port_req_i    ( xbar_periph_obi_req ),
-    .sbr_port_rsp_o    ( xbar_periph_obi_rsp ),
+    .sbr_port_select_i ( periph_idx           ),
+    .sbr_port_req_i    ( xbar_periph_obi_req  ),
+    .sbr_port_rsp_o    ( xbar_periph_obi_rsp  ),
 
     .mgr_ports_req_o   ( all_periph_obi_req ),
     .mgr_ports_rsp_i   ( all_periph_obi_rsp )
@@ -418,12 +423,12 @@ module croc_domain import croc_pkg::*; #() (
   reg_rsp_t soc_ctrl_reg_rsp;
 
   periph_to_reg #(
-    .AW    ( SbrObiCfg.AddrWidth ),
-    .DW    ( SbrObiCfg.DataWidth ),
-    .BW    ( 8 ),
-    .IW    ( SbrObiCfg.IdWidth   ),
-    .req_t ( reg_req_t  ),
-    .rsp_t ( reg_rsp_t  )
+    .AW    ( SbrObiCfg.AddrWidth  ),
+    .DW    ( SbrObiCfg.DataWidth  ),
+    .BW    ( 8                    ),
+    .IW    ( SbrObiCfg.IdWidth    ),
+    .req_t ( reg_req_t            ),
+    .rsp_t ( reg_rsp_t            )
   ) i_soc_ctrl_translate (
     .clk_i,
     .rst_ni,
@@ -471,12 +476,12 @@ module croc_domain import croc_pkg::*; #() (
   reg_rsp_t uart_reg_rsp;
 
   periph_to_reg #(
-    .AW    ( SbrObiCfg.AddrWidth ),
-    .DW    ( SbrObiCfg.DataWidth ),
-    .BW    ( 8 ),
-    .IW    ( SbrObiCfg.IdWidth   ),
-    .req_t ( reg_req_t  ),
-    .rsp_t ( reg_rsp_t  )
+    .AW    ( SbrObiCfg.AddrWidth  ),
+    .DW    ( SbrObiCfg.DataWidth  ),
+    .BW    ( 8                    ),
+    .IW    ( SbrObiCfg.IdWidth    ),
+    .req_t ( reg_req_t            ),
+    .rsp_t ( reg_rsp_t            )
   ) i_uart_translate (
     .clk_i,
     .rst_ni,
@@ -500,15 +505,15 @@ module croc_domain import croc_pkg::*; #() (
   assign uart_obi_rsp.r.r_optional = '0;
 
   reg_uart_wrap #(
-    .AddrWidth  ( 32 ),
+    .AddrWidth  ( 32        ),
     .reg_req_t  ( reg_req_t ),
     .reg_rsp_t  ( reg_rsp_t )
   ) i_uart (
     .clk_i,
     .rst_ni,
-    .reg_req_i  ( uart_reg_req ),
-    .reg_rsp_o  ( uart_reg_rsp ),
-    .intr_o     ( uart_irq ),
+    .reg_req_i  ( uart_reg_req  ),
+    .reg_rsp_o  ( uart_reg_rsp  ),
+    .intr_o     ( uart_irq      ),
     .out2_no    ( ),
     .out1_no    ( ),
     .rts_no     ( ),

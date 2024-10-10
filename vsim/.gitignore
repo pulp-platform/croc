@@ -4,3 +4,5 @@ compile_netlist.tcl
 transcript
 vsim.wlf
 modelsim.ini
+*.vcd
+*.vstf

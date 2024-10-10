@@ -1,0 +1,6 @@
+TODO
+
+1. in croc_soc in- & outputs anpassen (sind mehr dazu gekommen)
+2. user_pkg.sv anpassen
+3. croc_pkg stuff rauslöschen
+4. user_domain subordinate bus ROM richtig machen

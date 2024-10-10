@@ -44,8 +44,13 @@ module croc_soc import croc_pkg::*; #() (
       .serial_o ( synced_irq0  )
     );
 
-sbr_obi_req_t xbar_user_obi_req;
-sbr_obi_rsp_t xbar_user_obi_rsp;
+//Connection between Croc_domain and User_domain: User Sbr, Croc Mgr
+sbr_obi_req_t xbar_user_sbr_obi_req;
+sbr_obi_rsp_t xbar_user_sbr_obi_rsp;
+
+//Connection between Croc_domain and User_domain: Croc Sbr, User Mgr
+sbr_obi_req_t xbar_croc_sbr_obi_req;
+sbr_obi_rsp_t xbar_croc_sbr_obi_rsp;
 
 logic test_enable = 1'b0;
 logic [NumExternalIrqs-1:0] interrupts;
@@ -66,8 +71,12 @@ croc_domain #(
   .uart_rx_i,
   .uart_tx_o,
 
-  .xbar_user_obi_req_o ( xbar_user_obi_req ),
-  .xbar_user_obi_rsp_i ( xbar_user_obi_rsp ),
+
+  .xbar_user_sbr_obi_req_o  ( xbar_user_sbr_obi_req ),
+  .xbar_user_sbr_obi_rsp_i  ( xbar_user_sbr_obi_rsp ),
+
+  .xbar_croc_sbr_obi_req_i  ( xbar_croc_sbr_obi_req ),
+  .xbar_croc_sbr_obi_rsp_o  ( xbar_croc_sbr_obi_rsp ),
 
   .irq0_i       ( synced_irq0 ),
   .interrupts_i ( interrupts  ),
@@ -81,8 +90,11 @@ user_domain #(
   .ref_clk_i,
   .test_enable_i ( test_enable ),
 
-  .xbar_user_obi_req_i ( xbar_user_obi_req ),
-  .xbar_user_obi_rsp_o ( xbar_user_obi_rsp ),
+  .xbar_user_sbr_obi_req_i ( xbar_user_sbr_obi_req ),
+  .xbar_user_sbr_obi_rsp_o ( xbar_user_sbr_obi_rsp ),
+
+  .xbar_croc_sbr_obi_req_o ( xbar_croc_sbr_obi_req ),
+  .xbar_croc_sbr_obi_rsp_i ( xbar_croc_sbr_obi_rsp ),
 
   .interrupts_o ( interrupts )
 );

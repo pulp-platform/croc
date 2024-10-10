@@ -62,6 +62,7 @@ module obi_xbar #(
   sbr_port_obi_req_t [NumMgrPorts-1:0][NumSbrPorts-1:0] mgr_reqs;
   sbr_port_obi_rsp_t [NumMgrPorts-1:0][NumSbrPorts-1:0] mgr_rsps;
 
+  //Demultiplexer Croc Domain
   for (genvar i = 0; i < NumSbrPorts; i++) begin : gen_demux
     addr_decode #(
       .NoIndices ( NumMgrPorts                         ),
@@ -87,9 +88,9 @@ module obi_xbar #(
     ) i_demux (
       .clk_i,
       .rst_ni,
-      .sbr_port_select_i ( sbr_port_select[i] ),
-      .sbr_port_req_i    ( sbr_ports_req_i[i] ),
-      .sbr_port_rsp_o    ( sbr_ports_rsp_o[i] ),
+      .sbr_port_select_i ( sbr_port_select[i] ), //ID of requested Sbr
+      .sbr_port_req_i    ( sbr_ports_req_i[i] ), //Address requested from Mgr
+      .sbr_port_rsp_o    ( sbr_ports_rsp_o[i] ), //Output/Response from Sbr
       .mgr_ports_req_o   ( sbr_reqs[i]        ),
       .mgr_ports_rsp_i   ( sbr_rsps[i]        )
     );

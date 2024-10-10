@@ -18,10 +18,11 @@ package croc_pkg;
   } bootmode_e;
 
   localparam int unsigned NumExternalIrqs = 4;
-
-  // -----------------
-  // Address Map
-  // -----------------
+  ///////////////////////
+  // -----------------///
+  // Address Maps      ///
+  // -----------------///
+  ///////////////////////
   // ideally compatible with: https://pulp-platform.github.io/cheshire/um/arch/#memory-map
 
   // Address map data type
@@ -31,30 +32,34 @@ package croc_pkg;
       logic [31:0] end_addr;
   } addr_map_rule_t;
 
-  // Main interconnect addressing
+  ///////////////////////////////////////
+  // Croc Main interconnect addressing///
+  ///////////////////////////////////////
   localparam bit [31:0] PeriphBaseAddr    = 32'h0000_0000;
   localparam bit [31:0] PeriphAddrRange   = 32'h1000_0000;
 
   localparam bit [31:0]   MemBaseAddr     = 32'h1000_0000;
   localparam int unsigned BankNumWords    = 512;
-  localparam int unsigned NumBanks        = 32'd2;
+  localparam int unsigned CrocNumBanks    = 32'd2;
+  localparam int unsigned BankAddrRange   = BankNumWords*CrocNumBanks*4;
 
   // Enum for bus indices
   typedef enum int {
     XbarUser,
     XbarPeriph,
     XbarBank0
-  } xbar_outputs_e;
+  } croc_xbar_outputs_e;
+  
   // User space is implicit as everything outside Periph and Memory ranges
-  localparam int unsigned NumRules = 1 + NumBanks;
+  localparam int unsigned CrocNumRules = 1 + CrocNumBanks;
 
-  function automatic addr_map_rule_t [NumRules-1:0] gen_xbar_addr_rules();
-    addr_map_rule_t [NumRules-1:0] ret;
+  function automatic addr_map_rule_t [CrocNumRules-1:0] gen_xbar_addr_rules();
+    addr_map_rule_t [CrocNumRules-1:0] ret;
     ret[0] = '{ idx: XbarPeriph,
                 start_addr: PeriphBaseAddr,
                 end_addr:   PeriphBaseAddr+PeriphAddrRange};
 
-    for (int i = 0; i < NumBanks; i++) begin
+    for (int i = 0; i < CrocNumBanks; i++) begin
       ret[i+1] = '{ idx: XbarBank0+i,
                     start_addr: MemBaseAddr + ( i    * BankNumWords*4),
                     end_addr:   MemBaseAddr + ((i+1) * BankNumWords*4)};
@@ -62,10 +67,12 @@ package croc_pkg;
     return ret;
   endfunction
 
-  localparam addr_map_rule_t [NumRules-1:0] main_addr_map = gen_xbar_addr_rules();
+  localparam addr_map_rule_t [CrocNumRules-1:0] croc_addr_map = gen_xbar_addr_rules();
 
+  ////////////////////////////
+  // Peripheral address map///
+  ////////////////////////////
 
-  // Peripheral address map
   localparam bit [31:0] DebugAddrOffset   = 32'h0000_0000;
   localparam bit [31:0] DebugAddrRange    = 32'h0004_0000;
 
@@ -97,10 +104,11 @@ package croc_pkg;
     '{ idx: PeriphTimer,    start_addr: TimerAddrOffset,    end_addr: TimerAddrOffset   + TimerAddrRange}    // 4: Timer
   };
 
-
   // OBI is configured as 32 bit data, 32 bit address width
-  localparam int unsigned NumManagers     = 3; // DBG, Core Instr, Core Data
-  localparam int unsigned NumSubordinates = 2 + NumBanks; // User + Periph + Memory
+  localparam int unsigned CrocNumManagers     = 4; // DBG, Core Instr, Core Data, Userdomain
+  localparam int unsigned CrocNumSubordinates = 2 + CrocNumBanks; // User + Periph + Memory
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   // no optional bits in the OBI interconnect
   `OBI_TYPEDEF_MINIMAL_A_OPTIONAL(a_optional_t)
@@ -114,7 +122,7 @@ package croc_pkg;
   `OBI_TYPEDEF_RSP_T(mgr_obi_rsp_t, mgr_obi_r_chan_t)
 
   // Create types for OBI subordinates/slaves (out of the interconnect, into the device)
-  localparam obi_pkg::obi_cfg_t SbrObiCfg = obi_pkg::mux_grow_cfg(MgrObiCfg, NumManagers);
+  localparam obi_pkg::obi_cfg_t SbrObiCfg = obi_pkg::mux_grow_cfg(MgrObiCfg, CrocNumManagers);
   `OBI_TYPEDEF_A_CHAN_T(sbr_obi_a_chan_t, SbrObiCfg.AddrWidth, SbrObiCfg.DataWidth, SbrObiCfg.IdWidth, a_optional_t)
   `OBI_TYPEDEF_DEFAULT_REQ_T(sbr_obi_req_t, sbr_obi_a_chan_t)
   `OBI_TYPEDEF_R_CHAN_T(sbr_obi_r_chan_t, SbrObiCfg.DataWidth, SbrObiCfg.IdWidth, r_optional_t)
