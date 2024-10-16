@@ -4,7 +4,7 @@ package gpio_reg_pkg;
   parameter int GpioCount = 32;
 
   // Address widths within the block : Defines the max no of Block Addresses (2047)
-  parameter int BlockAw = 11;
+  parameter int BlockAw = 11; //todo can we use only 10?
 
   ////////////////////////////
   // Typedefs for registers //
@@ -69,30 +69,30 @@ package gpio_reg_pkg;
     gpio_reg2hw_gpio_mode_mreg_t [31:0] gpio_mode; // [639:576]
     gpio_reg2hw_gpio_en_mreg_t [31:0] gpio_en; // [575:544]
     gpio_reg2hw_gpio_out_mreg_t [31:0] gpio_out; // [543:512]
-    gpio_reg2hw_gpio_toggle_mreg_t [31:0] gpio_toggle; 
-    gpio_reg2hw_intrpt_rise_fall_en_mreg_t [31:0] intrpt_rise_fall_en;
-    gpio_reg2hw_intrpt_rise_fall_status_mreg_t [31:0] intrpt_rise_fall_status; 
+    gpio_reg2hw_gpio_toggle_mreg_t [31:0] gpio_toggle; // [127:64]
+    gpio_reg2hw_intrpt_rise_fall_en_mreg_t [31:0] intrpt_rise_fall_en; // [63:32]
+    gpio_reg2hw_intrpt_rise_fall_status_mreg_t [31:0] intrpt_rise_fall_status; // [31:0]
   } gpio_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    gpio_hw2reg_info_reg_t info; // [403:384]
-    gpio_hw2reg_gpio_in_mreg_t [31:0] gpio_in; // [383:352]
-    gpio_hw2reg_gpio_out_mreg_t [31:0] gpio_out; // [351:288]
-    gpio_hw2reg_intrpt_rise_fall_status_mreg_t [31:0] intrpt_rise_fall_status; 
+    gpio_hw2reg_info_reg_t info; // [179:160]
+    gpio_hw2reg_gpio_in_mreg_t [31:0] gpio_in; // [159:128]
+    gpio_hw2reg_gpio_out_mreg_t [31:0] gpio_out; // [127:64]
+    gpio_hw2reg_intrpt_rise_fall_status_mreg_t [31:0] intrpt_rise_fall_status; // [63:0]
   } gpio_hw2reg_t;
 
   // Register offsets
   parameter logic [BlockAw-1:0] GPIO_INFO_OFFSET = 11'h 0;
-  parameter logic [BlockAw-1:0] GPIO_GPIO_EN_OFFSET = 11'h 80;
-  parameter logic [BlockAw-1:0] GPIO_GPIO_IN_OFFSET = 11'h 100;
-  parameter logic [BlockAw-1:0] GPIO_GPIO_OUT_OFFSET = 11'h 180;
-  parameter logic [BlockAw-1:0] GPIO_GPIO_TOGGLE_OFFSET = 11'h 300;
-  parameter logic [BlockAw-1:0] GPIO_INTRPT_RISE_FALL_EN = 11'h 300;
-  parameter logic [BlockAw-1:0] GPIO_INTRPT_RISE_FALL_STATUS = 11'h 300;
+  parameter logic [BlockAw-1:0] GPIO_GPIO_EN_OFFSET = 11'h 4;
+  parameter logic [BlockAw-1:0] GPIO_GPIO_IN_OFFSET = 11'h 84;
+  parameter logic [BlockAw-1:0] GPIO_GPIO_OUT_OFFSET = 11'h 104;
+  parameter logic [BlockAw-1:0] GPIO_GPIO_TOGGLE_OFFSET = 11'h 184;
+  parameter logic [BlockAw-1:0] GPIO_INTRPT_RISE_FALL_EN = 11'h 204;
+  parameter logic [BlockAw-1:0] GPIO_INTRPT_RISE_FALL_STATUS = 11'h 284; //next useable address is h 304
 
   // Reset values for hwext registers and their fields
-  parameter logic [19:0] GPIO_INFO_RESVAL = 20'h 800;
+  parameter logic [19:0] GPIO_INFO_RESVAL = 20'h 304;
   parameter logic [9:0 ] GPIO_INFO_VERSION_RESVAL = 10'h 2;
   parameter logic [31:0] GPIO_GPIO_IN_RESVAL = 32'h 0;
   parameter logic [31:0] GPIO_GPIO_TOGGLE_RESVAL = 32'h 0;

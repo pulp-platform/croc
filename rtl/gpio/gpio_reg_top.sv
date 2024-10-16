@@ -12,10 +12,10 @@ module gpio_reg_top #(
   parameter type reg_rsp_t = logic,
   parameter int AW = 11
 ) (
-  input  logic clk_i,
-  input  logic rst_ni,
-  input  obi_req_t reg_req_i,/*reg_req_t reg_req_i,*/
-  output obi_req_t reg_rsp_o,/*reg_rsp_t reg_rsp_o,*/
+  input logic clk_i,
+  input logic rst_ni,
+  input  reg_req_t reg_req_i,
+  output reg_rsp_t reg_rsp_o,
   // To HW
   output gpio_reg_pkg::gpio_reg2hw_t reg2hw, // Write //hw is the pad
   input  gpio_reg_pkg::gpio_hw2reg_t hw2reg, // Read
@@ -63,3 +63,343 @@ module gpio_reg_top #(
 
   assign reg_rdata = reg_rdata_next ;
   assign reg_error = (devmode_i & addrmiss) | wr_err;
+
+
+  // Define SW related signals
+  // Format: <reg>_<field>_{wd|we|qs}
+  //        or <reg>_{wd|we|qs} if field == 1 or 0
+  logic [9:0] info_gpio_cnt_qs;
+  logic info_gpio_cnt_re;
+  logic [9:0] info_version_qs;
+  logic info_version_re;
+  logic cfg_glbl_intrpt_mode_qs;
+  logic cfg_glbl_intrpt_mode_wd;
+  logic cfg_glbl_intrpt_mode_we;
+  logic cfg_pin_lvl_intrpt_mode_qs;
+  logic cfg_pin_lvl_intrpt_mode_wd;
+  logic cfg_pin_lvl_intrpt_mode_we;
+  logic [1:0] gpio_mode_0_mo
+  logic gpio_mode_1_mode_31_we;
+  logic gpio_en_gpio_en_0_qs;
+  logic gpio_en_gpio_en_0_wd;
+  logic gpio_en_gpio_en_0_we;
+  logic gpio_en_gpio_en_1_qs;
+  logic gpio_en_gpio_en_1_wd;
+  logic gpio_en_gpio_en_1_we;
+  logic gpio_en_gpio_en_2_qs;
+  logic gpio_en_gpio_en_2_wd;
+  logic gpio_en_gpio_en_2_we;
+  logic gpio_en_gpio_en_3_qs;
+  logic gpio_en_gpio_en_3_wd;
+  logic gpio_en_gpio_en_3_we
+  // Register instances
+  // R[info]: V(True)
+
+  //   F[gpio_cnt]: 9:0
+  prim_subreg_ext #(
+    .DW    (10)
+  ) u_info_gpio_cnt (
+    .re     (info_gpio_cnt_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.info.gpio_cnt.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (info_gpio_cnt_qs)
+  );
+
+
+  //   F[version]: 19:10
+  prim_subreg_ext #(
+    .DW    (10)
+  ) u_info_version (
+    .re     (info_version_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.info.version.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .qs     (info_version_qs)
+  );
+
+  // Subregister 0 of Multireg gpio_clear
+  // R[gpio_clear]: V(True)
+
+  // F[gpio_clear_0]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_gpio_clear_gpio_clear_0 (
+    .re     (1'b0),
+    .we     (gpio_clear_gpio_clear_0_we),
+    .wd     (gpio_clear_gpio_clear_0_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (reg2hw.gpio_clear[0].qe),
+    .q      (reg2hw.gpio_clear[0].q ),
+    .qs     ()
+  );
+
+
+  // Subregister 0 of Multireg intrpt_rise_en
+  // R[intrpt_rise_en]: V(False)
+
+  // F[intrpt_rise_en_0]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h0)
+  ) u_intrpt_rise_en_intrpt_rise_en_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intrpt_rise_en_intrpt_rise_en_0_we),
+    .wd     (intrpt_rise_en_intrpt_rise_en_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intrpt_rise_en[0].q ),
+
+    // to register interface (read)
+    .qs     (intrpt_rise_en_intrpt_rise_en_0_qs)
+  );
+
+
+  // Subregister 0 of Multireg intrpt_status
+  // R[intrpt_status]: V(True)
+
+  // F[intrpt_status_0]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intrpt_status_intrpt_status_0 (
+    .re     (intrpt_status_intrpt_status_0_re),
+    .we     (intrpt_status_intrpt_status_0_we),
+    .wd     (intrpt_status_intrpt_status_0_wd),
+    .d      (hw2reg.intrpt_status[0].d),
+    .qre    (),
+    .qe     (reg2hw.intrpt_status[0].qe),
+    .q      (reg2hw.intrpt_status[0].q ),
+    .qs     (intrpt_status_intrpt_status_0_qs)
+  );
+
+
+
+  // Subregister 0 of Multireg intrpt_rise_status
+  // R[intrpt_rise_status]: V(False)
+
+  // F[intrpt_rise_status_0]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("W1C"),
+    .RESVAL  (1'h0)
+  ) u_intrpt_rise_status_intrpt_rise_status_0 (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (intrpt_rise_status_intrpt_rise_status_0_we),
+    .wd     (intrpt_rise_status_intrpt_rise_status_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intrpt_rise_status[0].de),
+    .d      (hw2reg.intrpt_rise_status[0].d ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intrpt_rise_status[0].q ),
+
+    // to register interface (read)
+    .qs     (intrpt_rise_status_intrpt_rise_status_0_qs)
+  );
+
+
+
+  logic [18:0] addr_hit;
+  always_comb begin
+    addr_hit = '0;
+    addr_hit[ 0] = (reg_addr == GPIO_INFO_OFFSET);
+    addr_hit[ 1] = (reg_addr == GPIO_CFG_OFFSET);
+    addr_hit[ 2] = (reg_addr == GPIO_GPIO_MODE_0_OFFSET);
+    addr_hit[ 3] = (reg_addr == GPIO_GPIO_MODE_1_OFFSET);
+    addr_hit[ 4] = (reg_addr == GPIO_GPIO_EN_OFFSET);
+    addr_hit[ 5] = (reg_addr == GPIO_GPIO_IN_OFFSET);
+    addr_hit[ 6] = (reg_addr == GPIO_GPIO_OUT_OFFSET);
+    addr_hit[ 7] = (reg_addr == GPIO_GPIO_SET_OFFSET);
+    addr_hit[ 8] = (reg_addr == GPIO_GPIO_CLEAR_OFFSET);
+    addr_hit[ 9] = (reg_addr == GPIO_GPIO_TOGGLE_OFFSET);
+    addr_hit[10] = (reg_addr == GPIO_INTRPT_RISE_EN_OFFSET);
+    addr_hit[11] = (reg_addr == GPIO_INTRPT_FALL_EN_OFFSET);
+    addr_hit[12] = (reg_addr == GPIO_INTRPT_LVL_HIGH_EN_OFFSET);
+    addr_hit[13] = (reg_addr == GPIO_INTRPT_LVL_LOW_EN_OFFSET);
+    addr_hit[14] = (reg_addr == GPIO_INTRPT_STATUS_OFFSET);
+    addr_hit[15] = (reg_addr == GPIO_INTRPT_RISE_STATUS_OFFSET);
+    addr_hit[16] = (reg_addr == GPIO_INTRPT_FALL_STATUS_OFFSET);
+    addr_hit[17] = (reg_addr == GPIO_INTRPT_LVL_HIGH_STATUS_OFFSET);
+    addr_hit[18] = (reg_addr == GPIO_INTRPT_LVL_LOW_STATUS_OFFSET);
+  end
+
+  assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
+
+  // Check sub-word write is permitted
+  always_comb begin
+    wr_err = (reg_we &
+              ((addr_hit[ 0] & (|(GPIO_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(GPIO_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(GPIO_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(GPIO_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(GPIO_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(GPIO_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(GPIO_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(GPIO_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(GPIO_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(GPIO_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(GPIO_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(GPIO_PERMIT[11] & ~reg_be))) |
+               (addr_hit[12] & (|(GPIO_PERMIT[12] & ~reg_be))) |
+               (addr_hit[13] & (|(GPIO_PERMIT[13] & ~reg_be))) |
+               (addr_hit[14] & (|(GPIO_PERMIT[14] & ~reg_be))) |
+               (addr_hit[15] & (|(GPIO_PERMIT[15] & ~reg_be))) |
+               (addr_hit[16] & (|(GPIO_PERMIT[16] & ~reg_be))) |
+               (addr_hit[17] & (|(GPIO_PERMIT[17] & ~reg_be))) |
+               (addr_hit[18] & (|(GPIO_PERMIT[18] & ~reg_be)))));
+  end
+
+  assign info_gpio_cnt_re = addr_hit[0] & reg_re & !reg_error;
+
+  assign info_version_re = addr_hit[0] & reg_re & !reg_error;
+
+  assign cfg_glbl_intrpt_mode_we = addr_hit[1] & reg_we & !reg_error;
+  assign cfg_glbl_intrpt_mode_wd = reg_wdata[0];
+
+  assign cfg_pin_lvl_intrpt_mode_we = addr_hit[1] & reg_we & !reg_error;
+  assign cfg_pin_lvl_intrpt_mode_wd = reg_wdata[1];
+
+  assign gpio_mode_0_mode_0_we = addr_hit[2] & reg_we & !reg_error;
+  assign gpio_mode_0_mode_0_wd = reg_wdata[1:0];
+
+  assign gpio_mode_0_mode_1_we = addr_hit[2] & reg_we & !reg_error;
+  assign gpio_mode_0_mode_1_wd = reg_wdata[3:2];
+
+  assign gpio_mode_0_mode_2_we = addr_hit[2] & reg_we & !reg_error;
+  assign gpio_mode_0_mode_2_wd = reg_wdata[5:4];
+
+  assign gpio_mode_0_mode_3_we = addr_hit[2] & reg_we & !reg_error;
+  assign gpio_mode_0_mode_3_wd = reg_wdata[7:6];
+
+  assign gpio_mode_0_mode_4_we = addr_hit[2] & reg_we & !reg_error;
+  assign gpio_mode_0_mode_4_wd = reg_wdata[9:8];
+
+  assign gpio_mode_0_mode_5_we = addr_hit[2] & reg_we & !reg_error;
+  assign gpio_mode_0_mode_
+
+  // Read data return
+  always_comb begin
+    reg_rdata_next = '0;
+    unique case (1'b1)
+      addr_hit[0]: begin
+        reg_rdata_next[9:0] = info_gpio_cnt_qs;
+        reg_rdata_next[19:10] = info_version_qs;
+      end
+
+      addr_hit[1]: begin
+        reg_rdata_next[0] = cfg_glbl_intrpt_mode_qs;
+        reg_rdata_next[1] = cfg_pin_lvl_intrpt_mode_qs;
+      end
+
+      addr_hit[2]: begin
+        reg_rdata_next[1:0] = gpio_mode_0_mode_0_qs;
+        reg_rdata_next[3:2] = gpio_mode_0_mode_1_qs;
+        reg_rdata_next[5:4] = gpio_mode_0_mode_2_qs;
+        reg_rdata_next[7:6] = gpio_mode_0_mode_3_qs;
+        reg_rdata_next[9:8] = gpio_mode_0_mode_4_qs;
+        reg_rdata_next[11:10] = gpio_mode_0_mode_5_qs;
+        reg_rdata_next[13:12] = gpio_mode_0_mode_6_qs;
+        reg_rdata_next[15:14] = gpio_mode_0_mode_7_qs;
+        reg_rdata_next[17:16] = gpio_mode_0_mode_8_qs;
+        reg_rdata_next[19:18] = gpio_mode_0_mode_9_qs;
+        reg_rdata_next[21:20] = gpio_mode_0_mode_10_qs;
+        reg_rdata_next[23:22] = gpio_mode_0_mode_11_qs;
+        reg_rdata_next[25:24] = gpio_mode_0_mode_12_qs;
+        reg_rdata_next[27:26] = gpio_mode_0_mode_13_qs;
+        reg_rdata_next[29:28] = gpio_mode_0_mode_14_qs;
+        reg_rdata_next[31:30] = gpio_mode_0_mode_15_qs;
+      end
+
+
+      default: begin
+        reg_rdata_next = '1;
+      end
+    endcase
+  end
+
+  // Unused signal tieoff
+
+  // wdata / byte enable are not always fully used
+  // add a blanket unused statement to handle lint waivers
+  logic unused_wdata;
+  logic unused_be;
+  assign unused_wdata = ^reg_wdata;
+  assign unused_be = ^reg_be;
+
+  // Assertions for Register Interface
+  `ASSERT(en2addrHit, (reg_we || reg_re) |-> $onehot0(addr_hit))
+
+endmodule
+
+module gpio_reg_top_intf
+#(
+  parameter int AW = 11,
+  localparam int DW = 32
+) (
+  input logic clk_i,
+  input logic rst_ni,
+  REG_BUS.in  regbus_slave,
+  // To HW
+  output gpio_reg_pkg::gpio_reg2hw_t reg2hw, // Write
+  input  gpio_reg_pkg::gpio_hw2reg_t hw2reg, // Read
+  // Config
+  input devmode_i // If 1, explicit error return for unmapped register access
+);
+ localparam int unsigned STRB_WIDTH = DW/8;
+
+`include "register_interface/typedef.svh"
+`include "register_interface/assign.svh"
+
+  // Define structs for reg_bus
+  typedef logic [AW-1:0] addr_t;
+  typedef logic [DW-1:0] data_t;
+  typedef logic [STRB_WIDTH-1:0] strb_t;
+  `REG_BUS_TYPEDEF_ALL(reg_bus, addr_t, data_t, strb_t)
+
+  reg_bus_req_t s_reg_req;
+  reg_bus_rsp_t s_reg_rsp;
+  
+  // Assign SV interface to structs
+  `REG_BUS_ASSIGN_TO_REQ(s_reg_req, regbus_slave)
+  `REG_BUS_ASSIGN_FROM_RSP(regbus_slave, s_reg_rsp)
+
+  
+
+  gpio_reg_top #(
+    .reg_req_t(reg_bus_req_t),
+    .reg_rsp_t(reg_bus_rsp_t),
+    .AW(AW)
+  ) i_regs (
+    .clk_i,
+    .rst_ni,
+    .reg_req_i(s_reg_req),
+    .reg_rsp_o(s_reg_rsp),
+    .reg2hw, // Write
+    .hw2reg, // Read
+    .devmode_i
+  );
+  
+endmodule
+
+
