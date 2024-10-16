@@ -55,14 +55,14 @@ module rom #(
   always_comb begin
     RspData= 32'h00000000;
     case(word_addr_q)
-      3'b000: RspData= 32'h486e6148; //this should be "Hann", check for Endianness tho
-      3'b001: RspData= 32'h48616E61;
-      3'b010: RspData= 32'h48616E62;
-      3'b011: RspData= 32'h48616E63;
-      3'b100: RspData= 32'h48616E64;
-      3'b101: RspData= 32'h48616E65;
-      3'b110: RspData= 32'h48616E66;
-      3'b111: RspData= 32'h00616E67;
+      3'b000: RspData= 32'h7369754C; //at the moment : "Luisa and Hannah"
+      3'b001: RspData= 32'h6E612061; //TODO: find a cool yoshi fact instead -> Japanese Yoshi eats Dolphins?
+      3'b010: RspData= 32'h61482064;
+      3'b011: RspData= 32'h68616E6E;
+      3'b100: RspData= 32'h00000000;
+      3'b101: RspData= 32'h00000000;
+      3'b110: RspData= 32'h00000000;
+      3'b111: RspData= 32'h00000000;
     endcase
   end
 

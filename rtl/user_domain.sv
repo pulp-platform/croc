@@ -30,27 +30,17 @@ assign interrupts_o = '0;
   // User`s Manager Buses
   // -------------------------
 
-  mgr_obi_req_t [NumUserMgr-1:0] all_user_mgr_obi_req;
-  mgr_obi_rsp_t [NumUserMgr-1:0] all_user_mgr_obi_rsp;
+  sbr_obi_req_t [NumUserMgr-1:0] all_user_mgr_obi_req;
+  sbr_obi_rsp_t [NumUserMgr-1:0] all_user_mgr_obi_rsp;
 
   // Placeholders Manager Bus
-  mgr_obi_req_t user_mgr_test0_obi_req; 
+  sbr_obi_req_t user_mgr_test0_obi_req; 
   assign user_mgr_test0_obi_req = '0;
-  /*assign user_mgr_test0_obi_req.a.aid = '0;
-  assign user_mgr_test0_obi_req.a.a_optional = '0;
-  assign user_mgr_test0_obi_req.a.we = '0;
-  assign user_mgr_test0_obi_req.a.be = '1;
-  assign user_mgr_test0_obi_req.a.wdata = '0;*/
-  mgr_obi_rsp_t user_mgr_test0_obi_rsp;
+  sbr_obi_rsp_t user_mgr_test0_obi_rsp;
 
-  mgr_obi_req_t user_mgr_test1_obi_req;
+  sbr_obi_req_t user_mgr_test1_obi_req;
   assign user_mgr_test1_obi_req = '0;
-  /*assign user_mgr_test1_obi_req.a.aid = '0;
-  assign user_mgr_test1_obi_req.a.a_optional = '0;
-  assign user_mgr_test1_obi_req.a.we = '0;
-  assign user_mgr_test1_obi_req.a.be = '1;
-  assign user_mgr_test1_obi_req.a.wdata = '0;*/
-  mgr_obi_rsp_t user_mgr_test1_obi_rsp;
+  sbr_obi_rsp_t user_mgr_test1_obi_rsp;
 
   assign all_user_mgr_obi_req[Test0]  = user_mgr_test0_obi_req; 
   assign user_mgr_test0_obi_rsp       = all_user_mgr_obi_rsp[Test0];
@@ -105,11 +95,18 @@ assign interrupts_o = '0;
   sbr_obi_req_t user_error_obi_req;
   sbr_obi_rsp_t user_error_obi_rsp;
 
+  // GPIO Subordinate Bus
+  //sbr_obi_req_t user_gpio_obi_req;
+  //sbr_obi_rsp_t user_gpio_obi_rsp;
+
   assign user_error_obi_req              = all_user_sbr_obi_req[XbarError];
   assign all_user_sbr_obi_rsp[XbarError] = user_error_obi_rsp;
 
   assign user_rom_obi_req                = all_user_sbr_obi_req[XbarRom];
   assign all_user_sbr_obi_rsp[XbarRom]   = user_rom_obi_rsp;
+
+  //assign user_gpio_obi_req                = all_user_sbr_obi_req[XbarGpio];
+  //assign all_user_sbr_obi_rsp[XbarGpio]   = user_gpio_obi_rsp;
 
   //----------------------------------------------------------------------------------------------------
   // demultiplex to user subordinates according to address map
@@ -182,5 +179,8 @@ assign interrupts_o = '0;
     .obi_req_i  ( user_error_obi_req ),
     .obi_rsp_o  ( user_error_obi_rsp )
   );
+
+  //GPIO Subordinate
+  //TODO
 
 endmodule

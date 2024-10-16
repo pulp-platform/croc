@@ -305,7 +305,7 @@ module croc_domain import croc_pkg::*; #() (
     .mgr_ports_rsp_i  ( all_sbr_obi_rsp ),
 
     .addr_map_i       ( croc_addr_map   ),
-    .en_default_idx_i ( 3'b111          ),
+    .en_default_idx_i ( 4'b1111          ),
     .default_idx_i    ( '0              )
   );
 

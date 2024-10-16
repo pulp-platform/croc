@@ -49,8 +49,8 @@ sbr_obi_req_t xbar_user_sbr_obi_req;
 sbr_obi_rsp_t xbar_user_sbr_obi_rsp;
 
 //Connection between Croc_domain and User_domain: Croc Sbr, User Mgr
-sbr_obi_req_t xbar_croc_sbr_obi_req;
-sbr_obi_rsp_t xbar_croc_sbr_obi_rsp;
+mgr_obi_req_t xbar_croc_sbr_obi_req;
+mgr_obi_rsp_t xbar_croc_sbr_obi_rsp;
 
 logic test_enable = 1'b0;
 logic [NumExternalIrqs-1:0] interrupts;
