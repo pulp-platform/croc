@@ -1,15 +1,15 @@
 module gpio_reg_top #(
     parameter obi_pkg::obi_cfg_t           ObiCfg      = obi_pkg::ObiDefaultConfig,
-    parameter type reg_req_t = logic,   // OBI request type
-    parameter type reg_rsp_t = logic,   // OBI response type
+    parameter type obi_req_t = logic,   // OBI request type
+    parameter type obi_rsp_t = logic,   // OBI response type
     parameter int AW = 11               // Address width
 ) (
     input logic clk_i,                  // Clock
     input logic rst_ni,                 // Active-low reset
 
     //Connection to Obi
-    input reg_req_t obi_reg_req_i,      // OBI request interface
-    output reg_rsp_t obi_reg_rsp_o,     // OBI response interface
+    input obi_req_t obi_reg_req_i,      // OBI request interface
+    output obi_rsp_t obi_reg_rsp_o,     // OBI response interface
 
     // To Hardware
     output gpio_reg_pkg::gpio_reg2hw_t reg2hw,   // Write from reg to HW
