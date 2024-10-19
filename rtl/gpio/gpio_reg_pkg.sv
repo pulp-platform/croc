@@ -59,7 +59,7 @@ package gpio_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    gpio_reg2hw_gpio_mode_mreg_t [GpioCount-1:0] gpio_dir; // [607:576]
+    gpio_reg2hw_gpio_dir_mreg_t [GpioCount-1:0] gpio_dir; // [607:576]
     gpio_reg2hw_gpio_en_mreg_t [GpioCount-1:0] gpio_en; // [575:544]
     gpio_reg2hw_gpio_out_mreg_t [GpioCount-1:0] gpio_out; // [543:512]
     gpio_reg2hw_gpio_toggle_mreg_t [GpioCount-1:0] gpio_toggle; // [127:64]
@@ -91,7 +91,7 @@ package gpio_reg_pkg;
 
   // Register index
   typedef enum int {
-    GPIO_GPIO_DIR
+    GPIO_GPIO_DIR,
     GPIO_GPIO_EN,
     GPIO_GPIO_IN,
     GPIO_GPIO_OUT,
@@ -110,7 +110,7 @@ package gpio_reg_pkg;
     4'b 1111, // index[ 3] GPIO_GPIO_OUT
     4'b 1111, // index[ 4] GPIO_GPIO_TOGGLE
     4'b 1111, // index[ 5] GPIO_INTRPT_RISE_FALL_EN
-    4'b 1111, // index[ 6] GPIO_INTRPT_RISE_FALL_STATUS
+    4'b 1111 // index[ 6] GPIO_INTRPT_RISE_FALL_STATUS
   };
 
 endpackage
