@@ -28,7 +28,7 @@ package gpio_reg_pkg;
 
   typedef struct packed {
     logic        q;
-    logic        qe;
+    //logic        qe;
   } gpio_reg2hw_gpio_toggle_mreg_t;
 
   typedef struct packed {
@@ -76,11 +76,11 @@ package gpio_reg_pkg;
 
   //TODO wieso jeweils 32 Register platz lassen? das würde ja platz für 32 * 32 GPIOS lassen????
   // Register offsets
-  parameter logic [BlockAw-1:0] GPIO_GPIO_DIR_OFFSET = 11'h 0; //32 Register ->128 Bytes
-  parameter logic [BlockAw-1:0] GPIO_GPIO_EN_OFFSET = 11'h 80; 
-  parameter logic [BlockAw-1:0] GPIO_GPIO_IN_OFFSET = 11'h 100; 
-  parameter logic [BlockAw-1:0] GPIO_GPIO_OUT_OFFSET = 11'h 180; 
-  parameter logic [BlockAw-1:0] GPIO_GPIO_TOGGLE_OFFSET = 11'h 200; 
+  parameter logic [BlockAw-1:0] GPIO_DIR_OFFSET = 11'h 0; //32 Register ->128 Bytes
+  parameter logic [BlockAw-1:0] GPIO_EN_OFFSET = 11'h 80; 
+  parameter logic [BlockAw-1:0] GPIO_IN_OFFSET = 11'h 100; 
+  parameter logic [BlockAw-1:0] GPIO_OUT_OFFSET = 11'h 180; 
+  parameter logic [BlockAw-1:0] GPIO_TOGGLE_OFFSET = 11'h 200; 
   parameter logic [BlockAw-1:0] GPIO_INTRPT_RISE_FALL_EN_OFFSET = 11'h 280; 
   parameter logic [BlockAw-1:0] GPIO_INTRPT_RISE_FALL_STATUS_OFFSET = 11'h 300; //next useable address is h 380
 
@@ -91,11 +91,11 @@ package gpio_reg_pkg;
 
   // Register index
   typedef enum int {
-    GPIO_GPIO_DIR,
-    GPIO_GPIO_EN,
-    GPIO_GPIO_IN,
-    GPIO_GPIO_OUT,
-    GPIO_GPIO_TOGGLE,
+    GPIO_DIR,
+    GPIO_EN,
+    GPIO_IN,
+    GPIO_OUT,
+    GPIO_TOGGLE,
     GPIO_INTRPT_RISE_FALL_EN,
     GPIO_INTRPT_RISE_FALL_STATUS
   } gpio_id_e;
