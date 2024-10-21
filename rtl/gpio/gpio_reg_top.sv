@@ -4,7 +4,6 @@ module gpio_reg_top #(
     parameter obi_pkg::obi_cfg_t           ObiCfg      = obi_pkg::ObiDefaultConfig,
     parameter type obi_req_t = logic,   // OBI request type
     parameter type obi_rsp_t = logic,   // OBI response type
-    parameter int AW = 11               // Address width
 ) (
     input logic clk_i,                  // Clock
     input logic rst_ni,                 // Active-low reset
@@ -46,13 +45,12 @@ module gpio_reg_top #(
     //id, valid and address handling
     assign id_d          = obi_reg_req_i.aid;
     assign valid_d       = obi_req_i.req;
-   //assign word_addr_d  = obi_reg_req_i.addr[BlockAw+1:2];
-    assign register_addr = obi_reg_req_i.addr[BlockAw+1:2];
-
+    assign word_addr_d  = obi_reg_req_i.addr[BlockAw+1:2];
+   
     //FF for the obi rsp signals (id and valid)
-    `FF(id_d, id_q, '0, clk_i, rst_ni);
-    `FF(valid_d, valid_q, '0, clk_i, rst_ni);
-    //`FF(word_addr_d, word_addr_q, '0, clk_i, rst_ni);
+    `FF(id_d, id_q, '0, clk_i, rst_ni)
+    `FF(valid_d, valid_q, '0, clk_i, rst_ni)
+    `FF(word_addr_d, word_addr_q, '0, clk_i, rst_ni)
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     //registers//
@@ -69,211 +67,151 @@ module gpio_reg_top #(
     parameter int IndexOffsetIrptSt  = 6*GpioCount - 1;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    //SEQ LOGIC//
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    `FF(register_storage_d, register_storage_q, '0, clk_i, rst_ni);
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
     //COMB LOGIC//
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     //-----------------------------------------------------------------------------------------------
     //WRITE
     //-----------------------------------------------------------------------------------------------
+  
     always comb begin
-      case (register_addr)
-        GPIO_DIR_OFFSET: begin
-          for (genvar i = 0; i < GpioCount; i++) begin
-
-            if (obi_reg_req_i.req && obi_reg_req_i.we) begin
+      for (genvar i = 0; i < GpioCount; i++) begin
+        case (word_addr_q)
+          GPIO_DIR_OFFSET: begin
+            if (obi_reg_req_i.req & obi_reg_req_i.we) begin
               register_storage_d[i + IndexOffsetDir] = obi_reg_req_i.wdata[i]; 
             end
-
+            err = 1'b0;
           end
-          err = 1'b0;
-        end
 
-        GPIO_EN_OFFSET: begin
-          for (genvar i = 0; i < GpioCount; i++) begin
-
-            if (obi_reg_req_i.req && obi_reg_req_i.we) begin
+          GPIO_EN_OFFSET: begin
+            if (obi_reg_req_i.req & obi_reg_req_i.we) begin
               register_storage_d[i + IndexOffsetEn] = obi_reg_req_i.wdata[i]; 
             end
-
+            err = 1'b0;
           end
-          err = 1'b0;
-        end
 
-        GPIO_IN_OFFSET: begin
-          for (genvar i = 0; i < GpioCount; i++) begin
-
+          GPIO_IN_OFFSET: begin
             register_storage_d[i + IndexOffsetIn] = hw2reg.gpio_in[i].d; //write from GPIOlogic
-
+            err = 1'b0;
           end
-          err = 1'b0;
-        end
 
-        GPIO_OUT_OFFSET: begin
-          for (genvar i = 0; i < GpioCount; i++) begin
-
-            if (obi_reg_req_i.req && obi_reg_req_i.we) begin
+          GPIO_OUT_OFFSET: begin
+            if (obi_reg_req_i.req & obi_reg_req_i.we) begin
               register_storage_d[i + IndexOffsetOut] = obi_reg_req_i.wdata[i]; 
             end
-
             if (hw2reg.gpio_out[i].de) begin 
               register_storage_d[i + IndexOffsetOut] = hw2reg.gpio_out[i].d;
             end
-
+            err = 1'b0;
           end
-          err = 1'b0;
-        end
 
-        GPIO_TOGGLE_OFFSET: begin
-          for (genvar i = 0; i < GpioCount; i++) begin
-
-            if (obi_reg_req_i.req && obi_reg_req_i.we) begin
+          GPIO_TOGGLE_OFFSET: begin
+            if (obi_reg_req_i.req & obi_reg_req_i.we) begin
               register_storage_d[i + IndexOffsetToggle] = obi_reg_req_i.wdata[i]; 
             end
-
+            err = 1'b0;
           end
-          err = 1'b0;
-        end
 
-        GPIO_INTRPT_RISE_FALL_EN_OFFSET: begin
-          for (genvar i = 0; i < GpioCount; i++) begin
-
-            if (obi_reg_req_i.req && obi_reg_req_i.we) begin
+          GPIO_INTRPT_RISE_FALL_EN_OFFSET: begin
+            if (obi_reg_req_i.req & obi_reg_req_i.we) begin
               register_storage_d[i + IndexOffsetIrptEn] = obi_reg_req_i.wdata[i]; 
             end
+            err = 1'b0;
+          end 
 
-          end
-          err = 1'b0;
-        end 
-
-        GPIO_INTRPT_RISE_FALL_STATUS_OFFSET: begin
-          for (genvar i = 0; i < GpioCount; i++) begin
-
-            if (obi_reg_req_i.req && obi_reg_req_i.we) begin
+          GPIO_INTRPT_RISE_FALL_STATUS_OFFSET: begin
+            if (obi_reg_req_i.req & obi_reg_req_i.we) begin
               register_storage_d[i + IndexOffsetIrptSt] = obi_reg_req_i.wdata[i]; 
             end
-
             if (hw2reg.intrpt_rise_fall_status[i].de) begin
               register_storage_d[i + IndexOffsetIrptSt] = hw2reg.intrpt_rise_fall_status[i].d;
             end
-
+            err = 1'b0;
           end
-          err = 1'b0;
-        end
 
-        default: begin
-          err = 1'b1; // unmapped register access
-        end
-
-      endcase
+          default: begin
+            err = 1'b1; // unmapped register access
+          end
+        endcase
+      end
     end
 
     //-----------------------------------------------------------------------------------------------
     //READ
     //-----------------------------------------------------------------------------------------------
+
     always_comb begin
       rsp_data = 32'h0;  // Default value for read data
-      case (register_addr)
-
-        GPIO_DIR_OFFSET: begin
-          for (int i = 0; i < GpioCount; i++) begin
-
+      for (genvar i = 0; i < GpioCount; i++) begin
+        case (word_addr_q)
+          GPIO_DIR_OFFSET: begin
             reg2hw.gpio_dir[i].q = register_storage_q[i + IndexOffsetDir];
-
-            if (obi_reg_req_i.req && ~obi_reg_req_i.we && obi_reg_req_i.rready) begin
+            if (obi_reg_req_i.req & ~obi_reg_req_i.we & obi_reg_req_i.rready) begin
               rsp_data[i] = register_storage_q[i + IndexOffsetDir];
             end
-
+            err = 1'b0;
           end
-          err = 1'b0;
-        end
 
-        GPIO_EN_OFFSET: begin
-          for (int i = 0; i < GpioCount; i++) begin
-
+          GPIO_EN_OFFSET: begin
             reg2hw.gpio_en[i].q = register_storage_q[i + IndexOffsetEn];
-
-            if (obi_reg_req_i.req && ~obi_reg_req_i.we && obi_reg_req_i.rready) begin
+            if (obi_reg_req_i.req & ~obi_reg_req_i.we & obi_reg_req_i.rready) begin
               rsp_data[i] = register_storage_q[i + IndexOffsetEn];
             end
-
+            err = 1'b0;
           end
-          err = 1'b0;
-        end
 
-        GPIO_IN_OFFSET: begin
-          for (int i = 0; i < GpioCount; i++) begin
-
-            if (obi_reg_req_i.req && ~obi_reg_req_i.we && obi_reg_req_i.rready) begin
+          GPIO_IN_OFFSET: begin
+            if (obi_reg_req_i.req & ~obi_reg_req_i.we & obi_reg_req_i.rready) begin
               rsp_data[i] = register_storage_q[i + IndexOffsetIn];
             end 
-
+            err = 1'b0;
           end
-          err = 1'b0;
-        end
 
-        GPIO_OUT_OFFSET: begin
-          for (int i = 0; i < GpioCount; i++) begin
-
+          GPIO_OUT_OFFSET: begin
             reg2hw.gpio_out[i].q = register_storage_q[i + IndexOffsetOut];
-
-            if (obi_reg_req_i.req && ~obi_reg_req_i.we && obi_reg_req_i.rready) begin
+            if (obi_reg_req_i.req & ~obi_reg_req_i.we & obi_reg_req_i.rready) begin
               rsp_data[i] = register_storage_q[i + IndexOffsetOut];
             end
-
+            err = 1'b0;
           end
-          err = 1'b0;
-        end
 
-        GPIO_TOGGLE_OFFSET: begin
-          for (int i = 0; i < GpioCount; i++) begin
-
+          GPIO_TOGGLE_OFFSET: begin
             reg2hw.gpio_toggle[i].q = register_storage_q[i + IndexOffsetToggle];
-
-            if (obi_reg_req_i.req && ~obi_reg_req_i.we && obi_reg_req_i.rready) begin
+            if (obi_reg_req_i.req & ~obi_reg_req_i.we & obi_reg_req_i.rready) begin
               rsp_data[i] = register_storage_q[i + IndexOffsetToggle];
             end
-
+            err = 1'b0;
           end
-          err = 1'b0;
-        end
 
-        GPIO_INTRPT_RISE_FALL_EN_OFFSET: begin
-          for (int i = 0; i < GpioCount; i++) begin
-
+          GPIO_INTRPT_RISE_FALL_EN_OFFSET: begin
             reg2hw.intrpt_rise_fall_en[i].q = register_storage_q[i + IndexOffsetIrptEn];
-
-            if (obi_reg_req_i.req && ~obi_reg_req_i.we && obi_reg_req_i.rready) begin
+            if (obi_reg_req_i.req & ~obi_reg_req_i.we & obi_reg_req_i.rready) begin
               rsp_data[i] = register_storage_q[i + IndexOffsetIrptEn];
             end
-
+            err = 1'b0;
           end
-          err = 1'b0;
-        end
 
-        GPIO_INTRPT_RISE_FALL_STATUS_OFFSET: begin
-          for (int i = 0; i < GpioCount; i++) begin
-
+          GPIO_INTRPT_RISE_FALL_STATUS_OFFSET: begin
             reg2hw.intrpt_rise_fall_status[i].q = register_storage_q[i + IndexOffsetIrptSt];
-
-            if (obi_reg_req_i.req && ~obi_reg_req_i.we && obi_reg_req_i.rready) begin
+            if (obi_reg_req_i.req & ~obi_reg_req_i.we & obi_reg_req_i.rready) begin
               rsp_data[i] = register_storage_q[i + IndexOffsetIrptSt];
             end
-
+            err = 1'b0;
           end
-          err = 1'b0;
-        end
 
-        default: begin
-          rsp_data = 32'hBADCAB1E;  // Return error value in devmode for unmapped reads
-          err = 1'b1;
-        end
-      endcase
+          default: begin
+            rsp_data = 32'hBADCAB1E;  // Return error value in devmode for unmapped reads
+            err = 1'b1;
+          end
+        endcase
+      end
     end
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    //SEQ LOGIC//
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    `FF(register_storage_d, register_storage_q, '0, clk_i, rst_ni);
 
 endmodule

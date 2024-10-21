@@ -38,19 +38,15 @@ module gpio #(
   //-----------------------------------------------------------------------------------------------
 
   // Internal Signals
-  gpio_reg2hw_t s_reg2hw; //Interface from Register to Internal GPIO Logic(HW)
-  gpio_hw2reg_t s_hw2reg; //Interface from Internal GPIO Logic(HW) to Register
+  gpio_reg2hw_t reg2hw; //Interface from Register to Internal GPIO Logic(HW)
+  gpio_hw2reg_t hw2reg; //Interface from Internal GPIO Logic(HW) to Register
 
   // Synchronized inputs
-  logic [NrGPIOs-1:0] s_gpio_in_sync;
+  logic [NrGPIOs-1:0] gpio_in_sync;
 
   // Individual interrupt signals
-  logic [NrGPIOs-1:0] s_gpio_rise_fall_edge;
-  logic [NrGPIOs-1:0] s_gpio_rise_fall_intrpt;
-
-  // Aggregated interrupts per GPIO
-  logic [NrGPIOs-1:0] interrupts_edges; // Aggregates new interrupts
-  logic [NrGPIOs-1:0] interrupts_pending; // Aggregates pending interrupts
+  logic [NrGPIOs-1:0] gpio_rise_fall_edge;
+  logic [NrGPIOs-1:0] gpio_rise_fall_intrpt;
 
   // Instantiate register file
   gpio_reg_top #(
@@ -61,8 +57,8 @@ module gpio #(
     .rst_ni,
     .obi_reg_req_i,
     .obi_reg_rsp_o,
-    .reg2hw(s_reg2hw),
-    .hw2reg(s_hw2reg),
+    .reg2hw(reg2hw),
+    .hw2reg(hw2reg),
   );
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -70,7 +66,7 @@ module gpio #(
   ////////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Assign synchronized gpio inputs to external port
-  assign gpio_in_sync_o = s_gpio_in_sync;
+  assign gpio_in_sync_o = gpio_in_sync;
 
   // Instantiate logic for individual gpios in blocks of DATA_WIDTH
   for (genvar gpio_idx = 0; gpio_idx < NrGPIOs; gpio_idx++) begin : gen_gpios
@@ -79,35 +75,44 @@ module gpio #(
         //Instantiate Synchronizer / Sample Input to Clock & Detect Edges
         //-----------------------------------------------------------------------------------------------
 
-        gpio_input_stage #(
-        .NrSyncStages(2)
-        ) i_sync_gpio_input(
-        .clk_i,
-        .rst_ni,
-        .en_i(s_reg2hw.gpio_en[gpio_idx].q && s_reg2hw.gpio_dir[gpio_idx].q == 0),
-        .serial_i(gpio_in[gpio_idx]),
-        .r_f_edge_o(s_gpio_rise_fall_edge[gpio_idx]), 
-        .serial_o(s_gpio_in_sync[gpio_idx])
+        parameter int  NrSyncStages = 2;
+        logic          f_edge;
+        logic          r_edge;
+
+        assign f_edge = (~serial_d) & serial_q;
+        assign r_edge = serial_d & (~serial_q);
+        assign gpio_ingpio_rise_fall_edge_sync[gpio_idx] = f_edge | r_edge;
+        assign gpio_in_sync[gpio_idx] =  serial_q;
+
+        sync #(
+            .STAGES (NrSyncStages)
+        ) i_sync (
+            .clk_i(clk),
+            .rst_ni,
+            .gpio_in[gpio_idx],
+            .serial_o (serial_d)
         );
+
+        `FF(serial_d, serial_q, '0, clk_i, rst_ni)
 
         //-----------------------------------------------------------------------------------------------
         //Interface Internal GPIO Logic & IOCell
         //-----------------------------------------------------------------------------------------------
         
         // Assign GPIO_IN register
-        assign s_hw2reg.gpio_in[gpio_idx].d = s_gpio_in_sync[gpio_idx];
+        assign hw2reg.gpio_in[gpio_idx].d = gpio_in_sync[gpio_idx];
 
         // Control output with GPIO_OUT register
-        assign gpio_out[gpio_idx] = s_reg2hw.gpio_out[gpio_idx].q;
+        assign gpio_out[gpio_idx] = reg2hw.gpio_out[gpio_idx].q;
 
         // Control gpio_tx_en_o depending on GPIO_DIR register value
         always_comb begin
 
-            `assert_condition(s_reg2hw.gpio_dir[gpio_idx], rst_ni);
+            `assert_condition(reg2hw.gpio_dir[gpio_idx], rst_ni);
 
             gpio_tx_en_o[gpio_idx] = 1'b0; //DEFAULT-INPUT
 
-            if (s_reg2hw.gpio_dir[gpio_idx]) begin //OUTPUT
+            if (reg2hw.gpio_dir[gpio_idx]) begin //OUTPUT
                 gpio_tx_en_o[gpio_idx] = 1'b1;
             end
 
@@ -119,13 +124,13 @@ module gpio #(
 
         always_comb begin
 
-            if (s_reg2hw.gpio_en[gpio_idx].q && s_reg2hw.gpio_dir[gpio_idx].q && s_reg2hw.gpio_toggle[gpio_idx].q) begin
-            `assert_condition (s_reg2hw.gpio_en[gpio_idx].q && s_reg2hw.gpio_toggle[gpio_idx].q, rst_ni);
-            s_hw2reg.gpio_out[gpio_idx].d  = ~s_reg2hw.gpio_out[gpio_idx].q;
-            s_hw2reg.gpio_out[gpio_idx].de = 1'b1;
+            if (reg2hw.gpio_en[gpio_idx].q & reg2hw.gpio_dir[gpio_idx].q & reg2hw.gpio_toggle[gpio_idx].q) begin
+            `assert_condition (reg2hw.gpio_en[gpio_idx].q && reg2hw.gpio_toggle[gpio_idx].q, rst_ni);
+            hw2reg.gpio_out[gpio_idx].d  = ~reg2hw.gpio_out[gpio_idx].q;
+            hw2reg.gpio_out[gpio_idx].de = 1'b1;
             end else begin
-            s_hw2reg.gpio_out[gpio_idx].d  = s_reg2hw.gpio_out[gpio_idx].q;
-            s_hw2reg.gpio_out[gpio_idx].de = 1'b0;
+            hw2reg.gpio_out[gpio_idx].d  = reg2hw.gpio_out[gpio_idx].q;
+            hw2reg.gpio_out[gpio_idx].de = 1'b0;
             end
 
         end
@@ -135,18 +140,18 @@ module gpio #(
         //-----------------------------------------------------------------------------------------------
 
         // Mask Detected Edges with Interrupt Enable and GPIO Enable
-        assign s_gpio_rise_fall_intrpt = s_gpio_rise_fall_edge & s_reg2hw.intrpt_rise_fall_en[gpio_idx].q & s_reg2hw.gpio_en[gpio_idx].q;
+        assign gpio_rise_fall_intrpt = gpio_ingpio_rise_fall_edge_sync & reg2hw.intrpt_rise_fall_en[gpio_idx].q & reg2hw.gpio_en[gpio_idx].q;
 
         // Assign interrupt output signal depending on inerrupt mode
-        assign global_interrupt_o = |s_gpio_rise_fall_intrpt;
+        assign global_interrupt_o = |gpio_rise_fall_intrpt;
 
         always_comb begin
-            `assert_condition ({s_reg2hw.gpio_en[gpio_idx].q && s_reg2hw.intrpt_rise_fall_status[gpio_idx].q}, rst_ni);
+            `assert_condition ({reg2hw.gpio_en[gpio_idx].q && reg2hw.intrpt_rise_fall_status[gpio_idx].q}, rst_ni);
 
             // Set new bits of the the status register when an interrupt arrives.
-            s_hw2reg.intrpt_rise_fall_status[gpio_idx].d   = s_gpio_rise_fall_intrpt[gpio_idx] | s_reg2hw.intrpt_rise_fall_status[gpio_idx].q;
+            hw2reg.intrpt_rise_fall_status[gpio_idx].d   = gpio_rise_fall_intrpt[gpio_idx] | reg2hw.intrpt_rise_fall_status[gpio_idx].q;
             // Only update the registers (set de = 1) if there are any new interrupts of the given type.
-            s_hw2reg.intrpt_rise_fall_status[gpio_idx].de  = |s_gpio_rise_fall_intrpt[gpio_idx];
+            hw2reg.intrpt_rise_fall_status[gpio_idx].de  = |gpio_rise_fall_intrpt[gpio_idx];
 
         end 
     end
