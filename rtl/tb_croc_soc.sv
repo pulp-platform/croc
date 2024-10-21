@@ -182,7 +182,7 @@ module tb_croc_soc #(
         bit [31:0] data;
         bit [7:0] byte_data;
         int byte_count;
-        const dm::sbcs_t sbcs = dm::sbcs_t'{sbautoincrement: 1'b1, sbaccess: 2, default: '0};
+        static dm::sbcs_t sbcs = dm::sbcs_t'{sbautoincrement: 1'b1, sbaccess: 2, default: '0};
 
         file = $fopen(filename, "r");
         if (file == 0) begin
