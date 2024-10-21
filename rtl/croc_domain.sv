@@ -310,7 +310,8 @@ module croc_domain import croc_pkg::*; #() (
 
   for (genvar i = 0; i < NumBanks; i++) begin : gen_sram_bank
     logic bank_req, bank_we, bank_gnt, bank_single_err;
-    logic [SbrObiCfg.DataWidth-1:0] bank_addr;
+    logic [SbrObiCfg.AddrWidth-1:0] bank_byte_addr;
+    logic [SbrObiCfg.AddrWidth-1-2:0] bank_word_addr;
     logic [SbrObiCfg.DataWidth-1:0] bank_wdata, bank_rdata;
     logic [SbrObiCfg.DataWidth/8-1:0] bank_be;
 
@@ -325,15 +326,17 @@ module croc_domain import croc_pkg::*; #() (
       .obi_req_i ( xbar_mem_bank_obi_req[i] ),
       .obi_rsp_o ( xbar_mem_bank_obi_rsp[i] ),
 
-      .req_o   ( bank_req   ),
-      .we_o    ( bank_we    ),
-      .addr_o  ( bank_addr  ),
-      .wdata_o ( bank_wdata ),
-      .be_o    ( bank_be    ),
+      .req_o   ( bank_req       ),
+      .we_o    ( bank_we        ),
+      .addr_o  ( bank_byte_addr ),
+      .wdata_o ( bank_wdata     ),
+      .be_o    ( bank_be        ),
 
       .gnt_i   ( bank_gnt   ),
       .rdata_i ( bank_rdata )
     );
+
+    assign bank_word_addr = bank_byte_addr[SbrObiCfg.AddrWidth-1:2];
 
     tc_sram #(
       .NumWords  ( BankNumWords ),
@@ -344,9 +347,9 @@ module croc_domain import croc_pkg::*; #() (
       .clk_i,
       .rst_ni,
 
-      .req_i   ( bank_req   ),
-      .we_i    ( bank_we    ),
-      .addr_i  ( bank_addr  ),
+      .req_i   ( bank_req       ),
+      .we_i    ( bank_we        ),
+      .addr_i  ( bank_word_addr ),
 
       .wdata_i ( bank_wdata ),
       .be_i    ( bank_be    ),
