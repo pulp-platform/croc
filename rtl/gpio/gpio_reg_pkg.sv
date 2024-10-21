@@ -15,7 +15,7 @@ package gpio_reg_pkg;
   //-----------------------------------------------------------------------------------------------
 
   typedef struct packed {
-    logic [1:0]  q;
+    logic        q;
   } gpio_reg2hw_gpio_dir_mreg_t;
 
   typedef struct packed {
@@ -28,7 +28,6 @@ package gpio_reg_pkg;
 
   typedef struct packed {
     logic        q;
-    //logic        qe;
   } gpio_reg2hw_gpio_toggle_mreg_t;
 
   typedef struct packed {
@@ -99,19 +98,6 @@ package gpio_reg_pkg;
     GPIO_INTRPT_RISE_FALL_EN,
     GPIO_INTRPT_RISE_FALL_STATUS
   } gpio_id_e;
-
-  // Register width information to check illegal writes
-  // These are permissions for OBI AND(!) GPIO HW
-  //TODO: wouldnt it make sense if separated permissions? OBI should not write in GPIO_IN
-  parameter logic [3:0] GPIO_PERMIT [7] = '{
-    4'b 1111, // index[ 0] GPIO_GPIO_DIR
-    4'b 1111, // index[ 1] GPIO_GPIO_EN
-    4'b 1111, // index[ 2] GPIO_GPIO_IN 
-    4'b 1111, // index[ 3] GPIO_GPIO_OUT
-    4'b 1111, // index[ 4] GPIO_GPIO_TOGGLE
-    4'b 1111, // index[ 5] GPIO_INTRPT_RISE_FALL_EN
-    4'b 1111 // index[ 6] GPIO_INTRPT_RISE_FALL_STATUS
-  };
 
 endpackage
 
