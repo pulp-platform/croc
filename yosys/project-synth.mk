@@ -22,6 +22,7 @@ export YOSYS_KEEP_HIER_INST :=  "t:croc_soc*" \
 								"t:user_domain*" \
 								"t:core_wrap*" \
 								"t:ibex_register_file*" \
+								"t:ibex_cs_registers*" \
 								"t:dmi_jtag__*" \
 								"t:dm_top*" \
 								"t:timer_unit*" \
