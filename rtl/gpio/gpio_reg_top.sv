@@ -1,3 +1,5 @@
+`include "common_cells/registers.svh"
+
 module gpio_reg_top #(
     parameter obi_pkg::obi_cfg_t           ObiCfg      = obi_pkg::ObiDefaultConfig,
     parameter type obi_req_t = logic,   // OBI request type
@@ -82,7 +84,7 @@ module gpio_reg_top #(
     always comb begin
       case (register_addr)
         GPIO_DIR_OFFSET: begin
-          for (int i = 0; i < GpioCount; i++) begin
+          for (genvar i = 0; i < GpioCount; i++) begin
 
             if (obi_reg_req_i.req && obi_reg_req_i.we) begin
               register_storage_d[i + IndexOffsetDir] = obi_reg_req_i.wdata[i]; 
@@ -93,7 +95,7 @@ module gpio_reg_top #(
         end
 
         GPIO_EN_OFFSET: begin
-          for (int i = 0; i < GpioCount; i++) begin
+          for (genvar i = 0; i < GpioCount; i++) begin
 
             if (obi_reg_req_i.req && obi_reg_req_i.we) begin
               register_storage_d[i + IndexOffsetEn] = obi_reg_req_i.wdata[i]; 
@@ -104,7 +106,7 @@ module gpio_reg_top #(
         end
 
         GPIO_IN_OFFSET: begin
-          for (int i = 0; i < GpioCount; i++) begin
+          for (genvar i = 0; i < GpioCount; i++) begin
 
             register_storage_d[i + IndexOffsetIn] = hw2reg.gpio_in[i].d; //write from GPIOlogic
 
@@ -113,7 +115,7 @@ module gpio_reg_top #(
         end
 
         GPIO_OUT_OFFSET: begin
-          for (int i = 0; i < GpioCount; i++) begin
+          for (genvar i = 0; i < GpioCount; i++) begin
 
             if (obi_reg_req_i.req && obi_reg_req_i.we) begin
               register_storage_d[i + IndexOffsetOut] = obi_reg_req_i.wdata[i]; 
@@ -128,7 +130,7 @@ module gpio_reg_top #(
         end
 
         GPIO_TOGGLE_OFFSET: begin
-          for (int i = 0; i < GpioCount; i++) begin
+          for (genvar i = 0; i < GpioCount; i++) begin
 
             if (obi_reg_req_i.req && obi_reg_req_i.we) begin
               register_storage_d[i + IndexOffsetToggle] = obi_reg_req_i.wdata[i]; 
@@ -139,7 +141,7 @@ module gpio_reg_top #(
         end
 
         GPIO_INTRPT_RISE_FALL_EN_OFFSET: begin
-          for (int i = 0; i < GpioCount; i++) begin
+          for (genvar i = 0; i < GpioCount; i++) begin
 
             if (obi_reg_req_i.req && obi_reg_req_i.we) begin
               register_storage_d[i + IndexOffsetIrptEn] = obi_reg_req_i.wdata[i]; 
@@ -150,7 +152,7 @@ module gpio_reg_top #(
         end 
 
         GPIO_INTRPT_RISE_FALL_STATUS_OFFSET: begin
-          for (int i = 0; i < GpioCount; i++) begin
+          for (genvar i = 0; i < GpioCount; i++) begin
 
             if (obi_reg_req_i.req && obi_reg_req_i.we) begin
               register_storage_d[i + IndexOffsetIrptSt] = obi_reg_req_i.wdata[i]; 
