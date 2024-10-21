@@ -134,30 +134,20 @@ module gpio #(
         //Interrupt 
         //-----------------------------------------------------------------------------------------------
 
-        //TODO
         // Mask Detected Edges with Interrupt Enable and GPIO Enable
         assign s_gpio_rise_fall_intrpt = s_gpio_rise_fall_edge & s_reg2hw.intrpt_rise_fall_en[gpio_idx].q & s_reg2hw.gpio_en[gpio_idx].q;
-
-        // Aggregate all pending interrupts. Aggregation of all sticky interrupts.
-        assign interrupts_pending = s_reg2hw.intrpt_rise_fall_status;
 
         // Assign interrupt output signal depending on inerrupt mode
         assign global_interrupt_o = |s_gpio_rise_fall_intrpt;
 
         always_comb begin
             `assert_condition ({s_reg2hw.gpio_en[gpio_idx].q && s_reg2hw.intrpt_rise_fall_status[gpio_idx].q}, rst_ni);
-        
-            if (s_reg2hw.gpio_en[gpio_idx].q && s_reg2hw.intrpt_rise_fall_status[gpio_idx].q) begin 
-            s_hw2reg.intrpt_rise_fall_status[gpio_idx].d   = '0;
-            s_hw2reg.intrpt_rise_fall_status[gpio_idx].de  = 1'b1;
-            end else begin
+
             // Set new bits of the the status register when an interrupt arrives.
             s_hw2reg.intrpt_rise_fall_status[gpio_idx].d   = s_gpio_rise_fall_intrpt[gpio_idx] | s_reg2hw.intrpt_rise_fall_status[gpio_idx].q;
             // Only update the registers (set de = 1) if there are any new interrupts of the given type.
             s_hw2reg.intrpt_rise_fall_status[gpio_idx].de  = |s_gpio_rise_fall_intrpt[gpio_idx];
-            end
 
         end 
-        assign s_hw2reg.intrpt_status[gpio_idx].d = interrupts_pending[gpio_idx];
     end
 endmodule
