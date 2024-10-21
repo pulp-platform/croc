@@ -85,8 +85,8 @@ package gpio_reg_pkg;
   parameter logic [BlockAw-1:0] GPIO_INTRPT_RISE_FALL_STATUS_OFFSET = 11'h 300; //next useable address is h 380
 
   // Reset values for hwext registers and their fields
-  parameter logic [31:0] GPIO_GPIO_IN_RESVAL = 32'h 0;
-  parameter logic [31:0] GPIO_GPIO_TOGGLE_RESVAL = 32'h 0;
+  parameter logic [31:0] GPIO_IN_RESVAL = 32'h 0;
+  parameter logic [31:0] GPIO_TOGGLE_RESVAL = 32'h 0;
   parameter logic [31:0] GPIO_INTRPT_RISE_FALL_STATUS_RESVAL = 32'h 0;
 
   // Register index
