@@ -246,20 +246,21 @@ module tc_sram #(
     always_comb begin : gen_bit_interleaving
       for (int i = 0; i < 32; i++) begin
           // duplicate each bit
-          wdata64[2*i]   = wdata_i[0][i]; // even bits (active if addr MSB 0)
-          bm64[2*i]      = bm[0][i] & ~addr_i[0][8];
-          wdata64[2*i+1] = wdata_i[0][i]; // odd bits (active if addr MSB 1)
-          bm64[2*i+1]    = bm[0][i] & addr_i[0][8];
+          wdata64[2*i]   = wdata_i[0][i]; // even bits (active if addr LSB is 0)
+          bm64[2*i]      = bm[0][i] & ~addr_i[0][0];
+          wdata64[2*i+1] = wdata_i[0][i]; // odd bits  (active if addr LSB is 1)
+          bm64[2*i+1]    = bm[0][i] & addr_i[0][0];
 
           if(~sel_q) begin
-            rdata_o[0][i] = rdata64[2*i]; // even bits
+            rdata_o[0][i] = rdata64[2*i];   // even bits
           end else begin
             rdata_o[0][i] = rdata64[2*i+1]; // odd bits
           end
       end
     end
 
-    assign sel_d = addr_i[0][8];
+    // LSB needed for read in next cycle
+    assign sel_d = addr_i[0][0];
 
     always_ff @(posedge clk_i or negedge rst_ni) begin : proc_mem_sel_q
       if(~rst_ni)             sel_q <= '0;
@@ -268,7 +269,7 @@ module tc_sram #(
 
     RM_IHPSG13_1P_256x64_c2_bm_bist i_cut (
      .A_CLK   ( clk_i   ),
-     .A_ADDR  ( addr_i [0][7:0] ),
+     .A_ADDR  ( addr_i [0][8:1] ),
      .A_BM    ( bm64    ),
      .A_MEN   ( req_i   ),
      .A_WEN   ( we_i    ),

@@ -40,8 +40,8 @@ module tc_clk_mux2 (
   sg13g2_mux2_1 i_mux (
     .A0 ( clk0_i    ),
     .A1 ( clk1_i    ),
-    .S   ( clk_sel_i ),
-    .X   ( clk_o     )
+    .S  ( clk_sel_i ),
+    .X  ( clk_o     )
   );
 
 endmodule
@@ -54,12 +54,17 @@ module tc_clk_gating #(
     input  logic test_en_i,
     output logic clk_o
   );
-  (* keep *)(* dont_touch = "true" *)
-  sg13g2_slgcp_1 i_clkgate (
-    .GATE ( en_i ),
-    .SCE  ( test_en_i   ),
-    .CLK  ( clk_i ),
-    .GCLK ( clk_o )
-  );
+
+  if (IS_FUNCTIONAL || `ifdef USE_CLKGATE 1 `else 0 `endif) begin
+    (* keep *)(* dont_touch = "true" *)
+    sg13g2_slgcp_1 i_clkgate (
+      .GATE ( en_i  ),
+      .SCE  ( test_en_i ),
+      .CLK  ( clk_i ),
+      .GCLK ( clk_o )
+    );
+  end else begin
+    assign clk_o = clk_i;
+  end
 
 endmodule
