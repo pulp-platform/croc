@@ -37,6 +37,7 @@ package user_pkg;
   ////////////////////////////////////
   // User Manager Address maps/////
   ////////////////////////////////////
+  
   //Calculate where the address space for croc is which is used for later calculations
   localparam bit [31:0] XbarCrocAddrOffset   = DebugAddrOffset;
   localparam bit [31:0] XbarCrocAddrRange    = MemBaseAddr + BankAddrRange - DebugAddrOffset;
@@ -64,22 +65,22 @@ package user_pkg;
   localparam bit [31:0] XbarRomAddrRange    = 32'h0000_1000; //TODO : wie viel wollen wir ins ROM schreiben
 
   //localparam bit [31:0] Buffer = 32'h0000_1000; //Do we need this and if yes how big? TODO: find out if OBI Bus has Alignment requirements
-  //localparam bit [31:0] XbarGpioAddrOffset   = XbarRomAddrOffset + XbarRomAddrRange + Buffer;
-  //localparam bit [31:0] XbarGpioAddrRange    = 32'h0000_1000;
+  localparam bit [31:0] XbarGpioAddrOffset   = XbarRomAddrOffset + XbarRomAddrRange;// + Buffer;
+  localparam bit [31:0] XbarGpioAddrRange    = 32'h0000_1000;
 
-  localparam int unsigned NumUserSbrRules   = 1; //2;   // ROM + (Gpio)
+  localparam int unsigned NumUserSbrRules   = 2; //2;   // ROM + (Gpio)
   localparam int unsigned NumUserSbr        = NumUserSbrRules + 1; // additional OBI error
 
   // Enum for bus indices
   typedef enum int {
     XbarError  = 0,
-    XbarRom    = 1//,
-    //XbarGpio  = 2
+    XbarRom    = 1,
+    XbarGpio  = 2
   } user_demux_outputs_e;
 
   localparam addr_map_rule_t [NumUserSbrRules-1:0] user_addr_map = '{                                           // 0: Error
-    '{ idx: XbarRom,  start_addr: XbarRomAddrOffset,  end_addr: XbarRomAddrOffset + XbarRomAddrRange   }   // 1: ROM
-    //'{ idx: XbarGpio,  start_addr: XbarGpioAddrOffset,  end_addr: XbarGpioAddrOffset + XbarGpioAddrRange   }  // 2: GPIO
+    '{ idx: XbarRom,  start_addr: XbarRomAddrOffset,  end_addr: XbarRomAddrOffset + XbarRomAddrRange   },   // 1: ROM
+    '{ idx: XbarGpio,  start_addr: XbarGpioAddrOffset,  end_addr: XbarGpioAddrOffset + XbarGpioAddrRange   }  // 2: GPIO
   };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,3 +1,6 @@
+`include "common_cells/registers.svh"
+`include "common_cells/assertions.svh"
+
 module gpio #(
     parameter obi_pkg::obi_cfg_t           ObiCfg      = obi_pkg::ObiDefaultConfig,
    
@@ -26,9 +29,9 @@ module gpio #(
     /// whenever an unmasked interrupt on one of the GPIOs arrives.
     output logic               global_interrupt_o,
     /// Control interface request side using register_interface protocol.
-    input                      obi_req_t obi_reg_req_i,
+    input                      obi_req_t obi_req_i,
     /// Control interface request side using register_interface protocol.
-    output                     obi_rsp_t obi_reg_rsp_o
+    output                     obi_rsp_t obi_rsp_o
     );
 
   import gpio_reg_pkg::*;
@@ -55,10 +58,10 @@ module gpio #(
   ) i_reg_file (
     .clk_i,
     .rst_ni,
-    .obi_reg_req_i,
-    .obi_reg_rsp_o,
+    .obi_req_i,
+    .obi_rsp_o,
     .reg2hw(reg2hw),
-    .hw2reg(hw2reg),
+    .hw2reg(hw2reg)
   );
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -89,11 +92,11 @@ module gpio #(
         ) i_sync (
             .clk_i(clk),
             .rst_ni,
-            .gpio_in[gpio_idx],
+            .gpio_in(gpio_idx),
             .serial_o (serial_d)
         );
 
-        `FF(serial_d, serial_q, '0, clk_i, rst_ni)
+        `FF(serial_q, serial_d, '0, clk_i, rst_ni)
 
         //-----------------------------------------------------------------------------------------------
         //Interface Internal GPIO Logic & IOCell
@@ -107,8 +110,6 @@ module gpio #(
 
         // Control gpio_tx_en_o depending on GPIO_DIR register value
         always_comb begin
-
-            `assert_condition(reg2hw.gpio_dir[gpio_idx], rst_ni);
 
             gpio_tx_en_o[gpio_idx] = 1'b0; //DEFAULT-INPUT
 
@@ -125,7 +126,6 @@ module gpio #(
         always_comb begin
 
             if (reg2hw.gpio_en[gpio_idx].q & reg2hw.gpio_dir[gpio_idx].q & reg2hw.gpio_toggle[gpio_idx].q) begin
-            `assert_condition (reg2hw.gpio_en[gpio_idx].q && reg2hw.gpio_toggle[gpio_idx].q, rst_ni);
             hw2reg.gpio_out[gpio_idx].d  = ~reg2hw.gpio_out[gpio_idx].q;
             hw2reg.gpio_out[gpio_idx].de = 1'b1;
             end else begin
@@ -146,13 +146,10 @@ module gpio #(
         assign global_interrupt_o = |gpio_rise_fall_intrpt;
 
         always_comb begin
-            `assert_condition ({reg2hw.gpio_en[gpio_idx].q && reg2hw.intrpt_rise_fall_status[gpio_idx].q}, rst_ni);
-
             // Set new bits of the the status register when an interrupt arrives.
             hw2reg.intrpt_rise_fall_status[gpio_idx].d   = gpio_rise_fall_intrpt[gpio_idx] | reg2hw.intrpt_rise_fall_status[gpio_idx].q;
             // Only update the registers (set de = 1) if there are any new interrupts of the given type.
             hw2reg.intrpt_rise_fall_status[gpio_idx].de  = |gpio_rise_fall_intrpt[gpio_idx];
-
         end 
     end
 endmodule

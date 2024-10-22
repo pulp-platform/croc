@@ -21,7 +21,12 @@ module croc_soc import croc_pkg::*; #() (
   output logic uart_tx_o,
 
   input  logic irq0_i,
-  output logic status_o
+  output logic status_o,
+
+  //todo gpio pads
+  input  logic [NrGPIOs-1:0] gpio_in,            // Input from GPIO pins
+  output logic [NrGPIOs-1:0] gpio_out,            // Output to GPIO pins
+  output logic [NrGPIOs-1:0] gpio_tx_en_o        // TX enable signal 0 -> input, 1 -> output
 );
 
   logic synced_rst_n, synced_irq0;
@@ -89,6 +94,11 @@ user_domain #(
   .rst_ni ( synced_rst_n ),
   .ref_clk_i,
   .test_enable_i ( test_enable ),
+
+  //todo gpiopads
+  .gpio_in        (soc_gpio_in      ),             
+  .gpio_out       (soc_gpio_out     ),            
+  .gpio_tx_en_o   (soc_gpio_tx_en_o ),
 
   .xbar_user_sbr_obi_req_i ( xbar_user_sbr_obi_req ),
   .xbar_user_sbr_obi_rsp_o ( xbar_user_sbr_obi_rsp ),

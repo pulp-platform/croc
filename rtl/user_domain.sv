@@ -5,11 +5,18 @@
 // Authors:
 // - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
-module user_domain import user_pkg::*; #() (
+module user_domain import user_pkg::*; #(
+  localparam int unsigned NrGPIOs = gpio_reg_pkg::GpioCount
+) (
   input  logic      clk_i,
   input  logic      ref_clk_i,
   input  logic      rst_ni,
   input  logic      test_enable_i,
+
+  //todo gpio pads
+  input  logic [NrGPIOs-1:0] gpio_in,             // Input from GPIO pins
+  output logic [NrGPIOs-1:0] gpio_out,            // Output to GPIO pins
+  output logic [NrGPIOs-1:0] gpio_tx_en_o,        // TX enable signal 0 -> input, 1 -> output
   
   input  sbr_obi_req_t xbar_user_sbr_obi_req_i, //User Sbr (rsp_o), Croc Mgr (req_i)
   output sbr_obi_rsp_t xbar_user_sbr_obi_rsp_o,
@@ -22,6 +29,7 @@ module user_domain import user_pkg::*; #() (
 
 assign interrupts_o = '0;  
 
+import gpio_reg_pkg::*;
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   //User Manager MUX//
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -182,5 +190,25 @@ assign interrupts_o = '0;
 
   //GPIO Subordinate
   //TODO
+
+  logic [NrGPIOs-1:0] gpio_in_sync_o;      // Synchronized input signals
+  logic global_interrupt_o;                // Global interrupt signal
+
+  gpio #(
+    .ObiCfg             ( SbrObiCfg           ),
+    .obi_req_t          ( sbr_obi_req_t       ),
+    .obi_rsp_t          ( sbr_obi_rsp_t       ),
+    .NrGPIOs            ( NrGPIOs             )
+  ) i_gpio (
+    .clk_i,
+    .rst_ni,
+    .gpio_in            ( gpio_in             ),                     
+    .gpio_out           ( gpio_out            ),                   
+    .gpio_tx_en_o       ( gpio_tx_en_o        ),          
+    .gpio_in_sync_o     ( gpio_in_sync_o      ),       
+    .global_interrupt_o ( global_interrupt_o  ),
+    .obi_req_i          ( user_gpio_obi_req   ),
+    .obi_rsp_o          ( user_gpio_obi_rsp   )
+  );
 
 endmodule

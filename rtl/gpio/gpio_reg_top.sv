@@ -3,14 +3,14 @@
 module gpio_reg_top #(
     parameter obi_pkg::obi_cfg_t           ObiCfg      = obi_pkg::ObiDefaultConfig,
     parameter type obi_req_t = logic,   // OBI request type
-    parameter type obi_rsp_t = logic,   // OBI response type
+    parameter type obi_rsp_t = logic   // OBI response type
 ) (
     input logic clk_i,                  // Clock
     input logic rst_ni,                 // Active-low reset
 
     //Connection to Obi
-    input obi_req_t  obi_reg_req_i,      // OBI request interface
-    output obi_rsp_t obi_reg_rsp_o,     // OBI response interface
+    input obi_req_t  obi_req_i,      // OBI request interface
+    output obi_rsp_t obi_rsp_o,     // OBI response interface
 
     // To Hardware
     output gpio_reg_pkg::gpio_reg2hw_t reg2hw,   // Write from reg to HW
@@ -28,43 +28,48 @@ module gpio_reg_top #(
     logic [ObiCfg.DataWidth-1:0] rsp_data;         
     logic                        valid_d, valid_q;  //needs to be delayed for the response phase                   
     logic                        err;                                      
-    //logic [BlockAw-1:0]          word_addr_d, word_addr_q;  //needs to be delayed for the response phase    
+    logic [BlockAw-1:0]          word_addr_d, word_addr_q;  //needs to be delayed for the response phase    
     logic [ObiCfg.IdWidth-1:0]   id_d, id_q;   //needs to be delayed for the response phase 
-    logic [BlockAw-1:0]          register_addr;
          
     //OBI rsp Assignment
     always_comb begin
-        obi_reg_rsp_o.r.rdata       = rsp_data;
-        obi_reg_rsp_o.r.rid         = id_q;
-        obi_reg_rsp_o.r.err         = err; 
-        obi_reg_rsp_o.r.r_optional  = '0;
-        obi_reg_rsp_o.gnt           = obi_reg_req_i.req;
-        obi_rsp_o.rvalid            = valid_q;
+        obi_rsp_o.r.rdata       = rsp_data;
+        obi_rsp_o.r.rid         = id_q;
+        obi_rsp_o.r.err         = err; 
+        obi_rsp_o.r.r_optional  = '0;
+        obi_rsp_o.gnt           = obi_req_i.req;
+        obi_rsp_o.rvalid        = valid_q;
     end
 
     //id, valid and address handling
-    assign id_d          = obi_reg_req_i.aid;
+    assign id_d          = obi_req_i.aid;
     assign valid_d       = obi_req_i.req;
-    assign word_addr_d  = obi_reg_req_i.addr[BlockAw+1:2];
+    assign word_addr_d   = obi_req_i.addr[BlockAw+1:2];
    
     //FF for the obi rsp signals (id and valid)
-    `FF(id_d, id_q, '0, clk_i, rst_ni)
-    `FF(valid_d, valid_q, '0, clk_i, rst_ni)
-    `FF(word_addr_d, word_addr_q, '0, clk_i, rst_ni)
+    `FF(id_q, id_d, '0, clk_i, rst_ni)
+    `FF(valid_q, valid_d, '0, clk_i, rst_ni)
+    `FF(word_addr_q, word_addr_d, '0, clk_i, rst_ni)
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     //registers//
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    //TODO look into unions -> unpacked or packed?
+    /*union{
+      int
+      logic [GpioCount-1:0]
+    } register_storage*/
+
     // Storage for registers
     logic [7*GpioCount-1:0] register_storage_d, register_storage_q; 
     parameter int IndexOffsetDir     = 0;
-    parameter int IndexOffsetEn      = 1*GpioCount - 1;
-    parameter int IndexOffsetIn      = 2*GpioCount - 1;
-    parameter int IndexOffsetOut     = 3*GpioCount - 1;
-    parameter int IndexOffsetToggle  = 4*GpioCount - 1;
-    parameter int IndexOffsetIrptEn  = 5*GpioCount - 1;
-    parameter int IndexOffsetIrptSt  = 6*GpioCount - 1;
+    parameter int IndexOffsetEn      = 1*GpioCount;
+    parameter int IndexOffsetIn      = 2*GpioCount;
+    parameter int IndexOffsetOut     = 3*GpioCount;
+    parameter int IndexOffsetToggle  = 4*GpioCount;
+    parameter int IndexOffsetIrptEn  = 5*GpioCount;
+    parameter int IndexOffsetIrptSt  = 6*GpioCount;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     //COMB LOGIC//
@@ -73,20 +78,20 @@ module gpio_reg_top #(
     //-----------------------------------------------------------------------------------------------
     //WRITE
     //-----------------------------------------------------------------------------------------------
-  
+      /*
     always comb begin
-      for (genvar i = 0; i < GpioCount; i++) begin
+      for (int i = 0; i < GpioCount; i++) begin
         case (word_addr_q)
           GPIO_DIR_OFFSET: begin
-            if (obi_reg_req_i.req & obi_reg_req_i.we) begin
-              register_storage_d[i + IndexOffsetDir] = obi_reg_req_i.wdata[i]; 
+            if (obi_req_i.req & obi_req_i.we) begin
+              register_storage_d[i + IndexOffsetDir] = obi_req_i.wdata[i]; 
             end
             err = 1'b0;
           end
 
           GPIO_EN_OFFSET: begin
-            if (obi_reg_req_i.req & obi_reg_req_i.we) begin
-              register_storage_d[i + IndexOffsetEn] = obi_reg_req_i.wdata[i]; 
+            if (obi_req_i.req & obi_req_i.we) begin
+              register_storage_d[i + IndexOffsetEn] = obi_req_i.wdata[i]; 
             end
             err = 1'b0;
           end
@@ -97,8 +102,8 @@ module gpio_reg_top #(
           end
 
           GPIO_OUT_OFFSET: begin
-            if (obi_reg_req_i.req & obi_reg_req_i.we) begin
-              register_storage_d[i + IndexOffsetOut] = obi_reg_req_i.wdata[i]; 
+            if (obi_req_i.req & obi_req_i.we) begin
+              register_storage_d[i + IndexOffsetOut] = obi_req_i.wdata[i]; 
             end
             if (hw2reg.gpio_out[i].de) begin 
               register_storage_d[i + IndexOffsetOut] = hw2reg.gpio_out[i].d;
@@ -107,22 +112,22 @@ module gpio_reg_top #(
           end
 
           GPIO_TOGGLE_OFFSET: begin
-            if (obi_reg_req_i.req & obi_reg_req_i.we) begin
-              register_storage_d[i + IndexOffsetToggle] = obi_reg_req_i.wdata[i]; 
+            if (obi_req_i.req & obi_req_i.we) begin
+              register_storage_d[i + IndexOffsetToggle] = obi_req_i.wdata[i]; 
             end
             err = 1'b0;
           end
 
           GPIO_INTRPT_RISE_FALL_EN_OFFSET: begin
-            if (obi_reg_req_i.req & obi_reg_req_i.we) begin
-              register_storage_d[i + IndexOffsetIrptEn] = obi_reg_req_i.wdata[i]; 
+            if (obi_req_i.req & obi_req_i.we) begin
+              register_storage_d[i + IndexOffsetIrptEn] = obi_req_i.wdata[i]; 
             end
             err = 1'b0;
           end 
 
           GPIO_INTRPT_RISE_FALL_STATUS_OFFSET: begin
-            if (obi_reg_req_i.req & obi_reg_req_i.we) begin
-              register_storage_d[i + IndexOffsetIrptSt] = obi_reg_req_i.wdata[i]; 
+            if (obi_req_i.req & obi_req_i.we) begin
+              register_storage_d[i + IndexOffsetIrptSt] = obi_req_i.wdata[i]; 
             end
             if (hw2reg.intrpt_rise_fall_status[i].de) begin
               register_storage_d[i + IndexOffsetIrptSt] = hw2reg.intrpt_rise_fall_status[i].d;
@@ -135,7 +140,7 @@ module gpio_reg_top #(
           end
         endcase
       end
-    end
+    end*/
 
     //-----------------------------------------------------------------------------------------------
     //READ
@@ -143,11 +148,11 @@ module gpio_reg_top #(
 
     always_comb begin
       rsp_data = 32'h0;  // Default value for read data
-      for (genvar i = 0; i < GpioCount; i++) begin
+      for (int i = 0; i < GpioCount; i++) begin
         case (word_addr_q)
           GPIO_DIR_OFFSET: begin
             reg2hw.gpio_dir[i].q = register_storage_q[i + IndexOffsetDir];
-            if (obi_reg_req_i.req & ~obi_reg_req_i.we & obi_reg_req_i.rready) begin
+            if (obi_req_i.req & ~obi_req_i.we & obi_req_i.rready) begin
               rsp_data[i] = register_storage_q[i + IndexOffsetDir];
             end
             err = 1'b0;
@@ -155,14 +160,14 @@ module gpio_reg_top #(
 
           GPIO_EN_OFFSET: begin
             reg2hw.gpio_en[i].q = register_storage_q[i + IndexOffsetEn];
-            if (obi_reg_req_i.req & ~obi_reg_req_i.we & obi_reg_req_i.rready) begin
+            if (obi_req_i.req & ~obi_req_i.we & obi_req_i.rready) begin
               rsp_data[i] = register_storage_q[i + IndexOffsetEn];
             end
             err = 1'b0;
           end
 
           GPIO_IN_OFFSET: begin
-            if (obi_reg_req_i.req & ~obi_reg_req_i.we & obi_reg_req_i.rready) begin
+            if (obi_req_i.req & ~obi_req_i.we & obi_req_i.rready) begin
               rsp_data[i] = register_storage_q[i + IndexOffsetIn];
             end 
             err = 1'b0;
@@ -170,7 +175,7 @@ module gpio_reg_top #(
 
           GPIO_OUT_OFFSET: begin
             reg2hw.gpio_out[i].q = register_storage_q[i + IndexOffsetOut];
-            if (obi_reg_req_i.req & ~obi_reg_req_i.we & obi_reg_req_i.rready) begin
+            if (obi_req_i.req & ~obi_req_i.we & obi_req_i.rready) begin
               rsp_data[i] = register_storage_q[i + IndexOffsetOut];
             end
             err = 1'b0;
@@ -178,7 +183,7 @@ module gpio_reg_top #(
 
           GPIO_TOGGLE_OFFSET: begin
             reg2hw.gpio_toggle[i].q = register_storage_q[i + IndexOffsetToggle];
-            if (obi_reg_req_i.req & ~obi_reg_req_i.we & obi_reg_req_i.rready) begin
+            if (obi_req_i.req & ~obi_req_i.we & obi_req_i.rready) begin
               rsp_data[i] = register_storage_q[i + IndexOffsetToggle];
             end
             err = 1'b0;
@@ -186,7 +191,7 @@ module gpio_reg_top #(
 
           GPIO_INTRPT_RISE_FALL_EN_OFFSET: begin
             reg2hw.intrpt_rise_fall_en[i].q = register_storage_q[i + IndexOffsetIrptEn];
-            if (obi_reg_req_i.req & ~obi_reg_req_i.we & obi_reg_req_i.rready) begin
+            if (obi_req_i.req & ~obi_req_i.we & obi_req_i.rready) begin
               rsp_data[i] = register_storage_q[i + IndexOffsetIrptEn];
             end
             err = 1'b0;
@@ -194,7 +199,7 @@ module gpio_reg_top #(
 
           GPIO_INTRPT_RISE_FALL_STATUS_OFFSET: begin
             reg2hw.intrpt_rise_fall_status[i].q = register_storage_q[i + IndexOffsetIrptSt];
-            if (obi_reg_req_i.req & ~obi_reg_req_i.we & obi_reg_req_i.rready) begin
+            if (obi_req_i.req & ~obi_req_i.we & obi_req_i.rready) begin
               rsp_data[i] = register_storage_q[i + IndexOffsetIrptSt];
             end
             err = 1'b0;
@@ -212,6 +217,6 @@ module gpio_reg_top #(
     //SEQ LOGIC//
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    `FF(register_storage_d, register_storage_q, '0, clk_i, rst_ni);
+    `FF(register_storage_q, register_storage_d, '0, clk_i, rst_ni);
 
 endmodule

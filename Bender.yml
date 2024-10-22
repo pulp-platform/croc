@@ -41,7 +41,6 @@ sources:
       - rtl/soc_ctrl/soc_ctrl_reg_top.sv
       - rtl/rom/rom.sv
       - rtl/gpio/gpio_reg_top.sv
-      - rtl/gpio/gpio_input_stage.sv
       - rtl/gpio/gpio.sv
       # Level 2
       - rtl/croc_domain.sv

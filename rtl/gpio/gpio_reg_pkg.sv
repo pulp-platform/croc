@@ -1,7 +1,7 @@
 package gpio_reg_pkg;
 
   // Param list
-  parameter int GpioCount = 32;
+  parameter int GpioCount = 16;
 
   // Address widths within the block : Defines the max no of Block Addresses (2047)
   parameter int BlockAw = 11; //todo can we use only 10?

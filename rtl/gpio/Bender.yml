@@ -2,6 +2,8 @@
 # Solderpad Hardware License, Version 0.51, see LICENSE for details.
 # SPDX-License-Identifier: SHL-0.51
 
+###################TODO ###############################
+
 package:
   name: gpio
   authors:
@@ -19,6 +21,5 @@ sources:
   - gpio_reg_pkg.sv
   # Level 2
   - gpio_reg_top.sv
-  - gpio_input_stage.sv
   # Level 3
   - gpio.sv
