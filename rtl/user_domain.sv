@@ -197,8 +197,7 @@ import gpio_reg_pkg::*;
   gpio #(
     .ObiCfg             ( SbrObiCfg           ),
     .obi_req_t          ( sbr_obi_req_t       ),
-    .obi_rsp_t          ( sbr_obi_rsp_t       ),
-    .NrGPIOs            ( NrGPIOs             )
+    .obi_rsp_t          ( sbr_obi_rsp_t       )
   ) i_gpio (
     .clk_i,
     .rst_ni,

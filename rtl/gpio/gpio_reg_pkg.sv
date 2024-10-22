@@ -28,6 +28,7 @@ package gpio_reg_pkg;
 
   typedef struct packed {
     logic        q;
+    logic        qe;
   } gpio_reg2hw_gpio_toggle_mreg_t;
 
   typedef struct packed {
@@ -36,6 +37,7 @@ package gpio_reg_pkg;
 
   typedef struct packed {
     logic        q;
+    logic        qe;
   } gpio_reg2hw_intrpt_rise_fall_status_mreg_t;
 
   //-----------------------------------------------------------------------------------------------

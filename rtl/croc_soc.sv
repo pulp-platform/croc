@@ -24,9 +24,9 @@ module croc_soc import croc_pkg::*; #() (
   output logic status_o,
 
   //todo gpio pads
-  input  logic [NrGPIOs-1:0] gpio_in,            // Input from GPIO pins
-  output logic [NrGPIOs-1:0] gpio_out,            // Output to GPIO pins
-  output logic [NrGPIOs-1:0] gpio_tx_en_o        // TX enable signal 0 -> input, 1 -> output
+  input  logic [gpio_reg_pkg::GpioCount-1:0] gpio_in,            // Input from GPIO pins
+  output logic [gpio_reg_pkg::GpioCount-1:0] gpio_out,            // Output to GPIO pins
+  output logic [gpio_reg_pkg::GpioCount-1:0] gpio_tx_en_o        // TX enable signal 0 -> input, 1 -> output
 );
 
   logic synced_rst_n, synced_irq0;

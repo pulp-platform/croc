@@ -81,18 +81,20 @@ module gpio #(
         parameter int  NrSyncStages = 2;
         logic          f_edge;
         logic          r_edge;
+        logic          serial_d, serial_q;
+
 
         assign f_edge = (~serial_d) & serial_q;
         assign r_edge = serial_d & (~serial_q);
-        assign gpio_ingpio_rise_fall_edge_sync[gpio_idx] = f_edge | r_edge;
+        assign gpio_rise_fall_edge[gpio_idx] = f_edge | r_edge;
         assign gpio_in_sync[gpio_idx] =  serial_q;
 
         sync #(
             .STAGES (NrSyncStages)
         ) i_sync (
-            .clk_i(clk),
+            .clk_i,
             .rst_ni,
-            .gpio_in(gpio_idx),
+            .serial_i(gpio_in[gpio_idx]),
             .serial_o (serial_d)
         );
 
@@ -140,10 +142,7 @@ module gpio #(
         //-----------------------------------------------------------------------------------------------
 
         // Mask Detected Edges with Interrupt Enable and GPIO Enable
-        assign gpio_rise_fall_intrpt = gpio_ingpio_rise_fall_edge_sync & reg2hw.intrpt_rise_fall_en[gpio_idx].q & reg2hw.gpio_en[gpio_idx].q;
-
-        // Assign interrupt output signal depending on inerrupt mode
-        assign global_interrupt_o = |gpio_rise_fall_intrpt;
+        assign gpio_rise_fall_intrpt[gpio_idx] = gpio_rise_fall_edge[gpio_idx] & reg2hw.intrpt_rise_fall_en[gpio_idx].q & reg2hw.gpio_en[gpio_idx].q;
 
         always_comb begin
             // Set new bits of the the status register when an interrupt arrives.
@@ -152,4 +151,8 @@ module gpio #(
             hw2reg.intrpt_rise_fall_status[gpio_idx].de  = |gpio_rise_fall_intrpt[gpio_idx];
         end 
     end
+
+    // Assign interrupt output signal depending on inerrupt mode
+    assign global_interrupt_o = |gpio_rise_fall_intrpt;
+    
 endmodule

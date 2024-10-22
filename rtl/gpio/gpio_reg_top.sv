@@ -42,9 +42,9 @@ module gpio_reg_top #(
     end
 
     //id, valid and address handling
-    assign id_d          = obi_req_i.aid;
+    assign id_d          = obi_req_i.a.aid;
     assign valid_d       = obi_req_i.req;
-    assign word_addr_d   = obi_req_i.addr[BlockAw+1:2];
+    assign word_addr_d   = obi_req_i.a.addr[BlockAw+1:2];
    
     //FF for the obi rsp signals (id and valid)
     `FF(id_q, id_d, '0, clk_i, rst_ni)
@@ -54,12 +54,6 @@ module gpio_reg_top #(
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     //registers//
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    //TODO look into unions -> unpacked or packed?
-    /*union{
-      int
-      logic [GpioCount-1:0]
-    } register_storage*/
 
     // Storage for registers
     logic [7*GpioCount-1:0] register_storage_d, register_storage_q; 
@@ -74,65 +68,61 @@ module gpio_reg_top #(
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     //COMB LOGIC//
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-
+    register_storage_d[IndexOffsetDir:0] = obi_req_i.a.wdata; 
     //-----------------------------------------------------------------------------------------------
     //WRITE
     //-----------------------------------------------------------------------------------------------
-      /*
+     
     always comb begin
       for (int i = 0; i < GpioCount; i++) begin
+        err = 1'b0:
         case (word_addr_q)
           GPIO_DIR_OFFSET: begin
-            if (obi_req_i.req & obi_req_i.we) begin
-              register_storage_d[i + IndexOffsetDir] = obi_req_i.wdata[i]; 
+            if (obi_req_i.req & obi_req_i.a.we) begin
+              register_storage_d[i + IndexOffsetDir] = obi_req_i.a.wdata[i]; 
             end
-            err = 1'b0;
           end
 
           GPIO_EN_OFFSET: begin
-            if (obi_req_i.req & obi_req_i.we) begin
-              register_storage_d[i + IndexOffsetEn] = obi_req_i.wdata[i]; 
+            if (obi_req_i.req & obi_req_i.a.we) begin
+              register_storage_d[i + IndexOffsetEn] = obi_req_i.a.wdata[i]; 
             end
-            err = 1'b0;
           end
 
           GPIO_IN_OFFSET: begin
             register_storage_d[i + IndexOffsetIn] = hw2reg.gpio_in[i].d; //write from GPIOlogic
-            err = 1'b0;
           end
 
           GPIO_OUT_OFFSET: begin
-            if (obi_req_i.req & obi_req_i.we) begin
-              register_storage_d[i + IndexOffsetOut] = obi_req_i.wdata[i]; 
+            if (obi_req_i.req & obi_req_i.a.we) begin
+              register_storage_d[i + IndexOffsetOut] = obi_req_i.a.wdata[i]; 
             end
             if (hw2reg.gpio_out[i].de) begin 
               register_storage_d[i + IndexOffsetOut] = hw2reg.gpio_out[i].d;
             end
-            err = 1'b0;
           end
 
           GPIO_TOGGLE_OFFSET: begin
-            if (obi_req_i.req & obi_req_i.we) begin
-              register_storage_d[i + IndexOffsetToggle] = obi_req_i.wdata[i]; 
+            if (obi_req_i.req & obi_req_i.a.we) begin
+              register_storage_d[i + IndexOffsetToggle]    = obi_req_i.a.wdata[i]; 
+              reg2hw.gpio_toggle[i + IndexOffsetToggle].qe = 1'b1; //TODO new
             end
-            err = 1'b0;
           end
 
           GPIO_INTRPT_RISE_FALL_EN_OFFSET: begin
-            if (obi_req_i.req & obi_req_i.we) begin
-              register_storage_d[i + IndexOffsetIrptEn] = obi_req_i.wdata[i]; 
+            if (obi_req_i.req & obi_req_i.a.we) begin
+              register_storage_d[i + IndexOffsetIrptEn] = obi_req_i.a.wdata[i]; 
             end
-            err = 1'b0;
           end 
 
           GPIO_INTRPT_RISE_FALL_STATUS_OFFSET: begin
-            if (obi_req_i.req & obi_req_i.we) begin
-              register_storage_d[i + IndexOffsetIrptSt] = obi_req_i.wdata[i]; 
+            if (obi_req_i.req & obi_req_i.a.we) begin
+              register_storage_d[i + IndexOffsetIrptSt] = obi_req_i.a.wdata[i]; 
+              reg2hw.intrpt_rise_fall_status[i + IndexOffsetIrptSt].qe = 1'b1; //TODO new
             end
             if (hw2reg.intrpt_rise_fall_status[i].de) begin
               register_storage_d[i + IndexOffsetIrptSt] = hw2reg.intrpt_rise_fall_status[i].d;
             end
-            err = 1'b0;
           end
 
           default: begin
@@ -140,7 +130,7 @@ module gpio_reg_top #(
           end
         endcase
       end
-    end*/
+    end
 
     //-----------------------------------------------------------------------------------------------
     //READ
@@ -148,61 +138,61 @@ module gpio_reg_top #(
 
     always_comb begin
       rsp_data = 32'h0;  // Default value for read data
+      err = 1'b0;
       for (int i = 0; i < GpioCount; i++) begin
         case (word_addr_q)
           GPIO_DIR_OFFSET: begin
             reg2hw.gpio_dir[i].q = register_storage_q[i + IndexOffsetDir];
-            if (obi_req_i.req & ~obi_req_i.we & obi_req_i.rready) begin
+            if (obi_req_i.req & ~obi_req_i.a.we) begin
               rsp_data[i] = register_storage_q[i + IndexOffsetDir];
             end
-            err = 1'b0;
           end
 
           GPIO_EN_OFFSET: begin
             reg2hw.gpio_en[i].q = register_storage_q[i + IndexOffsetEn];
-            if (obi_req_i.req & ~obi_req_i.we & obi_req_i.rready) begin
+            if (obi_req_i.req & ~obi_req_i.a.we) begin
               rsp_data[i] = register_storage_q[i + IndexOffsetEn];
             end
-            err = 1'b0;
           end
 
           GPIO_IN_OFFSET: begin
-            if (obi_req_i.req & ~obi_req_i.we & obi_req_i.rready) begin
+            if (obi_req_i.req & ~obi_req_i.a.we) begin
               rsp_data[i] = register_storage_q[i + IndexOffsetIn];
             end 
-            err = 1'b0;
           end
 
           GPIO_OUT_OFFSET: begin
             reg2hw.gpio_out[i].q = register_storage_q[i + IndexOffsetOut];
-            if (obi_req_i.req & ~obi_req_i.we & obi_req_i.rready) begin
+            if (obi_req_i.req & ~obi_req_i.a.we) begin
               rsp_data[i] = register_storage_q[i + IndexOffsetOut];
             end
-            err = 1'b0;
           end
 
           GPIO_TOGGLE_OFFSET: begin
-            reg2hw.gpio_toggle[i].q = register_storage_q[i + IndexOffsetToggle];
-            if (obi_req_i.req & ~obi_req_i.we & obi_req_i.rready) begin
+            if(reg2hw.gpio_toggle[i + IndexOffsetToggle].qe) begin //TODO new
+              reg2hw.gpio_toggle[i].q = register_storage_q[i + IndexOffsetToggle];
+              reg2hw.gpio_toggle[i + IndexOffsetToggle].qe = 1'b0; //TODO new
+            end
+            if (obi_req_i.req & ~obi_req_i.a.we) begin
               rsp_data[i] = register_storage_q[i + IndexOffsetToggle];
             end
-            err = 1'b0;
           end
 
           GPIO_INTRPT_RISE_FALL_EN_OFFSET: begin
-            reg2hw.intrpt_rise_fall_en[i].q = register_storage_q[i + IndexOffsetIrptEn];
-            if (obi_req_i.req & ~obi_req_i.we & obi_req_i.rready) begin
+            reg2hw.intrpt_rise_fall_en[i].q = register_storage_q[i + IndexOffsetIrptEn]; 
+            if (obi_req_i.req & ~obi_req_i.a.we) begin
               rsp_data[i] = register_storage_q[i + IndexOffsetIrptEn];
             end
-            err = 1'b0;
           end
 
           GPIO_INTRPT_RISE_FALL_STATUS_OFFSET: begin
-            reg2hw.intrpt_rise_fall_status[i].q = register_storage_q[i + IndexOffsetIrptSt];
-            if (obi_req_i.req & ~obi_req_i.we & obi_req_i.rready) begin
+            if (reg2hw.intrpt_rise_fall_status[i + IndexOffsetIrptSt].qe) begin //TODO new
+              reg2hw.intrpt_rise_fall_status[i].q = register_storage_q[i + IndexOffsetIrptSt];
+              reg2hw.intrpt_rise_fall_status[i + IndexOffsetIrptSt].qe = 1'b0; //TODO new
+            end
+            if (obi_req_i.req & ~obi_req_i.a.we) begin
               rsp_data[i] = register_storage_q[i + IndexOffsetIrptSt];
             end
-            err = 1'b0;
           end
 
           default: begin
