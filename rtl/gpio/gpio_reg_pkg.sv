@@ -20,13 +20,13 @@ package gpio_reg_pkg;
     logic [GpioCount-1:0] in;     // Input register
     logic [GpioCount-1:0] out;    // Output register
     logic [GpioCount-1:0] toggle; // Toggle register
-    logic [GpioCount-1:0] irpt_en;// Interrupt enable
-    logic [GpioCount-1:0] irpt_st;// Interrupt status
+    logic [GpioCount-1:0] irpt_en;// Interrupt enable register
+    logic [GpioCount-1:0] irpt_st;// Interrupt status register
   } gpio_reg_fields_t;
 
   typedef union packed {
-    gpio_reg_fields_t struct;           // Access as structured fields
-    logic [7*GpioCount-1:0] array;   // Access as a flat array
+    gpio_reg_fields_t str;        // Access as structured fields
+    logic [7*GpioCount-1:0] arr;   // Access as a flat array
   } gpio_reg_union_t;
 
   //-----------------------------------------------------------------------------------------------

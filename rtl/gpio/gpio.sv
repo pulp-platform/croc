@@ -112,7 +112,7 @@ module gpio #(
         always_comb begin
             gpio_tx_en_o[gpio_idx] = 1'b0; //DEFAULT-INPUT
 
-            if (reg2hw.gpio_dir[gpio_idx]) begin //OUTPUT
+            if (reg2hw.gpio_dir_r[gpio_idx]) begin //OUTPUT
                 gpio_tx_en_o[gpio_idx] = 1'b1;
             end
         end
@@ -145,6 +145,7 @@ module gpio #(
             hw2reg.intrpt_rise_fall_status_w_allw[gpio_idx] = |gpio_rise_fall_intrpt[gpio_idx];
         end 
     end
+
 // Assign interrupt output signal depending on inerrupt mode
 assign global_interrupt_o = |gpio_rise_fall_intrpt;
     

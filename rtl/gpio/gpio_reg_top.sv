@@ -60,170 +60,144 @@ module gpio_reg_top #(
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     //COMB LOGIC//
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    //-----------------------------------------------------------------------------------------------
-    //WRITE
-    //-----------------------------------------------------------------------------------------------
      
     //byte enable/strobe defines which subset of bytes is written to by wdata of the OBI request 
-    logic [ObiCfg.DataWidth/8 - 1:0] be_mask; // Amount of wdata Bytes
+    logic [ObiCfg.DataWidth - 1:0] be_mask; // Amount of wdata Bytes
 
     for (genvar i = 0; unsigned'(i) < ObiCfg.DataWidth/8; ++i ) begin : gen_be_mask
       assign be_mask[8*i +: 8] = {8{obi_req_i.a.be[i]}};
     end
 
-    //----OBI-Writes--------------------------------------------------------------------------------
     always_comb begin
-      err = 1'b0;
-      case (word_addr_q)
-        GPIO_DIR_OFFSET: begin
-          if (obi_req_i.req & obi_req_i.a.we) begin
-            reg_d.struct.in = 
-            (~be_mask & reg_q.struct.in) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]); 
-          end
-        end
+      //---------------------------------------------------------------------------------------------
+      //WRITE
+      //---------------------------------------------------------------------------------------------
 
-        GPIO_EN_OFFSET: begin
-          if (obi_req_i.req & obi_req_i.a.we) begin
-            reg_d.struct.en = 
-            (~be_mask & reg_q.struct.en) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]); 
-          end
-        end
-
-        GPIO_OUT_OFFSET: begin
-          if (obi_req_i.req & obi_req_i.a.we) begin
-            reg_d.struct.out = 
-            (~be_mask & reg_q.struct.out) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]);
-          end
-        end
-
-        GPIO_TOGGLE_OFFSET: begin
-          if (obi_req_i.req & obi_req_i.a.we) begin
-            reg_d.struct.toggle = 
-            (~be_mask & reg_q.struct.toggle) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]);
-            // mark every GPIO with 1 that has been written to !
-            reg2hw.gpio_toggle_r_allw = be_mask; 
-          end
-        end
-
-        GPIO_INTRPT_RISE_FALL_EN_OFFSET: begin
-          if (obi_req_i.req & obi_req_i.a.we) begin
-            reg_d.struct.irpt_en = 
-            (~be_mask & reg_q.struct.irpt_en) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]);
-          end
-        end 
-
-        GPIO_INTRPT_RISE_FALL_STATUS_OFFSET: begin
-          if (obi_req_i.req & obi_req_i.a.we) begin
-            reg_d.struct.irpt_st = 
-            (~be_mask & reg_q.struct.irpt_st) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]);
-            // mark every GPIO with 1 that has been written to !
-            reg2hw.intrpt_rise_fall_status_r_allw = be_mask; 
-          end
-        end
-
-        default: begin
-          err = 1'b1; // unmapped register access
-        end
-      endcase
-    end
-
-    //----GPIO-Intern-Writes----------------------------------------------------------------------------
-    always_comb begin
-      // write In Register from Internal GPIO logic
-      reg_d.struct.in = hw2reg.gpio_in_w; 
-      // write Out from Internal GPIO logic to GPIOs but only to the ones allowed
-      reg_d.struct.out= 
-      (~hw2reg.gpio_out_w_allw & reg_q.struct.out) | (hw2reg.gpio_out_w_allw & hw2reg.gpio_out_w); 
-      // write Irpt Status from Internal GPIO logic to GPIOs but only to the ones allowed
-      reg_d.struct.irpt_st = 
-      (~hw2reg.intrpt_rise_fall_status_w_allw & reg_q.struct.irpt_st) | 
-      (hw2reg.intrpt_rise_fall_status_w_allw & hw2reg.intrpt_rise_fall_status_w); 
-    end
-
-    //-----------------------------------------------------------------------------------------------
-    //READ
-    //-----------------------------------------------------------------------------------------------
-
-    //----OBI-Reads--------------------------------------------------------------------------------
-    always_comb begin
-      rsp_data = 32'h0;  // Default value for read data
-      err = 1'b0;
+      //----OBI-Writes-------------------------------------------------------------------------------
+      if (obi_req_i.req & obi_req_i.a.we) begin
+        err = 1'b0;
         case (word_addr_q)
           GPIO_DIR_OFFSET: begin
-            if (obi_req_i.req & ~obi_req_i.a.we) begin
-              rsp_data = reg_q.struct.dir;
-            end
+            reg_d.str.in = 
+            (~be_mask & reg_q.str.in) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]); 
           end
 
           GPIO_EN_OFFSET: begin
-            if (obi_req_i.req & ~obi_req_i.a.we) begin
-              rsp_data = reg_q.struct.en;
-            end
-          end
-
-          GPIO_IN_OFFSET: begin
-            if (obi_req_i.req & ~obi_req_i.a.we) begin
-              rsp_data = reg_q.struct.in;
-            end 
+            reg_d.str.en = 
+            (~be_mask & reg_q.str.en) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]); 
           end
 
           GPIO_OUT_OFFSET: begin
-            if (obi_req_i.req & ~obi_req_i.a.we) begin
-              rsp_data = reg_q.struct.out;
-            end
+            reg_d.str.out = 
+            (~be_mask & reg_q.str.out) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]);
           end
 
           GPIO_TOGGLE_OFFSET: begin
-            if (obi_req_i.req & ~obi_req_i.a.we) begin
-              rsp_data = reg_q.struct.toggle;
-            end
+            reg_d.str.toggle = 
+            (~be_mask & reg_q.str.toggle) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]);
+            // mark every GPIO with 1 that has been written to !
+            reg2hw.gpio_toggle_r_allw = be_mask; 
           end
 
-          GPIO_INTRPT_RISE_FALL_EN_OFFSET: begin 
-            if (obi_req_i.req & ~obi_req_i.a.we) begin
-              rsp_data = reg_q.struct.irpt_en;
-            end
-          end
+          GPIO_INTRPT_RISE_FALL_EN_OFFSET: begin
+            reg_d.str.irpt_en = 
+            (~be_mask & reg_q.str.irpt_en) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]);
+          end 
 
           GPIO_INTRPT_RISE_FALL_STATUS_OFFSET: begin
-            if (obi_req_i.req & ~obi_req_i.a.we) begin
-              rsp_data = reg_q.struct.irpt_st;
-            end
+            reg_d.str.irpt_st = 
+            (~be_mask & reg_q.str.irpt_st) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]);
+            // mark every GPIO with 1 that has been written to !
+            reg2hw.intrpt_rise_fall_status_r_allw = be_mask; 
           end
 
           default: begin
-            rsp_data = 32'hBADCAB1E;  // Return error value in devmode for unmapped reads
-            err = 1'b1;
+            err = 1'b1; // unmapped register access
           end
         endcase
-    end
+      //----GPIO-Intern-Writes----------------------------------------------------------------------
+      end else begin
+        // write In Register from Internal GPIO logic
+        reg_d.str.in = hw2reg.gpio_in_w; 
+        // write Out from Internal GPIO logic to GPIOs but only to the ones allowed
+        reg_d.str.out= 
+        (~hw2reg.gpio_out_w_allw & reg_q.str.out) | (hw2reg.gpio_out_w_allw & hw2reg.gpio_out_w); 
+        // write Irpt Status from Internal GPIO logic to GPIOs but only to the ones allowed
+        reg_d.str.irpt_st = 
+        (~hw2reg.intrpt_rise_fall_status_w_allw & reg_q.str.irpt_st) | 
+        (hw2reg.intrpt_rise_fall_status_w_allw & hw2reg.intrpt_rise_fall_status_w); 
+      end
+    
 
-    //----GPIO-Intern-Reads--------------------------------------------------------------------------------
-    always_comb begin 
-      reg2hw.gpio_dir_r = reg_q.struct.dir; 
-      reg2hw.gpio_en_r  = reg_q.struct.en;
-      reg2hw.gpio_out_r = reg_q.struct.out;
-      reg2hw.intrpt_rise_fall_en_r = reg_q.struct.irpt_en;
+      //-----------------------------------------------------------------------------------------------
+      //READ
+      //-----------------------------------------------------------------------------------------------
 
-      // Read Toggle, but only when indicated by read allow
-      reg2hw.gpio_toggle_r = 
-      (~reg2hw.gpio_toggle_r_allw & reg2hw.gpio_toggle_r) | (reg2hw.gpio_toggle_r_allw & reg_q.struct.toggle)
-      // Reset read allow after
-      reg2hw.gpio_toggle_r_allw = '0;
+      //----OBI-Reads----------------------------------------------------------------------------------
+      rsp_data = 32'h0;  // Default value for read data
+      err = 1'b0;
+      if (obi_req_i.req & ~obi_req_i.a.we) begin
 
-      // Read Irpt Status, but only when indicated by read allow
-      reg2hw.gpio_intrpt_rise_fall_status_r = 
-      (~reg2hw.gpio_intrpt_rise_fall_status_r_allw & reg2hw.gpio_intrpt_rise_fall_status_r) | 
-      (reg2hw.gpio_intrpt_rise_fall_status_r_allw & reg_q.struct.irpt_st)
-      // Reset read allow after
-      reg2hw.gpio_intrpt_rise_fall_status_r_allw = '0;
+        case (word_addr_q)
+          GPIO_DIR_OFFSET: begin
+            rsp_data = reg_q.str.dir;
+          end
+
+          GPIO_EN_OFFSET: begin
+            rsp_data = reg_q.str.en;
+          end
+
+          GPIO_IN_OFFSET: begin
+            rsp_data = reg_q.str.in;
+          end
+
+          GPIO_OUT_OFFSET: begin
+            rsp_data = reg_q.str.out;
+          end
+
+          GPIO_TOGGLE_OFFSET: begin
+            rsp_data = reg_q.str.toggle;
+          end
+
+          GPIO_INTRPT_RISE_FALL_EN_OFFSET: begin 
+            rsp_data = reg_q.str.irpt_en;
+          end
+
+          GPIO_INTRPT_RISE_FALL_STATUS_OFFSET: begin
+            rsp_data = reg_q.str.irpt_st;
+          end
+
+          default: begin
+          rsp_data = 32'hBADCAB1E;  // Return error value in devmode for unmapped reads
+          err = 1'b1;
+          end
+        endcase
+      //----GPIO-Intern-Reads--------------------------------------------------------------------------
+      end else begin
+        reg2hw.gpio_dir_r = reg_q.str.dir; 
+        reg2hw.gpio_en_r  = reg_q.str.en;
+        reg2hw.gpio_out_r = reg_q.str.out;
+        reg2hw.intrpt_rise_fall_en_r = reg_q.str.irpt_en;
+
+        // Read Toggle, but only when indicated by read allow
+        reg2hw.gpio_toggle_r = 
+        (~reg2hw.gpio_toggle_r_allw & reg2hw.gpio_toggle_r) | (reg2hw.gpio_toggle_r_allw & reg_q.str.toggle);
+        // Reset read allow after
+        reg2hw.gpio_toggle_r_allw = '0;
+
+        // Read Irpt Status, but only when indicated by read allow
+        reg2hw.intrpt_rise_fall_status_r = 
+        (~reg2hw.intrpt_rise_fall_status_r_allw & reg2hw.intrpt_rise_fall_status_r) | 
+        (reg2hw.intrpt_rise_fall_status_r_allw & reg_q.str.irpt_st);
+        // Reset read allow after
+        reg2hw.intrpt_rise_fall_status_r_allw = '0;
+      end
     end
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     //SEQ LOGIC//
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    `FF(reg_q.array, reg_d.array, '0, clk_i, rst_ni)
+    `FF(reg_q.arr, reg_d.arr, '0, clk_i, rst_ni)
 
 endmodule
