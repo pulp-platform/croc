@@ -4,14 +4,14 @@ package gpio_reg_pkg;
   parameter int GpioCount = 16;
 
   // Address widths within the block : Defines the max no of Block Addresses (2047)
-  parameter int BlockAw = 11; 
+  parameter int BlockAw = 11;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
 
   //-----------------------------------------------------------------------------------------------
-  // Register Union 
+  // Register Union
   //-----------------------------------------------------------------------------------------------
 
   typedef struct packed {
@@ -37,11 +37,11 @@ package gpio_reg_pkg;
   typedef struct packed {
     logic [GpioCount-1:0] gpio_dir_r;
     logic [GpioCount-1:0] gpio_en_r;
-    logic [GpioCount-1:0] gpio_out_r; 
-    logic [GpioCount-1:0] gpio_toggle_r; 
+    logic [GpioCount-1:0] gpio_out_r;
+    logic [GpioCount-1:0] gpio_toggle_r;
     //is set 1 whenever OBI writes to Toggle Register, acts as enable for read
-    logic [GpioCount-1:0] gpio_toggle_r_allw; 
-    logic [GpioCount-1:0] intrpt_rise_fall_en_r; 
+    logic [GpioCount-1:0] gpio_toggle_r_allw;
+    logic [GpioCount-1:0] intrpt_rise_fall_en_r;
     logic [GpioCount-1:0] intrpt_rise_fall_status_r;
     //is set 1 whenever OBI writes to Intrpt Rise Fall Status Register, acts as enable for read
     logic [GpioCount-1:0] intrpt_rise_fall_status_r_allw;
@@ -52,13 +52,13 @@ package gpio_reg_pkg;
   //-----------------------------------------------------------------------------------------------
 
   typedef struct packed {
-    logic [GpioCount-1:0] gpio_in_w; 
-    logic [GpioCount-1:0] gpio_out_w; 
+    logic [GpioCount-1:0] gpio_in_w;
+    logic [GpioCount-1:0] gpio_out_w;
     // is set 1 whenever there is a reason to write from internal GPIO logic to Out Register
-    logic [GpioCount-1:0] gpio_out_w_allw; 
-    logic [GpioCount-1:0] intrpt_rise_fall_status_w; 
+    logic [GpioCount-1:0] gpio_out_w_allw;
+    logic [GpioCount-1:0] intrpt_rise_fall_status_w;
     // is set 1 whenever there is a reason to write from internal GPIO logic to Intrpt Rise Fall Status Register
-    logic [GpioCount-1:0] intrpt_rise_fall_status_w_allw; 
+    logic [GpioCount-1:0] intrpt_rise_fall_status_w_allw;
   } gpio_hw2reg_t;
 
   //-----------------------------------------------------------------------------------------------
@@ -66,13 +66,15 @@ package gpio_reg_pkg;
   //-----------------------------------------------------------------------------------------------
 
   // Register Address Fffsets
-  parameter logic [BlockAw-1:0] GPIO_DIR_OFFSET = 11'h 0; //32 Register ->128 Bytes dazwischen (mehr als genug PLatz)
-  parameter logic [BlockAw-1:0] GPIO_EN_OFFSET = 11'h 80; 
-  parameter logic [BlockAw-1:0] GPIO_IN_OFFSET = 11'h 100; 
-  parameter logic [BlockAw-1:0] GPIO_OUT_OFFSET = 11'h 180; 
-  parameter logic [BlockAw-1:0] GPIO_TOGGLE_OFFSET = 11'h 200; 
-  parameter logic [BlockAw-1:0] GPIO_INTRPT_RISE_FALL_EN_OFFSET = 11'h 280; 
-  parameter logic [BlockAw-1:0] GPIO_INTRPT_RISE_FALL_STATUS_OFFSET = 11'h 300; //next useable address is h 380
+  // 32 registers ->128 Bytes dazwischen (mehr als genug Platz)
+  parameter logic [BlockAw-1:0] GPIO_DIR_OFFSET = 11'h 0;
+  parameter logic [BlockAw-1:0] GPIO_EN_OFFSET = 11'h 80;
+  parameter logic [BlockAw-1:0] GPIO_IN_OFFSET = 11'h 100;
+  parameter logic [BlockAw-1:0] GPIO_OUT_OFFSET = 11'h 180;
+  parameter logic [BlockAw-1:0] GPIO_TOGGLE_OFFSET = 11'h 200;
+  parameter logic [BlockAw-1:0] GPIO_INTRPT_RISE_FALL_EN_OFFSET = 11'h 280;
+  parameter logic [BlockAw-1:0] GPIO_INTRPT_RISE_FALL_STATUS_OFFSET = 11'h 300;
+  // Next useable address is h380
 
   // Reset values for hwext registers and their fields
   parameter logic [31:0] GPIO_IN_RESVAL = 32'h 0;
@@ -91,4 +93,3 @@ package gpio_reg_pkg;
   } gpio_id_e;
 
 endpackage
-
