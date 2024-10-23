@@ -4,80 +4,50 @@ package gpio_reg_pkg;
   parameter int GpioCount = 16;
 
   // Address widths within the block : Defines the max no of Block Addresses (2047)
-  parameter int BlockAw = 11; //todo can we use only 10?
+  parameter int BlockAw = 11; 
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
 
   //-----------------------------------------------------------------------------------------------
-  // REG2HW
+  // REG2HW register type -> HW / Internal GPIOlogic
   //-----------------------------------------------------------------------------------------------
 
+  // r for read | allw for allow
   typedef struct packed {
-    logic        q;
-  } gpio_reg2hw_gpio_dir_mreg_t;
-
-  typedef struct packed {
-    logic        q;
-  } gpio_reg2hw_gpio_en_mreg_t;
-
-  typedef struct packed {
-    logic        q;
-  } gpio_reg2hw_gpio_out_mreg_t;
-
-  typedef struct packed {
-    logic        q;
-    logic        qe;
-  } gpio_reg2hw_gpio_toggle_mreg_t;
-
-  typedef struct packed {
-    logic        q;
-  } gpio_reg2hw_intrpt_rise_fall_en_mreg_t;
-
-  typedef struct packed {
-    logic        q;
-    logic        qe;
-  } gpio_reg2hw_intrpt_rise_fall_status_mreg_t;
-
-  //-----------------------------------------------------------------------------------------------
-  // HW2REG
-  //-----------------------------------------------------------------------------------------------
-
-  typedef struct packed {
-    logic        d;
-  } gpio_hw2reg_gpio_in_mreg_t;
-
-  typedef struct packed {
-    logic        d;
-    logic        de;
-  } gpio_hw2reg_gpio_out_mreg_t;
-
-  typedef struct packed {
-    logic        d;
-    logic        de;
-  } gpio_hw2reg_intrpt_rise_fall_status_mreg_t;
-
-  // Register -> HW type
-  typedef struct packed {
-    gpio_reg2hw_gpio_dir_mreg_t [GpioCount-1:0] gpio_dir; // [607:576]
-    gpio_reg2hw_gpio_en_mreg_t [GpioCount-1:0] gpio_en; // [575:544]
-    gpio_reg2hw_gpio_out_mreg_t [GpioCount-1:0] gpio_out; // [543:512]
-    gpio_reg2hw_gpio_toggle_mreg_t [GpioCount-1:0] gpio_toggle; // [127:64]
-    gpio_reg2hw_intrpt_rise_fall_en_mreg_t [GpioCount-1:0] intrpt_rise_fall_en; // [63:32]
-    gpio_reg2hw_intrpt_rise_fall_status_mreg_t [GpioCount-1:0] intrpt_rise_fall_status; // [31:0]
+    logic [GpioCount-1:0] gpio_dir_r;
+    logic [GpioCount-1:0] gpio_en_r;
+    logic [GpioCount-1:0] gpio_out_r; 
+    logic [GpioCount-1:0] gpio_toggle_r; 
+    //is set 1 whenever OBI writes to Toggle Register, acts as enable for read
+    logic [GpioCount-1:0] gpio_toggle_r_allw; 
+    logic [GpioCount-1:0] intrpt_rise_fall_en_r; 
+    logic [GpioCount-1:0] intrpt_rise_fall_status_r;
+    //is set 1 whenever OBI writes to Intrpt Rise Fall Status Register, acts as enable for read
+    logic [GpioCount-1:0] intrpt_rise_fall_status_r_allw;
   } gpio_reg2hw_t;
 
-  // HW -> register type
+  //-----------------------------------------------------------------------------------------------
+  // HW2REG HW / Internal GPIOlogic -> register type
+  //-----------------------------------------------------------------------------------------------
+
   typedef struct packed {
-    gpio_hw2reg_gpio_in_mreg_t [GpioCount-1:0] gpio_in; // [159:128]
-    gpio_hw2reg_gpio_out_mreg_t [GpioCount-1:0] gpio_out; // [127:64]
-    gpio_hw2reg_intrpt_rise_fall_status_mreg_t [GpioCount-1:0] intrpt_rise_fall_status; // [63:0]
+    logic [GpioCount-1:0] gpio_in_w; 
+    logic [GpioCount-1:0] gpio_out_w; 
+    // is set 1 whenever there is a reason to write from internal GPIO logic to Out Register
+    logic [GpioCount-1:0] gpio_out_w_allw; 
+    logic [GpioCount-1:0] intrpt_rise_fall_status_w; 
+    // is set 1 whenever there is a reason to write from internal GPIO logic to Intrpt Rise Fall Status Register
+    logic [GpioCount-1:0] intrpt_rise_fall_status_w_allw; 
   } gpio_hw2reg_t;
 
-  //TODO wieso jeweils 32 Register platz lassen? das würde ja platz für 32 * 32 GPIOS lassen????
+  //-----------------------------------------------------------------------------------------------
+  // Offsets
+  //-----------------------------------------------------------------------------------------------
+
   // Register offsets
-  parameter logic [BlockAw-1:0] GPIO_DIR_OFFSET = 11'h 0; //32 Register ->128 Bytes
+  parameter logic [BlockAw-1:0] GPIO_DIR_OFFSET = 11'h 0; //32 Register ->128 Bytes dazwischen (mehr als genug PLatz)
   parameter logic [BlockAw-1:0] GPIO_EN_OFFSET = 11'h 80; 
   parameter logic [BlockAw-1:0] GPIO_IN_OFFSET = 11'h 100; 
   parameter logic [BlockAw-1:0] GPIO_OUT_OFFSET = 11'h 180; 

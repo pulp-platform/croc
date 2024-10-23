@@ -9,8 +9,8 @@ module gpio_reg_top #(
     input logic rst_ni,                 // Active-low reset
 
     //Connection to Obi
-    input obi_req_t  obi_req_i,      // OBI request interface
-    output obi_rsp_t obi_rsp_o,     // OBI response interface
+    input obi_req_t  obi_req_i,      // OBI request interface : a.addr, a.we, a.be, a.wdata, a.aid, a.a_optional | rready, req
+    output obi_rsp_t obi_rsp_o,     // OBI response interface : r.rdata, r.rid, r.err, r.r_optional | gnt, rvalid
 
     // To Hardware
     output gpio_reg_pkg::gpio_reg2hw_t reg2hw,   // Write from reg to HW
@@ -56,142 +56,149 @@ module gpio_reg_top #(
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Storage for registers
-    logic [7*GpioCount-1:0] register_storage_d, register_storage_q; 
-    parameter int IndexOffsetDir     = 0;
-    parameter int IndexOffsetEn      = 1*GpioCount;
-    parameter int IndexOffsetIn      = 2*GpioCount;
-    parameter int IndexOffsetOut     = 3*GpioCount;
-    parameter int IndexOffsetToggle  = 4*GpioCount;
-    parameter int IndexOffsetIrptEn  = 5*GpioCount;
-    parameter int IndexOffsetIrptSt  = 6*GpioCount;
+    logic [7*GpioCount-1:0] reg_d, reg_q; 
+    //Index Offsets
+    parameter int OffsetDir     = 0;
+    parameter int OffsetEn      = 1*GpioCount;
+    parameter int OffsetIn      = 2*GpioCount;
+    parameter int OffsetOut     = 3*GpioCount;
+    parameter int OffsetToggle  = 4*GpioCount;
+    parameter int OffsetIrptEn  = 5*GpioCount;
+    parameter int OffsetIrptSt  = 6*GpioCount;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     //COMB LOGIC//
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    register_storage_d[IndexOffsetDir:0] = obi_req_i.a.wdata; 
+    
     //-----------------------------------------------------------------------------------------------
     //WRITE
     //-----------------------------------------------------------------------------------------------
      
+    //byte enable/strobe defines which subset of bytes is written to by wdata of the OBI request 
+    logic [ObiCfg.DataWidth/8 - 1:0] be_mask; // Amount of wdata Bytes
+
+    for (genvar i = 0; unsigned'(i) < ObiCfg.DataWidth/8; ++i ) begin : gen_be_mask
+      assign be_mask[8*i +: 8] = {8{obi_req_i.a.be[i]}};
+    end
+
+    //----OBI-Writes--------------------------------------------------------------------------------
     always comb begin
-      for (int i = 0; i < GpioCount; i++) begin
-        err = 1'b0:
-        case (word_addr_q)
-          GPIO_DIR_OFFSET: begin
-            if (obi_req_i.req & obi_req_i.a.we) begin
-              register_storage_d[i + IndexOffsetDir] = obi_req_i.a.wdata[i]; 
-            end
+      err = 1'b0:
+      case (word_addr_q)
+        GPIO_DIR_OFFSET: begin
+          if (obi_req_i.req & obi_req_i.a.we) begin
+            reg_d[OffsetEn-1:OffsetDir] = 
+            (~be_mask & reg_q[OffsetEn-1:OffsetDir]) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]); 
           end
+        end
 
-          GPIO_EN_OFFSET: begin
-            if (obi_req_i.req & obi_req_i.a.we) begin
-              register_storage_d[i + IndexOffsetEn] = obi_req_i.a.wdata[i]; 
-            end
+        GPIO_EN_OFFSET: begin
+          if (obi_req_i.req & obi_req_i.a.we) begin
+            reg_d[OffsetIn-1:OffsetEn] = 
+            (~be_mask & reg_q[OffsetIn-1:OffsetEn]) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]); 
           end
+        end
 
-          GPIO_IN_OFFSET: begin
-            register_storage_d[i + IndexOffsetIn] = hw2reg.gpio_in[i].d; //write from GPIOlogic
+        GPIO_OUT_OFFSET: begin
+          if (obi_req_i.req & obi_req_i.a.we) begin
+            reg_d[OffsetToggle-1:OffsetOut] = 
+            (~be_mask & reg_q[OffsetToggle-1:OffsetOut]) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]);
           end
+        end
 
-          GPIO_OUT_OFFSET: begin
-            if (obi_req_i.req & obi_req_i.a.we) begin
-              register_storage_d[i + IndexOffsetOut] = obi_req_i.a.wdata[i]; 
-            end
-            if (hw2reg.gpio_out[i].de) begin 
-              register_storage_d[i + IndexOffsetOut] = hw2reg.gpio_out[i].d;
-            end
+        GPIO_TOGGLE_OFFSET: begin
+          if (obi_req_i.req & obi_req_i.a.we) begin
+            reg_d[OffsetIrptEn-1:OffsetToggle] = 
+            (~be_mask & reg_q[OffsetIrptEn-1:OffsetToggle]) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]);
+
+            reg2hw.gpio_toggle_r_allw = be_mask; // mark every GPIO with 1 that has been written to !
           end
+        end
 
-          GPIO_TOGGLE_OFFSET: begin
-            if (obi_req_i.req & obi_req_i.a.we) begin
-              register_storage_d[i + IndexOffsetToggle]    = obi_req_i.a.wdata[i]; 
-              reg2hw.gpio_toggle[i + IndexOffsetToggle].qe = 1'b1; //TODO new
-            end
+        GPIO_INTRPT_RISE_FALL_EN_OFFSET: begin
+          if (obi_req_i.req & obi_req_i.a.we) begin
+            reg_d[OffsetIrptSt-1:OffsetIrptEn] = 
+            (~be_mask & reg_q[OffsetIrptSt-1:OffsetIrptEn]) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]);
           end
+        end 
 
-          GPIO_INTRPT_RISE_FALL_EN_OFFSET: begin
-            if (obi_req_i.req & obi_req_i.a.we) begin
-              register_storage_d[i + IndexOffsetIrptEn] = obi_req_i.a.wdata[i]; 
-            end
-          end 
+        GPIO_INTRPT_RISE_FALL_STATUS_OFFSET: begin
+          if (obi_req_i.req & obi_req_i.a.we) begin
+            reg_d[7*GpioCount-1:OffsetIrptSt] = 
+            (~be_mask & reg_q[7*GpioCount-1:OffsetIrptSt]) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]);
 
-          GPIO_INTRPT_RISE_FALL_STATUS_OFFSET: begin
-            if (obi_req_i.req & obi_req_i.a.we) begin
-              register_storage_d[i + IndexOffsetIrptSt] = obi_req_i.a.wdata[i]; 
-              reg2hw.intrpt_rise_fall_status[i + IndexOffsetIrptSt].qe = 1'b1; //TODO new
-            end
-            if (hw2reg.intrpt_rise_fall_status[i].de) begin
-              register_storage_d[i + IndexOffsetIrptSt] = hw2reg.intrpt_rise_fall_status[i].d;
-            end
+            reg2hw.intrpt_rise_fall_status_r_allw = be_mask; // mark every GPIO with 1 that has been written to !
           end
+        end
 
-          default: begin
-            err = 1'b1; // unmapped register access
-          end
-        endcase
-      end
+        default: begin
+          err = 1'b1; // unmapped register access
+        end
+      endcase
+    end
+
+    //----GPIO-Intern-Writes----------------------------------------------------------------------------
+    always_comb begin
+      // write In Register from Internal GPIO logic
+      reg_d[OffsetOut-1:OffsetIn] = hw2reg.gpio_in_w; 
+      //write from GPIOlogic to GPIOs but only to the ones allowed
+      reg_d[OffsetToggle-1:OffsetOut] = 
+      (~hw2reg.gpio_out_w_allw & reg_q[OffsetToggle-1:OffsetOut]) | 
+      (hw2reg.gpio_out_w_allw & hw2reg.gpio_out_w); 
+      // write Irpt Status from Internal GPIO logic to GPIOs but only to the ones allowed
+      reg_d[7*GpioCount-1:OffsetIrptSt] = 
+      (~hw2reg.intrpt_rise_fall_status_w_allw & reg_q[7*GpioCount-1:OffsetIrptSt]) | 
+      (hw2reg.intrpt_rise_fall_status_w_allw & hw2reg.intrpt_rise_fall_status_w); 
     end
 
     //-----------------------------------------------------------------------------------------------
     //READ
     //-----------------------------------------------------------------------------------------------
 
+    //----OBI-Reads--------------------------------------------------------------------------------
     always_comb begin
       rsp_data = 32'h0;  // Default value for read data
       err = 1'b0;
-      for (int i = 0; i < GpioCount; i++) begin
         case (word_addr_q)
           GPIO_DIR_OFFSET: begin
-            reg2hw.gpio_dir[i].q = register_storage_q[i + IndexOffsetDir];
             if (obi_req_i.req & ~obi_req_i.a.we) begin
-              rsp_data[i] = register_storage_q[i + IndexOffsetDir];
+              rsp_data = reg_q[OffsetEn:OffsetDir];
             end
           end
 
           GPIO_EN_OFFSET: begin
-            reg2hw.gpio_en[i].q = register_storage_q[i + IndexOffsetEn];
             if (obi_req_i.req & ~obi_req_i.a.we) begin
-              rsp_data[i] = register_storage_q[i + IndexOffsetEn];
+              rsp_data = reg_q[OffsetIn:OffsetEn];
             end
           end
 
           GPIO_IN_OFFSET: begin
             if (obi_req_i.req & ~obi_req_i.a.we) begin
-              rsp_data[i] = register_storage_q[i + IndexOffsetIn];
+              rsp_data = reg_q[OffsetOut:OffsetIn];
             end 
           end
 
           GPIO_OUT_OFFSET: begin
-            reg2hw.gpio_out[i].q = register_storage_q[i + IndexOffsetOut];
             if (obi_req_i.req & ~obi_req_i.a.we) begin
-              rsp_data[i] = register_storage_q[i + IndexOffsetOut];
+              rsp_data = reg_q[OffsetToggle:OffsetOut];
             end
           end
 
           GPIO_TOGGLE_OFFSET: begin
-            if(reg2hw.gpio_toggle[i + IndexOffsetToggle].qe) begin //TODO new
-              reg2hw.gpio_toggle[i].q = register_storage_q[i + IndexOffsetToggle];
-              reg2hw.gpio_toggle[i + IndexOffsetToggle].qe = 1'b0; //TODO new
-            end
             if (obi_req_i.req & ~obi_req_i.a.we) begin
-              rsp_data[i] = register_storage_q[i + IndexOffsetToggle];
+              rsp_data = reg_q[OffsetIrptEn:OffsetToggle];
             end
           end
 
-          GPIO_INTRPT_RISE_FALL_EN_OFFSET: begin
-            reg2hw.intrpt_rise_fall_en[i].q = register_storage_q[i + IndexOffsetIrptEn]; 
+          GPIO_INTRPT_RISE_FALL_EN_OFFSET: begin 
             if (obi_req_i.req & ~obi_req_i.a.we) begin
-              rsp_data[i] = register_storage_q[i + IndexOffsetIrptEn];
+              rsp_data = reg_q[OffsetIrptSt:OffsetIrptEn];
             end
           end
 
           GPIO_INTRPT_RISE_FALL_STATUS_OFFSET: begin
-            if (reg2hw.intrpt_rise_fall_status[i + IndexOffsetIrptSt].qe) begin //TODO new
-              reg2hw.intrpt_rise_fall_status[i].q = register_storage_q[i + IndexOffsetIrptSt];
-              reg2hw.intrpt_rise_fall_status[i + IndexOffsetIrptSt].qe = 1'b0; //TODO new
-            end
             if (obi_req_i.req & ~obi_req_i.a.we) begin
-              rsp_data[i] = register_storage_q[i + IndexOffsetIrptSt];
+              rsp_data = reg_q[7*GpioCount-1:OffsetIrptSt];
             end
           end
 
@@ -200,6 +207,27 @@ module gpio_reg_top #(
             err = 1'b1;
           end
         endcase
+    end
+
+    //----GPIO-Intern-Reads--------------------------------------------------------------------------------
+    always_comb begin 
+      reg2hw.gpio_dir_r = reg_q[OffsetEn:OffsetDir]; 
+      reg2hw.gpio_en_r  = reg_q[OffsetIn:OffsetEn];
+      reg2hw.gpio_out_r = reg_q[OffsetOut:OffsetOut];
+      //Read Toggle, but only when indicated by read allow, reset read allow after
+      for (genvar gpio_idx = 0; gpio_idx < NrGPIOs; gpio_idx++) begin : gen_gpios
+        if(reg2hw.gpio_toggle_r_allw[gpio_idx]) begin 
+          reg2hw.gpio_toggle_r[gpio_idx] = reg_q[gpio_idx + OffsetToggle];
+          reg2hw.gpio_toggle_r_allw[gpio_idx] = 1'b0; 
+        end
+      end
+      reg2hw.intrpt_rise_fall_en_r = reg_q[OffsetIrptSt:OffsetIrptEn];
+      //Read Irpt Status, but only when indicated by read allow, reset read allow after
+      for (genvar gpio_idx = 0; gpio_idx < NrGPIOs; gpio_idx++) begin : gen_gpios
+        if (reg2hw.intrpt_rise_fall_status_r_allw[gpio_idx]) begin 
+          reg2hw.intrpt_rise_fall_status_r[gpio_idx] = reg_q[gpio_idx + OffsetIrptSt];
+          reg2hw.intrpt_rise_fall_status_r_allw[gpio_idx] = 1'b0; 
+        end
       end
     end
 
@@ -207,6 +235,6 @@ module gpio_reg_top #(
     //SEQ LOGIC//
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    `FF(register_storage_q, register_storage_d, '0, clk_i, rst_ni);
+    `FF(reg_q, reg_d, '0, clk_i, rst_ni);
 
 endmodule

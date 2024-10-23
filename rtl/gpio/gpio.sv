@@ -103,10 +103,10 @@ module gpio #(
         //-----------------------------------------------------------------------------------------------
 
         // Assign GPIO_IN register
-        assign hw2reg.gpio_in[gpio_idx].d = gpio_in_sync[gpio_idx];
+        assign hw2reg.gpio_in_w[gpio_idx] = gpio_in_sync[gpio_idx];
 
         // Control output with GPIO_OUT register
-        assign gpio_out[gpio_idx] = reg2hw.gpio_out[gpio_idx].q;
+        assign gpio_out[gpio_idx] = reg2hw.gpio_out_r[gpio_idx];
 
         // Control gpio_tx_en_o depending on GPIO_DIR register value
         always_comb begin
@@ -122,12 +122,12 @@ module gpio #(
         //-----------------------------------------------------------------------------------------------
 
         always_comb begin
-            if (reg2hw.gpio_en[gpio_idx].q & reg2hw.gpio_dir[gpio_idx].q & reg2hw.gpio_toggle[gpio_idx].q) begin
-            hw2reg.gpio_out[gpio_idx].d  = ~reg2hw.gpio_out[gpio_idx].q;
-            hw2reg.gpio_out[gpio_idx].de = 1'b1;
+            if (reg2hw.gpio_en_r[gpio_idx] & reg2hw.gpio_dir_r[gpio_idx] & reg2hw.gpio_toggle_r[gpio_idx]) begin
+            hw2reg.gpio_out_w[gpio_idx]      = ~reg2hw.gpio_out_r[gpio_idx];
+            hw2reg.gpio_out_w_allw[gpio_idx] = 1'b1;
             end else begin
-            hw2reg.gpio_out[gpio_idx].d  = reg2hw.gpio_out[gpio_idx].q;
-            hw2reg.gpio_out[gpio_idx].de = 1'b0;
+            hw2reg.gpio_out_w[gpio_idx]      = reg2hw.gpio_out_r[gpio_idx];
+            hw2reg.gpio_out_w_allw[gpio_idx] = 1'b0;
             end
         end
 
@@ -136,13 +136,13 @@ module gpio #(
         //-----------------------------------------------------------------------------------------------
 
         // Mask Detected Edges with Interrupt Enable and GPIO Enable
-        assign gpio_rise_fall_intrpt[gpio_idx] = gpio_rise_fall_edge[gpio_idx] & reg2hw.intrpt_rise_fall_en[gpio_idx].q & reg2hw.gpio_en[gpio_idx].q;
+        assign gpio_rise_fall_intrpt[gpio_idx] = gpio_rise_fall_edge[gpio_idx] & reg2hw.intrpt_rise_fall_en_r[gpio_idx] & reg2hw.gpio_en_r[gpio_idx];
 
         always_comb begin
             // Set new bits of the the status register when an interrupt arrives.
-            hw2reg.intrpt_rise_fall_status[gpio_idx].d   = gpio_rise_fall_intrpt[gpio_idx] | reg2hw.intrpt_rise_fall_status[gpio_idx].q;
+            hw2reg.intrpt_rise_fall_status_w[gpio_idx] = gpio_rise_fall_intrpt[gpio_idx] | reg2hw.intrpt_rise_fall_status_r[gpio_idx];
             // Only update the registers (set de = 1) if there are any new interrupts of the given type.
-            hw2reg.intrpt_rise_fall_status[gpio_idx].de  = |gpio_rise_fall_intrpt[gpio_idx];
+            hw2reg.intrpt_rise_fall_status_w_allw[gpio_idx] = |gpio_rise_fall_intrpt[gpio_idx];
         end 
     end
 // Assign interrupt output signal depending on inerrupt mode
