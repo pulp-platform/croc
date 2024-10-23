@@ -11,6 +11,25 @@ package gpio_reg_pkg;
   ////////////////////////////
 
   //-----------------------------------------------------------------------------------------------
+  // Register Union 
+  //-----------------------------------------------------------------------------------------------
+
+  typedef struct packed {
+    logic [GpioCount-1:0] dir;    // Direction register
+    logic [GpioCount-1:0] en;     // Enable register
+    logic [GpioCount-1:0] in;     // Input register
+    logic [GpioCount-1:0] out;    // Output register
+    logic [GpioCount-1:0] toggle; // Toggle register
+    logic [GpioCount-1:0] irpt_en;// Interrupt enable
+    logic [GpioCount-1:0] irpt_st;// Interrupt status
+  } gpio_reg_fields_t;
+
+  typedef union packed {
+    gpio_reg_fields_t struct;           // Access as structured fields
+    logic [7*GpioCount-1:0] array;   // Access as a flat array
+  } gpio_reg_union_t;
+
+  //-----------------------------------------------------------------------------------------------
   // REG2HW register type -> HW / Internal GPIOlogic
   //-----------------------------------------------------------------------------------------------
 
@@ -46,7 +65,7 @@ package gpio_reg_pkg;
   // Offsets
   //-----------------------------------------------------------------------------------------------
 
-  // Register offsets
+  // Register Address Fffsets
   parameter logic [BlockAw-1:0] GPIO_DIR_OFFSET = 11'h 0; //32 Register ->128 Bytes dazwischen (mehr als genug PLatz)
   parameter logic [BlockAw-1:0] GPIO_EN_OFFSET = 11'h 80; 
   parameter logic [BlockAw-1:0] GPIO_IN_OFFSET = 11'h 100; 

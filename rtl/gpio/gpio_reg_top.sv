@@ -16,7 +16,6 @@ module gpio_reg_top #(
     output gpio_reg_pkg::gpio_reg2hw_t reg2hw,   // Write from reg to HW
     input gpio_reg_pkg::gpio_hw2reg_t  hw2reg    // Read from HW to reg
 );
-
     // Import the GPIO package for register definitions and parameters
     import gpio_reg_pkg::*;
 
@@ -26,10 +25,10 @@ module gpio_reg_top #(
 
     // Signals for the OBI response
     logic [ObiCfg.DataWidth-1:0] rsp_data;         
-    logic                        valid_d, valid_q;  //needs to be delayed for the response phase                   
+    logic                        valid_d, valid_q; //needs to be delayed for the response phase                   
     logic                        err;                                      
-    logic [BlockAw-1:0]          word_addr_d, word_addr_q;  //needs to be delayed for the response phase    
-    logic [ObiCfg.IdWidth-1:0]   id_d, id_q;   //needs to be delayed for the response phase 
+    logic [BlockAw-1:0]          word_addr_d, word_addr_q; //needs to be delayed for the response phase    
+    logic [ObiCfg.IdWidth-1:0]   id_d, id_q; //needs to be delayed for the response phase 
          
     //OBI rsp Assignment
     always_comb begin
@@ -52,19 +51,11 @@ module gpio_reg_top #(
     `FF(word_addr_q, word_addr_d, '0, clk_i, rst_ni)
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    //registers//
+    //register//
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Storage for registers
-    logic [7*GpioCount-1:0] reg_d, reg_q; 
-    //Index Offsets
-    parameter int OffsetDir     = 0;
-    parameter int OffsetEn      = 1*GpioCount;
-    parameter int OffsetIn      = 2*GpioCount;
-    parameter int OffsetOut     = 3*GpioCount;
-    parameter int OffsetToggle  = 4*GpioCount;
-    parameter int OffsetIrptEn  = 5*GpioCount;
-    parameter int OffsetIrptSt  = 6*GpioCount;
+    gpio_reg_union_t reg_d, reg_q; 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     //COMB LOGIC//
@@ -82,52 +73,52 @@ module gpio_reg_top #(
     end
 
     //----OBI-Writes--------------------------------------------------------------------------------
-    always comb begin
-      err = 1'b0:
+    always_comb begin
+      err = 1'b0;
       case (word_addr_q)
         GPIO_DIR_OFFSET: begin
           if (obi_req_i.req & obi_req_i.a.we) begin
-            reg_d[OffsetEn-1:OffsetDir] = 
-            (~be_mask & reg_q[OffsetEn-1:OffsetDir]) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]); 
+            reg_d.struct.in = 
+            (~be_mask & reg_q.struct.in) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]); 
           end
         end
 
         GPIO_EN_OFFSET: begin
           if (obi_req_i.req & obi_req_i.a.we) begin
-            reg_d[OffsetIn-1:OffsetEn] = 
-            (~be_mask & reg_q[OffsetIn-1:OffsetEn]) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]); 
+            reg_d.struct.en = 
+            (~be_mask & reg_q.struct.en) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]); 
           end
         end
 
         GPIO_OUT_OFFSET: begin
           if (obi_req_i.req & obi_req_i.a.we) begin
-            reg_d[OffsetToggle-1:OffsetOut] = 
-            (~be_mask & reg_q[OffsetToggle-1:OffsetOut]) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]);
+            reg_d.struct.out = 
+            (~be_mask & reg_q.struct.out) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]);
           end
         end
 
         GPIO_TOGGLE_OFFSET: begin
           if (obi_req_i.req & obi_req_i.a.we) begin
-            reg_d[OffsetIrptEn-1:OffsetToggle] = 
-            (~be_mask & reg_q[OffsetIrptEn-1:OffsetToggle]) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]);
-
-            reg2hw.gpio_toggle_r_allw = be_mask; // mark every GPIO with 1 that has been written to !
+            reg_d.struct.toggle = 
+            (~be_mask & reg_q.struct.toggle) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]);
+            // mark every GPIO with 1 that has been written to !
+            reg2hw.gpio_toggle_r_allw = be_mask; 
           end
         end
 
         GPIO_INTRPT_RISE_FALL_EN_OFFSET: begin
           if (obi_req_i.req & obi_req_i.a.we) begin
-            reg_d[OffsetIrptSt-1:OffsetIrptEn] = 
-            (~be_mask & reg_q[OffsetIrptSt-1:OffsetIrptEn]) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]);
+            reg_d.struct.irpt_en = 
+            (~be_mask & reg_q.struct.irpt_en) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]);
           end
         end 
 
         GPIO_INTRPT_RISE_FALL_STATUS_OFFSET: begin
           if (obi_req_i.req & obi_req_i.a.we) begin
-            reg_d[7*GpioCount-1:OffsetIrptSt] = 
-            (~be_mask & reg_q[7*GpioCount-1:OffsetIrptSt]) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]);
-
-            reg2hw.intrpt_rise_fall_status_r_allw = be_mask; // mark every GPIO with 1 that has been written to !
+            reg_d.struct.irpt_st = 
+            (~be_mask & reg_q.struct.irpt_st) | (be_mask & obi_req_i.a.wdata[GpioCount-1:0]);
+            // mark every GPIO with 1 that has been written to !
+            reg2hw.intrpt_rise_fall_status_r_allw = be_mask; 
           end
         end
 
@@ -140,14 +131,13 @@ module gpio_reg_top #(
     //----GPIO-Intern-Writes----------------------------------------------------------------------------
     always_comb begin
       // write In Register from Internal GPIO logic
-      reg_d[OffsetOut-1:OffsetIn] = hw2reg.gpio_in_w; 
-      //write from GPIOlogic to GPIOs but only to the ones allowed
-      reg_d[OffsetToggle-1:OffsetOut] = 
-      (~hw2reg.gpio_out_w_allw & reg_q[OffsetToggle-1:OffsetOut]) | 
-      (hw2reg.gpio_out_w_allw & hw2reg.gpio_out_w); 
+      reg_d.struct.in = hw2reg.gpio_in_w; 
+      // write Out from Internal GPIO logic to GPIOs but only to the ones allowed
+      reg_d.struct.out= 
+      (~hw2reg.gpio_out_w_allw & reg_q.struct.out) | (hw2reg.gpio_out_w_allw & hw2reg.gpio_out_w); 
       // write Irpt Status from Internal GPIO logic to GPIOs but only to the ones allowed
-      reg_d[7*GpioCount-1:OffsetIrptSt] = 
-      (~hw2reg.intrpt_rise_fall_status_w_allw & reg_q[7*GpioCount-1:OffsetIrptSt]) | 
+      reg_d.struct.irpt_st = 
+      (~hw2reg.intrpt_rise_fall_status_w_allw & reg_q.struct.irpt_st) | 
       (hw2reg.intrpt_rise_fall_status_w_allw & hw2reg.intrpt_rise_fall_status_w); 
     end
 
@@ -162,43 +152,43 @@ module gpio_reg_top #(
         case (word_addr_q)
           GPIO_DIR_OFFSET: begin
             if (obi_req_i.req & ~obi_req_i.a.we) begin
-              rsp_data = reg_q[OffsetEn:OffsetDir];
+              rsp_data = reg_q.struct.dir;
             end
           end
 
           GPIO_EN_OFFSET: begin
             if (obi_req_i.req & ~obi_req_i.a.we) begin
-              rsp_data = reg_q[OffsetIn:OffsetEn];
+              rsp_data = reg_q.struct.en;
             end
           end
 
           GPIO_IN_OFFSET: begin
             if (obi_req_i.req & ~obi_req_i.a.we) begin
-              rsp_data = reg_q[OffsetOut:OffsetIn];
+              rsp_data = reg_q.struct.in;
             end 
           end
 
           GPIO_OUT_OFFSET: begin
             if (obi_req_i.req & ~obi_req_i.a.we) begin
-              rsp_data = reg_q[OffsetToggle:OffsetOut];
+              rsp_data = reg_q.struct.out;
             end
           end
 
           GPIO_TOGGLE_OFFSET: begin
             if (obi_req_i.req & ~obi_req_i.a.we) begin
-              rsp_data = reg_q[OffsetIrptEn:OffsetToggle];
+              rsp_data = reg_q.struct.toggle;
             end
           end
 
           GPIO_INTRPT_RISE_FALL_EN_OFFSET: begin 
             if (obi_req_i.req & ~obi_req_i.a.we) begin
-              rsp_data = reg_q[OffsetIrptSt:OffsetIrptEn];
+              rsp_data = reg_q.struct.irpt_en;
             end
           end
 
           GPIO_INTRPT_RISE_FALL_STATUS_OFFSET: begin
             if (obi_req_i.req & ~obi_req_i.a.we) begin
-              rsp_data = reg_q[7*GpioCount-1:OffsetIrptSt];
+              rsp_data = reg_q.struct.irpt_st;
             end
           end
 
@@ -211,30 +201,29 @@ module gpio_reg_top #(
 
     //----GPIO-Intern-Reads--------------------------------------------------------------------------------
     always_comb begin 
-      reg2hw.gpio_dir_r = reg_q[OffsetEn:OffsetDir]; 
-      reg2hw.gpio_en_r  = reg_q[OffsetIn:OffsetEn];
-      reg2hw.gpio_out_r = reg_q[OffsetOut:OffsetOut];
-      //Read Toggle, but only when indicated by read allow, reset read allow after
-      for (genvar gpio_idx = 0; gpio_idx < NrGPIOs; gpio_idx++) begin : gen_gpios
-        if(reg2hw.gpio_toggle_r_allw[gpio_idx]) begin 
-          reg2hw.gpio_toggle_r[gpio_idx] = reg_q[gpio_idx + OffsetToggle];
-          reg2hw.gpio_toggle_r_allw[gpio_idx] = 1'b0; 
-        end
-      end
-      reg2hw.intrpt_rise_fall_en_r = reg_q[OffsetIrptSt:OffsetIrptEn];
-      //Read Irpt Status, but only when indicated by read allow, reset read allow after
-      for (genvar gpio_idx = 0; gpio_idx < NrGPIOs; gpio_idx++) begin : gen_gpios
-        if (reg2hw.intrpt_rise_fall_status_r_allw[gpio_idx]) begin 
-          reg2hw.intrpt_rise_fall_status_r[gpio_idx] = reg_q[gpio_idx + OffsetIrptSt];
-          reg2hw.intrpt_rise_fall_status_r_allw[gpio_idx] = 1'b0; 
-        end
-      end
+      reg2hw.gpio_dir_r = reg_q.struct.dir; 
+      reg2hw.gpio_en_r  = reg_q.struct.en;
+      reg2hw.gpio_out_r = reg_q.struct.out;
+      reg2hw.intrpt_rise_fall_en_r = reg_q.struct.irpt_en;
+
+      // Read Toggle, but only when indicated by read allow
+      reg2hw.gpio_toggle_r = 
+      (~reg2hw.gpio_toggle_r_allw & reg2hw.gpio_toggle_r) | (reg2hw.gpio_toggle_r_allw & reg_q.struct.toggle)
+      // Reset read allow after
+      reg2hw.gpio_toggle_r_allw = '0;
+
+      // Read Irpt Status, but only when indicated by read allow
+      reg2hw.gpio_intrpt_rise_fall_status_r = 
+      (~reg2hw.gpio_intrpt_rise_fall_status_r_allw & reg2hw.gpio_intrpt_rise_fall_status_r) | 
+      (reg2hw.gpio_intrpt_rise_fall_status_r_allw & reg_q.struct.irpt_st)
+      // Reset read allow after
+      reg2hw.gpio_intrpt_rise_fall_status_r_allw = '0;
     end
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     //SEQ LOGIC//
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    `FF(reg_q, reg_d, '0, clk_i, rst_ni);
+    `FF(reg_q.array, reg_d.array, '0, clk_i, rst_ni)
 
 endmodule

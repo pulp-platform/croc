@@ -76,9 +76,6 @@ module croc_domain import croc_pkg::*; #() (
   assign dbg_req_obi_req.a.aid = '0;
   assign dbg_req_obi_req.a.a_optional = '0;
 
-  // User Domain as Manager bus :TODO
-
-
   // ----------------------------------
   // Subordinate buses out of crossbar
   // ----------------------------------

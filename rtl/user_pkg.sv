@@ -68,7 +68,7 @@ package user_pkg;
   localparam bit [31:0] XbarGpioAddrOffset   = XbarRomAddrOffset + XbarRomAddrRange;// + Buffer;
   localparam bit [31:0] XbarGpioAddrRange    = 32'h0000_1000;
 
-  localparam int unsigned NumUserSbrRules   = 2; //2;   // ROM + (Gpio)
+  localparam int unsigned NumUserSbrRules   = 2;  // ROM + Gpio
   localparam int unsigned NumUserSbr        = NumUserSbrRules + 1; // additional OBI error
 
   // Enum for bus indices

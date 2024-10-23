@@ -23,7 +23,6 @@ module croc_soc import croc_pkg::*; #() (
   input  logic irq0_i,
   output logic status_o,
 
-  //todo gpio pads
   input  logic [gpio_reg_pkg::GpioCount-1:0] gpio_in,            // Input from GPIO pins
   output logic [gpio_reg_pkg::GpioCount-1:0] gpio_out,            // Output to GPIO pins
   output logic [gpio_reg_pkg::GpioCount-1:0] gpio_tx_en_o        // TX enable signal 0 -> input, 1 -> output
@@ -95,7 +94,6 @@ user_domain #(
   .ref_clk_i,
   .test_enable_i ( test_enable ),
 
-  //todo gpiopads
   .gpio_in        (soc_gpio_in      ),             
   .gpio_out       (soc_gpio_out     ),            
   .gpio_tx_en_o   (soc_gpio_tx_en_o ),
