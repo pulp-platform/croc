@@ -73,7 +73,6 @@ module gpio #(
 
   // Instantiate logic for individual gpios in blocks of DATA_WIDTH
   for (genvar gpio_idx = 0; gpio_idx < NrGPIOs; gpio_idx++) begin : gen_gpios
-        
         //-----------------------------------------------------------------------------------------------
         //Instantiate Synchronizer / Sample Input to Clock & Detect Edges
         //-----------------------------------------------------------------------------------------------
@@ -82,7 +81,6 @@ module gpio #(
         logic          f_edge;
         logic          r_edge;
         logic          serial_d, serial_q;
-
 
         assign f_edge = (~serial_d) & serial_q;
         assign r_edge = serial_d & (~serial_q);
@@ -103,7 +101,7 @@ module gpio #(
         //-----------------------------------------------------------------------------------------------
         //Interface Internal GPIO Logic & IOCell
         //-----------------------------------------------------------------------------------------------
-        
+
         // Assign GPIO_IN register
         assign hw2reg.gpio_in[gpio_idx].d = gpio_in_sync[gpio_idx];
 
@@ -112,13 +110,11 @@ module gpio #(
 
         // Control gpio_tx_en_o depending on GPIO_DIR register value
         always_comb begin
-
             gpio_tx_en_o[gpio_idx] = 1'b0; //DEFAULT-INPUT
 
             if (reg2hw.gpio_dir[gpio_idx]) begin //OUTPUT
                 gpio_tx_en_o[gpio_idx] = 1'b1;
             end
-
         end
 
         //-----------------------------------------------------------------------------------------------
@@ -126,7 +122,6 @@ module gpio #(
         //-----------------------------------------------------------------------------------------------
 
         always_comb begin
-
             if (reg2hw.gpio_en[gpio_idx].q & reg2hw.gpio_dir[gpio_idx].q & reg2hw.gpio_toggle[gpio_idx].q) begin
             hw2reg.gpio_out[gpio_idx].d  = ~reg2hw.gpio_out[gpio_idx].q;
             hw2reg.gpio_out[gpio_idx].de = 1'b1;
@@ -134,7 +129,6 @@ module gpio #(
             hw2reg.gpio_out[gpio_idx].d  = reg2hw.gpio_out[gpio_idx].q;
             hw2reg.gpio_out[gpio_idx].de = 1'b0;
             end
-
         end
 
         //-----------------------------------------------------------------------------------------------
@@ -151,8 +145,7 @@ module gpio #(
             hw2reg.intrpt_rise_fall_status[gpio_idx].de  = |gpio_rise_fall_intrpt[gpio_idx];
         end 
     end
-
-    // Assign interrupt output signal depending on inerrupt mode
-    assign global_interrupt_o = |gpio_rise_fall_intrpt;
+// Assign interrupt output signal depending on inerrupt mode
+assign global_interrupt_o = |gpio_rise_fall_intrpt;
     
 endmodule
