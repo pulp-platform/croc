@@ -9,9 +9,10 @@ module croc_domain import croc_pkg::*; #(
   parameter int unsigned GpioCount = 16
 ) (
   input  logic      clk_i,
-  input  logic      ref_clk_i,
   input  logic      rst_ni,
-  input  logic      test_enable_i,
+  input  logic      ref_clk_i,
+  input  logic      testmode_i,
+  input  logic      fetch_en_i,
 
   input  logic      jtag_tck_i,
   input  logic      jtag_tdi_i,
@@ -58,11 +59,10 @@ module croc_domain import croc_pkg::*; #(
   logic [31:0] interrupts;
   always_comb begin
     interrupts = '0;
-    interrupts[0] = irq0_i;
-    interrupts[1] = timer0_irq1;
-    interrupts[2] = uart_irq;
-    interrupts[3] = gpio_irq;
-    interrupts[4+:NumExternalIrqs] = interrupts_i;
+    interrupts[0] = timer0_irq1;
+    interrupts[1] = uart_irq;
+    interrupts[2] = gpio_irq;
+    interrupts[3+:NumExternalIrqs] = interrupts_i;
   end
 
   // ----------------------------
@@ -180,10 +180,10 @@ module croc_domain import croc_pkg::*; #(
     .clk_i,
     .rst_ni,
     .ref_clk_i,
-    .test_enable_i,
+    .test_enable_i    ( testmode_i  ),
 
-    .irqs_i           ( interrupts    ),
-    .timer0_irq_i     ( timer0_irq0   ),
+    .irqs_i           ( interrupts  ),
+    .timer0_irq_i     ( timer0_irq0 ),
 
     .boot_addr_i      ( boot_addr   ),
 
@@ -233,7 +233,7 @@ module croc_domain import croc_pkg::*; #(
   ) i_dmi_jtag (
     .clk_i,
     .rst_ni,
-    .testmode_i       ( test_enable_i  ),
+    .testmode_i,
 
     .dmi_rst_no       ( dmi_rst_n      ),
     .dmi_req_o        ( dmi_req        ),
@@ -258,12 +258,12 @@ module croc_domain import croc_pkg::*; #(
   ) i_dm_top (
     .clk_i,
     .rst_ni,
-    .testmode_i           ( test_enable_i ),
+    .testmode_i,
     .ndmreset_o           (),
     .dmactive_o           (),
-    .debug_req_o          ( debug_req ),
-    .unavailable_i        ( 1'b0      ),
-    .hartinfo_i           ( hartinfo  ),
+    .debug_req_o          ( debug_req  ),
+    .unavailable_i        ( 1'b0       ),
+    .hartinfo_i           ( hartinfo   ),
 
     .slave_req_i          ( dbg_mem_obi_req.req     ),
     .slave_we_i           ( dbg_mem_obi_req.a.we    ),
@@ -323,7 +323,7 @@ module croc_domain import croc_pkg::*; #(
   ) i_main_xbar (
     .clk_i,
     .rst_ni,
-    .testmode_i       ( test_enable_i ),
+    .testmode_i,
 
     .sbr_ports_req_i  ( {core_instr_obi_req, core_data_obi_req, dbg_req_obi_req, user_mgr_obi_req_i } ), // from managers towards subordinates
     .sbr_ports_rsp_o  ( {core_instr_obi_rsp, core_data_obi_rsp, dbg_req_obi_rsp, user_mgr_obi_rsp_o } ),
@@ -401,7 +401,7 @@ module croc_domain import croc_pkg::*; #(
   ) i_xbar_err (
     .clk_i,
     .rst_ni,
-    .testmode_i ( test_enable_i ),
+    .testmode_i,
     .obi_req_i  ( xbar_error_obi_req ),
     .obi_rsp_o  ( xbar_error_obi_rsp )
   );
@@ -458,7 +458,7 @@ module croc_domain import croc_pkg::*; #(
   ) i_periph_err (
     .clk_i,
     .rst_ni,
-    .testmode_i ( test_enable_i ),
+    .testmode_i,
     .obi_req_i  ( error_obi_req ),
     .obi_rsp_o  ( error_obi_rsp )
   );
@@ -498,7 +498,7 @@ module croc_domain import croc_pkg::*; #(
 
   soc_ctrl_reg_pkg::soc_ctrl_reg2hw_t soc_ctrl_reg2hw;
   soc_ctrl_reg_pkg::soc_ctrl_hw2reg_t soc_ctrl_hw2reg;
-  assign fetch_enable = soc_ctrl_reg2hw.fetchen.q;
+  assign fetch_enable = soc_ctrl_reg2hw.fetchen.q & fetch_en_i;
   assign boot_addr = soc_ctrl_reg2hw.bootaddr.q;
   assign soc_ctrl_hw2reg = '0;
 

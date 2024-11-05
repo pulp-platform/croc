@@ -11,7 +11,7 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   input  logic      clk_i,
   input  logic      ref_clk_i,
   input  logic      rst_ni,
-  input  logic      test_enable_i,
+  input  logic      testmode_i,
   
   input  sbr_obi_req_t user_sbr_obi_req_i, // User Sbr (rsp_o), Croc Mgr (req_i)
   output sbr_obi_rsp_t user_sbr_obi_rsp_o,
@@ -110,7 +110,7 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   ) i_user_err (
     .clk_i,
     .rst_ni,
-    .testmode_i ( test_enable_i      ),
+    .testmode_i ( testmode_i      ),
     .obi_req_i  ( user_error_obi_req ),
     .obi_rsp_o  ( user_error_obi_rsp )
   );
