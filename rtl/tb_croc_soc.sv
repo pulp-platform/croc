@@ -28,7 +28,7 @@ module tb_croc_soc #(
     logic uart_rx_i;
     logic uart_tx_o;
 
-    logic irq0_i;
+    logic fetch_en_i;
     logic status_o;
 
     localparam int unsigned GpioCount = 8;
@@ -266,7 +266,7 @@ module tb_croc_soc #(
     //  DUT   //
     ////////////
     croc_soc #(
-    .GpioCount( GpioCount )
+        .GpioCount( GpioCount )
     ) i_croc_soc (
         .clk_i         ( clk        ),
         .rst_ni        ( rst_n      ),
@@ -284,9 +284,9 @@ module tb_croc_soc #(
         .uart_rx_i     ( uart_rx_i ),
         .uart_tx_o     ( uart_tx_o ),
 
-        .gpio_i         ( gpio_i        ),             
-        .gpio_o         ( gpio_o        ),            
-        .gpio_out_en_o  ( gpio_out_en_o )
+        .gpio_i        ( gpio_i        ),             
+        .gpio_o        ( gpio_o        ),            
+        .gpio_out_en_o ( gpio_out_en_o )
     );
 
 
@@ -304,8 +304,8 @@ module tb_croc_soc #(
         $dumpvars(1,i_croc_soc);
         `endif
 
-        uart_rx_i = 1'b0;
-        irq0_i    = 1'b0;
+        uart_rx_i  = 1'b0;
+        fetch_en_i = 1'b0;
         
         // wait for reset
         #ClkPeriod;
@@ -320,6 +320,7 @@ module tb_croc_soc #(
         jtag_load_hex("../sw/bin/helloworld.hex");
 
         $display("@%t | [CORE] Start fetching instructions", $time);
+        fetch_en_i = 1'b1;
         jtag_write_reg32(FetchEnAddr, 32'h01);
 
         // wait for non-zero return value (written into core status register)

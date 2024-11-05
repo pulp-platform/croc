@@ -60,7 +60,7 @@ place_pad -row IO_WEST  -location [expr $start -  5*$pitch] "pad_rst_ni"       ;
 place_pad -row IO_WEST  -location [expr $start -  6*$pitch] "pad_clk_i"        ; # pin no:  7
 place_pad -row IO_WEST  -location [expr $start -  7*$pitch] "pad_ref_clk_i"    ; # pin no:  8
 place_pad -row IO_WEST  -location [expr $start -  8*$pitch] "pad_status_o"     ; # pin no:  9
-place_pad -row IO_WEST  -location [expr $start -  9*$pitch] "pad_irq0_i"       ; # pin no: 10
+place_pad -row IO_WEST  -location [expr $start -  9*$pitch] "pad_fetch_en_i"   ; # pin no: 10
 place_pad -row IO_WEST  -location [expr $start - 10*$pitch] "pad_uart_rx_i"    ; # pin no: 11
 place_pad -row IO_WEST  -location [expr $start - 11*$pitch] "pad_uart_tx_o"    ; # pin no: 12
 

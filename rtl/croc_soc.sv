@@ -11,7 +11,9 @@ module croc_soc import croc_pkg::*; #(
   input  logic clk_i,
   input  logic rst_ni,
   input  logic ref_clk_i,
-  input  logic test_enable_i,
+  input  logic testmode_i,
+  input  logic fetch_en_i,
+  output logic status_o,
 
   input  logic jtag_tck_i,
   input  logic jtag_tdi_i,
@@ -22,21 +24,18 @@ module croc_soc import croc_pkg::*; #(
   input  logic uart_rx_i,
   output logic uart_tx_o,
 
-  input  logic irq0_i,
-  output logic status_o,
-
   input  logic [GpioCount-1:0] gpio_i,       // Input from GPIO pins
   output logic [GpioCount-1:0] gpio_o,       // Output to GPIO pins
   output logic [GpioCount-1:0] gpio_out_en_o // Output enable signal; 0 -> input, 1 -> output
 );
 
-  logic synced_rst_n, synced_irq0;
+  logic synced_rst_n, synced_fetch_en;
 
   rstgen i_rstgen (
     .clk_i,
     .rst_ni,
-    .test_mode_i ( test_enable_i ),
-    .rst_no      ( synced_rst_n  ),
+    .test_mode_i ( testmode_i ),
+    .rst_no      ( synced_rst_n ),
     .init_no ( )
   );
 
@@ -45,20 +44,19 @@ module croc_soc import croc_pkg::*; #(
       .ResetValue ( 1'b0 )
     ) i_ext_intr_sync (
       .clk_i,
-      .rst_ni   ( synced_rst_n ),
-      .serial_i ( irq0_i       ),
-      .serial_o ( synced_irq0  )
+      .rst_ni   ( synced_rst_n    ),
+      .serial_i ( fetch_en_i      ),
+      .serial_o ( synced_fetch_en )
     );
 
-//Connection between Croc_domain and User_domain: User Sbr, Croc Mgr
+// Connection between Croc_domain and User_domain: User Sbr, Croc Mgr
 sbr_obi_req_t user_sbr_obi_req;
 sbr_obi_rsp_t user_sbr_obi_rsp;
 
-//Connection between Croc_domain and User_domain: Croc Sbr, User Mgr
+// Connection between Croc_domain and User_domain: Croc Sbr, User Mgr
 mgr_obi_req_t user_mgr_obi_req;
 mgr_obi_rsp_t user_mgr_obi_rsp;
 
-logic test_enable = 1'b0;
 logic [NumExternalIrqs-1:0] interrupts;
 
 croc_domain #(
@@ -67,7 +65,8 @@ croc_domain #(
   .clk_i,
   .rst_ni ( synced_rst_n ),
   .ref_clk_i,
-  .test_enable_i ( test_enable ),
+  .testmode_i,
+  .fetch_en_i ( synced_fetch_en ),
 
   .jtag_tck_i,
   .jtag_tdi_i,
@@ -101,7 +100,7 @@ user_domain #(
   .clk_i,
   .rst_ni ( synced_rst_n ),
   .ref_clk_i,
-  .test_enable_i ( test_enable ),
+  .testmode_i,
 
   .user_sbr_obi_req_i ( user_sbr_obi_req ),
   .user_sbr_obi_rsp_o ( user_sbr_obi_rsp ),
