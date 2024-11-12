@@ -29,7 +29,9 @@ sources:
       - ihp13/tc_sram.sv
 
   - rtl/croc_pkg.sv
+  - rtl/user_pkg.sv
   - rtl/soc_ctrl/soc_ctrl_reg_pkg.sv
+  - rtl/gpio/gpio_reg_pkg.sv
 
     # RTL
   - target: not(netlist_yosys)
@@ -37,6 +39,8 @@ sources:
       # Level 1
       - rtl/core_wrap.sv
       - rtl/soc_ctrl/soc_ctrl_reg_top.sv
+      - rtl/gpio/gpio_reg_top.sv
+      - rtl/gpio/gpio.sv
       # Level 2
       - rtl/croc_domain.sv
       - rtl/user_domain.sv

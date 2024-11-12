@@ -31,6 +31,12 @@ module tb_croc_soc #(
     logic irq0_i;
     logic status_o;
 
+    localparam int unsigned GpioCount = 8;
+
+    logic [GpioCount-1:0] gpio_i;             
+    logic [GpioCount-1:0] gpio_o;            
+    logic [GpioCount-1:0] gpio_out_en_o;
+
     // Register addresses
     localparam bit [31:0] BootAddrAddr   = croc_pkg::SocCtrlAddrOffset
                                            + soc_ctrl_reg_pkg::SOC_CTRL_BOOTADDR_OFFSET;
@@ -259,11 +265,15 @@ module tb_croc_soc #(
     ////////////
     //  DUT   //
     ////////////
-    croc_soc i_croc_soc (
-        .clk_i         ( clk     ),
-        .rst_ni        ( rst_n   ),
-        .ref_clk_i     ( ref_clk ),
-        .test_enable_i ( 1'b0    ),
+    croc_soc #(
+    .GpioCount( GpioCount )
+    ) i_croc_soc (
+        .clk_i         ( clk        ),
+        .rst_ni        ( rst_n      ),
+        .ref_clk_i     ( ref_clk    ),
+        .testmode_i    ( 1'b0       ),
+        .fetch_en_i    ( fetch_en_i ),
+        .status_o      ( status_o   ),
 
         .jtag_tck_i    ( jtag_tck_i   ),
         .jtag_tdi_i    ( jtag_tdi_i   ),
@@ -274,8 +284,9 @@ module tb_croc_soc #(
         .uart_rx_i     ( uart_rx_i ),
         .uart_tx_o     ( uart_tx_o ),
 
-        .irq0_i        ( irq0_i   ),
-        .status_o      ( status_o )
+        .gpio_i         ( gpio_i        ),             
+        .gpio_o         ( gpio_o        ),            
+        .gpio_out_en_o  ( gpio_out_en_o )
     );
 
 

@@ -29,7 +29,7 @@ Many configurations are in the configuration object:
 | `PulpJtagIdCode`    | `32'h1_0000_db3` | Debug module ID code                                  |
 | `NumExternalIrqs`   | `4`              | Number of external interrupts into Croc domain        |
 | `BankNumWords`      | `512`            | Number of 32bit words in a memory bank                |
-| `NumBanks`          | `2`              | Number of memory banks                                |
+| `NumSramBanks`      | `2`              | Number of memory banks                                |
 
 ## Bootmodes
 
@@ -37,7 +37,8 @@ Currently the only way to boot is via JTAG.
 
 ## Memory Map
 
-If possible, the memory map should be remain compatible with [Cheshire's memory map](https://pulp-platform.github.io/cheshire/um/arch/#memory-map).
+If possible, the memory map should be remain compatible with [Cheshire's memory map](https://pulp-platform.github.io/cheshire/um/arch/#memory-map).  
+As a guideline each new subordinate should occupy multiples of 4KB of the address space (`32'h0000_1000`).
 
 
 | Start Address   | Stop Address    | Description                                |
@@ -47,7 +48,13 @@ If possible, the memory map should be remain compatible with [Cheshire's memory 
 | `32'h0300_2000` | `32'h0300_3000` | UART peripheral                            |
 | `32'h0300_A000` | `32'h0300_B000` | Timer peripheral                           |
 | `32'h1000_0000` | `+SRAM_SIZE`    | Memory banks (SRAM)                        |
+| `32'h2000_0000` | `32'h8000_0000` | Passthrough to user domain                 |
+| `32'h2000_0000` | `32'h2000_1000` | reserved for string formatted user ROM*    |
 
+
+*If people modify Croc we suggest they add a ROM at this address location containing additional information.
+Like their names, a project link or similar. This can then be written out via UART.  
+We ask people to format the ROM like a C string with zero termination and using ASCII encoding if feasible.  
 
 
 ## Flow
