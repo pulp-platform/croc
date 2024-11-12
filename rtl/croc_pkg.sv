@@ -38,22 +38,21 @@ package croc_pkg;
   // Croc Main interconnect addressing ///
   ////////////////////////////////////////
 
-  localparam bit [31:0]   PeriphBaseAddr  = 32'h0000_0000;
-  localparam bit [31:0]   PeriphAddrRange = 32'h1000_0000;
+  localparam bit [31:0]   PeriphBaseAddr   = 32'h0000_0000;
+  localparam bit [31:0]   PeriphAddrRange  = 32'h1000_0000;
 
-  localparam bit [31:0]   MemBaseAddr     = 32'h1000_0000;
-  localparam int unsigned BankNumWords    = 512;
-  localparam int unsigned NumSramBanks    = 32'd2;
-  localparam int unsigned BankAddrRange   = BankNumWords*NumSramBanks*4;
+  localparam bit [31:0]   SramBaseAddr     = 32'h1000_0000;
+  localparam int unsigned NumSramBanks     = 32'd2;
+  localparam int unsigned SramBankNumWords = 512;
+  localparam int unsigned SramAddrRange    = NumSramBanks*SramBankNumWords*4;
 
-  localparam bit [31:0]   UserBaseAddr    = 32'h2000_0000;
-  localparam bit [31:0]   UserAddrRange   = 32'h6000_0000;
+  localparam bit [31:0]   UserBaseAddr     = 32'h2000_0000;
+  localparam bit [31:0]   UserAddrRange    = 32'h6000_0000;
 
-
-  localparam int unsigned XbarNumManagers     = 4; // Debug module, Core Instr, Core Data, User Domain
-  localparam int unsigned XbarNumSubordinates = 2 + NumSramBanks; // User + Peripherals + Memory
+  localparam int unsigned NumCrocDomainSubordinates = 2 + NumSramBanks; // Peripherals + Memory + User Domain
   
-  localparam int unsigned NumXbarSbrRules = XbarNumSubordinates; // number of address rules in the decoder
+  localparam int unsigned NumXbarManagers = 4; // Debug module, Core Instr, Core Data, User Domain
+  localparam int unsigned NumXbarSbrRules = NumCrocDomainSubordinates; // number of address rules in the decoder
   localparam int unsigned NumXbarSbr      = NumXbarSbrRules + 1; // additional OBI error, used for signal arrays
 
   // Enum for bus indices
@@ -73,8 +72,8 @@ package croc_pkg;
 
     for (int i = 0; i < NumSramBanks; i++) begin
       ret[i+1] = '{ idx: XbarBank0+i,
-                    start_addr: MemBaseAddr + ( i    * BankNumWords*4),
-                    end_addr:   MemBaseAddr + ((i+1) * BankNumWords*4)};
+                    start_addr: SramBaseAddr + ( i    * SramBankNumWords*4),
+                    end_addr:   SramBaseAddr + ((i+1) * SramBankNumWords*4)};
 
       ret[NumXbarSbrRules-1] = '{ idx: XbarUser,
                 start_addr: UserBaseAddr,
@@ -130,27 +129,122 @@ package croc_pkg;
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ 
+  // Usually we would use the typedef.svh macros to define interconnects from parameters.
+  // To make it easier to understand we instead write them out here,
+  // at the end of the block in a comment you can find the equivalent using the macros.
 
-  // no optional bits in the OBI interconnect
-  `OBI_TYPEDEF_MINIMAL_A_OPTIONAL(a_optional_t)
-  `OBI_TYPEDEF_MINIMAL_R_OPTIONAL(r_optional_t)
-  
-  // Create types for OBI managers/masters (from a manager into the interconnect)
-  localparam obi_pkg::obi_cfg_t MgrObiCfg = obi_pkg::obi_default_cfg(32, 32, 1, obi_pkg::ObiMinimalOptionalConfig);
-  `OBI_TYPEDEF_A_CHAN_T(mgr_obi_a_chan_t, MgrObiCfg.AddrWidth, MgrObiCfg.DataWidth, MgrObiCfg.IdWidth, a_optional_t)
-  `OBI_TYPEDEF_DEFAULT_REQ_T(mgr_obi_req_t, mgr_obi_a_chan_t)
-  `OBI_TYPEDEF_R_CHAN_T(mgr_obi_r_chan_t, MgrObiCfg.DataWidth, MgrObiCfg.IdWidth, r_optional_t)
-  `OBI_TYPEDEF_RSP_T(mgr_obi_rsp_t, mgr_obi_r_chan_t)
+  /// OBI managers configuration (from a manager into the interconnect)
+  localparam obi_pkg::obi_cfg_t MgrObiCfg = '{
+                                  UseRReady:   1'b0,
+                                  CombGnt:     1'b0,
+                                  AddrWidth:     32,
+                                  DataWidth:     32,
+                                  IdWidth:        1,
+                                  Integrity:   1'b0,
+                                  BeFull:      1'b1,
+                                  OptionalCfg:  '0
+                                };
+  /// OBI Manager <-> Xbar address channel
+  typedef struct packed {
+    logic [  MgrObiCfg.AddrWidth-1:0] addr;
+    logic                             we;
+    logic [MgrObiCfg.DataWidth/8-1:0] be;
+    logic [  MgrObiCfg.DataWidth-1:0] wdata;
+    logic [    MgrObiCfg.IdWidth-1:0] aid;
+    logic                             a_optional; // dummy signal; not used
+  } mgr_obi_a_chan_t;
+  /// OBI Manager <-> Xbar request
+  typedef struct packed {
+    mgr_obi_a_chan_t a;
+    logic            req;
+  } mgr_obi_req_t;
+  /// OBI Manager <-> Xbar response channel
+  typedef struct packed {
+    logic [MgrObiCfg.DataWidth-1:0] rdata;
+    logic [  MgrObiCfg.IdWidth-1:0] rid;
+    logic                           err;
+    logic                           r_optional; // dummy signal; not used
+  } mgr_obi_r_chan_t;
+  /// OBI Manager <-> Xbar response
+  typedef struct packed {
+    mgr_obi_r_chan_t r;
+    logic            gnt;
+    logic            rvalid;
+  } mgr_obi_rsp_t;
 
-  // Create types for OBI subordinates/slaves (out of the interconnect, into the device)
-  localparam obi_pkg::obi_cfg_t SbrObiCfg = obi_pkg::mux_grow_cfg(MgrObiCfg, XbarNumManagers);
-  `OBI_TYPEDEF_A_CHAN_T(sbr_obi_a_chan_t, SbrObiCfg.AddrWidth, SbrObiCfg.DataWidth, SbrObiCfg.IdWidth, a_optional_t)
-  `OBI_TYPEDEF_DEFAULT_REQ_T(sbr_obi_req_t, sbr_obi_a_chan_t)
-  `OBI_TYPEDEF_R_CHAN_T(sbr_obi_r_chan_t, SbrObiCfg.DataWidth, SbrObiCfg.IdWidth, r_optional_t)
-  `OBI_TYPEDEF_RSP_T(sbr_obi_rsp_t, sbr_obi_r_chan_t)
+  /// OBI subordinate configuration (from the interconnect to a subordinate device)
+  localparam obi_pkg::obi_cfg_t SbrObiCfg = '{
+                                  UseRReady:   1'b0,
+                                  CombGnt:     1'b0,
+                                  AddrWidth:     32,
+                                  DataWidth:     32,
+                                  IdWidth:        1 + cf_math_pkg::idx_width(NumXbarManagers),
+                                  Integrity:   1'b0,
+                                  BeFull:      1'b1,
+                                  OptionalCfg:  '0
+                                };
+  /// OBI Xbar <-> Subordinate address channel
+  typedef struct packed {
+    logic [  SbrObiCfg.AddrWidth-1:0] addr;
+    logic                             we;
+    logic [SbrObiCfg.DataWidth/8-1:0] be;
+    logic [  SbrObiCfg.DataWidth-1:0] wdata;
+    logic [    SbrObiCfg.IdWidth-1:0] aid;
+    logic                             a_optional; // dummy signal; not used
+  } sbr_obi_a_chan_t;
+  /// OBI Xbar <-> Subordinate request
+  typedef struct packed {
+    sbr_obi_a_chan_t a;
+    logic            req;
+  } sbr_obi_req_t;
+  /// OBI Xbar <-> Subordinate response channel
+  typedef struct packed {
+    logic [SbrObiCfg.DataWidth-1:0] rdata;
+    logic [  SbrObiCfg.IdWidth-1:0] rid;
+    logic                           err;
+    logic                           r_optional; // dummy signal; not used
+  } sbr_obi_r_chan_t;
+  /// OBI Xbar <-> Subordinate response
+  typedef struct packed {
+    sbr_obi_r_chan_t r;
+    logic            gnt;
+    logic            rvalid;
+  } sbr_obi_rsp_t;
 
-  // Register Interface configured as 32 bit data, 32 bit address width (4 byte enable bits)
-  `REG_BUS_TYPEDEF_ALL(reg, logic[31:0], logic[31:0], logic[3:0]);
+  // Register interface (regbus) request
+  typedef struct packed {
+      logic [31:0] addr;
+      logic        write;
+      logic [31:0] wdata;
+      logic [ 3:0] wstrb;
+      logic        valid;
+  } reg_req_t;
+
+  // Register interface (regbus) response
+  typedef struct packed {
+      logic [31:0] rdata;
+      logic        error;
+      logic        ready;
+  } reg_rsp_t;
+
+  /* This is how we would usually define interconnects using the typedef.svh macros
+   *
+   * `OBI_TYPEDEF_A_CHAN_T(mgr_obi_a_chan_t, MgrObiCfg.AddrWidth, MgrObiCfg.DataWidth, MgrObiCfg.IdWidth, logic [0:0])
+   * `OBI_TYPEDEF_DEFAULT_REQ_T(mgr_obi_req_t, mgr_obi_a_chan_t)
+   * `OBI_TYPEDEF_R_CHAN_T(mgr_obi_r_chan_t, MgrObiCfg.DataWidth, MgrObiCfg.IdWidth, logic [0:0])
+   * `OBI_TYPEDEF_RSP_T(mgr_obi_rsp_t, mgr_obi_r_chan_t)
+   * 
+   * // Create types for OBI subordinates/slaves (out of the interconnect, into the device)
+   * localparam obi_pkg::obi_cfg_t SbrObiCfg = obi_pkg::mux_grow_cfg(MgrObiCfg, NumManagers);
+   * `OBI_TYPEDEF_A_CHAN_T(sbr_obi_a_chan_t, SbrObiCfg.AddrWidth, SbrObiCfg.DataWidth, SbrObiCfg.IdWidth, logic [0:0])
+   * `OBI_TYPEDEF_DEFAULT_REQ_T(sbr_obi_req_t, sbr_obi_a_chan_t)
+   * `OBI_TYPEDEF_R_CHAN_T(sbr_obi_r_chan_t, SbrObiCfg.DataWidth, SbrObiCfg.IdWidth, logic [0:0])
+   * `OBI_TYPEDEF_RSP_T(sbr_obi_rsp_t, sbr_obi_r_chan_t)
+   * 
+   * // Register Interface configured as 32 bit data, 32 bit address width (4 byte enable bits)
+   * `REG_BUS_TYPEDEF_ALL(reg, logic[31:0], logic[31:0], logic[3:0]); 
+   */
 
 
 endpackage
