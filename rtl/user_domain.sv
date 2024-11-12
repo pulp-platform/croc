@@ -43,8 +43,8 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   // ----------------------------------------------------------------------------------------------
   
   // collection of signals from the demultiplexer
-  sbr_obi_req_t [NumUserSbr-1:0] all_user_sbr_obi_req;
-  sbr_obi_rsp_t [NumUserSbr-1:0] all_user_sbr_obi_rsp;
+  sbr_obi_req_t [NumDemuxSbr-1:0] all_user_sbr_obi_req;
+  sbr_obi_rsp_t [NumDemuxSbr-1:0] all_user_sbr_obi_rsp;
 
   // Error Subordinate Bus
   sbr_obi_req_t user_error_obi_req;
@@ -59,11 +59,11 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   // Demultiplex to User Subordinates according to address map
   //-----------------------------------------------------------------------------------------------
 
-  logic [cf_math_pkg::idx_width(NumUserSbr)-1:0] user_idx;
+  logic [cf_math_pkg::idx_width(NumDemuxSbr)-1:0] user_idx;
 
   addr_decode #(
-    .NoIndices ( NumUserSbr                     ),
-    .NoRules   ( NumUserSbrRules                ),
+    .NoIndices ( NumDemuxSbr                    ),
+    .NoRules   ( NumDemuxSbrRules               ),
     .addr_t    ( logic[SbrObiCfg.DataWidth-1:0] ),
     .rule_t    ( addr_map_rule_t                ),
     .Napot     ( 1'b0                           )
@@ -81,7 +81,7 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
     .ObiCfg      ( SbrObiCfg     ),
     .obi_req_t   ( sbr_obi_req_t ),
     .obi_rsp_t   ( sbr_obi_rsp_t ),
-    .NumMgrPorts ( NumUserSbr    ),
+    .NumMgrPorts ( NumDemuxSbr   ),
     .NumMaxTrans ( 2             )
   ) i_obi_demux (
     .clk_i,

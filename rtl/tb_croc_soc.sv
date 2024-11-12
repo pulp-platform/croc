@@ -314,7 +314,7 @@ module tb_croc_soc #(
         jtag_init();
 
         // write test value to sram
-        jtag_write_reg32(croc_pkg::MemBaseAddr, 32'h1234_5678, 1'b1);
+        jtag_write_reg32(croc_pkg::SramBaseAddr, 32'h1234_5678, 1'b1);
 
         // load binary to sram
         jtag_load_hex("../sw/bin/helloworld.hex");

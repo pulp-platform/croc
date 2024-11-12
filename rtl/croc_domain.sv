@@ -73,10 +73,10 @@ module croc_domain import croc_pkg::*; #(
   mgr_obi_req_t core_instr_obi_req;
   mgr_obi_rsp_t core_instr_obi_rsp;
   assign core_instr_obi_req.a.aid = '0;
-  assign core_instr_obi_req.a.a_optional = '0;
   assign core_instr_obi_req.a.we = '0;
   assign core_instr_obi_req.a.be = '1;
   assign core_instr_obi_req.a.wdata = '0;
+  assign core_instr_obi_req.a.a_optional = '0;
 
   // Core data bus
   mgr_obi_req_t core_data_obi_req;
@@ -305,21 +305,21 @@ module croc_domain import croc_pkg::*; #(
   // -----------------
 
   obi_xbar #(
-    .SbrPortObiCfg      ( MgrObiCfg             ),
-    .MgrPortObiCfg      ( SbrObiCfg             ),
-    .sbr_port_obi_req_t ( mgr_obi_req_t         ),
-    .sbr_port_a_chan_t  ( mgr_obi_a_chan_t      ),
-    .sbr_port_obi_rsp_t ( mgr_obi_rsp_t         ),
-    .sbr_port_r_chan_t  ( mgr_obi_r_chan_t      ),
-    .mgr_port_obi_req_t ( sbr_obi_req_t         ),
-    .mgr_port_obi_rsp_t ( sbr_obi_rsp_t         ),
-    .NumSbrPorts        ( XbarNumManagers       ),
-    .NumMgrPorts        ( XbarNumSubordinates   ),
-    .NumMaxTrans        ( 2                     ),
-    .NumAddrRules       ( NumXbarSbrRules       ),
-    .addr_map_rule_t    ( addr_map_rule_t       ),
-    .UseIdForRouting    ( 1'b0                  ),
-    .Connectivity       ( '1                    )
+    .SbrPortObiCfg      ( MgrObiCfg        ),
+    .MgrPortObiCfg      ( SbrObiCfg        ),
+    .sbr_port_obi_req_t ( mgr_obi_req_t    ),
+    .sbr_port_a_chan_t  ( mgr_obi_a_chan_t ),
+    .sbr_port_obi_rsp_t ( mgr_obi_rsp_t    ),
+    .sbr_port_r_chan_t  ( mgr_obi_r_chan_t ),
+    .mgr_port_obi_req_t ( sbr_obi_req_t    ),
+    .mgr_port_obi_rsp_t ( sbr_obi_rsp_t    ),
+    .NumSbrPorts        ( NumXbarManagers  ),
+    .NumMgrPorts        ( NumXbarSbr       ),
+    .NumMaxTrans        ( 2                ),
+    .NumAddrRules       ( NumXbarSbrRules  ),
+    .addr_map_rule_t    ( addr_map_rule_t  ),
+    .UseIdForRouting    ( 1'b0             ),
+    .Connectivity       ( '1               )
   ) i_main_xbar (
     .clk_i,
     .rst_ni,
@@ -370,7 +370,7 @@ module croc_domain import croc_pkg::*; #(
     assign bank_word_addr = bank_byte_addr[SbrObiCfg.AddrWidth-1:2];
 
     tc_sram #(
-      .NumWords  ( BankNumWords ),
+      .NumWords  ( SramBankNumWords ),
       .DataWidth ( 32 ),
       .NumPorts  (  1 ),
       .Latency   (  1 )
@@ -493,7 +493,7 @@ module croc_domain import croc_pkg::*; #(
 
     .reg_req_o ( soc_ctrl_reg_req ),
     .reg_rsp_i ( soc_ctrl_reg_rsp )
-  );
+  );  
   assign soc_ctrl_obi_rsp.r.r_optional = '0;
 
   soc_ctrl_reg_pkg::soc_ctrl_reg2hw_t soc_ctrl_reg2hw;
@@ -503,9 +503,9 @@ module croc_domain import croc_pkg::*; #(
   assign soc_ctrl_hw2reg = '0;
 
   soc_ctrl_reg_top #(
-    .reg_req_t       ( reg_req_t   ),
-    .reg_rsp_t       ( reg_rsp_t   ),
-    .BootAddrDefault ( MemBaseAddr )
+    .reg_req_t       ( reg_req_t    ),
+    .reg_rsp_t       ( reg_rsp_t    ),
+    .BootAddrDefault ( SramBaseAddr )
   ) i_soc_ctrl (
     .clk_i,
     .rst_ni,
@@ -547,7 +547,6 @@ module croc_domain import croc_pkg::*; #(
     .reg_req_o ( uart_reg_req ),
     .reg_rsp_i ( uart_reg_rsp )
   );
-  assign uart_obi_rsp.r.r_optional = '0;
 
   reg_uart_wrap #(
     .AddrWidth  ( 32        ),
@@ -570,6 +569,7 @@ module croc_domain import croc_pkg::*; #(
     .sin_i      ( uart_rx_i ),
     .sout_o     ( uart_tx_o )
   );
+  assign uart_obi_rsp.r.r_optional = '0;
 
   // GPIO
   gpio #(

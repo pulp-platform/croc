@@ -25,9 +25,9 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
     input  logic rst_ni,
 
     /// Connection to Obi
-    /// OBI request interface : a.addr, a.we, a.be, a.wdata, a.aid, a.a_optional | rready, req
+    /// OBI request interface : a.addr, a.we, a.be, a.wdata, a.aid | rready, req
     input  obi_req_t  obi_req_i,
-    /// OBI response interface : r.rdata, r.rid, r.obi_err, r.r_optional | gnt, rvalid
+    /// OBI response interface : r.rdata, r.rid, r.obi_err | gnt, rvalid
     output obi_rsp_t obi_rsp_o,
 
     /// Communication with control logic
@@ -52,10 +52,10 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
 
   // OBI rsp Assignment
   always_comb begin
+    obi_rsp_o              = '0;
     obi_rsp_o.r.rdata      = obi_rdata;
     obi_rsp_o.r.rid        = id_q;
     obi_rsp_o.r.err        = obi_err;
-    obi_rsp_o.r.r_optional = '0;
     obi_rsp_o.gnt          = obi_req_i.req;
     obi_rsp_o.rvalid       = valid_q;
   end
