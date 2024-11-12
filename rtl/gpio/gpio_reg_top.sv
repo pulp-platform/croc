@@ -43,9 +43,12 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
 
   // Signals for the OBI response
   logic                           valid_d, valid_q;         // delayed to the response phase
+  logic                           we_d, we_q;               // delayed to the response phase
+  logic                           req_d, req_q;             // delayed to the response phase
   logic [AddressWidth-1:0]        word_addr_d, word_addr_q; // delayed to the response phase
   logic [ObiCfg.IdWidth-1:0]      id_d, id_q;               // delayed to the response phase
   logic                           obi_err;
+  logic                           w_err_d, w_err_q;         // delay write error to response phase
   // signals used in read/write for register
   logic [ObiCfg.DataWidth-1:0]    obi_rdata, obi_wdata;
   logic                           obi_read_request, obi_write_request;
@@ -62,19 +65,23 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
 
   // internally used signals
   assign obi_wdata         = obi_req_i.a.wdata;
-  assign obi_read_request  = obi_req_i.req & ~obi_req_i.a.we;
-  assign obi_write_request = obi_req_i.req & obi_req_i.a.we;
+  assign obi_read_request  = req_q & we_q;                   // in response phase (one cycle later)
+  assign obi_write_request = obi_req_i.req & obi_req_i.a.we; // in request phase (same cycle)
 
   // id, valid and address handling
   assign id_d          = obi_req_i.a.aid;
   assign valid_d       = obi_req_i.req;
   assign word_addr_d   = obi_req_i.a.addr[AddressWidth-1:2];
+  assign we_d          = obi_req_i.a.we;
+  assign req_d         = obi_req_i.req;
 
-  //FF for the obi rsp signals (id and valid)
-  `FF(id_q, id_d, '0, clk_i, rst_ni)
-  `FF(valid_q, valid_d, '0, clk_i, rst_ni)
-  `FF(word_addr_q, word_addr_d, '0, clk_i, rst_ni)
-
+    // FF for the obi rsp signals (id, valid, address, we and req)
+    `FF(id_q, id_d, '0, clk_i, rst_ni)
+    `FF(valid_q, valid_d, '0, clk_i, rst_ni)
+    `FF(word_addr_q, word_addr_d, '0, clk_i, rst_ni)
+    `FF(req_q, req_d, '0, clk_i, rst_ni)
+    `FF(we_q, we_d, '0, clk_i, rst_ni)
+    `FF(w_err_q, w_err_d, '0, clk_i, rst_ni)
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   // Registers //
@@ -127,7 +134,8 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
   always_comb begin
     // defaults
     obi_rdata  = 32'h0;   // default value for read
-    obi_err    = 1'b0;
+    obi_err    = w_err_q;
+    w_err_d    = 1'b0;
     new_reg    = reg_q;   // registers stay the same
     reg_d      = new_reg; // update regs without OBI transaction
     new_intrpt = '0;
@@ -181,7 +189,7 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
         end
 
         default: begin
-          obi_err = 1'b1; // unmapped register access
+          w_err_d = 1'b1; // unmapped register access
         end
       endcase
     end
@@ -189,7 +197,7 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
     // READ
     //---------------------------------------------------------------------------------
     if (obi_read_request) begin
-
+      obi_err = 1'b0;
       case (word_addr_q)
         GPIO_DIR_OFFSET: begin
           obi_rdata = reg_q.dir;
@@ -227,7 +235,7 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
 
         default: begin
           obi_rdata = 32'hBADCAB1E;  // Return error value in devmode for unmapped reads
-          obi_err = 1'b1;
+          obi_err   = 1'b1;
         end
       endcase
     end

@@ -58,6 +58,7 @@ mgr_obi_req_t user_mgr_obi_req;
 mgr_obi_rsp_t user_mgr_obi_rsp;
 
 logic [NumExternalIrqs-1:0] interrupts;
+logic [GpioCount-1:0] gpio_in_sync;
 
 croc_domain #(
   .GpioCount( GpioCount ) 
