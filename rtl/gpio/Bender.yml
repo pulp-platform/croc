@@ -1,0 +1,22 @@
+# Copyright 2024 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
+package:
+  name: gpio
+  authors:
+    - "Hannah Pochert <hpochert@student.ethz.ch>"
+    - "Luisa Wüthrich <lwuethri@student.ethz.ch>"
+    - "Philippe Sauter <phsauter@iis.ee.ethz.ch>"
+
+dependencies:
+  common_cells: { git: "https://github.com/pulp-platform/common_cells.git", version: 1.37.0 }
+  common_verification: { git: "https://github.com/pulp-platform/common_verification.git", version: 0.2.3 }
+
+sources:
+  # Level 0
+  - gpio_reg_pkg.sv
+  # Level 1
+  - gpio_reg_top.sv
+  # Level 2
+  - gpio.sv

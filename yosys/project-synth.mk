@@ -25,6 +25,7 @@ export YOSYS_KEEP_HIER_INST :=  "t:croc_soc*" \
 								"t:ibex_cs_registers*" \
 								"t:dmi_jtag__*" \
 								"t:dm_top*" \
+								"t:gpio__*" \
 								"t:timer_unit*" \
 								"t:reg_uart_wrap*" \
 								"t:tc_sram*" \
