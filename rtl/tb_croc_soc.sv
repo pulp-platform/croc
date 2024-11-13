@@ -13,7 +13,12 @@ module tb_croc_soc #(
     parameter time         ClkPeriodRef  = 30518ns,
     parameter time         TAppl         = 20ns,
     parameter time         TTest         = 80ns,
-    parameter int unsigned RstCycles     = 1
+    parameter int unsigned RstCycles     = 1,
+    // UART
+    parameter int unsigned  UartBaudRate      = 115200,
+    parameter int unsigned  UartParityEna     = 0,
+
+    localparam int unsigned ClkFrequency = 1s / ClkPeriod
 )();
     logic clk;
     logic rst_n;
@@ -263,6 +268,104 @@ module tb_croc_soc #(
 
 
     ////////////
+    //  UART  //
+    ////////////
+
+    typedef bit [ 7:0] byte_bt;
+    localparam int unsigned UartDivisior = ClkFrequency / (UartBaudRate*16);
+    localparam UartRealBaudRate = ClkFrequency / (UartDivisior*16);
+    localparam time UartBaudPeriod = 1s/UartRealBaudRate;
+
+    initial begin
+        $display("ClkFrequency: %dMHz", ClkFrequency/1000_000);
+        $display("UartRealBaudRate: %d", UartRealBaudRate);
+    end
+
+    localparam byte_bt UartDebugCmdRead  = 'h11;
+    localparam byte_bt UartDebugCmdWrite = 'h12;
+    localparam byte_bt UartDebugCmdExec  = 'h13;
+    localparam byte_bt UartDebugAck      = 'h06;
+    localparam byte_bt UartDebugEot      = 'h04;
+    localparam byte_bt UartDebugEoc      = 'h14;
+
+    logic   uart_reading_byte;
+
+    initial begin
+        uart_rx_i         = 1;
+        uart_reading_byte = 0;
+    end
+
+    task automatic uart_read_byte(output byte_bt bite);
+        // Start bit
+        @(negedge uart_tx_o);
+        uart_reading_byte = 1;
+        #(UartBaudPeriod/2);
+        // 8-bit byte
+        for (int i = 0; i < 8; i++) begin
+        #UartBaudPeriod bite[i] = uart_tx_o;
+        end
+        // Parity bit
+        if(UartParityEna) begin
+        bit parity;
+        #UartBaudPeriod parity = uart_tx_o;
+        if(parity ^ (^bite))
+            $error("[UART] - Parity error detected!");
+        end
+        // Stop bit
+        #UartBaudPeriod;
+        uart_reading_byte=0;
+    endtask
+
+    task automatic uart_write_byte(input byte_bt bite);
+        // Start bit
+        uart_rx_i = 1'b0;
+        // 8-bit byte
+        for (int i = 0; i < 8; i++)
+        #UartBaudPeriod uart_rx_i = bite[i];
+        // Parity bit
+        if (UartParityEna)
+        #UartBaudPeriod uart_rx_i = (^bite);
+        // Stop bit
+        #UartBaudPeriod uart_rx_i = 1'b1;
+        #UartBaudPeriod;
+    endtask
+
+    // Continually read characters and print lines
+    // TODO: we should be able to support CR properly, but buffers are hard to deal with...
+    initial begin
+        static byte_bt uart_read_buf[$];
+        byte_bt bite;
+        
+        @(posedge fetch_en_i);
+        uart_read_buf.delete();
+        forever begin
+            uart_read_byte(bite);
+            
+            if (bite == "\n" || uart_read_buf.size() > 80) begin
+                 if (uart_read_buf.size() > 0) begin
+                    automatic string uart_str = "";
+                    $write("@%t | [UART] as hex: ( ", $time);
+                    foreach (uart_read_buf[i]) begin
+                        $write("%02x ", uart_read_buf[i]);
+                        uart_str = {uart_str, uart_read_buf[i]};
+                    end
+                    
+                    $display(")\n@%t | [UART] %s", $time, uart_str);
+  
+                end else begin
+                    $display("@%t | [UART] ???", $time);
+                end
+
+                uart_read_buf.delete();
+            end else begin
+                uart_read_buf.push_back(bite);
+            end
+        end
+    end
+
+
+
+    ////////////
     //  DUT   //
     ////////////
     croc_soc #(
@@ -288,6 +391,8 @@ module tb_croc_soc #(
         .gpio_o        ( gpio_o        ),            
         .gpio_out_en_o ( gpio_out_en_o )
     );
+
+    assign gpio_i = '0;
 
 
     /////////////////
