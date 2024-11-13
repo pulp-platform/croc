@@ -11,7 +11,7 @@ module core_wrap import croc_pkg::*; #() (
   input  logic ref_clk_i,
   input  logic test_enable_i,
 
-  input logic [31:0] irqs_i,
+  input logic [14:0] irqs_i,
   input logic timer0_irq_i,
 
   input  logic [31:0] boot_addr_i,

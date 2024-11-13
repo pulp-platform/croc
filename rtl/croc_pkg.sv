@@ -38,16 +38,17 @@ package croc_pkg;
   // Croc Main interconnect addressing ///
   ////////////////////////////////////////
 
-  localparam bit [31:0]   PeriphBaseAddr   = 32'h0000_0000;
-  localparam bit [31:0]   PeriphAddrRange  = 32'h1000_0000;
+  localparam bit [31:0]   PeriphBaseAddr    = 32'h0000_0000;
+  localparam bit [31:0]   PeriphAddrRange   = 32'h1000_0000;
 
-  localparam bit [31:0]   SramBaseAddr     = 32'h1000_0000;
-  localparam int unsigned NumSramBanks     = 32'd2;
-  localparam int unsigned SramBankNumWords = 512;
-  localparam int unsigned SramAddrRange    = NumSramBanks*SramBankNumWords*4;
+  localparam bit [31:0]   SramBaseAddr      = 32'h1000_0000;
+  localparam int unsigned NumSramBanks      = 32'd2;
+  localparam int unsigned SramBankNumWords  = 512;
+  localparam int unsigned SramBankAddrWidth = cf_math_pkg::idx_width(SramBankNumWords);
+  localparam int unsigned SramAddrRange     = NumSramBanks*SramBankNumWords*4;
 
-  localparam bit [31:0]   UserBaseAddr     = 32'h2000_0000;
-  localparam bit [31:0]   UserAddrRange    = 32'h6000_0000;
+  localparam bit [31:0]   UserBaseAddr      = 32'h2000_0000;
+  localparam bit [31:0]   UserAddrRange     = 32'h6000_0000;
 
   localparam int unsigned NumCrocDomainSubordinates = 2 + NumSramBanks; // Peripherals + Memory + User Domain
   

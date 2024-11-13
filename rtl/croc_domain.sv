@@ -56,9 +56,9 @@ module croc_domain import croc_pkg::*; #(
   logic gpio_irq;
   logic timer0_irq0;
   logic timer0_irq1;
-  logic [31:0] interrupts;
+  logic [14:0] interrupts;
   always_comb begin
-    interrupts = '0;
+    interrupts    = '0;
     interrupts[0] = timer0_irq1;
     interrupts[1] = uart_irq;
     interrupts[2] = gpio_irq;
@@ -342,7 +342,7 @@ module croc_domain import croc_pkg::*; #(
   for (genvar i = 0; i < NumSramBanks; i++) begin : gen_sram_bank
     logic bank_req, bank_we, bank_gnt, bank_single_err;
     logic [SbrObiCfg.AddrWidth-1:0] bank_byte_addr;
-    logic [SbrObiCfg.AddrWidth-1-2:0] bank_word_addr;
+    logic [SramBankAddrWidth-1:0] bank_word_addr;
     logic [SbrObiCfg.DataWidth-1:0] bank_wdata, bank_rdata;
     logic [SbrObiCfg.DataWidth/8-1:0] bank_be;
 
