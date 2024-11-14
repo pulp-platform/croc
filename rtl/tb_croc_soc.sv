@@ -368,9 +368,13 @@ module tb_croc_soc #(
     ////////////
     //  DUT   //
     ////////////
-    croc_soc #(
-        .GpioCount( GpioCount )
-    ) i_croc_soc (
+    `ifdef TARGET_NETLIST_YOSYS
+        \croc_soc$croc_chip.i_croc_soc i_croc_soc (
+    `else
+        croc_soc #(
+            .GpioCount ( GpioCount  )
+        ) i_croc_soc (
+    `endif
         .clk_i         ( clk        ),
         .rst_ni        ( rst_n      ),
         .ref_clk_i     ( ref_clk    ),
