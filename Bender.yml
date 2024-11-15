@@ -46,7 +46,10 @@ sources:
       - rtl/user_domain.sv
       # Level 3
       - rtl/croc_soc.sv
-      # Level 4
+
+  - target: not(fpga)
+    files:
+      # Level 0
       - rtl/croc_chip.sv
   
   # netlist for simulation
@@ -57,6 +60,11 @@ sources:
   - target: simulation
     files:
       - rtl/tb_croc_soc.sv
+
+  - target: genesys2
+    files:
+      - xilinx/hw/croc_xilinx.sv
+      - xilinx/hw/fan_ctrl.sv
 
 vendor_package:
   #################################
