@@ -14,6 +14,7 @@ module croc_soc import croc_pkg::*; #(
   input  logic testmode_i,
   input  logic fetch_en_i,
   output logic status_o,
+  output logic modulated_o,
 
   input  logic jtag_tck_i,
   input  logic jtag_tdi_i,
@@ -103,6 +104,7 @@ user_domain #(
   .rst_ni ( synced_rst_n ),
   .ref_clk_i,
   .testmode_i,
+  .modulated_o,
 
   .user_sbr_obi_req_i ( user_sbr_obi_req ),
   .user_sbr_obi_rsp_o ( user_sbr_obi_rsp ),

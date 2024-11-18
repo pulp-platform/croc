@@ -50,6 +50,8 @@ module croc_xilinx import croc_pkg::*; #(
   output logic   status_o,
 `endif
 
+  output logic  modulated_o,
+
   input  logic  jtag_tck_i,
   input  logic  jtag_tms_i,
   input  logic  jtag_tdi_i,
@@ -263,6 +265,7 @@ module croc_xilinx import croc_pkg::*; #(
     .testmode_i      ( soc_testmode_i ),
     .fetch_en_i      ( soc_fetch_en   ),
     .status_o        ( status_o       ),
+    .modulated_o     ( modulated_o    ),
 
     .jtag_tck_i      ( jtag_tck_i   ),
     .jtag_tdi_i      ( jtag_tdi_i   ),

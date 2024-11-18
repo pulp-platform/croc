@@ -48,6 +48,8 @@ sources:
       - rtl/neopixel/neopixel_reg.sv
       - rtl/neopixel/neopixel_dma.sv
       - rtl/neopixel/neopixel.sv
+      - rtl/mlem_sound/mlem_sound_data.sv
+      - rtl/mlem_sound/mlem_sound.sv
       # Level 2
       - rtl/croc_domain.sv
       - rtl/user_domain.sv

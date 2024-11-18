@@ -14,6 +14,7 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   input  logic      ref_clk_i,
   input  logic      rst_ni,
   input  logic      testmode_i,
+  output logic      modulated_o,
   
   input  sbr_obi_req_t user_sbr_obi_req_i, // User Sbr (rsp_o), Croc Mgr (req_i)
   output sbr_obi_rsp_t user_sbr_obi_rsp_o,
@@ -28,6 +29,13 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
 );  
 
 import gpio_reg_pkg::*;
+
+  mlem_sound i_mlem_sound (
+    .clk_i       ( ref_clk_i   ),
+    .rst_ni      ( rst_ni      ),
+    .modulated_o ( modulated_o )
+  );
+
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // User Manager MUX //
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////

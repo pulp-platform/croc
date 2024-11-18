@@ -41,6 +41,9 @@ set_false_path -hold -to [get_ports fan_pwm]
 set_output_delay -min -clock $soc_clk [expr { $SOC_TCK * 0.10 }] [get_ports gpio_o]
 set_output_delay -max -clock $soc_clk [expr { $SOC_TCK * 0.35 }] [get_ports gpio_o]
 
+# Modulated
+set_false_path -to [get_ports modulated_o]
+
 
 ###############
 # Assign Pins #
@@ -70,7 +73,7 @@ set_property -dict { PACKAGE_PIN T28   IOSTANDARD LVCMOS33 } [get_ports { gpio_o
 set_property -dict { PACKAGE_PIN V19   IOSTANDARD LVCMOS33 } [get_ports { gpio_o[1] }]; #IO_L19P_T3_A10_D26_14 Sch=led[1]
 set_property -dict { PACKAGE_PIN U30   IOSTANDARD LVCMOS33 } [get_ports { gpio_o[2] }]; #IO_L15N_T2_DQS_DOUT_CSO_B_14 Sch=led[2]
 set_property -dict { PACKAGE_PIN U29   IOSTANDARD LVCMOS33 } [get_ports { gpio_o[3] }]; #IO_L15P_T2_DQS_RDWR_B_14 Sch=led[3]
-# set_property -dict { PACKAGE_PIN V20   IOSTANDARD LVCMOS33 } [get_ports { neopixel_data_o }]; #IO_L19N_T3_A09_D25_VREF_14 Sch=led[4]
+# set_property -dict { PACKAGE_PIN V20   IOSTANDARD LVCMOS33 } [get_ports { led[4] }]; #IO_L19N_T3_A09_D25_VREF_14 Sch=led[4]
 # set_property -dict { PACKAGE_PIN V26   IOSTANDARD LVCMOS33 } [get_ports { led[5] }]; #IO_L16P_T2_CSI_B_14 Sch=led[5]
 # set_property -dict { PACKAGE_PIN W24   IOSTANDARD LVCMOS33 } [get_ports { led[6] }]; #IO_L20N_T3_A07_D23_14 Sch=led[6]
 set_property -dict { PACKAGE_PIN W23   IOSTANDARD LVCMOS33 } [get_ports { status_o }]; #IO_L20P_T3_A08_D24_14 Sch=led[7]
@@ -92,4 +95,8 @@ set_property -dict { PACKAGE_PIN Y29   IOSTANDARD LVCMOS33 } [get_ports { jtag_t
 
 ## Neopixel
 set_property -dict { PACKAGE_PIN U27   IOSTANDARD LVCMOS33 } [get_ports { neopixel_data_o }]; #IO_L13P_T2_MRCC_14 Sch=ja_p[1]
-# tclint-enable line-length, spacingwe
+
+# PMOD Header JC (Sound)
+set_property -dict { PACKAGE_PIN AC26  IOSTANDARD LVCMOS33 } [get_ports { modulated_o }]; #IO_L19P_T3_13 Sch=jc[1]
+
+# tclint-enable line-length, spacing

@@ -453,6 +453,7 @@ module tb_croc_soc #(
         .testmode_i    ( 1'b0       ),
         .fetch_en_i    ( fetch_en_i ),
         .status_o      ( status_o   ),
+        .modulated_o   (            ),
 
         .jtag_tck_i    ( jtag_tck_i   ),
         .jtag_tdi_i    ( jtag_tdi_i   ),
