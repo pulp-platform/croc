@@ -30,27 +30,7 @@ NETLIST_DEBUG	:= $(YOSYS_OUT)/$(RTL_NAME)_debug_yosys.v
 ## Synthesize netlist using Yosys
 yosys: $(NETLIST)
 
-synth: $(NETLIST)
-
-$(NETLIST) $(NETLIST_DEBUG): $(VLOG_FILES)
-	@mkdir -p $(YOSYS_OUT)
-	@mkdir -p $(YOSYS_WORK)
-	@mkdir -p $(YOSYS_REPORTS)
-	VLOG_FILES="$(VLOG_FILES)" \
-	TOP_DESIGN="$(TOP_DESIGN)" \
-	PROJ_NAME="$(RTL_NAME)" \
-	WORK="$(YOSYS_WORK)" \
-	BUILD="$(YOSYS_OUT)" \
-	REPORTS="$(YOSYS_REPORTS)" \
-	NETLIST="$(NETLIST)" \
-	$(YOSYS) -c $(YOSYS_DIR)/scripts/yosys_synthesis.tcl \
-		2>&1 | TZ=UTC gawk '{ print strftime("[%Y-%m-%d %H:%M %Z]"), $$0 }' \
-		| tee "$(YOSYS_DIR)/$(RTL_NAME).log" \
-		| grep -E "\[.*\] [0-9\.]+ Executing";
-
-yosys-slang: $(YOSYS_OUT)/$(RTL_NAME)_yosys_slang.v
-
-$(YOSYS_OUT)/$(RTL_NAME)_yosys_slang.v: $(SV_FLIST)
+$(NETLIST) $(NETLIST_DEBUG): $(SV_FLIST)
 	@mkdir -p $(YOSYS_OUT)
 	@mkdir -p $(YOSYS_WORK)
 	@mkdir -p $(YOSYS_REPORTS)
@@ -60,8 +40,8 @@ $(YOSYS_OUT)/$(RTL_NAME)_yosys_slang.v: $(SV_FLIST)
 	WORK="$(YOSYS_WORK)" \
 	BUILD="$(YOSYS_OUT)" \
 	REPORTS="$(YOSYS_REPORTS)" \
-	NETLIST="$(YOSYS_OUT)/$(RTL_NAME)_yosys_slang.v" \
-	$(YOSYS) -c $(YOSYS_DIR)/scripts/yosys_synthesis_slang.tcl \
+	NETLIST="$(NETLIST)" \
+	$(YOSYS) -c $(YOSYS_DIR)/scripts/yosys_synthesis.tcl \
 		2>&1 | TZ=UTC gawk '{ print strftime("[%Y-%m-%d %H:%M %Z]"), $$0 }' \
 		     | tee "$(YOSYS_DIR)/$(RTL_NAME).log" \
 		     | gawk -f $(YOSYS_DIR)/scripts/filter_output.awk;
