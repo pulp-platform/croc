@@ -1,0 +1,24 @@
+From 448095a86e776095dcdfeaad72e71a0b45e1caa4 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Tue, 19 Nov 2024 15:43:06 +0100
+Subject: [PATCH] remove dv_fcov_macros include
+
+---
+ cve2_wb.sv | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/cve2_wb.sv b/cve2_wb.sv
+index ab9970a6..987532b7 100644
+--- a/cve2_wb.sv
++++ b/cve2_wb.sv
+@@ -10,7 +10,6 @@
+  */
+ 
+ `include "lowrisc_prim/prim_assert.svh"
+-`include "dv_fcov_macros.svh"
+ 
+ module cve2_wb #(
+ ) (
+-- 
+2.34.1
+

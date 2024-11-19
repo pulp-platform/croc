@@ -41,7 +41,7 @@ module croc_domain import croc_pkg::*; #(
 
   input  logic irq0_i,
   input  logic [NumExternalIrqs-1:0] interrupts_i,
-  output logic core_sleep_o
+  output logic core_busy_o
 );
 
   // -----------------
@@ -207,7 +207,7 @@ module croc_domain import croc_pkg::*; #(
     .debug_req_i      ( debug_req    ),
     .fetch_enable_i   ( fetch_enable ),
 
-    .core_sleep_o     ( core_sleep_o )
+    .core_busy_o     ( core_busy_o )
   );
 
   // -----------------

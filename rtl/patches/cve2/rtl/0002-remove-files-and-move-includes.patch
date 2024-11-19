@@ -1,0 +1,422 @@
+From 72422c29021d9e1adcc2a36d12e43c73150d2ed4 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Tue, 19 Nov 2024 14:43:13 +0100
+Subject: [PATCH] remove files and move includes
+
+---
+ cve2_core.f                                   |  17 --
+ cve2_top_tracing.sv => cve2_core_tracing.sv   |  48 ++--
+ cve2_cs_registers.sv                          |   4 +-
+ cve2_top.sv                                   | 262 ------------------
+ .../cve2/cve2_pmp_reset_default.svh           |   0
+ 5 files changed, 32 insertions(+), 299 deletions(-)
+ delete mode 100644 rtl/cve2_core.f
+ rename rtl/{cve2_top_tracing.sv => cve2_core_tracing.sv} (78%)
+ delete mode 100644 rtl/cve2_top.sv
+ rename rtl/{ => include/cve2}/cve2_pmp_reset_default.svh (100%)
+
+diff --git a/cve2_core.f b/cve2_core.f
+deleted file mode 100644
+index 3250f707..00000000
+--- a/cve2_core.f
++++ /dev/null
+@@ -1,17 +0,0 @@
+-cve2_pkg.sv
+-cve2_alu.sv
+-cve2_compressed_decoder.sv
+-cve2_controller.sv
+-cve2_counter.sv
+-cve2_cs_registers.sv
+-cve2_decoder.sv
+-cve2_ex_block.sv
+-cve2_id_stage.sv
+-cve2_if_stage.sv
+-cve2_load_store_unit.sv
+-cve2_multdiv_slow.sv
+-cve2_multdiv_fast.sv
+-cve2_prefetch_buffer.sv
+-cve2_fetch_fifo.sv
+-cve2_register_file_ff.sv
+-cve2_core.sv
+diff --git a/cve2_top_tracing.sv b/cve2_core_tracing.sv
+similarity index 78%
+rename from cve2_top_tracing.sv
+rename to cve2_core_tracing.sv
+index 7589bc3a..1eed8e77 100644
+--- a/cve2_top_tracing.sv
++++ b/cve2_core_tracing.sv
+@@ -3,23 +3,28 @@
+ // SPDX-License-Identifier: Apache-2.0
+ 
+ /**
+- * Top level module of the cve2 RISC-V core with tracing enabled
++ * cve2 RISC-V core with tracing enabled
+  */
+ 
+-module cve2_top_tracing import cve2_pkg::*; #(
+-  parameter int unsigned MHPMCounterNum   = 0,
+-  parameter int unsigned MHPMCounterWidth = 40,
+-  parameter bit          RV32E            = 1'b0,
+-  parameter rv32m_e      RV32M            = RV32MFast,
+-  parameter int unsigned DmHaltAddr       = 32'h1A110800,
+-  parameter int unsigned DmExceptionAddr  = 32'h1A110808
++module cve2_core_tracing import cve2_pkg::*; #(
++  parameter bit          PMPEnable         = 1'b0,
++  parameter int unsigned PMPGranularity    = 0,
++  parameter int unsigned PMPNumRegions     = 4,
++  parameter int unsigned MHPMCounterNum    = 0,
++  parameter int unsigned MHPMCounterWidth  = 40,
++  parameter bit          RV32E             = 1'b0,
++  parameter rv32m_e      RV32M             = RV32MFast,
++  parameter rv32b_e      RV32B             = RV32BNone,
++  parameter bit          DbgTriggerEn      = 1'b0,
++  parameter int unsigned DbgHwBreakNum     = 1,
++  parameter int unsigned DmHaltAddr        = 32'h1A110800,
++  parameter int unsigned DmExceptionAddr   = 32'h1A110808
+ ) (
+   // Clock and Reset
+   input  logic                         clk_i,
+   input  logic                         rst_ni,
+ 
+   input  logic                         test_en_i,     // enable all clock gates for testing
+-  input  prim_ram_1p_pkg::ram_1p_cfg_t ram_cfg_i,
+ 
+ 
+   input  logic [31:0]                  hart_id_i,
+@@ -50,6 +55,7 @@ module cve2_top_tracing import cve2_pkg::*; #(
+   input  logic                         irq_external_i,
+   input  logic [15:0]                  irq_fast_i,
+   input  logic                         irq_nm_i,       // non-maskeable interrupt
++  output logic                         irq_pending_o,
+ 
+   // Debug Interface
+   input  logic                         debug_req_i,
+@@ -57,7 +63,7 @@ module cve2_top_tracing import cve2_pkg::*; #(
+ 
+   // CPU Control Signals
+   input  logic                         fetch_enable_i,
+-  output logic                         core_sleep_o
++  output logic                         core_busy_o
+ 
+ );
+ 
+@@ -106,14 +112,20 @@ module cve2_top_tracing import cve2_pkg::*; #(
+   assign unused_rvfi_ext_debug_req = rvfi_ext_debug_req;
+   assign unused_rvfi_ext_mcycle = rvfi_ext_mcycle;
+ 
+-  cve2_top #(
+-    .MHPMCounterNum   ( MHPMCounterNum   ),
+-    .MHPMCounterWidth ( MHPMCounterWidth ),
+-    .RV32E            ( RV32E            ),
+-    .RV32M            ( RV32M            ),
+-    .DmHaltAddr       ( DmHaltAddr       ),
+-    .DmExceptionAddr  ( DmExceptionAddr  )
+-  ) u_cve2_top (
++  cve2_core #(
++    .PMPEnable         (PMPEnable),
++    .PMPGranularity    (PMPGranularity),
++    .PMPNumRegions     (PMPNumRegions),
++    .MHPMCounterNum    (MHPMCounterNum),
++    .MHPMCounterWidth  (MHPMCounterWidth),
++    .RV32E             (RV32E),
++    .RV32M             (RV32M),
++    .RV32B             (RV32B),
++    .DbgTriggerEn      (DbgTriggerEn),
++    .DbgHwBreakNum     (DbgHwBreakNum),
++    .DmHaltAddr        (DmHaltAddr),
++    .DmExceptionAddr   (DmExceptionAddr)
++  ) u_cve2_core (
+     .clk_i,
+     .rst_ni,
+ 
+diff --git a/cve2_cs_registers.sv b/cve2_cs_registers.sv
+index fa7ec5b1..2a557fae 100644
+--- a/cve2_cs_registers.sv
++++ b/cve2_cs_registers.sv
+@@ -969,9 +969,9 @@ import cve2_pkg::*;
+   if (PMPEnable) begin : g_pmp_registers
+     // PMP reset values
+     `ifdef CVE2_CUSTOM_PMP_RESET_VALUES
+-      `include "cve2_pmp_reset.svh"
++      `include "cve2/cve2_pmp_reset.svh"
+     `else
+-      `include "cve2_pmp_reset_default.svh"
++      `include "cve2/cve2_pmp_reset_default.svh"
+     `endif
+ 
+     pmp_mseccfg_t                pmp_mseccfg_q, pmp_mseccfg_d;
+diff --git a/cve2_top.sv b/cve2_top.sv
+deleted file mode 100644
+index 6b1ee0dc..00000000
+--- a/cve2_top.sv
++++ /dev/null
+@@ -1,262 +0,0 @@
+-// Copyright lowRISC contributors.
+-// Copyright 2018 ETH Zurich and University of Bologna, see also CREDITS.md.
+-// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+-// SPDX-License-Identifier: Apache-2.0
+-
+-`ifdef RISCV_FORMAL
+-  `define RVFI
+-`endif
+-
+-`include "lowrisc_prim/prim_assert.svh"
+-
+-/**
+- * Top level module of the ibex RISC-V core
+- */
+-module cve2_top import cve2_pkg::*; #(
+-  parameter int unsigned MHPMCounterNum   = 0,
+-  parameter int unsigned MHPMCounterWidth = 40,
+-  parameter bit          RV32E            = 1'b0,
+-  parameter rv32m_e      RV32M            = RV32MFast,
+-  parameter int unsigned DmHaltAddr       = 32'h1A110800,
+-  parameter int unsigned DmExceptionAddr  = 32'h1A110808
+-) (
+-  // Clock and Reset
+-  input  logic                         clk_i,
+-  input  logic                         rst_ni,
+-
+-  input  logic                         test_en_i,     // enable all clock gates for testing
+-
+-  input  logic [31:0]                  hart_id_i,
+-  input  logic [31:0]                  boot_addr_i,
+-
+-  // Instruction memory interface
+-  output logic                         instr_req_o,
+-  input  logic                         instr_gnt_i,
+-  input  logic                         instr_rvalid_i,
+-  output logic [31:0]                  instr_addr_o,
+-  input  logic [31:0]                  instr_rdata_i,
+-  input  logic                         instr_err_i,
+-
+-  // Data memory interface
+-  output logic                         data_req_o,
+-  input  logic                         data_gnt_i,
+-  input  logic                         data_rvalid_i,
+-  output logic                         data_we_o,
+-  output logic [3:0]                   data_be_o,
+-  output logic [31:0]                  data_addr_o,
+-  output logic [31:0]                  data_wdata_o,
+-  input  logic [31:0]                  data_rdata_i,
+-  input  logic                         data_err_i,
+-
+-  // Interrupt inputs
+-  input  logic                         irq_software_i,
+-  input  logic                         irq_timer_i,
+-  input  logic                         irq_external_i,
+-  input  logic [15:0]                  irq_fast_i,
+-  input  logic                         irq_nm_i,       // non-maskeable interrupt
+-
+-  // Debug Interface
+-  input  logic                         debug_req_i,
+-  output crash_dump_t                  crash_dump_o,
+-
+-  // RISC-V Formal Interface
+-  // Does not comply with the coding standards of _i/_o suffixes, but follows
+-  // the convention of RISC-V Formal Interface Specification.
+-`ifdef RVFI
+-  output logic                         rvfi_valid,
+-  output logic [63:0]                  rvfi_order,
+-  output logic [31:0]                  rvfi_insn,
+-  output logic                         rvfi_trap,
+-  output logic                         rvfi_halt,
+-  output logic                         rvfi_intr,
+-  output logic [ 1:0]                  rvfi_mode,
+-  output logic [ 1:0]                  rvfi_ixl,
+-  output logic [ 4:0]                  rvfi_rs1_addr,
+-  output logic [ 4:0]                  rvfi_rs2_addr,
+-  output logic [ 4:0]                  rvfi_rs3_addr,
+-  output logic [31:0]                  rvfi_rs1_rdata,
+-  output logic [31:0]                  rvfi_rs2_rdata,
+-  output logic [31:0]                  rvfi_rs3_rdata,
+-  output logic [ 4:0]                  rvfi_rd_addr,
+-  output logic [31:0]                  rvfi_rd_wdata,
+-  output logic [31:0]                  rvfi_pc_rdata,
+-  output logic [31:0]                  rvfi_pc_wdata,
+-  output logic [31:0]                  rvfi_mem_addr,
+-  output logic [ 3:0]                  rvfi_mem_rmask,
+-  output logic [ 3:0]                  rvfi_mem_wmask,
+-  output logic [31:0]                  rvfi_mem_rdata,
+-  output logic [31:0]                  rvfi_mem_wdata,
+-  output logic [31:0]                  rvfi_ext_mip,
+-  output logic                         rvfi_ext_nmi,
+-  output logic                         rvfi_ext_debug_req,
+-  output logic [63:0]                  rvfi_ext_mcycle,
+-`endif
+-
+-  // CPU Control Signals
+-  input  logic                         fetch_enable_i,
+-  output logic                         core_sleep_o
+-);
+-
+-  // Scrambling Parameter
+-  localparam int unsigned NumAddrScrRounds  = 0;
+-
+-  // Physical Memory Protection
+-  localparam bit          PMPEnable        = 1'b0;
+-  localparam int unsigned PMPGranularity   = 0;
+-  localparam int unsigned PMPNumRegions    = 4;
+-
+-  // Trigger support
+-  localparam bit          DbgTriggerEn     = 1'b1;
+-  localparam int unsigned DbgHwBreakNum    = 1;
+-
+-  // Bit manipulation extension
+-  localparam rv32b_e      RV32B            = RV32BNone;
+-
+-  // Clock signals
+-  logic                        clk;
+-  logic                        core_busy_d, core_busy_q;
+-  logic                        clock_en;
+-  logic                        fetch_enable_d, fetch_enable_q;
+-  logic                        irq_pending;
+-
+-  /////////////////////
+-  // Main clock gate //
+-  /////////////////////
+-
+-  always_ff @(posedge clk_i or negedge rst_ni) begin
+-    if (!rst_ni) begin
+-      core_busy_q <= 1'b0;
+-      fetch_enable_q <= 1'b0;
+-    end else begin
+-      core_busy_q <= core_busy_d;
+-      fetch_enable_q <= fetch_enable_d;
+-    end
+-  end
+-
+-  assign clock_en = fetch_enable_q & (core_busy_q | debug_req_i | irq_pending | irq_nm_i);
+-  assign core_sleep_o = fetch_enable_q & !clock_en;
+-  assign fetch_enable_d = fetch_enable_i ? 1'b1 : fetch_enable_q;
+-
+-  cve2_clock_gate core_clock_gate_i (
+-    .clk_i    (clk_i),
+-    .en_i     (clock_en),
+-    .scan_cg_en_i(test_en_i),
+-    .clk_o    (clk)
+-  );
+-
+-  ////////////////////////
+-  // Core instantiation //
+-  ////////////////////////
+-
+-  cve2_core #(
+-    .PMPEnable        (PMPEnable),
+-    .PMPGranularity   (PMPGranularity),
+-    .PMPNumRegions    (PMPNumRegions),
+-    .MHPMCounterNum   (MHPMCounterNum),
+-    .MHPMCounterWidth (MHPMCounterWidth),
+-    .RV32E            (RV32E),
+-    .RV32M            (RV32M),
+-    .RV32B            (RV32B),
+-    .DbgTriggerEn     (DbgTriggerEn),
+-    .DbgHwBreakNum    (DbgHwBreakNum),
+-    .DmHaltAddr       (DmHaltAddr),
+-    .DmExceptionAddr  (DmExceptionAddr)
+-  ) u_cve2_core (
+-    .clk_i(clk),
+-    .rst_ni,
+-    .test_en_i,
+-
+-    .hart_id_i,
+-    .boot_addr_i,
+-
+-    .instr_req_o,
+-    .instr_gnt_i,
+-    .instr_rvalid_i,
+-    .instr_addr_o,
+-    .instr_rdata_i,
+-    .instr_err_i,
+-
+-    .data_req_o,
+-    .data_gnt_i,
+-    .data_rvalid_i,
+-    .data_we_o,
+-    .data_be_o,
+-    .data_addr_o,
+-    .data_wdata_o,
+-    .data_rdata_i,
+-    .data_err_i,
+-
+-    .irq_software_i,
+-    .irq_timer_i,
+-    .irq_external_i,
+-    .irq_fast_i,
+-    .irq_nm_i,
+-    .irq_pending_o(irq_pending),
+-
+-    .debug_req_i,
+-    .crash_dump_o,
+-
+-`ifdef RVFI
+-    .rvfi_valid,
+-    .rvfi_order,
+-    .rvfi_insn,
+-    .rvfi_trap,
+-    .rvfi_halt,
+-    .rvfi_intr,
+-    .rvfi_mode,
+-    .rvfi_ixl,
+-    .rvfi_rs1_addr,
+-    .rvfi_rs2_addr,
+-    .rvfi_rs3_addr,
+-    .rvfi_rs1_rdata,
+-    .rvfi_rs2_rdata,
+-    .rvfi_rs3_rdata,
+-    .rvfi_rd_addr,
+-    .rvfi_rd_wdata,
+-    .rvfi_pc_rdata,
+-    .rvfi_pc_wdata,
+-    .rvfi_mem_addr,
+-    .rvfi_mem_rmask,
+-    .rvfi_mem_wmask,
+-    .rvfi_mem_rdata,
+-    .rvfi_mem_wdata,
+-    .rvfi_ext_mip,
+-    .rvfi_ext_nmi,
+-    .rvfi_ext_debug_req,
+-    .rvfi_ext_mcycle,
+-`endif
+-
+-    .fetch_enable_i (fetch_enable_q),
+-    .core_busy_o    (core_busy_d)
+-  );
+-
+-
+-  // X checks for top-level outputs
+-  `ASSERT_KNOWN(IbexInstrReqX, instr_req_o)
+-  `ASSERT_KNOWN_IF(IbexInstrReqPayloadX, instr_addr_o, instr_req_o)
+-
+-  `ASSERT_KNOWN(IbexDataReqX, data_req_o)
+-  `ASSERT_KNOWN_IF(IbexDataReqPayloadX,
+-    {data_we_o, data_be_o, data_addr_o, data_wdata_o}, data_req_o)
+-
+-  `ASSERT_KNOWN(IbexCoreSleepX, core_sleep_o)
+-
+-  // X check for top-level inputs
+-  `ASSERT_KNOWN(IbexTestEnX, test_en_i)
+-  `ASSERT_KNOWN(IbexRamCfgX, ram_cfg_i)
+-  `ASSERT_KNOWN(IbexHartIdX, hart_id_i)
+-  `ASSERT_KNOWN(IbexBootAddrX, boot_addr_i)
+-
+-  `ASSERT_KNOWN(IbexInstrGntX, instr_gnt_i)
+-  `ASSERT_KNOWN(IbexInstrRValidX, instr_rvalid_i)
+-  `ASSERT_KNOWN_IF(IbexInstrRPayloadX,
+-    {instr_rdata_i, instr_err_i}, instr_rvalid_i)
+-
+-  `ASSERT_KNOWN(IbexDataGntX, data_gnt_i)
+-  `ASSERT_KNOWN(IbexDataRValidX, data_rvalid_i)
+-  `ASSERT_KNOWN_IF(IbexDataRPayloadX, {data_rdata_i, data_err_i}, data_rvalid_i)
+-
+-  `ASSERT_KNOWN(IbexIrqX, {irq_software_i, irq_timer_i, irq_external_i, irq_fast_i, irq_nm_i})
+-
+-  `ASSERT_KNOWN(IbexDebugReqX, debug_req_i)
+-endmodule
+diff --git a/cve2_pmp_reset_default.svh b/include/cve2/cve2_pmp_reset_default.svh
+similarity index 100%
+rename from cve2_pmp_reset_default.svh
+rename to include/cve2/cve2_pmp_reset_default.svh
+-- 
+2.34.1
+
