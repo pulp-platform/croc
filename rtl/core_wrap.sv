@@ -11,7 +11,7 @@ module core_wrap import croc_pkg::*; #() (
   input  logic ref_clk_i,
   input  logic test_enable_i,
 
-  input logic [14:0] irqs_i,
+  input logic [15:0] irqs_i,
   input logic timer0_irq_i,
 
   input  logic [31:0] boot_addr_i,
@@ -43,8 +43,6 @@ module core_wrap import croc_pkg::*; #() (
 
   output logic        core_busy_o
 );
-  // Interrupt signals
-  logic [31:0] core_irqs;
 
   // lowest 8 bits are ignored internally
   logic[31:0] ibex_boot_addr;
