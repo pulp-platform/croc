@@ -39,12 +39,21 @@ module croc_chip import croc_pkg::*; #() (
   inout  wire gpio14_io,
   inout  wire gpio15_io,
 
-  output wire neopixel_data_o
-);
+  output wire neopixel_data_o,
+
+  input  wire uart2_rxd_i,
+  output wire uart2_txd_o,
+  input  wire uart2_cts_n_i,
+  input  wire uart2_dsr_n_i,
+  input  wire uart2_ri_n_i,
+  input  wire uart2_cd_n_i,
+  output wire uart2_rts_n_o,
+  output wire uart2_dtr_n_o
+); 
+
     logic soc_clk_i;
     logic soc_rst_ni;
     logic soc_ref_clk_i;
-    logic soc_testmode;
 
     logic soc_jtag_tck_i;
     logic soc_jtag_trst_ni;
@@ -63,10 +72,18 @@ module croc_chip import croc_pkg::*; #() (
 
     logic soc_neopixel_data_o;
 
+    logic soc_uart2_rxd_i;
+    logic soc_uart2_txd_o;
+    logic soc_uart2_cts_n_i;
+    logic soc_uart2_dsr_n_i;
+    logic soc_uart2_ri_n_i;
+    logic soc_uart2_cd_n_i;
+    logic soc_uart2_rts_n_o;
+    logic soc_uart2_dtr_n_o;
+
     sg13g2_IOPadIn        pad_clk_i        (.pad(clk_i),        .p2c(soc_clk_i));
     sg13g2_IOPadIn        pad_rst_ni       (.pad(rst_ni),       .p2c(soc_rst_ni));
     sg13g2_IOPadIn        pad_ref_clk_i    (.pad(ref_clk_i),    .p2c(soc_ref_clk_i));
-    assign soc_testmode = '0;
 
     sg13g2_IOPadIn        pad_jtag_tck_i   (.pad(jtag_tck_i),   .p2c(soc_jtag_tck_i));
     sg13g2_IOPadIn        pad_jtag_trst_ni (.pad(jtag_trst_ni), .p2c(soc_jtag_trst_ni));
@@ -99,6 +116,15 @@ module croc_chip import croc_pkg::*; #() (
 
     sg13g2_IOPadOut30mA   pad_neopixel_data_o     (.pad(neopixel_data_o),     .c2p(soc_neopixel_data_o));
 
+    sg13g2_IOPadIn        pad_uart2_rxd_i   (.pad(uart2_rxd_i  ), .p2c(soc_uart2_rxd_i));
+    sg13g2_IOPadOut16mA   pad_uart2_txd_o   (.pad(uart2_txd_o  ), .p2c(soc_uart2_txd_o));
+    sg13g2_IOPadIn        pad_uart2_cts_n_i (.pad(uart2_cts_n_i), .p2c(soc_uart2_cts_n_i));
+    sg13g2_IOPadIn        pad_uart2_dsr_n_i (.pad(uart2_dsr_n_i), .p2c(soc_uart2_dsr_n_i));
+    sg13g2_IOPadIn        pad_uart2_ri_n_i  (.pad(uart2_ri_n_i ), .p2c(soc_uart2_ri_n_i));
+    sg13g2_IOPadIn        pad_uart2_cd_n_i  (.pad(uart2_cd_n_i ), .p2c(soc_uart2_cd_n_i));
+    sg13g2_IOPadOut16mA   pad_uart2_rts_n_o (.pad(uart2_rts_n_o), .p2c(soc_uart2_rts_n_o));
+    sg13g2_IOPadOut16mA   pad_uart2_dtr_n_o (.pad(uart2_dtr_n_o), .p2c(soc_uart2_dtr_n_o));
+
     (* dont_touch = "true" *)sg13g2_IOPadVdd pad_vdd0();
     (* dont_touch = "true" *)sg13g2_IOPadVdd pad_vdd1();
     (* dont_touch = "true" *)sg13g2_IOPadVdd pad_vdd2();
@@ -123,27 +149,36 @@ module croc_chip import croc_pkg::*; #() (
     .GpioCount( GpioCount )
   )
   i_croc_soc (
-    .clk_i          ( soc_clk_i      ),
-    .rst_ni         ( soc_rst_ni     ),
-    .ref_clk_i      ( soc_ref_clk_i  ),
-    .testmode_i     ( soc_testmode_i ),
-    .fetch_en_i     ( soc_fetch_en_i ),
-    .status_o       ( soc_status_o   ),
+    .clk_i           ( soc_clk_i      ),
+    .rst_ni          ( soc_rst_ni     ),
+    .ref_clk_i       ( soc_ref_clk_i  ),
+    .testmode_i      ( 1'b0           ),
+    .fetch_en_i      ( soc_fetch_en_i ),
+    .status_o        ( soc_status_o   ),
 
-    .jtag_tck_i     ( soc_jtag_tck_i   ),
-    .jtag_tdi_i     ( soc_jtag_tdi_i   ),
-    .jtag_tdo_o     ( soc_jtag_tdo_o   ),
-    .jtag_tms_i     ( soc_jtag_tms_i   ),
-    .jtag_trst_ni   ( soc_jtag_trst_ni ),
+    .jtag_tck_i      ( soc_jtag_tck_i   ),
+    .jtag_tdi_i      ( soc_jtag_tdi_i   ),
+    .jtag_tdo_o      ( soc_jtag_tdo_o   ),
+    .jtag_tms_i      ( soc_jtag_tms_i   ),
+    .jtag_trst_ni    ( soc_jtag_trst_ni ),
 
-    .uart_rx_i      ( soc_uart_rx_i ),
-    .uart_tx_o      ( soc_uart_tx_o ),
+    .uart_rx_i       ( soc_uart_rx_i ),
+    .uart_tx_o       ( soc_uart_tx_o ),
 
-    .gpio_i         ( soc_gpio_i        ),             
-    .gpio_o         ( soc_gpio_o        ),            
-    .gpio_out_en_o  ( soc_gpio_out_en_o ),
+    .gpio_i          ( soc_gpio_i        ),             
+    .gpio_o          ( soc_gpio_o        ),            
+    .gpio_out_en_o   ( soc_gpio_out_en_o ),
 
-    .neopixel_data_o ( soc_neopixel_data_o )
+    .neopixel_data_o ( soc_neopixel_data_o ),
+
+    .uart2_rxd_i     ( soc_uart2_rxd_i   ),    
+    .uart2_txd_o     ( soc_uart2_txd_o   ),   
+    .uart2_cts_n_i   ( soc_uart2_cts_n_i ), 
+    .uart2_dsr_n_i   ( soc_uart2_dsr_n_i ),  
+    .uart2_ri_n_i    ( soc_uart2_ri_n_i  ), 
+    .uart2_cd_n_i    ( soc_uart2_cd_n_i  ),   
+    .uart2_rts_n_o   ( soc_uart2_rts_n_o ),
+    .uart2_dtr_n_o   ( soc_uart2_dtr_n_o )   
   );
 
 endmodule

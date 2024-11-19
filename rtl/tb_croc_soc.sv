@@ -343,7 +343,7 @@ module tb_croc_soc #(
     ////////////
     //  UART  //
     ////////////
-
+    /*
     typedef bit [ 7:0] byte_bt;
     localparam int unsigned UartDivisior = ClkFrequency / (UartBaudRate*16);
     localparam UartRealBaudRate = ClkFrequency / (UartDivisior*16);
@@ -419,7 +419,8 @@ module tb_croc_soc #(
                     $write("@%t | [UART] as hex: ( ", $time);
                     foreach (uart_read_buf[i]) begin
                         $write("%02x ", uart_read_buf[i]);
-                        uart_str = {uart_str, uart_read_buf[i]};
+                        uart_str = {uart_str, $sformatf("%c", uart_read_buf[i])};
+                        //uart_str = {uart_str, uart_read_buf[i]};
                     end
                     
                     $display(")\n@%t | [UART] %s", $time, uart_str);
@@ -435,7 +436,7 @@ module tb_croc_soc #(
         end
     end
 
-
+    */
 
     ////////////
     //  DUT   //

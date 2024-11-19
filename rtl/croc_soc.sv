@@ -29,7 +29,16 @@ module croc_soc import croc_pkg::*; #(
   output logic [GpioCount-1:0] gpio_o,       // Output to GPIO pins
   output logic [GpioCount-1:0] gpio_out_en_o, // Output enable signal; 0 -> input, 1 -> output
 
-  output logic neopixel_data_o
+  output logic neopixel_data_o,
+
+  input  logic uart2_rxd_i,    // UART Serial Input Pin
+  output logic uart2_txd_o,    // UART Serial Output Pin
+  input  logic uart2_cts_n_i,  // UART Modem Inp Clear To Send Pin
+  input  logic uart2_dsr_n_i,  // UART Modem Inp Data Send Request Pin
+  input  logic uart2_ri_n_i,   // UART Modem Inp Ring Indicator Pin
+  input  logic uart2_cd_n_i,   // UART Modem Inp Carrier Detect Pin
+  output logic uart2_rts_n_o,  // UART Modem Oup Ready To Send Pin
+  output logic uart2_dtr_n_o   // UART Modem Oup DaTa Ready Pin
 );
 
   logic synced_rst_n, synced_fetch_en;
@@ -94,15 +103,15 @@ croc_domain #(
   .user_mgr_obi_rsp_o  ( user_mgr_obi_rsp ),
 
   .interrupts_i ( interrupts  ),
-  .core_busy_o ( status_o    )
+  .core_busy_o  ( status_o    )
 );
 
 user_domain #(
   .GpioCount( GpioCount ) 
 ) i_user (
   .clk_i,
-  .rst_ni ( synced_rst_n ),
   .ref_clk_i,
+  .rst_ni ( synced_rst_n ),
   .testmode_i,
   .modulated_o,
 
@@ -115,7 +124,16 @@ user_domain #(
   .gpio_in_sync_i ( gpio_in_sync ),
   .interrupts_o   ( interrupts   ),
 
-  .neopixel_data_o
+  .neopixel_data_o,
+
+  .rxd_i              ( uart2_rxd_i      ),
+  .txd_o              ( uart2_txd_o      ),   
+  .cts_n_i            ( uart2_cts_n_i    ),  
+  .dsr_n_i            ( uart2_dsr_n_i    ),
+  .ri_n_i             ( uart2_ri_n_i     ), 
+  .cd_n_i             ( uart2_cd_n_i     ),   
+  .rts_n_o            ( uart2_rts_n_o    ),  
+  .dtr_n_o            ( uart2_dtr_n_o    )
 );
 
 endmodule

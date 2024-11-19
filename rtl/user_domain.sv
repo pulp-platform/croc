@@ -23,12 +23,37 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   input  mgr_obi_rsp_t user_mgr_obi_rsp_i,
 
   input  logic [      GpioCount-1:0] gpio_in_sync_i, // synchronized GPIO inputs
-  output logic [NumExternalIrqs-1:0] interrupts_o, // interrupts to core
 
-  output logic neopixel_data_o
-);  
+  output logic neopixel_data_o, 
 
-import gpio_reg_pkg::*;
+  output logic [NumExternalIrqs-1:0] interrupts_o,   // interrupts to core
+
+  input  logic rxd_i,    // UART Serial Input 
+  output logic txd_o,    // UART Serial Output
+  input  logic cts_n_i,  // UART Modem Inp Clear To Send
+  input  logic dsr_n_i,  // UART Modem Inp Data Send Request
+  input  logic ri_n_i,   // UART Modem Inp Ring Indicator
+  input  logic cd_n_i,   // UART Modem Inp Carrier Detect
+  output logic rts_n_o,  // UART Modem Oup Ready To Send
+  output logic dtr_n_o   // UART Modem Oup DaTa Ready
+);
+
+  //////////////////////
+  // User Interrupts  //
+  //////////////////////
+
+  logic irq;
+  logic irq_n;
+  logic neopixel_fifo_interrupt;
+  
+  always_comb begin
+    interrupts_o    = '0;
+    interrupts_o[0] = neopixel_fifo_interrupt;
+    interrupts_o[1] = irq;
+    interrupts_o[2] = ~irq_n; 
+  end
+
+  import gpio_reg_pkg::*;
 
   mlem_sound i_mlem_sound (
     .clk_i       ( ref_clk_i   ),
@@ -110,6 +135,10 @@ import gpio_reg_pkg::*;
   sbr_obi_req_t [NumDemuxSbr-1:0] all_user_sbr_obi_req;
   sbr_obi_rsp_t [NumDemuxSbr-1:0] all_user_sbr_obi_rsp;
 
+  // UART Suborsinate Bus
+  sbr_obi_req_t user_uart_obi_req;
+  sbr_obi_rsp_t user_uart_obi_rsp;
+
   // ROM Subordinate Bus
   sbr_obi_req_t user_rom_obi_req;
   sbr_obi_rsp_t user_rom_obi_rsp;
@@ -129,8 +158,13 @@ import gpio_reg_pkg::*;
   assign user_rom_obi_req                = all_user_sbr_obi_req[UserRom];
   assign all_user_sbr_obi_rsp[UserRom]   = user_rom_obi_rsp;
 
+
   assign user_neopixel_obi_req                = all_user_sbr_obi_req[UserNeopixel];
   assign all_user_sbr_obi_rsp[UserNeopixel]   = user_neopixel_obi_rsp;
+
+  assign user_uart_obi_req               = all_user_sbr_obi_req[UserUart];
+  assign all_user_sbr_obi_rsp[UserUart]  = user_uart_obi_rsp;
+
 
   //-----------------------------------------------------------------------------------------------
   // Demultiplex to User Subordinates according to address map
@@ -186,20 +220,21 @@ import gpio_reg_pkg::*;
     .clk_i,  
     .rst_ni,
 
-    .obi_req_i (), 
-    .obi_rsp_o (),
+    .obi_req_i ( user_uart_obi_req ), 
+    .obi_rsp_o ( user_uart_obi_rsp ),
     
-    .irq   (),    
-    .irq_n (), 
-    .rxd_i (),    
-    .txd_o (),    
+    .irq,    
+    .irq_n, 
 
-    .cts_n (),  
-    .dsr_n (),  
-    .ri_n  (),   
-    .cd_n  (),   
-    .rts_n (),  
-    .dtr_n () 
+    .rxd_i,    
+    .txd_o,    
+
+    .cts_n     ( cts_n_i           ),  
+    .dsr_n     ( dsr_n_i           ),  
+    .ri_n      ( ri_n_i            ),   
+    .cd_n      ( cd_n_i            ),   
+    .rts_n     ( rts_n_o           ),  
+    .dtr_n     ( dtr_n_o           ) 
   );
   
   // ROM Subordinate
@@ -230,12 +265,10 @@ import gpio_reg_pkg::*;
   );
 
   // Neopixel Subordinate (+ Manager Port)
-  logic neopixel_fifo_interrupt;
-
   neopixel #(
     .SbrObiCfg      ( SbrObiCfg           ),
-    .sbr_obi_req_t      ( sbr_obi_req_t       ),
-    .sbr_obi_rsp_t      ( sbr_obi_rsp_t       ),
+    .sbr_obi_req_t  ( sbr_obi_req_t       ),
+    .sbr_obi_rsp_t  ( sbr_obi_rsp_t       ),
     .MgrObiCfg      ( MgrObiCfg           ),
     .mgr_obi_req_t  ( mgr_obi_req_t       ),
     .mgr_obi_rsp_t  ( mgr_obi_rsp_t       )
@@ -254,10 +287,5 @@ import gpio_reg_pkg::*;
     
     .data_o ( neopixel_data_o )
   );
-
-  always_comb begin
-    interrupts_o = '0; 
-    interrupts_o[0] = neopixel_fifo_interrupt; 
-  end
 
 endmodule

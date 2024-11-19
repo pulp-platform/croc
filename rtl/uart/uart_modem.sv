@@ -82,8 +82,8 @@ module uart_modem #()
   always_comb begin
 
     // Modem Inputs are negated
-    reg_write.msr.strct.cts  = (reg_read.mcr.strct.loopback = 1'b1) ? rts_n : ~sync_cts_n_d; //TODO
-    reg_write.msr.strct.dsr  = (reg_read.mcr.strct.loopback = 1'b1) ? dtr_n : ~sync_dsr_n_d; //TODO
+    reg_write.msr.strct.cts  = (reg_read.mcr.strct.loopback == 1'b1) ? rts_n : ~sync_cts_n_d; //TODO
+    reg_write.msr.strct.dsr  = (reg_read.mcr.strct.loopback == 1'b1) ? dtr_n : ~sync_dsr_n_d;  //TODO
     reg_write.msr.strct.ri   = ~sync_ri_n_d;
     reg_write.msr.strct.cd   = ~sync_cd_n_d;
 

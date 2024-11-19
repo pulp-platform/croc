@@ -321,6 +321,4 @@ package uart_pkg;
     MSR_union_t msr; 
   } modem_reg_write_t;
 
-
-
 endpackage
