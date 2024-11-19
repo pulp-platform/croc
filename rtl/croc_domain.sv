@@ -497,7 +497,7 @@ module croc_domain import croc_pkg::*; #(
 
   soc_ctrl_reg_pkg::soc_ctrl_reg2hw_t soc_ctrl_reg2hw;
   soc_ctrl_reg_pkg::soc_ctrl_hw2reg_t soc_ctrl_hw2reg;
-  assign fetch_enable = soc_ctrl_reg2hw.fetchen.q & fetch_en_i;
+  assign fetch_enable = soc_ctrl_reg2hw.fetchen.q | fetch_en_i;
   assign boot_addr = soc_ctrl_reg2hw.bootaddr.q;
   assign soc_ctrl_hw2reg = '0;
 
