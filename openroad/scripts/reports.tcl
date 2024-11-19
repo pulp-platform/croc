@@ -277,7 +277,6 @@ proc default_view { } {
   lappend controls [list "Nets/*"                  true ]
   lappend controls [list "Shape Types/*"           true ]
   lappend controls [list "Instances/*"             true ]
-  lappend controls [list "Timing Path/*"           false]
   lappend controls [list "Misc/Instances/Names"    true ]
   lappend controls [list "Misc/Scale bar"          true ]
   lappend controls [list "Misc/Highlight selected" true ]

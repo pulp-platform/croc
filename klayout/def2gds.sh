@@ -27,24 +27,28 @@ if [[ -f "$root_dir/.cockpitrc" ]]; then
     pdk_io_gds_dir="${pdk_dir}/gds"
 else
     echo "Init tech from Github PDK"
-    pdk_dir=${pdk_dir:-$(realpath "$root_dir/ihp13/pdk")}
-    pdk="${pdk_dir}/ihp-sg13g2"
-    pdk_cells_lef_dir="${pdk}/libs.ref/sg13g2_stdcell/lef"
-    pdk_sram_lef_dir="${pdk}/libs.ref/sg13g2_sram/lef"
-    pdk_io_lef_dir="${pdk}/libs.ref/sg13g2_io/lef"
-    pdk_cells_gds_dir="${pdk}/libs.ref/sg13g2_stdcell/gds"
-    pdk_sram_gds_dir="${pdk}/libs.ref/sg13g2_sram/gds"
-    pdk_io_gds_dir="${pdk}/libs.ref/sg13g2_io/gds"
+    pdk_dir=${pdk_dir:-$(realpath "$root_dir/ihp13/pdk/ihp-sg13g2")}
+    pdk_cells_lef_dir="${pdk_dir}/libs.ref/sg13g2_stdcell/lef"
+    pdk_sram_lef_dir="${pdk_dir}/libs.ref/sg13g2_sram/lef"
+    pdk_io_lef_dir="${pdk_dir}/libs.ref/sg13g2_io/lef"
+    pdk_cells_gds_dir="${pdk_dir}/libs.ref/sg13g2_stdcell/gds"
+    pdk_sram_gds_dir="${pdk_dir}/libs.ref/sg13g2_sram/gds"
+    pdk_io_gds_dir="${pdk_dir}/libs.ref/sg13g2_io/gds"
 fi
+
+bondpad_lef_dir=$(realpath "$root_dir/ihp13/bondpad/lef")
+bondpad_gds_dir=$(realpath "$root_dir/ihp13/bondpad/gds")
 
 lef="$(find "$pdk_cells_lef_dir" -name 'sg13g2_stdcell.lef' -exec realpath {} \;) \
      $(find "$pdk_cells_lef_dir" -name 'sg13g2_tech.lef' -exec realpath {} \;) \
      $(find "$pdk_sram_lef_dir" -name 'RM_IHPSG13*.lef' -exec realpath {} \;) \
-     $(find "$pdk_io_lef_dir" -name 'sg13g2_io.lef' -exec realpath {} \;)"
+     $(find "$pdk_io_lef_dir" -name 'sg13g2_io.lef' -exec realpath {} \;) \
+     $(find "$bondpad_lef_dir" -name '*.lef' -exec realpath {} \;)"
 
 gds="$(find "$pdk_cells_gds_dir" -name 'sg13g2_stdcell.gds' -exec realpath {} \;) \
      $(find "$pdk_sram_gds_dir" -name 'RM_IHPSG13*.gds' -exec realpath {} \;) \
-     $(find "$pdk_io_gds_dir" -name 'sg13g2_io.gds' -exec realpath {} \;)"
+     $(find "$pdk_io_gds_dir" -name 'sg13g2_io.gds' -exec realpath {} \;) \
+     $(find "$bondpad_gds_dir" -name '*.gds' -exec realpath {} \;)"
 
 tech="$root_dir/ihp13/pdk/ihp-sg13g2/libs.tech/klayout/tech/sg13g2.lyt"
 layer="$root_dir/ihp13/pdk/ihp-sg13g2/libs.tech/klayout/tech/sg13g2.lyp"

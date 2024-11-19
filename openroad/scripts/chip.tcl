@@ -96,11 +96,11 @@ save_checkpoint ${proj_name}.pre_place
 ###############################################################################
 set_thread_count 8
 
-set GPL_ARGS {  -density 0.70 }
+set GPL_ARGS {  -density 0.60 }
 
-set GPL2_ARGS {  -density 0.70
+set GPL2_ARGS { -density 0.60
                 -routability_driven
-                -routability_check_overflow 0.40
+                -routability_check_overflow 0.30
                 -timing_driven }
 # density:            In every part of the chip, about N% of the area is occupied by standard cells
 # routability_driven: Reduce density target when there are a lot of wires in an area
@@ -245,6 +245,7 @@ detailed_placement
 global_route -end_incremental \
             -congestion_report_file ${report_dir}/congestion_repaired_initial.rpt \
             -guide_file ${report_dir}/${proj_name}_route.guide \
+            -allow_congestion \
             -verbose
 
 estimate_parasitics -global_routing
@@ -253,7 +254,7 @@ save_checkpoint ${proj_name}.grt_repaired
 report_image "${proj_name}.grt_repaired" true true false true
 
 # Requires LEF cell with class 'CORE ANTENNACELL', otherwise you need to give a cell
-repair_antennas
+repair_antennas -ratio_margin 30 -iterations 5
 # check_antennas
 
 
@@ -276,6 +277,7 @@ report_image "${proj_name}.drt" true false false true
 
 utl::report "Filler placement"
 filler_placement $stdfill
+global_connect
 report_image "${proj_name}.final" true true false true
 utl::report "Write output"
 write_def                      out/${proj_name}.def

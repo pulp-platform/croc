@@ -40,9 +40,9 @@ set pgcrOffset [expr ($PowRingSpace - $pgcrSpacing - 2 * $pgcrWidth) / 2]
 
 # TopMetal2 Core Power Grid
 set tpg2Width     6; # arbitrary number
-set tpg2Pitch   188; # same as pad-pitch
-set tpg2Spacing  65; # big enough to skip over a pad
-set tpg2Offset   32; # offset from leftX of core
+set tpg2Pitch   204; # multiple of pad-pitch
+set tpg2Spacing  60; # big enough to skip over a pad
+set tpg2Offset   97; # offset from leftX of core
 
 # Macro Power Rings -> M3 and M2
 ## Spacing must be larger than pitch of M2/M3
@@ -50,7 +50,7 @@ set mprSpacing 0.6
 ## Width
 set mprWidth 2
 ## Offset from Macro to power ring
-set mprOffsetX 2.0
+set mprOffsetX 2.4
 set mprOffsetY 0.6
 
 # macro power grid (stripes on TopMetal1/TopMetal2 depending on orientation)
