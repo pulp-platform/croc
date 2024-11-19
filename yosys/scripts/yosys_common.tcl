@@ -10,6 +10,7 @@
 # list of global variables that may be used
 set variables {
     vlog_files  { VLOG_FILES               ""                       }
+    sv_flist    { SV_FLIST                 ""                       }
     top_design  { TOP_DESIGN               ""                       }
     hier_depth  { HIER_DEPTH               0                        }
     period_ps   { YOSYS_TARGET_PERIOD_PS   5000                     }
