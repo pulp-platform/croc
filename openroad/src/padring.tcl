@@ -155,11 +155,11 @@ connect_by_abutment
 # Bondpad integrated into IO cell (or bondpad after OpenROAD):
 # tells OpenROAD which IO-Cell pin is the pad and places the IO-terminal
 # (the internal concept of an IO) ontop of this pin
-place_io_terminals */pad
+# place_io_terminals */pad
 
 # Bondpad as seperate cell placed in OpenROAD:
 # place the bonding pad relative to the IO cell
-# place_bondpad -bond bondpad_70x70 -offset {5.0 -70.0} pad_*
+place_bondpad -bond bondpad_70x70 -offset {5.0 -70.0} pad_*
 
 # remove rows created by via make_io_sites as they are no longer needed
 remove_io_rows

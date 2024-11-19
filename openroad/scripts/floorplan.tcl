@@ -94,8 +94,8 @@ source src/instances.tcl
 # Placing 
 ##########################################################################
 # use these for macro placement
-set floorPaddingX      12.0
-set floorPaddingY      12.0
+set floorPaddingX      20.0
+set floorPaddingY      20.0
 set floor_leftX       [expr $core_leftX + $floorPaddingX]
 set floor_bottomY     [expr $core_bottomY + $floorPaddingY]
 set floor_rightX      [expr $core_rightX - $floorPaddingX]
