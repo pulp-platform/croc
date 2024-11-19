@@ -26,35 +26,6 @@ if {[info exists power_grid_defined]} {
 
 
 ##########################################################################
-# Global Connections
-##########################################################################
-
-# std cells
-add_global_connection -net {VDD} -inst_pattern {.*} -pin_pattern {VDD} -power
-add_global_connection -net {VSS} -inst_pattern {.*} -pin_pattern {VSS} -ground
-# pads
-add_global_connection -net {VDD} -inst_pattern {.*} -pin_pattern {vdd} -power
-add_global_connection -net {VSS} -inst_pattern {.*} -pin_pattern {vss} -ground
-# rams
-add_global_connection -net {VDD} -inst_pattern {.*} -pin_pattern {VDDARRAY} -power
-add_global_connection -net {VDD} -inst_pattern {.*} -pin_pattern {VDDARRAY!} -power
-add_global_connection -net {VDD} -inst_pattern {.*} -pin_pattern {VDD!} -power
-add_global_connection -net {VSS} -inst_pattern {.*} -pin_pattern {VSS!} -ground
-
-# pads
-add_global_connection -net {VDDIO} -inst_pattern {.*} -pin_pattern {iovdd} -power
-add_global_connection -net {VSSIO} -inst_pattern {.*} -pin_pattern {iovss} -ground
-
-# connection
-global_connect
-
-# voltage domains
-set_voltage_domain -name {CORE} -power {VDD} -ground {VSS}
-# standard cell grid and rings
-define_pdn_grid -name {core_grid} -voltage_domains {CORE}
-
-
-##########################################################################
 ##  Power settings
 ##########################################################################
 # Core Power Ring
@@ -153,7 +124,7 @@ sram_power "sram_256x64"  "RM_IHPSG13_1P_256x64_c2_bm_bist"
 # Top 2 Stripe
 add_pdn_stripe -grid {core_grid} -layer {TopMetal2} -width $tpg2Width \
                -pitch $tpg2Pitch -spacing $tpg2Spacing -offset $tpg2Offset \
-               -extend_to_core_ring
+               -extend_to_core_ring -snap_to_grid -number_of_straps 7
 
 # "The add_pdn_connect command is used to define which layers in the power grid are to be connected together. 
 #  During power grid generation, vias will be added for overlapping power nets and overlapping ground nets."

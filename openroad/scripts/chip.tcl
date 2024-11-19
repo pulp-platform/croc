@@ -51,6 +51,10 @@ initialize_floorplan -die_area "0 0 $chipW $chipH" \
                      -core_area "$coreMargin $coreMargin [expr $chipW-$coreMargin] [expr $chipH-$coreMargin]" \
                      -site "CoreSite"
 
+
+utl::report "Connect global nets (power)"
+source scripts/power_connect.tcl
+
 utl::report "Create Floorplan"
 source scripts/floorplan.tcl
 
@@ -203,7 +207,7 @@ report_image "${proj_name}.cts" true false true
 # eventually needs M4/M5 it may struggle with finding space 
 # to place vias down to M2/M3 -> reserve some space on M2/M3
 # Reduce TM1 to avoid too much routing there (bigger tracks -> bad for routing)
-set_global_routing_layer_adjustment Metal2-Metal3 0.35
+set_global_routing_layer_adjustment Metal2-Metal3 0.30
 set_global_routing_layer_adjustment TopMetal1 0.20
 set_routing_layers -signal Metal2-TopMetal1 -clock Metal2-TopMetal1
 
@@ -258,7 +262,7 @@ set_thread_count 8
 detailed_route -output_drc ${report_dir}/${proj_name}_route_drc.rpt \
                -bottom_routing_layer Metal2 \
                -top_routing_layer TopMetal1 \
-               -droute_end_iter 20 \
+               -droute_end_iter 30 \
                -drc_report_iter_step 5 \
                -save_guide_updates \
                -clean_patches \
@@ -274,9 +278,10 @@ utl::report "Filler placement"
 filler_placement $stdfill
 report_image "${proj_name}.final" true true false true
 utl::report "Write output"
-write_def     out/${proj_name}.def
-write_verilog out/${proj_name}.v
-write_db      out/${proj_name}.odb
-write_sdc     out/${proj_name}.sdc
+write_def                      out/${proj_name}.def
+write_verilog -include_pwr_gnd out/${proj_name}_lvs.v
+write_verilog                  out/${proj_name}.v
+write_db                       out/${proj_name}.odb
+write_sdc                      out/${proj_name}.sdc
 
 exit
