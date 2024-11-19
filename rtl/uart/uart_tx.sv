@@ -98,6 +98,9 @@ module uart_tx #()
     fifo_push   = 1'b0;
     fifo_data_i = '0;
 
+    reg_write.fcr_tx_valid     = 1'b0;
+    reg_write.fcr_tx_fifo_rst  = 1'b0;
+
     reg_write.lsr_valid     = 2'b00;
     reg_write.lsr_thr_empty = 1'b0;
     reg_write.lsr_tx_empty  = 1'b0;
@@ -126,6 +129,7 @@ module uart_tx #()
       if (reg_read.fcr.strct.tx_fifo_rst) begin
         fifo_clear = 1'b1;
         reg_write.fcr_tx_fifo_rst = 1'b0; 
+        reg_write.fcr_tx_valid    = 1'b1;
       end 
 
       //--Set-LSR---------------------------------------------------------------------------------

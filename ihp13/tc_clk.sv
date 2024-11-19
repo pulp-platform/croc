@@ -59,6 +59,20 @@ module tc_clk_xor2 (
   );
 endmodule
 
+module tc_clk_xor2 (
+  input  logic clk0_i,
+  input  logic clk1_i,
+  output logic clk_o
+);
+
+  (* keep *)(* dont_touch = "true" *)
+  sg13g2_xor2_1 i_mux (
+    .A ( clk0_i ),
+    .B ( clk1_i ),
+    .X ( clk_o  )
+  );
+endmodule
+
 module tc_clk_gating #(
     parameter bit IS_FUNCTIONAL = 1'b1
   )(

@@ -69,6 +69,8 @@ module uart #(
                                   rx_reg_write.lsr_overrun_err , rx_reg_write.lsr_data_ready };
     reg_write.msr             = modem_reg_write.msr;
 
+    reg_write.fcr_rx_valid    = rx_reg_write.fcr_rx_valid;
+    reg_write.fcr_tx_valid    = tx_reg_write.fcr_tx_valid;
     reg_write.rhr_valid       = rx_reg_write.rhr_valid;
     reg_write.isr_valid       = intrpt_reg_write.isr_valid;
     reg_write.lsr_valid       = { rx_reg_write.lsr_valid[5], tx_reg_write.lsr_valid,

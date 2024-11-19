@@ -117,13 +117,13 @@ module croc_chip import croc_pkg::*; #() (
     sg13g2_IOPadOut30mA   pad_neopixel_data_o     (.pad(neopixel_data_o),     .c2p(soc_neopixel_data_o));
 
     sg13g2_IOPadIn        pad_uart2_rxd_i   (.pad(uart2_rxd_i  ), .p2c(soc_uart2_rxd_i));
-    sg13g2_IOPadOut16mA   pad_uart2_txd_o   (.pad(uart2_txd_o  ), .p2c(soc_uart2_txd_o));
+    sg13g2_IOPadOut16mA   pad_uart2_txd_o   (.pad(uart2_txd_o  ), .c2p(soc_uart2_txd_o));
     sg13g2_IOPadIn        pad_uart2_cts_n_i (.pad(uart2_cts_n_i), .p2c(soc_uart2_cts_n_i));
     sg13g2_IOPadIn        pad_uart2_dsr_n_i (.pad(uart2_dsr_n_i), .p2c(soc_uart2_dsr_n_i));
     sg13g2_IOPadIn        pad_uart2_ri_n_i  (.pad(uart2_ri_n_i ), .p2c(soc_uart2_ri_n_i));
     sg13g2_IOPadIn        pad_uart2_cd_n_i  (.pad(uart2_cd_n_i ), .p2c(soc_uart2_cd_n_i));
-    sg13g2_IOPadOut16mA   pad_uart2_rts_n_o (.pad(uart2_rts_n_o), .p2c(soc_uart2_rts_n_o));
-    sg13g2_IOPadOut16mA   pad_uart2_dtr_n_o (.pad(uart2_dtr_n_o), .p2c(soc_uart2_dtr_n_o));
+    sg13g2_IOPadOut16mA   pad_uart2_rts_n_o (.pad(uart2_rts_n_o), .c2p(soc_uart2_rts_n_o));
+    sg13g2_IOPadOut16mA   pad_uart2_dtr_n_o (.pad(uart2_dtr_n_o), .c2p(soc_uart2_dtr_n_o));
 
     (* dont_touch = "true" *)sg13g2_IOPadVdd pad_vdd0();
     (* dont_touch = "true" *)sg13g2_IOPadVdd pad_vdd1();

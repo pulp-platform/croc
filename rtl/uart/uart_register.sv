@@ -78,16 +78,17 @@ module uart_register #(
     
     //---Defaults---------------------------------------------------------------------------------
     reg_d   = new_reg;
-    new_reg  = reg_q;
+    new_reg = reg_q;
 
     err     = w_err_q;
     w_err_d = 1'b0;
 
-    uart_reg_read.obi_write_thr = 1'b0;
+    uart_reg_read.obi_read_rhr  = 1'b0;
     uart_reg_read.obi_read_isr  = 1'b0;
     uart_reg_read.obi_read_lsr  = 1'b0;
     uart_reg_read.obi_read_msr  = 1'b0;
-    uart_reg_read.obi_read_rhr  = 1'b0;
+    uart_reg_read.obi_write_thr = 1'b0;
+    
     rsp_data = 32'h0;  
 
     //--------------------------------------------------------------------------------------------
@@ -95,6 +96,9 @@ module uart_register #(
     //--------------------------------------------------------------------------------------------
 
     //----UART-Intern-Writes----------------------------------------------------------------------
+    new_reg.strct.FCR[1] = uart_reg_write.fcr_rx_valid? uart_reg_write.fcr_rx_fifo_rst : reg_q.strct.FCR[1];
+    new_reg.strct.FCR[2] = uart_reg_write.fcr_tx_valid? uart_reg_write.fcr_tx_fifo_rst : reg_q.strct.FCR[2];
+
     new_reg.strct.RHR = uart_reg_write.rhr_valid? uart_reg_write.rhr.arr : reg_q.strct.RHR;
 
     new_reg.strct.ISR = uart_reg_write.isr_valid? uart_reg_write.isr.arr : reg_q.strct.ISR;
@@ -180,6 +184,7 @@ module uart_register #(
     //----UART-Intern-Reads-----------------------------------------------------------------------
     uart_reg_read.thr.arr = reg_q.strct.THR;
     uart_reg_read.ier.arr = reg_q.strct.IER;
+    uart_reg_read.isr.arr = reg_q.strct.ISR;
     uart_reg_read.fcr.arr = reg_q.strct.FCR;
     uart_reg_read.lcr.arr = reg_q.strct.LCR;
     uart_reg_read.mcr.arr = reg_q.strct.MCR;
@@ -230,7 +235,7 @@ module uart_register #(
           MSR_OFFSET: begin
             rsp_data[RegWidth-1:0]                = reg_q.strct.MSR;
             rsp_data[ObiCfg.DataWidth-1:RegWidth] = '0;
-            uart_reg_read.obi_read_lsr            = 1'b1;
+            uart_reg_read.obi_read_msr            = 1'b1;
           end
 
           SPR_OFFSET: begin

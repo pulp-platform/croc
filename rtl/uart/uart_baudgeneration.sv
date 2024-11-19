@@ -62,7 +62,7 @@ module uart_baudgeneration #()
   //--Edge-Detect---------------------------------------------------------------------------------
   assign serial_d = oversample_rate;
 
-  assign oversample_edge_o = (~serial_d) & serial_q;
+  assign oversample_rate_edge_o = (~serial_d) & serial_q;
   
   `FF(serial_q, serial_d, '0, clk_i, rst_ni)
 
@@ -71,7 +71,7 @@ module uart_baudgeneration #()
   //----------------------------------------------------------------------------------------------
 
   // Set Outptut
-  assign double_rate_o = double_rate;
+  assign double_baud_rate_o = double_rate;
 
   clk_int_div #(
     .DIV_VALUE_WIDTH      (16),

@@ -128,7 +128,7 @@ module uart_interrupts #()
       reg_write.isr_valid        = 1'b1;
 
       if (reg_read.obi_write_thr | 
-         (reg_read.obi_read_isr & (reg_write.isr.strct.id == 3'b001))) begin // Reset Interrupt
+         (reg_read.obi_read_isr & (reg_write.isr.strct.id == 3'b001))) begin // Reset Interrupt //TODO reg_write or read?
         timeout_intrpt             = 1'b0;
         reg_write.isr.strct.id     = 3'b000;
         reg_write.isr.strct.status = 1'b1;
