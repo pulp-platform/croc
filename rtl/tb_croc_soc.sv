@@ -42,6 +42,8 @@ module tb_croc_soc #(
     logic [GpioCount-1:0] gpio_o;            
     logic [GpioCount-1:0] gpio_out_en_o;
 
+    logic neopixel_data_o;
+
     // Register addresses
     localparam bit [31:0] BootAddrAddr   = croc_pkg::SocCtrlAddrOffset
                                            + soc_ctrl_reg_pkg::SOC_CTRL_BOOTADDR_OFFSET;
@@ -183,6 +185,33 @@ module tb_croc_soc #(
         end
     endtask
 
+
+    task automatic jtag_just_writing(
+        input logic [31:0] addr,
+        input logic [31:0] data
+    );
+        //automatic dm::sbcs_t sbcs = dm::sbcs_t'{sbaccess: 2, default: '0};
+        $display("@%t | [JTAG] Writing data: 0x%h to address: 0x%h", $time, data, addr);
+        //jtag_write(dm::SBCS, sbcs, 0, 1);
+        jtag_write(dm::SBAddress0, addr);
+        jtag_write(dm::SBData0, data);
+    endtask 
+
+
+    //writes data to the fifo
+    task automatic jtag_neopixel(
+        input logic [31:0] addr,
+        input logic [31:0] data,
+        input int unsigned idle_cycles = 10
+    );
+        automatic dm::sbcs_t sbcs = dm::sbcs_t'{sbaccess: 2, default: '0};
+        $display("@%t | [JTAG] Writing data: 0x%h to fifo address: 0x%h", $time, data, addr);
+        jtag_write(dm::SBCS, sbcs, 0, 1);
+        jtag_write(dm::SBAddress0, addr);
+        jtag_write(dm::SBData0, data);
+        jtag_dbg.wait_idle(idle_cycles);
+    endtask 
+
     task automatic jtag_write_reg32(
         input logic [31:0] addr,
         input logic [31:0] data,
@@ -202,6 +231,30 @@ module tb_croc_soc #(
             else $display("@%t | [JTAG] Read back correct data", $time);
         end
     endtask
+
+    //adds timing constraints to the register
+    task automatic jtag_fill_timingregister(
+        input logic [31:0] start_addr,
+        input logic [31:0] num_neopixel,
+        input logic [31:0] t1h,
+        input logic [31:0] t1l,
+        input logic [31:0] t0h,
+        input logic [31:0] t0l,
+        input logic [31:0] t_latch,
+        input logic [31:0] sleep,
+        input int unsigned idle_cycles = 10
+    );
+
+        $display("@%t | [JTAG] START: Writing to timing register for neopixel", $time);
+        jtag_write_reg32(start_addr, num_neopixel);
+        jtag_write_reg32(start_addr + 32'h 20, t1h);
+        jtag_write_reg32(start_addr + 32'h 40, t1l);
+        jtag_write_reg32(start_addr + 32'h 60, t0h);
+        jtag_write_reg32(start_addr + 32'h 80, t0l);
+        jtag_write_reg32(start_addr + 32'h A0, t_latch);
+        jtag_write_reg32(start_addr + 32'h C0, sleep);
+        $display("@%t | [JTAG] FINISHED: Writing to timing register for neopixel", $time);
+    endtask 
 
 
     // Load the binary formated as 32bit hex file
@@ -351,7 +404,6 @@ module tb_croc_soc #(
     endtask
 
     // Continually read characters and print lines
-    // TODO: we should be able to support CR properly, but buffers are hard to deal with...
     initial begin
         static byte_bt uart_read_buf[$];
         byte_bt bite;
@@ -393,7 +445,7 @@ module tb_croc_soc #(
     `else
         croc_soc #(
             .GpioCount ( GpioCount  )
-        ) i_croc_soc (
+        ) i_croc_soc  (
     `endif
         .clk_i         ( clk        ),
         .rst_ni        ( rst_n      ),
@@ -413,11 +465,12 @@ module tb_croc_soc #(
 
         .gpio_i        ( gpio_i        ),             
         .gpio_o        ( gpio_o        ),            
-        .gpio_out_en_o ( gpio_out_en_o )
+        .gpio_out_en_o ( gpio_out_en_o ),
+
+        .neopixel_data_o ( neopixel_data_o )
     );
 
-    assign gpio_i[ 3:0] = '0;
-    assign gpio_i[ 7:4] = gpio_out_en_o[3:0] & gpio_o[3:0];
+    assign gpio_i = '0;
 
 
     /////////////////
@@ -426,6 +479,11 @@ module tb_croc_soc #(
 
     logic [31:0] tb_data;
     logic [31:0] rom_data;
+    //logic [31:0] neopixel_data;
+    //array for neopixel testbench
+    logic [31:0] neopixel_obi_data[] = '{32'hDEAD_BEEF, 32'hCAFE_BABE, 32'hFEED_FACE, 32'hFEED_BABE, 32'h1111_1111};
+    logic [31:0] neopixel_dma_data[] = '{32'h0DAD_1234, 32'hCAFE_FADE, 32'h5555_ACED, 32'hFFFF_7871, 32'h8888_1111, 32'h8888_EDEF};
+    logic [31:0] neopixel_dma_data2[] = '{32'h0AAA_1234, 32'hDDDD_FADE, 32'hEDED_ACED, 32'hFAFA_DADA, 32'hDEAD_1111, 32'h8888_DEDE};
 
     initial begin
         $timeformat(-9, 0, "ns", 12); // 1: scale (ns=-9), 2: decimals, 3: suffix, 4: print-field width
@@ -448,7 +506,49 @@ module tb_croc_soc #(
         jtag_write_reg32(croc_pkg::SramBaseAddr, 32'h1234_5678, 1'b1);
 
         // read value from rom
-        jtag_read_string(32'h1000_1000);
+        jtag_read_string(user_pkg::UserRomAddrOffset);
+
+        // read value from rom
+        jtag_read_string(user_pkg::UserRomAddrOffset);
+
+        // write to timing register for the neopixel controller
+        jtag_fill_timingregister(neopixel_pkg::NeoPixelRegisterAddrOffset + 11'h 40, 32'd2, 32'd8, 32'd4, 32'd4, 32'd8, 32'd500, 32'd1_000);
+
+        // write to fifo in neopixel using OBI
+        $display("@%t | [JTAG] START: Writing to fifo for neopixel", $time);
+        jtag_write_reg32(neopixel_pkg::NeoPixelRegisterAddrOffset + neopixel_pkg::FIFO_ACCESS_OFFSET, 1'b1);
+        foreach (neopixel_obi_data[i]) begin
+            jtag_write_reg32(neopixel_pkg::NeoPixelFifoAddrOffset + i * 32, neopixel_obi_data[i], 0, 0);
+        end
+        foreach (neopixel_obi_data[i]) begin
+            jtag_write_reg32(neopixel_pkg::NeoPixelFifoAddrOffset + i * 32, neopixel_obi_data[i], 0, 5);
+        end
+        $display("@%t | [JTAG] FINISHED: Writing to fifo for neopixel", $time);
+        //jtag_write_reg32(neopixel_pkg::NeoPixelRegisterAddrOffset + 11'h 40, 32'd2);
+        //testing if the dma works
+        $display("@%t | [JTAG] START: Writing data1 to SRAM for neopixel_dma", $time);
+        foreach (neopixel_dma_data[i])begin
+            jtag_write_reg32(croc_pkg::SramBaseAddr + (i) * 4 + 884, neopixel_dma_data[i], 1, 5);
+        end
+        $display("@%t | [JTAG] FINISHED: Writing data1 to SRAM for neopixel_dma", $time);
+        $display("@%t | [JTAG] START: Writing to Register for neopixel_dma", $time);
+        jtag_write_reg32(neopixel_pkg::NeoPixelRegisterAddrOffset + neopixel_pkg::FIFO_ACCESS_OFFSET, 2'b10);
+        jtag_write_reg32(neopixel_pkg::NeoPixelRegisterAddrOffset + neopixel_pkg::DMA_SRC_ADDR_OFFSET, croc_pkg::SramBaseAddr + 884);
+        jtag_write_reg32(neopixel_pkg::NeoPixelRegisterAddrOffset + neopixel_pkg::DMA_NUM_BYTES_OFFSET, 4*4);
+        jtag_write_reg32(neopixel_pkg::NeoPixelRegisterAddrOffset + neopixel_pkg::DMA_VALID_OFFSET, 1'b1, 0, 0);
+        $display("@%t | [JTAG] START: Writing data2 to SRAM for neopixel_dma", $time);
+        foreach (neopixel_dma_data2[i])begin
+            jtag_write_reg32(croc_pkg::SramBaseAddr + (i+6) * 4 + 884 , neopixel_dma_data[i], 1, 5);
+        end
+        jtag_write_reg32(neopixel_pkg::NeoPixelRegisterAddrOffset + neopixel_pkg::DMA_VALID_OFFSET, 1'b0, 0, 0);
+        $display("@%t | [JTAG] FINISHED: Writing data2 to SRAM for neopixel_dma", $time);
+        jtag_write_reg32(neopixel_pkg::NeoPixelRegisterAddrOffset + neopixel_pkg::DMA_SRC_ADDR_OFFSET, croc_pkg::SramBaseAddr + 884 + 16);
+        jtag_write_reg32(neopixel_pkg::NeoPixelRegisterAddrOffset + neopixel_pkg::DMA_NUM_BYTES_OFFSET, 4*8);
+        jtag_write_reg32(neopixel_pkg::NeoPixelRegisterAddrOffset + neopixel_pkg::DMA_VALID_OFFSET, 1'b1, 0, 0);
+        $display("@%t | [JTAG] FINISHED: Writing to Register for neopixel_dma", $time);
+        //jtag_write_reg32(neopixel_pkg::NeoPixelRegisterAddrOffset + neopixel_pkg::FIFO_ACCESS_OFFSET, 2'b00);
+        jtag_dbg.wait_idle(30);
+        
 
         // load binary to sram
         jtag_load_hex("../sw/bin/helloworld.hex");
