@@ -26,7 +26,9 @@ module croc_soc import croc_pkg::*; #(
 
   input  logic [GpioCount-1:0] gpio_i,       // Input from GPIO pins
   output logic [GpioCount-1:0] gpio_o,       // Output to GPIO pins
-  output logic [GpioCount-1:0] gpio_out_en_o // Output enable signal; 0 -> input, 1 -> output
+  output logic [GpioCount-1:0] gpio_out_en_o, // Output enable signal; 0 -> input, 1 -> output
+
+  output logic neopixel_data_o
 );
 
   logic synced_rst_n, synced_fetch_en;
@@ -90,8 +92,9 @@ croc_domain #(
   .user_mgr_obi_req_i  ( user_mgr_obi_req ),
   .user_mgr_obi_rsp_o  ( user_mgr_obi_rsp ),
 
+  .irq0_i       ( synced_irq0 ),
   .interrupts_i ( interrupts  ),
-  .core_busy_o  ( status_o    )
+  .core_sleep_o ( status_o    )
 );
 
 user_domain #(
@@ -109,7 +112,9 @@ user_domain #(
   .user_mgr_obi_rsp_i ( user_mgr_obi_rsp ),
 
   .gpio_in_sync_i ( gpio_in_sync ),
-  .interrupts_o   ( interrupts   )
+  .interrupts_o   ( interrupts   ),
+
+  .neopixel_data_o
 );
 
 endmodule

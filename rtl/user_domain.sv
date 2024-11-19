@@ -22,19 +22,73 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   input  mgr_obi_rsp_t user_mgr_obi_rsp_i,
 
   input  logic [      GpioCount-1:0] gpio_in_sync_i, // synchronized GPIO inputs
-  output logic [NumExternalIrqs-1:0] interrupts_o // interrupts to core
-);
-  
-  assign interrupts_o = '0;   
+  output logic [NumExternalIrqs-1:0] interrupts_o, // interrupts to core
 
+  output logic neopixel_data_o
+);  
 
-  //////////////////////
+import gpio_reg_pkg::*;
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   // User Manager MUX //
-  /////////////////////
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  
+  // --------------------------------------------------------------------------------------------------------------
+  // User`s Manager Buses
+  // --------------------------------------------------------------------------------------------------------------
 
-  // No manager so we don't need a obi_mux module and just terminate the request properly
-  assign user_mgr_obi_req_o = '0;
+  mgr_obi_req_t [NumUserMgr-1:0] all_user_mgr_obi_req;
+  mgr_obi_rsp_t [NumUserMgr-1:0] all_user_mgr_obi_rsp;
 
+  // Neopixel (DMA) Manager Bus
+  mgr_obi_req_t user_mgr_dma_obi_req; 
+  mgr_obi_rsp_t user_mgr_dma_obi_rsp;
+
+  // Placeholder Manager Bus
+  mgr_obi_req_t user_mgr_test1_obi_req;
+  assign user_mgr_test1_obi_req = '0;
+  mgr_obi_rsp_t user_mgr_test1_obi_rsp;
+
+  assign all_user_mgr_obi_req[Dma]  = user_mgr_dma_obi_req; 
+  assign user_mgr_dma_obi_rsp       = all_user_mgr_obi_rsp[Dma];
+
+  assign all_user_mgr_obi_req[Test1]  = user_mgr_test1_obi_req;
+  assign user_mgr_test1_obi_rsp       = all_user_mgr_obi_rsp[Test1];
+
+  //----------------------------------------------------------------------------------------------------
+  // User Manager ///
+  //----------------------------------------------------------------------------------------------------
+  
+  // We have a DMA which is a Manager but since it is include in neopixel.sv which has a Manager 
+  // and Subrodinates.
+  // You will find the module in the User Subordinate section
+
+  // terminate manager
+
+  //----------------------------------------------------------------------------------------------------
+  // multiplex to croc subordinates 
+  //----------------------------------------------------------------------------------------------------
+
+  obi_mux #(
+      .SbrPortObiCfg      ( MgrObiCfg         ),
+      .MgrPortObiCfg      ( MgrObiCfg         ),
+      .sbr_port_obi_req_t ( mgr_obi_req_t     ), 
+      .sbr_port_a_chan_t  ( mgr_obi_a_chan_t  ),
+      .sbr_port_obi_rsp_t ( mgr_obi_rsp_t     ),
+      .sbr_port_r_chan_t  ( mgr_obi_r_chan_t  ),
+      .mgr_port_obi_req_t ( mgr_obi_req_t     ),
+      .mgr_port_obi_rsp_t ( mgr_obi_rsp_t     ),
+      .NumSbrPorts        ( NumUserMgr        ), 
+      .NumMaxTrans        ( 2                 ), 
+      .UseIdForRouting    ('0 )  
+    ) i_mux (
+      .clk_i,
+      .rst_ni,
+      .testmode_i      ( test_enable_i           ), 
+      .sbr_ports_req_i ( all_user_mgr_obi_req    ), //those are all the user managers inputed in the mux as an array
+      .sbr_ports_rsp_o ( all_user_mgr_obi_rsp    ),
+      .mgr_port_req_o  ( user_mgr_obi_req_o      ), //this is THE mgr (from users) that got selected(with round robin) 
+      .mgr_port_rsp_i  ( user_mgr_obi_rsp_i      )  //and is also NOT an array
+  );
 
   ////////////////////////////
   // User Subordinate DEMUX //
@@ -57,12 +111,18 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   sbr_obi_rsp_t user_error_obi_rsp;
 
   // Fanout into more readable signals
+  // Neopixel Subordinate Bus
+  sbr_obi_req_t user_neopixel_obi_req;
+  sbr_obi_rsp_t user_neopixel_obi_rsp;
+
   assign user_error_obi_req              = all_user_sbr_obi_req[UserError];
   assign all_user_sbr_obi_rsp[UserError] = user_error_obi_rsp;
 
   assign user_rom_obi_req                = all_user_sbr_obi_req[UserRom];
   assign all_user_sbr_obi_rsp[UserRom]   = user_rom_obi_rsp;
 
+  assign user_neopixel_obi_req                = all_user_sbr_obi_req[UserNeopixel];
+  assign all_user_sbr_obi_rsp[UserNeopixel]   = user_neopixel_obi_rsp;
 
   //-----------------------------------------------------------------------------------------------
   // Demultiplex to User Subordinates according to address map
@@ -135,5 +195,36 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
     .obi_req_i  ( user_error_obi_req ),
     .obi_rsp_o  ( user_error_obi_rsp )
   );
+
+  // Neopixel Subordinate (+ Manager Port)
+  logic neopixel_fifo_interrupt;
+
+  neopixel #(
+    .SbrObiCfg      ( SbrObiCfg           ),
+    .sbr_obi_req_t      ( sbr_obi_req_t       ),
+    .sbr_obi_rsp_t      ( sbr_obi_rsp_t       ),
+    .MgrObiCfg      ( MgrObiCfg           ),
+    .mgr_obi_req_t  ( mgr_obi_req_t       ),
+    .mgr_obi_rsp_t  ( mgr_obi_rsp_t       )
+  ) i_neopixel (
+    .clk_i,
+    .rst_ni,
+    .testmode_i ( test_enable_i ),
+
+    .obi_req_i  ( user_neopixel_obi_req ),
+    .obi_rsp_o  ( user_neopixel_obi_rsp ),
+
+    .mgr_obi_req_o ( user_mgr_dma_obi_req ),
+    .mgr_obi_rsp_i ( user_mgr_dma_obi_rsp ),
+
+    .fifo_interrupt_o ( neopixel_fifo_interrupt ),
+    
+    .data_o ( neopixel_data_o )
+  );
+
+  always_comb begin
+    interrupts_o = '0; 
+    interrupts_o[0] = neopixel_fifo_interrupt; 
+  end
 
 endmodule
