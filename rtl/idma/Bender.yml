@@ -1,0 +1,49 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
+# Authors:
+# - Thomas Benz <tbenz@iis.ee.ethz.ch>
+
+package:
+  name: idma
+  authors:
+    - "Thomas Benz <tbenz@iis.ee.ethz.ch>" # current maintainer
+    - "Michael Rogenmoser <michaero@iis.ee.ethz.ch>"
+    - "Tobias Senti <tsenti@ethz.ch>"
+    - "Axel Vanoni <axvanoni@ethz.ch>"
+
+dependencies:
+  common_cells:        { git: "https://github.com/pulp-platform/common_cells.git",        version: 1.33.0 }
+  common_verification: { git: "https://github.com/pulp-platform/common_verification.git", version: 0.2.3  }
+  register_interface:  { git: "https://github.com/pulp-platform/register_interface.git",  version: 0.4.3  }
+  obi:                 { git: "https://github.com/pulp-platform/obi.git",                 version: 0.1.2  }
+
+export_include_dirs:
+  - include
+
+sources:
+  # Source files grouped in levels. Files in level 0 have no dependencies on files in this
+  # package. Files in level 1 only depend on files in level 0, files in level 2 on files in
+  # levels 1 and 0, etc. Files within a level are ordered alphabetically.
+  - target: rtl
+    files:
+      # Level 0
+      - idma_pkg.sv
+      # Level 1
+      - idma_dataflow_element.sv
+      - idma_error_handler.sv
+      - idma_init_read.sv
+      - idma_init_write.sv
+      - idma_legalizer_page_splitter.sv
+      - idma_obi_read.sv
+      - idma_obi_write.sv
+
+  # Generated content
+  - target: rtl
+    files:
+      # Level 1
+      - idma_legalizer_r_obi_w_init.sv
+      - idma_transport_layer_r_obi_w_init.sv
+      # Level 2
+      - idma_backend_r_obi_w_init.sv

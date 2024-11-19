@@ -1,0 +1,45 @@
+From 2a6229b936328d5bc84c8c489e47286104c402f8 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Tue, 12 Nov 2024 10:32:24 +0100
+Subject: [PATCH] remove axi dependency
+
+---
+ idma_pkg.sv | 22 ++++++++++++++--------
+ 1 file changed, 14 insertions(+), 8 deletions(-)
+
+diff --git a/idma_pkg.sv b/idma_pkg.sv
+index 808319a..357cb3e 100644
+--- a/idma_pkg.sv
++++ b/idma_pkg.sv
+@@ -58,14 +58,20 @@ package idma_pkg;
+     } idma_busy_t;
+ 
+     /// AXI4 option type: contains the AXI4 options fields
+-    typedef struct packed {
+-        axi_pkg::burst_t  burst;
+-        axi_pkg::cache_t  cache;
+-        logic             lock;
+-        axi_pkg::prot_t   prot;
+-        axi_pkg::qos_t    qos;
+-        axi_pkg::region_t region;
+-    } axi_options_t;
++    typedef logic axi_options_t; // not used for OBI
++
++
++    // Following are copied from axi_pkg to decouple dependencies
++    /// Transaction Response Type.
++    typedef logic [1:0] resp_t;
++    /// Transaction Length Type.
++    typedef logic [7:0] len_t;
++    /// This burst type is used for accesses to normal sequential memory.
++    localparam BURST_INCR  = 2'b01;
++    /// Normal access success.  Indicates that a normal access has been successful. Can also indicate
++    /// that an exclusive access has failed.
++    localparam RESP_OKAY   = 2'b00;
++
+ 
+     /// Backend option type:
+     /// - `decouple_aw`: `AWs` will only be sent after the first corresponding `R` is received
+-- 
+2.25.1
+

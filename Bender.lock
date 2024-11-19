@@ -35,6 +35,16 @@ packages:
       Path: rtl/cve2
     dependencies:
     - tech_cells_generic
+  idma:
+    revision: null
+    version: null
+    source:
+      Path: rtl/idma
+    dependencies:
+    - common_cells
+    - common_verification
+    - obi
+    - register_interface
   obi:
     revision: null
     version: null

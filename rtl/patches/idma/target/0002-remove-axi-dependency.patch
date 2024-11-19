@@ -1,0 +1,66 @@
+From 28333984c5f532f0ce2645b29fb13bbf284d170e Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Tue, 12 Nov 2024 10:32:43 +0100
+Subject: [PATCH] remove axi dependency
+
+---
+ idma_backend_r_obi_w_init.sv | 15 +++++++--------
+ 1 file changed, 7 insertions(+), 8 deletions(-)
+
+diff --git a/idma_backend_r_obi_w_init.sv b/idma_backend_r_obi_w_init.sv
+index 7d52880..c8321fa 100644
+--- a/idma_backend_r_obi_w_init.sv
++++ b/idma_backend_r_obi_w_init.sv
+@@ -6,7 +6,6 @@
+ // - Thomas Benz <tbenz@iis.ee.ethz.ch>
+ // - Tobias Senti <tsenti@ethz.ch>
+ 
+-`include "axi/typedef.svh"
+ `include "idma/guard.svh"
+ 
+ /// The iDMA backend implements an arbitrary 1D copy engine
+@@ -153,9 +152,9 @@ module idma_backend_r_obi_w_init #(
+     /// - `last`: The last flag from the R channel of the AXI4 manager interface
+     /// - `first`: Is the current item first beat in the burst
+     typedef struct packed {
+-        axi_pkg::resp_t resp;
+-        logic           last;
+-        logic           first;
++        idma_pkg::resp_t resp;
++        logic            last;
++        logic            first;
+     } r_dp_rsp_t;
+ 
+     /// The datapath write request type holds all the information required to configure the write
+@@ -171,7 +170,7 @@ module idma_backend_r_obi_w_init #(
+         offset_t             offset;
+         offset_t             tailer;
+         offset_t             shift;
+-        axi_pkg::len_t       num_beats;
++        idma_pkg::len_t      num_beats;
+         logic                is_single;
+     } w_dp_req_t;
+ 
+@@ -179,8 +178,8 @@ module idma_backend_r_obi_w_init #(
+     /// - `resp`: The response from the B channel of the AXI4 manager interface
+     /// - `user`: The user field from the B channel of the AXI4 manager interface
+     typedef struct packed {
+-        axi_pkg::resp_t resp;
+-        user_t          user;
++        idma_pkg::resp_t resp;
++        user_t           user;
+     } w_dp_rsp_t;
+ 
+     /// The iDMA read request bundles an `AR` type and a datapath read response type together.
+@@ -377,7 +376,7 @@ module idma_backend_r_obi_w_init #(
+         );
+ 
+         // local signal holding the length -> explicitly only doing the computation once
+-        axi_pkg::len_t len;
++        idma_pkg::len_t len;
+         assign len = ((idma_req_i.length + idma_req_i.src_addr[OffsetWidth-1:0] -
+                      'd1) >> OffsetWidth);
+ 
+-- 
+2.25.1
+

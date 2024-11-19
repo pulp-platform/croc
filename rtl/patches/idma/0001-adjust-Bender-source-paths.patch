@@ -1,0 +1,146 @@
+From a98bd20bf1d4ff8d1250389fb2f027fd680cdf1f Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Tue, 12 Nov 2024 10:39:18 +0100
+Subject: [PATCH] adjust Bender source paths
+
+---
+ Bender.yml | 105 ++++++-----------------------------------------------
+ 1 file changed, 12 insertions(+), 93 deletions(-)
+
+diff --git a/Bender.yml b/Bender.yml
+index 9a0972b..68c4aed 100644
+--- a/Bender.yml
++++ b/Bender.yml
+@@ -14,17 +14,13 @@ package:
+     - "Axel Vanoni <axvanoni@ethz.ch>"
+ 
+ dependencies:
+-  axi:                 { git: "https://github.com/pulp-platform/axi.git",                 version: 0.39.1 }
+-  axi_stream:          { git: "https://github.com/pulp-platform/axi_stream.git",          version: 0.1.1  }
+   common_cells:        { git: "https://github.com/pulp-platform/common_cells.git",        version: 1.33.0 }
+   common_verification: { git: "https://github.com/pulp-platform/common_verification.git", version: 0.2.3  }
+   register_interface:  { git: "https://github.com/pulp-platform/register_interface.git",  version: 0.4.3  }
+   obi:                 { git: "https://github.com/pulp-platform/obi.git",                 version: 0.1.2  }
+ 
+ export_include_dirs:
+-  - src/include
+-  - target/rtl/include
+-  - test
++  - include
+ 
+ sources:
+   # Source files grouped in levels. Files in level 0 have no dependencies on files in this
+@@ -33,98 +29,21 @@ sources:
+   - target: rtl
+     files:
+       # Level 0
+-      - src/idma_pkg.sv
++      - idma_pkg.sv
+       # Level 1
+-      - src/backend/idma_axil_read.sv
+-      - src/backend/idma_axil_write.sv
+-      - src/backend/idma_axi_read.sv
+-      - src/backend/idma_axi_write.sv
+-      - src/backend/idma_axis_read.sv
+-      - src/backend/idma_axis_write.sv
+-      - src/backend/idma_channel_coupler.sv
+-      - src/backend/idma_dataflow_element.sv
+-      - src/backend/idma_error_handler.sv
+-      - src/backend/idma_init_read.sv
+-      - src/backend/idma_init_write.sv
+-      - src/backend/idma_legalizer_page_splitter.sv
+-      - src/backend/idma_legalizer_pow2_splitter.sv
+-      - src/backend/idma_obi_read.sv
+-      - src/backend/idma_obi_write.sv
+-      - src/backend/idma_tilelink_read.sv
+-      - src/backend/idma_tilelink_write.sv
++      - idma_dataflow_element.sv
++      - idma_error_handler.sv
++      - idma_init_read.sv
++      - idma_init_write.sv
++      - idma_legalizer_page_splitter.sv
++      - idma_obi_read.sv
++      - idma_obi_write.sv
+ 
+   # Generated content
+   - target: rtl
+     files:
+-      - target/rtl/idma_generated.sv
+-
+-  # Midends
+-  - target: rtl
+-    files:
+-      # Level 0
+-      - src/midend/idma_mp_dist_midend.sv
+-      - src/midend/idma_mp_split_midend.sv
+-      - src/midend/idma_nd_midend.sv
+-      - src/midend/idma_rt_midend.sv
+-
+-  # RISC-V opcode package for ooc use of inst64
+-  - target: all(rtl,snitch_cluster)
+-    files:
+-      # Level 0
+-      - src/frontend/inst64/idma_inst64_snitch_pkg.sv
+-
+-  # Frontends
+-  - target: rtl
+-    files:
+-      # Level 0
+-      - src/frontend/desc64/idma_desc64_ar_gen.sv
+-      - src/frontend/desc64/idma_desc64_ar_gen_prefetch.sv
+-      - src/frontend/desc64/idma_desc64_reader.sv
+-      - src/frontend/desc64/idma_desc64_reader_gater.sv
+-      - src/frontend/desc64/idma_desc64_reshaper.sv
+-      - src/frontend/idma_transfer_id_gen.sv
+-      - target: snitch_cluster
+-        files:
+-          - src/frontend/inst64/idma_inst64_events.sv
+       # Level 1
+-      - src/frontend/desc64/idma_desc64_reg_wrapper.sv
+-      - target: snitch_cluster
+-        files:
+-          - src/frontend/inst64/idma_inst64_top.sv
++      - idma_legalizer_r_obi_w_init.sv
++      - idma_transport_layer_r_obi_w_init.sv
+       # Level 2
+-      - src/frontend/desc64/idma_desc64_top.sv
+-
+-  # Synthesis wrappers
+-  - target: synth
+-    files:
+-      # Level 0
+-      - src/frontend/desc64/idma_desc64_synth_pkg.sv
+-      - src/midend/idma_mp_midend_synth_pkg.sv
+-      - src/midend/idma_nd_midend_synth.sv
+-      - src/midend/idma_rt_midend_synth_pkg.sv
+-      # Level 1
+-      - src/frontend/desc64/idma_desc64_synth.sv
+-      - src/midend/idma_mp_midend_synth.sv
+-      - src/midend/idma_rt_midend_synth.sv
+-
+-  # Testbenches
+-  - target: idma_test
+-    files:
+-      # Level 0
+-      - test/idma_intf.sv
+-      - test/idma_test.sv
+-      # Level 1
+-      - test/frontend/tb_idma_desc64_top.sv
+-      - test/frontend/tb_idma_desc64_bench.sv
+-      - test/future/idma_tb_per2axi.sv
+-      - test/future/TLToAXI4.v
+-      - test/midend/tb_idma_nd_midend.sv
+-      - test/midend/tb_idma_rt_midend.sv
+-      # Level 2
+-      - test/future/idma_obi2axi_bridge.sv
+-      - test/future/idma_tilelink2axi_bridge.sv
+-
+-  # Generated content
+-  - target: idma_test
+-    files:
+-      - target/rtl/tb_idma_generated.sv
++      - idma_backend_r_obi_w_init.sv
+\ No newline at end of file
+-- 
+2.25.1
+

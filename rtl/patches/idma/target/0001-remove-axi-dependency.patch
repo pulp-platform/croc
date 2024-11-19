@@ -1,0 +1,28 @@
+From 8c5d59374d87626cbb19b61ba03129f7b668341d Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Tue, 12 Nov 2024 10:32:36 +0100
+Subject: [PATCH] remove axi dependency
+
+---
+ idma_legalizer_r_obi_w_init.sv | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/idma_legalizer_r_obi_w_init.sv b/idma_legalizer_r_obi_w_init.sv
+index 08e6beb..826d8b8 100644
+--- a/idma_legalizer_r_obi_w_init.sv
++++ b/idma_legalizer_r_obi_w_init.sv
+@@ -406,9 +406,9 @@ module idma_legalizer_r_obi_w_init #(
+     //--------------------------------------
+     // only support the decomposition of incremental bursts
+     `ASSERT_NEVER(OnlyIncrementalBurstsSRC, (ready_o & valid_i &
+-                  req_i.opt.src.burst != axi_pkg::BURST_INCR), clk_i, !rst_ni)
++                  req_i.opt.src.burst != idma_pkg::BURST_INCR), clk_i, !rst_ni)
+     `ASSERT_NEVER(OnlyIncrementalBurstsDST, (ready_o & valid_i &
+-                  req_i.opt.dst.burst != axi_pkg::BURST_INCR), clk_i, !rst_ni)
++                  req_i.opt.dst.burst != idma_pkg::BURST_INCR), clk_i, !rst_ni)
+ 
+ endmodule
+ 
+-- 
+2.25.1
+

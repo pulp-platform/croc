@@ -1,0 +1,25 @@
+From 9403425da2c80d2613670f9e9ae7b354caae5f4f Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Tue, 12 Nov 2024 10:32:10 +0100
+Subject: [PATCH] remove axi dependency
+
+---
+ typedef.svh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/typedef.svh b/typedef.svh
+index a02a815..3555571 100644
+--- a/typedef.svh
++++ b/typedef.svh
+@@ -30,7 +30,7 @@
+     } options_t;
+ `define IDMA_TYPEDEF_ERR_PAYLOAD_T(err_payload_t, axi_addr_t)            \
+     typedef struct packed {                                              \
+-        axi_pkg::resp_t      cause;                                      \
++        idma_pkg::resp_t      cause;                                     \
+         idma_pkg::err_type_t err_type;                                   \
+         axi_addr_t           burst_addr;                                 \
+     } err_payload_t;
+-- 
+2.25.1
+

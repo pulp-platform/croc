@@ -1,0 +1,43 @@
+From 5fe9e49e0a2db23bc960f421df759fee1ee90ba4 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Tue, 12 Nov 2024 10:32:30 +0100
+Subject: [PATCH] remove axi dependency
+
+---
+ idma_error_handler.sv | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/idma_error_handler.sv b/idma_error_handler.sv
+index d2bd12a..170f018 100644
+--- a/idma_error_handler.sv
++++ b/idma_error_handler.sv
+@@ -230,7 +230,7 @@ module idma_error_handler #(
+                 w_dp_ready_o = rsp_ready_i;
+ 
+                 // a proper write response (lowest priority)
+-                if (w_dp_rsp_i.resp == axi_pkg::RESP_OKAY & w_dp_valid_i & w_last_burst_i) begin
++                if (w_dp_rsp_i.resp == idma_pkg::RESP_OKAY & w_dp_valid_i & w_last_burst_i) begin
+                     rsp_o       =  '0;
+                     rsp_o.last  = w_super_last_i;
+                     rsp_valid_o = 1'b1;
+@@ -238,7 +238,7 @@ module idma_error_handler #(
+                 end
+ 
+                 // jump to wait if a write error happens (mid priority)
+-                if (w_dp_rsp_i.resp != axi_pkg::RESP_OKAY & w_dp_valid_i) begin
++                if (w_dp_rsp_i.resp != idma_pkg::RESP_OKAY & w_dp_valid_i) begin
+                     // assemble error package
+                     rsp_o.error          = 1'b1;
+                     rsp_o.last           = w_super_last_i;
+@@ -258,7 +258,7 @@ module idma_error_handler #(
+                 end
+ 
+                 // jump to wait if a read error happens (highest priority)
+-                if (r_dp_rsp_i.resp != axi_pkg::RESP_OKAY & r_dp_valid_i) begin
++                if (r_dp_rsp_i.resp != idma_pkg::RESP_OKAY & r_dp_valid_i) begin
+                     // assemble error package
+                     rsp_o.error          = 1'b1;
+                     rsp_o.last           = w_super_last_i;
+-- 
+2.25.1
+

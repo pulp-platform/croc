@@ -19,7 +19,7 @@ dependencies:
   timer_unit:           { git: "https://github.com/pulp-platform/timer_unit.git",           version: 1.0.3  }
   obi:                  { git: "https://github.com/pulp-platform/obi.git",                  version: 0.1.3  }
   apb_uart:             { git: "https://github.com/pulp-platform/apb_uart.git",             version: 0.2.1  }
-
+  idma :                { git: "https://github.com/pulp-platform/idma.git",                 rev: "__deploy__d15cf7e__neopxdma-tbenz" }
 
 sources:
   # Level 0
@@ -85,7 +85,7 @@ vendor_package:
 
   - name: common_verification
     target_dir: rtl/common_verification
-    upstream: { git: "https://github.com/pulp-platform/common_verification.git", rev: "e1180111e2bb9def1eb790d96a3a65993b84536f" } # branch verilator-fix
+    upstream: { git: "https://github.com/pulp-platform/common_verification.git", rev: "e1180111e2bb9def1eb790d96a3a65993b84536f" } # branch: verilator-fix
     patch_dir: "rtl/patches/common_verification"
     mapping:
       - { from: 'src/clk_rst_gen.sv', to: 'clk_rst_gen.sv', patch_dir: 'src/' }
@@ -140,13 +140,33 @@ vendor_package:
       - { from: 'Bender.yml',     to: 'Bender.yml',   patch_dir: '' }
       - { from: 'README.md',      to: 'README.md',    patch_dir: '' }
 
+  - name: idma
+    target_dir: rtl/idma
+    upstream: { git: "https://github.com/pulp-platform/idma.git", rev: "15114926e81b31b7f6cc118ae998e2948eb23b9f" } # branch: __deploy__d15cf7e__neopxdma-tbenz
+    patch_dir: "rtl/patches/idma"
+    mapping:
+      - { from: 'src/idma_pkg.sv',                                 to: 'idma_pkg.sv',                          patch_dir: 'src/' }
+      - { from: 'src/backend/idma_obi_read.sv',                    to: 'idma_obi_read.sv',                     patch_dir: 'src/' }
+      - { from: 'src/backend/idma_obi_write.sv',                   to: 'idma_obi_write.sv',                    patch_dir: 'src/' }
+      - { from: 'src/backend/idma_init_read.sv',                   to: 'idma_init_read.sv',                    patch_dir: 'src/' }
+      - { from: 'src/backend/idma_init_write.sv',                  to: 'idma_init_write.sv',                   patch_dir: 'src/' }
+      - { from: 'src/backend/idma_error_handler.sv',               to: 'idma_error_handler.sv',                patch_dir: 'src/' }
+      - { from: 'src/backend/idma_dataflow_element.sv',            to: 'idma_dataflow_element.sv',             patch_dir: 'src/' }
+      - { from: 'src/backend/idma_legalizer_page_splitter.sv',     to: 'idma_legalizer_page_splitter.sv',      patch_dir: 'src/' }
+      - { from: 'target/rtl/idma_transport_layer_r_obi_w_init.sv', to: 'idma_transport_layer_r_obi_w_init.sv', patch_dir: 'target/' }
+      - { from: 'target/rtl/idma_legalizer_r_obi_w_init.sv',       to: 'idma_legalizer_r_obi_w_init.sv',       patch_dir: 'target/' }
+      - { from: 'target/rtl/idma_backend_r_obi_w_init.sv',         to: 'idma_backend_r_obi_w_init.sv',         patch_dir: 'target/' }
+      - { from: 'src/include/idma/',                               to: 'include/idma/',                        patch_dir: 'include/' }
+      - { from: 'Bender.yml',                                      to: 'Bender.yml',                           patch_dir: '' }
+      - { from: 'README.md',                                       to: 'README.md',                            patch_dir: '' }
+
 
   ###############
   # peripherals #
   ###############
   - name: riscv-dbg
     target_dir: rtl/riscv-dbg
-    upstream: { git: "https://github.com/pulp-platform/riscv-dbg.git", rev: "8ef87abf81cab39ad7b52435aa2a3357678fa1d6" } # branch verilator-phsauter
+    upstream: { git: "https://github.com/pulp-platform/riscv-dbg.git", rev: "8ef87abf81cab39ad7b52435aa2a3357678fa1d6" } # branch: verilator-phsauter
     patch_dir: "rtl/patches/riscv-dbg"
     mapping:
       - { from: 'src/',                               to: '',                                   patch_dir: 'src/' }
