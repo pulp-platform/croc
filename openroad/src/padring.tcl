@@ -38,7 +38,7 @@ make_io_sites -horizontal_site sg13g2_ioSite \
     -offset 0 \
     -rotation_horizontal R0 \
     -rotation_vertical R0 \
-    -rotation_corner MY
+    -rotation_corner R0
 
 set padD    180; # pad depth (edge to core)
 set padW     80; # pad width (beachfront)
