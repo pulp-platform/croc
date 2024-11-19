@@ -36,7 +36,9 @@ for i in main_layout.each_cell():
 
 # Load in the gds to merge
 print("[INFO] Merging GDS/OAS files...")
-for fil in in_files.split():
+with open(gds_flist, 'rb') as file:
+    in_files_list = file.read()
+for fil in in_files_list.split():
   print("\t{0}".format(fil))
   main_layout.read(fil)
 
