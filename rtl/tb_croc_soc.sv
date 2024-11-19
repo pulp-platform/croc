@@ -396,7 +396,8 @@ module tb_croc_soc #(
         .gpio_out_en_o ( gpio_out_en_o )
     );
 
-    assign gpio_i = '0;
+    assign gpio_i[ 3:0] = '0;
+    assign gpio_i[ 7:4] = gpio_out_en_o[3:0] & gpio_o[3:0];
 
 
     /////////////////
