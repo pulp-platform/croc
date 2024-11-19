@@ -45,7 +45,8 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
   logic                           valid_d, valid_q;         // delayed to the response phase
   logic                           we_d, we_q;               // delayed to the response phase
   logic                           req_d, req_q;             // delayed to the response phase
-  logic [AddressWidth-1:0]        word_addr_d, word_addr_q; // delayed to the response phase
+  logic [AddressWidth-1:0]        write_addr;               // in request phase (word addr)
+  logic [AddressWidth-1:0]        read_addr_d, read_addr_q; // delayed to the response phase (word addr)
   logic [ObiCfg.IdWidth-1:0]      id_d, id_q;               // delayed to the response phase
   logic                           obi_err;
   logic                           w_err_d, w_err_q;         // delay write error to response phase
@@ -65,20 +66,21 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
 
   // internally used signals
   assign obi_wdata         = obi_req_i.a.wdata;
-  assign obi_read_request  = req_q & we_q;                   // in response phase (one cycle later)
+  assign obi_read_request  = req_q & ~we_q;                  // in response phase (one cycle later)
   assign obi_write_request = obi_req_i.req & obi_req_i.a.we; // in request phase (same cycle)
 
   // id, valid and address handling
   assign id_d          = obi_req_i.a.aid;
   assign valid_d       = obi_req_i.req;
-  assign word_addr_d   = obi_req_i.a.addr[AddressWidth-1:2];
+  assign write_addr    = obi_req_i.a.addr[AddressWidth-1:2]; // write in same cycle
+  assign read_addr_d   = obi_req_i.a.addr[AddressWidth-1:2]; // delay read to response phase
   assign we_d          = obi_req_i.a.we;
   assign req_d         = obi_req_i.req;
 
     // FF for the obi rsp signals (id, valid, address, we and req)
     `FF(id_q, id_d, '0, clk_i, rst_ni)
     `FF(valid_q, valid_d, '0, clk_i, rst_ni)
-    `FF(word_addr_q, word_addr_d, '0, clk_i, rst_ni)
+    `FF(read_addr_q, read_addr_d, '0, clk_i, rst_ni)
     `FF(req_q, req_d, '0, clk_i, rst_ni)
     `FF(we_q, we_d, '0, clk_i, rst_ni)
     `FF(w_err_q, w_err_d, '0, clk_i, rst_ni)
@@ -114,7 +116,7 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
   // bit enable/strobe; defines which bits are written to by wdata of the OBI request
   logic [ObiCfg.DataWidth-1:0] bit_mask;
   for (genvar i = 0; unsigned'(i) < ObiCfg.DataWidth/8; ++i ) begin : gen_write_mask
-    assign bit_mask[8*i +: 8] = {8{obi_req_i.a.be}};
+    assign bit_mask[8*i +: 8] = {8{obi_req_i.a.be[i]}};
   end
 
   // output data from internal register
@@ -137,7 +139,6 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
     obi_err    = w_err_q;
     w_err_d    = 1'b0;
     new_reg    = reg_q;   // registers stay the same
-    reg_d      = new_reg; // update regs without OBI transaction
     new_intrpt = '0;
     toggle_out = '0;
 
@@ -155,12 +156,15 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
       new_intrpt[idx]     = hw2reg[idx].intrpt_valid & hw2reg[idx].intrpt;
     end
 
+    // commit changes
+    reg_d      = new_reg; // update regs without OBI transaction
+
     //---------------------------------------------------------------------------------
     // WRITE
     //---------------------------------------------------------------------------------
     if (obi_write_request) begin
       obi_err = 1'b0;
-      case (word_addr_q)
+      case ({write_addr, 2'b00})
         GPIO_DIR_OFFSET: begin
           reg_d.dir = (~bit_mask & new_reg.dir) | (bit_mask & obi_wdata[GpioCount-1:0]);
         end
@@ -198,7 +202,7 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
     //---------------------------------------------------------------------------------
     if (obi_read_request) begin
       obi_err = 1'b0;
-      case (word_addr_q)
+      case ({read_addr_q, 2'b00})
         GPIO_DIR_OFFSET: begin
           obi_rdata = reg_q.dir;
         end
@@ -226,7 +230,7 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
         GPIO_INTRPT_STATUS_OFFSET: begin
           obi_rdata = reg_q.intrpt;
           // clear read interrupts, immediately set new interrupts
-          reg_d.intrpt = (~bit_mask & reg_q.intrpt) | new_intrpt;
+          reg_d.intrpt = new_intrpt;
         end
 
         GPIO_INTRPT_EDGE_OFFSET: begin

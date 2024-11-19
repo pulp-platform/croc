@@ -64,6 +64,8 @@ module gpio #(
   logic [GpioCount-1:0] gpio_edge;
   logic [GpioCount-1:0] gpio_intrpt;
 
+  logic gpio_intrpt_pending;
+
   // Instantiate register file
   gpio_reg_top #(
     .obi_req_t(obi_req_t),
@@ -156,7 +158,14 @@ module gpio #(
         assign hw2reg[idx].intrpt_valid = gpio_intrpt[idx];
     end
 
-// Assign interrupt output signal
-assign interrupt_o = |gpio_intrpt;
+
+  // Assign interrupt output signal
+  always_comb begin : proc_assign_gpio
+    gpio_intrpt_pending = 1'b0;
+    for (int idx = 0; idx < GpioCount; idx++) begin
+        gpio_intrpt_pending = gpio_intrpt_pending | reg2hw[idx].intrpt;
+    end
+  end
+  assign interrupt_o = gpio_intrpt_pending;
 
 endmodule

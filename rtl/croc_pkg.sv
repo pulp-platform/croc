@@ -140,7 +140,7 @@ package croc_pkg;
     '{ idx: PeriphDebug,    start_addr: DebugAddrOffset,    end_addr: DebugAddrOffset   + DebugAddrRange},   // 1: Debug
     '{ idx: PeriphSocCtrl,  start_addr: SocCtrlAddrOffset,  end_addr: SocCtrlAddrOffset + SocCtrlAddrRange}, // 2: SoC control
     '{ idx: PeriphUart,     start_addr: UartAddrOffset,     end_addr: UartAddrOffset    + UartAddrRange},    // 3: UART
-    '{ idx: PeriphUart,     start_addr: GpioAddrOffset,     end_addr: GpioAddrOffset    + GpioAddrRange},    // 4: GPIO
+    '{ idx: PeriphGpio,     start_addr: GpioAddrOffset,     end_addr: GpioAddrOffset    + GpioAddrRange},    // 4: GPIO
     '{ idx: PeriphTimer,    start_addr: TimerAddrOffset,    end_addr: TimerAddrOffset   + TimerAddrRange}    // 5: Timer
   };
 
