@@ -32,6 +32,7 @@ sources:
   - rtl/user_pkg.sv
   - rtl/soc_ctrl/soc_ctrl_reg_pkg.sv
   - rtl/gpio/gpio_reg_pkg.sv
+  - rtl/neopixel/neopixel_pkg.sv
 
     # RTL
   - target: not(netlist_yosys)
@@ -42,6 +43,11 @@ sources:
       - rtl/gpio/gpio_reg_top.sv
       - rtl/gpio/gpio.sv
       - rtl/user_domain/user_rom.sv
+      - rtl/neopixel/neopixel_controller.sv
+      - rtl/neopixel/write_to_fifo.sv
+      - rtl/neopixel/neopixel_reg.sv
+      - rtl/neopixel/neopixel_dma.sv
+      - rtl/neopixel/neopixel.sv
       # Level 2
       - rtl/croc_domain.sv
       - rtl/user_domain.sv
