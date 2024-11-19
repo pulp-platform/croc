@@ -47,12 +47,28 @@ module uart #(
   logic rx_timeout;
 
   //--Register-Interface-Signals------------------------------------------------------------------
-  uart_reg_read_t  reg_read;
-  uart_reg_write_t reg_write;
+  reg_read_t         reg_read;
+  reg_write_t        reg_write;
+  rx_reg_write_t     rx_reg_write;
+  tx_reg_write_t     tx_reg_write;
+  modem_reg_write_t  modem_reg_write;
+  intrpt_reg_write_t intrpt_reg_write;
   
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // REGISTER INTERFACE //
   ////////////////////////////////////////////////////////////////////////////////////////////////
+
+  always_comb begin
+    reg_write.rhr             = rx_reg_write.rhr;
+    reg_write.isr             = intrpt_reg_write.isr;
+    reg_write.fcr_rx_fifo_rst = rx_reg_write.fcr_rx_fifo_rst;
+    reg_write.fcr_tx_fifo_rst = tx_reg_write.fcr_tx_fifo_rst;
+    reg_write.lsr.arr         = { rx_reg_write.lsr_fifo_err, tx_reg_write.lsr_tx_empty , 
+                                  tx_reg_write.lsr_thr_empty, rx_reg_write.lsr_break_intrpt, 
+                                  rx_reg_write.lsr_frame_err , rx_reg_write.lsr_par_err,
+                                  rx_reg_write.lsr_overrun_err , rx_reg_write.lsr_data_ready };
+    reg_write.msr.arr         = modem_reg_write.msr.arr;
+  end
 
   uart_register #(
     .obi_req_t     (obi_req_t),
@@ -65,7 +81,7 @@ module uart #(
     .obi_rsp_o,
 
     .uart_reg_read (reg_read),
-    .uart_reg_write(reg_write)
+    .uart_reg_write(reg_write) 
   );
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -77,15 +93,15 @@ module uart #(
     .clk_i,
     .rst_ni,
 
-    .reg_read,
-    .reg_write,
-
     .cts_n,  
     .dsr_n,  
     .ri_n,  
     .cd_n,  
     .rts_n, 
-    .dtr_n   
+    .dtr_n,
+
+    .reg_read,
+    .reg_write (modem_reg_write)
   );
 
   //--Loopback-Mode-------------------------------------------------------------------------------
@@ -101,12 +117,12 @@ module uart #(
     .clk_i,
     .rst_ni,
 
-    .reg_read,
-
     .oversample_rate_o     (oversample_rate_i),
     .oversample_rate_edge_o(oversample_rate_edge_i),
     .double_baud_rate_o    (double_baud_rate_i),
-    .baud_rate_o           (baud_rate_i)
+    .baud_rate_o           (baud_rate_i),
+
+    .reg_read
   );
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -124,11 +140,11 @@ module uart #(
 
     .rxd,
 
-    .reg_read,
-    .reg_write,
-
     .trigger             (rx_fifo_trigger), 
-    .timeout             (rx_timeout)
+    .timeout             (rx_timeout),
+
+    .reg_read,
+    .reg_write           (rx_reg_write)
   );
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -141,13 +157,12 @@ module uart #(
     .rst_ni,
 
     .baud_rate       (baud_rate_i),
-    .oversample_rate (oversample_rate_i),
     .double_baud_rate(double_baud_rate_i),
 
     .txd,
 
     .reg_read,
-    .reg_write
+    .reg_write       (tx_reg_write)
   );
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -155,19 +170,19 @@ module uart #(
   ////////////////////////////////////////////////////////////////////////////////////////////////
 
   uart_interrupts #(
-    parameters
   ) i_uart_interrupts (
     .clk_i,
     .rst_ni,
-
-    .reg_read,
-    .reg_write,
 
     .rx_fifo_trigger,
     .rx_timeout,
 
     .irq,
-    .irq_n
+    .irq_n,
+
+    .reg_read,
+    .reg_x     (reg_write),
+    .reg_write (intrpt_reg_write)
   );
 
 endmodule

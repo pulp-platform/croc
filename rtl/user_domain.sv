@@ -179,9 +179,9 @@ import gpio_reg_pkg::*;
   
   // UART Subordinate
   uart #(
-    .ObiCfg    (),
-    .obi_req_t (),
-    .obi_rsp_t ()
+    .ObiCfg    ( SbrObiCfg     ),
+    .obi_req_t ( sbr_obi_req_t ),
+    .obi_rsp_t ( sbr_obi_rsp_t ) 
   ) i_uart(
     .clk_i,  
     .rst_ni,

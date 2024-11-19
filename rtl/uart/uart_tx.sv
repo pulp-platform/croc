@@ -1,21 +1,17 @@
 `include "common_cells/registers.svh"
 
-// TODO: FIFO RESET
-// : if read_fcr.strct.fifo_en changes, flush the fifo
-// : if read_fcr.strct.rx_fifo_rst , flush the fifo but dont clear TSR, then set the  bit 0
-
 module uart_tx #() 
 (
-  input logic             clk_i,
-  input logic             rst_ni,
+  input logic  clk_i,
+  input logic  rst_ni,
 
-  input logic             double_baud_rate,
-  input logic             baud_rate,
+  input logic  baud_rate,
+  input logic  double_baud_rate,
 
-  output logic            txd,
+  output logic txd,
 
-  input uart_reg_read_t   reg_read,
-  output uart_reg_write_t reg_write
+  input uart_pkg::reg_read_t      reg_read,
+  output uart_pkg::tx_reg_write_t reg_write
 );
 
   // Import the UART package for definitions and parameters
@@ -45,9 +41,14 @@ module uart_tx #()
   //--Statemachine-Transition-Signals-------------------------------------------------------------
   state_type_tx state_q, state_d;
 
-  //--Statemachine-RSR-Signals--------------------------------------------------------------------
+  logic [2:0] word_len_bits;
+  logic [7:0] word_len_mask;
+
+  //--Statemachine-TSR-Signals--------------------------------------------------------------------
+  logic tsr_empty;
   logic tsr_finish;
   logic [7:0] tsr_q, tsr_d;
+  logic [2:0] tsr_count_q, tsr_count_d;
 
   logic txd_q, txd_d;
 
@@ -100,65 +101,67 @@ module uart_tx #()
     thr_full_d = thr_full_q;
 
     //--Reset-LSR---------------------------------------------------------------------------------
-    if (read_reg.obi_read_lsr) begin
-      write_reg.lsr.strct.thr_empty = 1'b0;
-      write_reg.lsr.strct.tx_empty  = 1'b0;
+    if (reg_read.obi_read_lsr) begin
+      reg_write.lsr_thr_empty = 1'b0;
+      reg_write.lsr_tx_empty  = 1'b0;
     end
 
     //--THR-Full-Flag-----------------------------------------------------------------------------
-    if (read_reg.obi_write_thr) begin
+    if (reg_read.obi_write_thr) begin
       thr_full_d = 1'b1;
     end
 
     //--------------------------------------------------------------------------------------------
     // FIFO Combinational
     //--------------------------------------------------------------------------------------------
-    if (read_reg.fcr.strct.fifo_en) begin
-
+    if (reg_read.fcr.strct.fifo_en) begin
       //--Reset-FIFO------------------------------------------------------------------------------
+      fifo_clear = 1'b0;
+
       if (reg_read.fcr.strct.tx_fifo_rst) begin
         fifo_clear = 1'b1;
-        reg_write.fcr.strct.tx_fifo_rst = 1'b0; 
-      end else if (fifo_en_change) begin        // TODO : FIFO enable change?
-        fifo_clear     = 1'b1;
-        fifo_en_change = 1'b0;
-      end
+        reg_write.fcr_tx_fifo_rst = 1'b0; 
+      end 
 
       //--Set-LSR---------------------------------------------------------------------------------
-      write_reg.lsr.strct.thr_empty = fifo_empty;
-      write_reg.lsr.strct.tx_empty  = fifo_empty & tsr_empty;
+      reg_write.lsr_thr_empty = fifo_empty;
+      reg_write.lsr_tx_empty  = fifo_empty & tsr_empty;
 
       //--Write-FIFO-from-THR---------------------------------------------------------------------
       if (thr_full_q & (~fifo_full)) begin
-        fifo_push = 1'b1;
-        fifo_data_i[word_len_bits:0] = reg_read.thr.strct.char_tx[word_len_bits:0];
-        thr_full_d = 1'b0;
+        fifo_push   = 1'b1;
+        fifo_data_i = reg_read.thr.strct.char_tx & word_len_mask;
+        thr_full_d  = 1'b0;
       end
    
     //--------------------------------------------------------------------------------------------
     // THR Combinational
     //--------------------------------------------------------------------------------------------
     end else begin
+      //--Keep-FIFO-cleared-----------------------------------------------------------------------
+      fifo_clear = 1'b1;
       //--Set-LSR---------------------------------------------------------------------------------
-      write_reg.lsr.strct.thr_empty = ~thr_full_q;
-      write_reg.lsr.strct.tx_empty  = ~thr_full_q & tsr_empty;
+      reg_write.lsr_thr_empty = ~thr_full_q;
+      reg_write.lsr_tx_empty  = ~thr_full_q & tsr_empty;
     end
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // Statemachine Combinational //
   ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //--Defaults------------------------------------------------------------------------------------
-    txd         = txd_q & reg_read.lcr.strct.set_break; // Assign UART Output
-    txd_d       = txd_q;
+    //--Defaults----------------------------------------------------------------------------------
+    txd           = txd_q & reg_read.lcr.strct.set_break; // Assign UART Output
+    txd_d         = txd_q;
 
-    state_d     = state_q;
+    state_d       = state_q;
 
-    fifo_pop    = 1'b0;
-    tsr_d       = tsr_q;
-    tsr_count_d = tsr_count_q;
-    tsr_finish  = 1'b0;
-    tsr_empty   = 1'b0;
+    fifo_pop      = 1'b0;
+    tsr_d         = tsr_q;
+    tsr_count_d   = tsr_count_q;
+    tsr_finish    = 1'b0;
+    tsr_empty     = 1'b0;
+
+    word_len_mask = 8'b0; 
 
     //--------------------------------------------------------------------------------------------
     // State Transition
@@ -170,17 +173,17 @@ module uart_tx #()
         tsr_count_d = 1'b0;
         tsr_empty   = 1'b1;
         
-        if (read_reg.fcr.strct.fifo_en) begin
+        if (reg_read.fcr.strct.fifo_en) begin
           if (~fifo_empty) begin
             tsr_d    = fifo_data_o;
             fifo_pop = 1'b1;
-            state_d  = START;
+            state_d  = TXSTART;
           end
         end else begin
           if (thr_full_q) begin
-            tsr_d[word_len_bits:0] = reg_read.thr.strct.char_tx[word_len_bits:0];
+            tsr_d      = reg_read.thr.strct.char_tx & word_len_mask;
             thr_full_d = 1'b0;
-            state_d    = START;
+            state_d    = TXSTART;
           end
         end
       end
@@ -188,16 +191,16 @@ module uart_tx #()
       TXSTART: begin
         if (baud_rate_edge) begin
           txd_d   = 1'b0;
-          state_d = DATA;
+          state_d = TXDATA;
         end
       end
 
       TXDATA: begin
         if (tsr_finish) begin
-          if (reg_read.lcr.strc.par_en) begin
-            state_d = PAR;
+          if (reg_read.lcr.strct.par_en) begin
+            state_d = TXPAR;
           end else begin
-            state_d = STOP1;
+            state_d = TXSTOP1;
           end
         end
       end
@@ -205,64 +208,71 @@ module uart_tx #()
       TXPAR: begin
         if (baud_rate_edge) begin
           case (reg_read.lcr.arr[5:4])  // Read Parity Configuration 
-            3'b00: txd_d = ~(^trs_q[word_len_bits:0]); // Odd Parity
-            3'b01: txd_d = ^tsr_q[word_len_bits:0];    // Even Parity
+            3'b00: txd_d = ~(^tsr_q); // Odd Parity
+            3'b01: txd_d = ^tsr_q;    // Even Parity
             3'b10: txd_d = 1'b1;     // Forced 1
             3'b11: txd_d = 1'b0;     // Forced 0
             default: txd_d = 1'b0;
           endcase
-          state_d = STOP1;
+          state_d = TXSTOP1;
         end
       end
 
       TXSTOP1: begin
-        if (baud_rate_ege) begin
+        if (baud_rate_edge) begin
           txd_d = 1'b1;
-          if (reg_read.lcr.strc.stop_bits) begin
-            state_d = STOP2;
+          if (reg_read.lcr.strct.stop_bits) begin
+            state_d = TXSTOP2;
           end else begin
-            state_d = IDLE;
+            state_d = TXIDLE;
           end
         end
       end
 
       TXSTOP2: begin
-        if (baudrate_edge) begin
-          state_d = FINISH;
+        if (baud_rate_edge) begin
+          state_d = TXFINISH;
         end
       end
 
       TXFINISH: begin
         if (word_len_bits == 3'b100) begin
-          if(double_baudrate) begin
-            state_d = IDLE;
+          if(double_baud_rate) begin
+            state_d = TXIDLE;
           end
         end else begin
           if(baud_rate_edge) begin
-            state_d = IDLE;
+            state_d = TXIDLE;
           end
         end
       end
 
-      default: state_d = IDLE;
+      default: state_d = TXIDLE;
     endcase
+
+    //----------------------------------------------------------------------------------------------
+    // Word Length in Bits
+    //----------------------------------------------------------------------------------------------
+    case (reg_read.lcr.strct.word_len)
+      2'b00: word_len_bits = 3'b100; // 5 Bits (4th index in tsr)
+      2'b01: word_len_bits = 3'b101; // 6 Bits (5th index in tsr)
+      2'b10: word_len_bits = 3'b110; // 7 Bits (6th index in tsr)
+      2'b11: word_len_bits = 3'b111; // 8 Bits (7th index in tsr)
+      default: word_len_bits = 3'b111; 
+    endcase
+
+    for (int i = 0; i <= word_len_bits; i = i + 1) begin
+      word_len_mask[i] = 1'b1;
+    end
 
     //----------------------------------------------------------------------------------------------
     // TSR - Transmitter Shift Register (parallel to serial)
     //----------------------------------------------------------------------------------------------
-    case (read_lcr.strct.word_len)
-      2'b00: word_len_bits = 3'b100; // 5 Bits (4th index in rsr)
-      2'b01: word_len_bits = 3'b101; // 6 Bits (5th index in rsr)
-      2'b10: word_len_bits = 3'b110; // 7 Bits (6th index in rsr)
-      2'b11: word_len_bits = 3'b111; // 8 Bits (7th index in rsr)
-      default: word_len_bits = 3'b111; 
-    endcase
-
     if (state_q == TXDATA & (tsr_count_q <= word_len_bits)) begin
       if (baud_rate_edge) begin
         txd_d       = tsr_q[tsr_count_q];
         tsr_count_d = tsr_count_q + 1;
-        tsr_finish = (tsr_count_q = word_len_bits)? 1'b1 : 1'b0;
+        tsr_finish  = (tsr_count_q == word_len_bits)? 1'b1 : 1'b0;
       end
     end
 
@@ -279,6 +289,6 @@ module uart_tx #()
 
   `FF(txd_q, txd_d, '0, clk_i, rst_ni)
 
-  `FF(state_q, state_d, IDLE, clk_i, rst_ni)
+  `FF(state_q, state_d, TXIDLE, clk_i, rst_ni)
 
 endmodule

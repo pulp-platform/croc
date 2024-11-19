@@ -131,8 +131,8 @@ package uart_pkg;
   } IER_bits_t;
 
   typedef struct packed {
-    logic       intrpt_stat; // Intrpt Status
-    logic [2:0] intrtpt_id;  // Intrpt Code ID
+    logic       status; // Intrpt Status
+    logic [2:0] id;  // Intrpt Code ID
     logic       unused4;     // Optional: DMA
     logic       unused5;     // Optional: DMA
     logic [1:0] fifos_en;    // UART Standard: 2'b00: 8250 | 2'b01: 16550 | 2'b10: 16750 | 2'b11: 16550A 
@@ -165,7 +165,7 @@ package uart_pkg;
     logic       out2;        // Optional: Gpio Output
     logic       loopback;    // Loop Back
     logic       unused5;     // 0
-    logic        unused6;     // 0
+    logic       unused6;     // 0
     logic       unused7;     // 0
   } MCR_bits_t;
 
@@ -285,27 +285,42 @@ package uart_pkg;
     logic obi_read_lsr;
     logic obi_read_msr;
     logic obi_write_thr;
-  } reg_tx_t;
+  } reg_read_t;
 
   typedef struct packed {
     RHR_union_t rhr;
     ISR_union_t isr;
-    FCR_union_t fcr;
-    LSR_union_t lsr; 
+    logic fcr_rx_fifo_rst;
+    logic fcr_tx_fifo_rst;
+    LSR_union_t lsr;
     MSR_union_t msr;
-  } reg_rx_t;
+  } reg_write_t;
 
   typedef struct packed {
-    RHR_union_t rhr;
-    ISR_union_t isr;
-    FCR_union_t fcr;
-    LSR_union_t lsr; 
-    MSR_union_t msr;
-  } reg_intrpt_t;
+    RHR_union_t rhr; 
+    logic fcr_rx_fifo_rst; 
+    logic lsr_data_ready; 
+    logic lsr_overrun_err; 
+    logic lsr_par_err; 
+    logic lsr_frame_err; 
+    logic lsr_break_intrpt; 
+    logic lsr_fifo_err; 
+  } rx_reg_write_t;
 
   typedef struct packed {
-    DLL_union_t dll_read;
-    DLM_union_t dlm_read;
-  } reg_baud_t;
+    logic fcr_tx_fifo_rst;
+    logic lsr_tx_empty; 
+    logic lsr_thr_empty;
+  } tx_reg_write_t;
+
+  typedef struct packed {
+    ISR_union_t isr; // status und id TODO just make sure to write default to DMA bits 
+  } intrpt_reg_write_t;
+
+  typedef struct packed {
+    MSR_union_t msr; 
+  } modem_reg_write_t;
+
+
 
 endpackage

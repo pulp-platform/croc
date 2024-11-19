@@ -1,18 +1,19 @@
 `include "common_cells/registers.svh"
+
 module uart_modem #()
 (
-  input  logic            clk_i,
-  input  logic            rst_ni,
+  input  logic clk_i,
+  input  logic rst_ni,
 
-  input  uart_reg_read_t  reg_read,
-  output uart_reg_write_t reg_write,
+  input  logic cts_n,  // Modem Inp Clear To Send
+  input  logic dsr_n,  // Modem Inp Data Send Request
+  input  logic ri_n,   // Modem Inp Ring Indicator
+  input  logic cd_n,   // Modem Inp Carrier Detect
+  output logic rts_n,  // Modem Oup Ready To Send
+  output logic dtr_n,  // Modem Oup DaTa Ready
 
-  input  logic            cts_n,  // Modem Inp Clear To Send
-  input  logic            dsr_n,  // Modem Inp Data Send Request
-  input  logic            ri_n,   // Modem Inp Ring Indicator
-  input  logic            cd_n,   // Modem Inp Carrier Detect
-  output logic            rts_n,  // Modem Oup Ready To Send
-  output logic            dtr_n   // Modem Oup DaTa Ready
+  input  uart_pkg::reg_read_t        reg_read,
+  output uart_pkg::modem_reg_write_t reg_write
 );
 
   // Import the UART package for definitions and parameters
@@ -40,7 +41,7 @@ module uart_modem #()
 
   sync #( 
     .STAGES (NrSyncStages) 
-  ) i_sync (
+  ) i_sync_1 (
     .clk_i, 
     .rst_ni, 
     .serial_i(cts_n), 
@@ -49,7 +50,7 @@ module uart_modem #()
   );
   sync #( 
     .STAGES (NrSyncStages) 
-  ) i_sync (
+  ) i_sync_2 (
     .clk_i, 
     .rst_ni, 
     .serial_i(dsr_n), 
@@ -58,7 +59,7 @@ module uart_modem #()
 
   sync #( 
     .STAGES (NrSyncStages) 
-  ) i_sync (
+  ) i_sync_3 (
     .clk_i, 
     .rst_ni, 
     .serial_i(ri_n),  
@@ -67,7 +68,7 @@ module uart_modem #()
 
   sync #( 
     .STAGES (NrSyncStages) 
-  ) i_sync (
+  ) i_sync_4 (
     .clk_i, 
     .rst_ni, 
     .serial_i(cd_n),  

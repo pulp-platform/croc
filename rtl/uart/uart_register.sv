@@ -16,8 +16,8 @@ module uart_register #(
   // OBI response interface
   output obi_rsp_t obi_rsp_o, // r.rdata, r.rid, r.err, r.r_optional | gnt, rvalid
 
-  output uart_pkg::uart_reg_read_t uart_reg_read,  // Read from MCR Register
-  input uart_pkg::uart_reg_write_t uart_reg_write  // Write to MSR Register
+  output uart_pkg::reg_read_t uart_reg_read,  // Read from MCR Register
+  input uart_pkg::reg_write_t uart_reg_write  // Write to MSR Register
 );
 
   // Import the UART package for definitions and parameters
@@ -31,7 +31,7 @@ module uart_register #(
   logic [ObiCfg.DataWidth-1:0] rsp_data;
   logic                        valid_d, valid_q;         // delayed for the response phase
   logic                        err;
-  logic [AddressWidth-1:0]     word_addr_d, word_addr_q; // delayed for the response phase
+  logic [AddressBits-1:0]     word_addr_d, word_addr_q; // delayed for the response phase
   logic [ObiCfg.IdWidth-1:0]   id_d, id_q;               // delayed for the response phase
   logic                        we_d, we_q;
   logic                        req_d, req_q;

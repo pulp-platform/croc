@@ -1,15 +1,15 @@
 `include "common_cells/registers.svh"
 module uart_baudgeneration #() 
 (
-  input logic             clk_i,
-  input logic             rst_ni,
+  input logic  clk_i,
+  input logic  rst_ni,
 
-  input  uart_reg_read_t  reg_read,
+  output logic oversample_rate_o,
+  output logic oversample_rate_edge_o,
+  output logic double_baud_rate_o,
+  output logic baud_rate_o,
 
-  output logic            oversample_rate_o,
-  output logic            oversample_rate_edge_o,
-  output logic            double_baud_rate_o,
-  output logic            baud_rate_o
+  input uart_pkg::reg_read_t reg_read
 );
 
   // Import the UART package for definitions and parameters
