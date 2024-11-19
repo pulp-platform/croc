@@ -55,7 +55,7 @@ module croc_domain import croc_pkg::*; #(
   logic gpio_irq;
   logic timer0_irq0;
   logic timer0_irq1;
-  logic [14:0] interrupts;
+  logic [15:0] interrupts;
   always_comb begin
     interrupts    = '0;
     interrupts[0] = timer0_irq1;
