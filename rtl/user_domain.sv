@@ -177,6 +177,31 @@ import gpio_reg_pkg::*;
 // User Subordinates
 //-------------------------------------------------------------------------------------------------
   
+  // UART Subordinate
+  uart #(
+    .ObiCfg    (),
+    .obi_req_t (),
+    .obi_rsp_t ()
+  ) i_uart(
+    .clk_i,  
+    .rst_ni,
+
+    .obi_req_i (), 
+    .obi_rsp_o (),
+    
+    .irq   (),    
+    .irq_n (), 
+    .rxd_i (),    
+    .txd_o (),    
+
+    .cts_n (),  
+    .dsr_n (),  
+    .ri_n  (),   
+    .cd_n  (),   
+    .rts_n (),  
+    .dtr_n () 
+  );
+  
   // ROM Subordinate
   user_rom #(
     .ObiCfg      ( SbrObiCfg     ),
