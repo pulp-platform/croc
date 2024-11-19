@@ -21,10 +21,13 @@ set abc_comb_script   [processAbcScript $abc_combinational_script]
 # read liberty files and prepare some variables
 source $script_dir/init_tech.tcl
 
+yosys plugin -i slang.so
+
 # read design
-foreach file $vlog_files {
-	yosys read_verilog -sv "$file"
-}
+yosys read_slang --top $top_design -f $sv_flist \
+        --compat-mode --keep-hierarchy \
+        --allow-use-before-declare --ignore-unknown-modules
+
 
 # blackbox requested modules
 if { [info exists ::env(YOSYS_BLACKBOX_MODULES)] } {
@@ -57,6 +60,7 @@ yosys attrmvcp -copy -attr keep
 yosys hierarchy -check -top $top_design
 yosys proc
 yosys tee -q -o "${report_dir}/${proj_name}_initial.rpt" stat
+yosys write_verilog -norename -noexpr -attr2comment ${build_dir}/${proj_name}_yosys_initial.v
 
 # synth - coarse:
 # yosys synth -run coarse -noalumacc
