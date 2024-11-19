@@ -98,10 +98,15 @@ module uart_tx #()
     fifo_push   = 1'b0;
     fifo_data_i = '0;
 
+    reg_write.lsr_valid     = 2'b00;
+    reg_write.lsr_thr_empty = 1'b0;
+    reg_write.lsr_tx_empty  = 1'b0;
+
     thr_full_d = thr_full_q;
 
     //--Reset-LSR---------------------------------------------------------------------------------
-    if (reg_read.obi_read_lsr) begin
+    if (reg_read.obi_write_thr) begin
+      reg_write.lsr_valid     = 2'b11;
       reg_write.lsr_thr_empty = 1'b0;
       reg_write.lsr_tx_empty  = 1'b0;
     end
@@ -124,9 +129,15 @@ module uart_tx #()
       end 
 
       //--Set-LSR---------------------------------------------------------------------------------
-      reg_write.lsr_thr_empty = fifo_empty;
-      reg_write.lsr_tx_empty  = fifo_empty & tsr_empty;
-
+      if (fifo_empty) begin
+        reg_write.lsr_thr_empty = 1'b1;
+        reg_write.lsr_valid[0]  = 1'b1;
+        if (tsr_empty) begin
+          reg_write.lsr_tx_empty = 1'b1;
+          reg_write.lsr_valid[1] = 1'b1;
+        end
+      end
+    
       //--Write-FIFO-from-THR---------------------------------------------------------------------
       if (thr_full_q & (~fifo_full)) begin
         fifo_push   = 1'b1;
@@ -141,8 +152,14 @@ module uart_tx #()
       //--Keep-FIFO-cleared-----------------------------------------------------------------------
       fifo_clear = 1'b1;
       //--Set-LSR---------------------------------------------------------------------------------
-      reg_write.lsr_thr_empty = ~thr_full_q;
-      reg_write.lsr_tx_empty  = ~thr_full_q & tsr_empty;
+      if (~thr_full_q) begin
+        reg_write.lsr_thr_empty = 1'b1;
+        reg_write.lsr_valid[0]  = 1'b1;
+        if (tsr_empty) begin
+          reg_write.lsr_tx_empty = 1'b1;
+          reg_write.lsr_valid[1] = 1'b1;
+        end
+      end
     end
 
   ////////////////////////////////////////////////////////////////////////////////////////////////

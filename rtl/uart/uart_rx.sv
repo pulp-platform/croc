@@ -185,10 +185,13 @@ module uart_rx #()
     .pop_i     (fifo_pop)     // pop head from queue
   );
 
-  //////////////////////////////////////////////////////////////////////////////////////////////
-  // FIFO Combinational //
-  //////////////////////////////////////////////////////////////////////////////////////////////
+  
   always_comb begin
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////
+  // FIFO Combinational //
+  ////////////////////////////////////////////////////////////////////////////////////////////////
+
     //--------------------------------------------------------------------------------------------
     // Defaults
     //--------------------------------------------------------------------------------------------
@@ -203,10 +206,21 @@ module uart_rx #()
     // Timeout
     timeout       = 1'b0;
 
+    reg_write.lsr_valid        = 6'b000001;
+    reg_write.lsr_data_ready   = 1'b0;
+    reg_write.lsr_overrun_err  = 1'b0;
+    reg_write.lsr_fifo_err     = 1'b0;
+    reg_write.lsr_frame_err    = 1'b0;
+    reg_write.lsr_par_err      = 1'b0;
+    reg_write.lsr_break_intrpt = 1'b0;
+
+    reg_write.rhr_valid         = 1'b0;
+    reg_write.rhr.strct.char_rx = '0;
+
     if (reg_read.fcr.strct.fifo_en) begin
-      //--------------------------------------------------------------------------------------------
-      // FIFO Reset
-      //--------------------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------------------
+    // FIFO Reset
+    //--------------------------------------------------------------------------------------------
       fifo_clear = 1'b0;
 
       if (reg_read.fcr.strct.rx_fifo_rst) begin
@@ -214,9 +228,9 @@ module uart_rx #()
         reg_write.fcr_rx_fifo_rst = 1'b0; 
       end 
 
-      //------------------------------------------------------------------------------------------
-      // FIFO Trigger Output
-      //------------------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------------------
+    // FIFO Trigger Output
+    //--------------------------------------------------------------------------------------------
       case (reg_read.fcr.strct.rx_fifo_tl)
         2'b00: tl_characters = 4'b0001; // 1 Character
         2'b01: tl_characters = 4'b0100; // 4 Characters
@@ -229,32 +243,33 @@ module uart_rx #()
         trigger = 1'b1;
       end
 
-      //------------------------------------------------------------------------------------------
-      // FIFO Write from RSR
-      //------------------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------------------
+    // FIFO Write from RSR
+    //--------------------------------------------------------------------------------------------
       fifo_error_index_d = fifo_error_index_q;
-      reg_write.lsr_overrun_err = 1'b0;
 
       if (write_init) begin
         if (fifo_full) begin
           reg_write.lsr_overrun_err = 1'b1;
+          reg_write.lsr_valid[1]    = 1'b1;
         end else begin
           fifo_push       = 1'b1;
           break_interrupt = & (~{break_q, rsr_q}); // Interrupt if all character bits are 0s
           fifo_data_i     = {parity_err_q, framing_err_q, break_interrupt, rsr_q}; // 11 Bits 
 
           if (parity_err_q | framing_err_q | break_interrupt) begin
-            fifo_error_index_d           = fifo_usage;   
+            fifo_error_index_d     = fifo_usage;   
             reg_write.lsr_fifo_err = 1'b1;
+            reg_write.lsr_valid[5] = 1'b1;
           end else if (4'b0001 <= fifo_error_index_q) begin
             fifo_error_index_d = fifo_error_index_q - 'b0001; 
           end
         end
       end
 
-      //------------------------------------------------------------------------------------------
-      // FIFO Timeout
-      //------------------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------------------
+    // FIFO Timeout
+    //--------------------------------------------------------------------------------------------
       // timeout_trigger = (1 Startbit + 8 Databits + 1 Paritybit + 2 Stopbits) * 4
       timeout_trigger = 6'b000001 + 6'b001000 + 6'b000001 + 6'b000010; // Timeout Trigger Level
       timeout_trigger = timeout_trigger << 2; // Multiply by 4
@@ -290,6 +305,7 @@ module uart_rx #()
     //--------------------------------------------------------------------------------------------
     if (reg_read.obi_read_rhr) begin
       reg_write.rhr.strct.char_rx = '0;
+      reg_write.rhr_valid         = 1'b1;
       rhr_full_d = 1'b0;
     end
 
@@ -301,12 +317,15 @@ module uart_rx #()
       //--Write-FIFO-to-RHR-----------------------------------------------------------------------
       if ((~rhr_full_q) & (~fifo_empty)) begin
         reg_write.rhr.strct.char_rx      = fifo_data_o[7:0];
+        reg_write.rhr_valid              = 1'b1;
         // If Fifo Enabled, always set LSR bits with the Data on top of the FIFO
-        reg_write.lsr_break_intrpt = fifo_data_o[8:8];
-        reg_write.lsr_frame_err    = fifo_data_o[9:9];
-        reg_write.lsr_par_err      = fifo_data_o[10:10];
-        fifo_pop = 1'b1;
-        rhr_full_d = 1'b1;
+        reg_write.lsr_break_intrpt = fifo_data_o[8];
+        reg_write.lsr_frame_err    = fifo_data_o[9];
+        reg_write.lsr_par_err      = fifo_data_o[10];
+        reg_write.lsr_valid[4:2]   = 1'b1;
+
+        fifo_pop                   = 1'b1;
+        rhr_full_d                 = 1'b1;
       end
       reg_write.lsr_data_ready = ~fifo_empty; // Set Data Ready Bit
 
@@ -316,16 +335,19 @@ module uart_rx #()
       if (write_init) begin
         if (rhr_full_q) begin
           reg_write.lsr_overrun_err = 1'b1;
+          reg_write.lsr_valid[1]    = 1'b1;
         end 
         reg_write.rhr.strct.char_rx      = rsr_q; // If full, RHR just gets overwritten
+        reg_write.rhr_valid              = 1'b1;
         break_interrupt                  = & (~{break_q, rsr_q}); // All character bits 0 ?
-        reg_write.lsr_par_err      = parity_err_q;
-        reg_write.lsr_frame_err    = framing_err_q;
-        reg_write.lsr_break_intrpt = break_interrupt;
-        rhr_full_d = 1'b1;
+        rhr_full_d                       = 1'b1;
+
+        reg_write.lsr_par_err            = parity_err_q;
+        reg_write.lsr_frame_err          = framing_err_q;
+        reg_write.lsr_break_intrpt       = break_interrupt;
+        reg_write.lsr_valid[4:2]         = 1'b1;
       end 
       reg_write.lsr_data_ready = rhr_full_q; // Set Data Ready Bit
-      reg_write.lsr_fifo_err   = 1'b0;
 
     end
 
@@ -337,28 +359,17 @@ module uart_rx #()
       reg_write.lsr_par_err      = 1'b0;
       reg_write.lsr_frame_err    = 1'b0;
       reg_write.lsr_break_intrpt = 1'b0;
+      reg_write.lsr_valid[4:1]   = 1'b1;
       if (fifo_error_index_q == 4'b0000) begin
         reg_write.lsr_fifo_err = 1'b0;
+        reg_write.lsr_valid[5]  = 1'b1;
       end
     end
-     
-  end
-
-  ////////////////////////////////////////////////////////////////////////////////////////////////
-  // FIFO & WRITE RHR Sequential //
-  ////////////////////////////////////////////////////////////////////////////////////////////////
-  
-  // FIFO 
-  `FF(fifo_error_index_q, fifo_error_index_d, '0, clk_i, rst_ni)
-  `FF(timeout_count_q, timeout_count_d, '0, baud_rate, rst_ni)
-  // WRITE 
-  `FF(rhr_full_q, rhr_full_d, '0, clk_i, rst_ni)
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // Statemachine Combinational//
   ////////////////////////////////////////////////////////////////////////////////////////////////
 
-  always_comb begin
     //--------------------------------------------------------------------------------------------
     // Defaults
     //--------------------------------------------------------------------------------------------
@@ -506,6 +517,16 @@ module uart_rx #()
     end
 
   end
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////
+  // FIFO & WRITE RHR Sequential //
+  ////////////////////////////////////////////////////////////////////////////////////////////////
+
+  //--FIFO----------------------------------------------------------------------------------------
+  `FF(fifo_error_index_q, fifo_error_index_d, '0, clk_i, rst_ni)
+  `FF(timeout_count_q, timeout_count_d, '0, baud_rate, rst_ni)
+  //--Write-RHR-----------------------------------------------------------------------------------
+  `FF(rhr_full_q, rhr_full_d, '0, clk_i, rst_ni)
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // Statemachine Sequential//

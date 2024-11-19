@@ -35,14 +35,18 @@ module uart_interrupts #()
     ////////////////////////////////////////////////////////////////////////////////////////////
 
     //--Defaults--------------------------------------------------------------------------------
-    rls_intrpt       = 1'b0;
-    rxdr_intrpt      = 1'b0;
-    timeout_intrpt   = 1'b0;
-    thr_empty_intrpt = 1'b0;
-    mstat_intrpt     = 1'b0;
+    rls_intrpt          = 1'b0;
+    rxdr_intrpt         = 1'b0;
+    timeout_intrpt      = 1'b0;
+    thr_empty_intrpt    = 1'b0;
+    mstat_intrpt        = 1'b0;
+    reg_write.isr_valid = 1'b0;
 
-    reg_write.isr.strct.unused4 = 1'b0;
-    reg_write.isr.strct.unused5 = 1'b0;
+    reg_write.isr.strct.status   = 1'b1;
+    reg_write.isr.strct.id       = 3'b000;
+    reg_write.isr.strct.fifos_en = 2'b11;
+    reg_write.isr.strct.unused4  = 1'b0;
+    reg_write.isr.strct.unused5  = 1'b0;
 
     //--Receive-Line-Status-Interrupt-----------------------------------------------------------
     if (reg_read.ier.strct.rlstat & (reg_x.lsr.strct.overrun_err | reg_x.lsr.strct.par_err | 
@@ -84,54 +88,64 @@ module uart_interrupts #()
     if (rls_intrpt) begin 
       reg_write.isr.strct.id     = 3'b011;
       reg_write.isr.strct.status = 1'b0;
+      reg_write.isr_valid        = 1'b1;
 
       if (reg_read.obi_read_lsr) begin // Reset Interrupt
         rls_intrpt                 = 1'b0;
         reg_write.isr.strct.id     = 3'b000;
         reg_write.isr.strct.status = 1'b1;
+        reg_write.isr_valid        = 1'b1;
       end
     // 2. Priority Level
     end else if (rxdr_intrpt & (~rls_intrpt)) begin 
       reg_write.isr.strct.id     = 3'b010;
       reg_write.isr.strct.status = 1'b0;
+      reg_write.isr_valid        = 1'b1;
 
       if (reg_read.obi_read_rhr & (~reg_read.fcr.strct.fifo_en)) begin // Reset Interrupt
         rxdr_intrpt                = 1'b0;
         reg_write.isr.strct.id     = 3'b000;
         reg_write.isr.strct.status = 1'b1;
+        reg_write.isr_valid        = 1'b1;
       end
     // 2. Priority Level
     end else if (timeout_intrpt & (~rls_intrpt)) begin 
       reg_write.isr.strct.id     = 3'b110;
       reg_write.isr.strct.status = 1'b0;
+      reg_write.isr_valid        = 1'b1;
 
       if (reg_read.obi_read_rhr) begin // Reset Interrupt
         timeout_intrpt             = 1'b0;
         reg_write.isr.strct.id     = 3'b000;
         reg_write.isr.strct.status = 1'b1;
+        reg_write.isr_valid        = 1'b1;
       end
     // 3. Priority Level
     end else if (thr_empty_intrpt & 
       (~(rls_intrpt | rxdr_intrpt | timeout_intrpt))) begin 
       reg_write.isr.strct.id     = 3'b001;
       reg_write.isr.strct.status = 1'b0;
+      reg_write.isr_valid        = 1'b1;
 
       if (reg_read.obi_write_thr | 
          (reg_read.obi_read_isr & (reg_write.isr.strct.id == 3'b001))) begin // Reset Interrupt
         timeout_intrpt             = 1'b0;
         reg_write.isr.strct.id     = 3'b000;
         reg_write.isr.strct.status = 1'b1;
+        reg_write.isr_valid        = 1'b1;
       end
     // 4. Priority Level
     end else if (mstat_intrpt & 
       (~(rls_intrpt | rxdr_intrpt | timeout_intrpt | thr_empty_intrpt))) begin 
       reg_write.isr.strct.id     = 3'b000;
       reg_write.isr.strct.status = 1'b0;
+      reg_write.isr_valid        = 1'b1;
 
       if (reg_read.obi_read_msr) begin // Reset Interrupt
         mstat_intrpt               = 1'b0;
         reg_write.isr.strct.id     = 3'b000;
         reg_write.isr.strct.status = 1'b1;
+        reg_write.isr_valid        = 1'b1;
       end
     end
 

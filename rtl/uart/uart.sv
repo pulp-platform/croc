@@ -67,7 +67,13 @@ module uart #(
                                   tx_reg_write.lsr_thr_empty, rx_reg_write.lsr_break_intrpt, 
                                   rx_reg_write.lsr_frame_err , rx_reg_write.lsr_par_err,
                                   rx_reg_write.lsr_overrun_err , rx_reg_write.lsr_data_ready };
-    reg_write.msr.arr         = modem_reg_write.msr.arr;
+    reg_write.msr             = modem_reg_write.msr;
+
+    reg_write.rhr_valid       = rx_reg_write.rhr_valid;
+    reg_write.isr_valid       = intrpt_reg_write.isr_valid;
+    reg_write.lsr_valid       = { rx_reg_write.lsr_valid[5], tx_reg_write.lsr_valid,
+                                  rx_reg_write.lsr_valid[4:0] };
+    reg_write.msr_valid       = modem_reg_write.msr_valid;
   end
 
   uart_register #(

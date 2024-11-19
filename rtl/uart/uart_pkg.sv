@@ -280,45 +280,54 @@ package uart_pkg;
     MCR_union_t mcr; 
     DLL_union_t dll;
     DLM_union_t dlm;
-    logic obi_read_rhr;
-    logic obi_read_isr;
-    logic obi_read_lsr;
-    logic obi_read_msr;
-    logic obi_write_thr;
+    logic       obi_read_rhr;
+    logic       obi_read_isr;
+    logic       obi_read_lsr;
+    logic       obi_read_msr;
+    logic       obi_write_thr;
   } reg_read_t;
 
   typedef struct packed {
     RHR_union_t rhr;
     ISR_union_t isr;
-    logic fcr_rx_fifo_rst;
-    logic fcr_tx_fifo_rst;
+    logic       fcr_rx_fifo_rst;
+    logic       fcr_tx_fifo_rst;
     LSR_union_t lsr;
     MSR_union_t msr;
+    logic       rhr_valid;
+    logic       isr_valid;
+    logic [7:0] lsr_valid;
+    logic [3:0] msr_valid;
   } reg_write_t;
 
   typedef struct packed {
     RHR_union_t rhr; 
-    logic fcr_rx_fifo_rst; 
-    logic lsr_data_ready; 
-    logic lsr_overrun_err; 
-    logic lsr_par_err; 
-    logic lsr_frame_err; 
-    logic lsr_break_intrpt; 
-    logic lsr_fifo_err; 
+    logic       fcr_rx_fifo_rst; 
+    logic       lsr_data_ready; 
+    logic       lsr_overrun_err; 
+    logic       lsr_par_err; 
+    logic       lsr_frame_err; 
+    logic       lsr_break_intrpt; 
+    logic       lsr_fifo_err; 
+    logic       rhr_valid;
+    logic [5:0] lsr_valid;
   } rx_reg_write_t;
 
   typedef struct packed {
-    logic fcr_tx_fifo_rst;
-    logic lsr_tx_empty; 
-    logic lsr_thr_empty;
+    logic       fcr_tx_fifo_rst;
+    logic       lsr_tx_empty; 
+    logic       lsr_thr_empty;
+    logic [1:0] lsr_valid;
   } tx_reg_write_t;
 
   typedef struct packed {
-    ISR_union_t isr; // status und id TODO just make sure to write default to DMA bits 
+    ISR_union_t isr;
+    logic       isr_valid;
   } intrpt_reg_write_t;
 
   typedef struct packed {
     MSR_union_t msr; 
+    logic [3:0] msr_valid;
   } modem_reg_write_t;
 
 endpackage

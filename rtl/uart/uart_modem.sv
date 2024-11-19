@@ -81,6 +81,13 @@ module uart_modem #()
   
   always_comb begin
 
+    // Defaults
+    reg_write.msr_valid       = 4'b0000;
+    reg_write.msr.strct.d_cts = 1'b0;
+    reg_write.msr.strct.d_dsr = 1'b0;
+    reg_write.msr.strct.te_ri = 1'b0;
+    reg_write.msr.strct.d_cd  = 1'b0;
+
     // Modem Inputs are negated
     reg_write.msr.strct.cts  = (reg_read.mcr.strct.loopback == 1'b1) ? rts_n : ~sync_cts_n_d; //TODO
     reg_write.msr.strct.dsr  = (reg_read.mcr.strct.loopback == 1'b1) ? dtr_n : ~sync_dsr_n_d;  //TODO
@@ -89,19 +96,24 @@ module uart_modem #()
 
     if (sync_cts_n_d ^ sync_cts_n_q) begin  // Delta: Write a 1 if _d different from _q
       reg_write.msr.strct.d_cts = 1'b1;
+      reg_write.msr_valid[0]    = 1'b1;
     end
     if (sync_dsr_n_d ^ sync_dsr_n_q) begin  // Delta: Write a 1 if _d different to _q
-      reg_write.msr.strct.d_dsr = 1'b1;    
+      reg_write.msr.strct.d_dsr = 1'b1;  
+      reg_write.msr_valid[1]    = 1'b1;  
     end                                     
     if (sync_ri_n_d & ~(sync_ri_n_q)) begin // Trailing Edge: Write 1 if change from 0 to 1
-      reg_write.msr.strct.te_ri = 1'b1;  
+      reg_write.msr.strct.te_ri = 1'b1; 
+      reg_write.msr_valid[2]    = 1'b1;
     end
     if (sync_cd_n_d ^ sync_cd_n_q) begin    // Delta: Write a 1 if _d different from _q
-      reg_write.msr.strct.d_cd = 1'b1;
+      reg_write.msr.strct.d_cd  = 1'b1;
+      reg_write.msr_valid[3]    = 1'b1;
     end
 
     // Delta and Trailing Edge Bits are cleared whenever SW reads them
     if (reg_read.obi_read_msr) begin
+      reg_write.msr_valid       = 4'b1111;
       reg_write.msr.strct.d_cts = 1'b0;
       reg_write.msr.strct.d_dsr = 1'b0;
       reg_write.msr.strct.te_ri = 1'b0;

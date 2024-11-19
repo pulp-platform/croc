@@ -30,8 +30,8 @@ module tb_croc_soc #(
     logic jtag_tdi_i;
     logic jtag_tdo_o;
 
-    logic uart_rx_i;
-    logic uart_tx_o;
+    logic uart_rxd_i;
+    logic uart_txd_o;
 
     logic fetch_en_i;
     logic status_o;
@@ -343,7 +343,7 @@ module tb_croc_soc #(
     ////////////
     //  UART  //
     ////////////
-    /*
+    
     typedef bit [ 7:0] byte_bt;
     localparam int unsigned UartDivisior = ClkFrequency / (UartBaudRate*16);
     localparam UartRealBaudRate = ClkFrequency / (UartDivisior*16);
@@ -364,23 +364,23 @@ module tb_croc_soc #(
     logic   uart_reading_byte;
 
     initial begin
-        uart_rx_i         = 1;
-        uart_reading_byte = 0;
+        uart_rxd_i         = 1;
+        uart_reading_byte  = 0;
     end
 
     task automatic uart_read_byte(output byte_bt bite);
         // Start bit
-        @(negedge uart_tx_o);
+        @(negedge uart_txd_o);
         uart_reading_byte = 1;
         #(UartBaudPeriod/2);
         // 8-bit byte
         for (int i = 0; i < 8; i++) begin
-        #UartBaudPeriod bite[i] = uart_tx_o;
+        #UartBaudPeriod bite[i] = uart_txd_o;
         end
         // Parity bit
         if(UartParityEna) begin
         bit parity;
-        #UartBaudPeriod parity = uart_tx_o;
+        #UartBaudPeriod parity = uart_txd_o;
         if(parity ^ (^bite))
             $error("[UART] - Parity error detected!");
         end
@@ -391,19 +391,20 @@ module tb_croc_soc #(
 
     task automatic uart_write_byte(input byte_bt bite);
         // Start bit
-        uart_rx_i = 1'b0;
+        uart_rxd_i = 1'b0;
         // 8-bit byte
         for (int i = 0; i < 8; i++)
-        #UartBaudPeriod uart_rx_i = bite[i];
+        #UartBaudPeriod uart_rxd_i = bite[i];
         // Parity bit
         if (UartParityEna)
-        #UartBaudPeriod uart_rx_i = (^bite);
+        #UartBaudPeriod uart_rxd_i = (^bite);
         // Stop bit
-        #UartBaudPeriod uart_rx_i = 1'b1;
+        #UartBaudPeriod uart_rxd_i = 1'b1;
         #UartBaudPeriod;
     endtask
 
     // Continually read characters and print lines
+    // TODO: we should be able to support CR properly, but buffers are hard to deal with...
     initial begin
         static byte_bt uart_read_buf[$];
         byte_bt bite;
@@ -420,7 +421,6 @@ module tb_croc_soc #(
                     foreach (uart_read_buf[i]) begin
                         $write("%02x ", uart_read_buf[i]);
                         uart_str = {uart_str, $sformatf("%c", uart_read_buf[i])};
-                        //uart_str = {uart_str, uart_read_buf[i]};
                     end
                     
                     $display(")\n@%t | [UART] %s", $time, uart_str);
@@ -436,7 +436,7 @@ module tb_croc_soc #(
         end
     end
 
-    */
+    
 
     ////////////
     //  DUT   //
@@ -462,17 +462,32 @@ module tb_croc_soc #(
         .jtag_tms_i    ( jtag_tms_i   ),
         .jtag_trst_ni  ( jtag_trst_ni ),
 
-        .uart_rx_i     ( uart_rx_i ),
-        .uart_tx_o     ( uart_tx_o ),
+        .uart_rx_i     ( '0        ),
+        .uart_tx_o     (           ),
 
         .gpio_i        ( gpio_i        ),             
         .gpio_o        ( gpio_o        ),            
         .gpio_out_en_o ( gpio_out_en_o ),
 
-        .neopixel_data_o ( neopixel_data_o )
-    );
+        .neopixel_data_o ( neopixel_data_o ),
 
-    assign gpio_i = '0;
+        .uart2_rxd_i   ( uart2_rxd_i   ),    
+        .uart2_txd_o   ( uart2_txd_o   ),    
+        .uart2_cts_n_i ( uart2_cts_n_i ),  
+        .uart2_dsr_n_i ( uart2_dsr_n_i ),  
+        .uart2_ri_n_i  ( uart2_ri_n_i  ),   
+        .uart2_cd_n_i  ( uart2_cd_n_i  ),   
+        .uart2_rts_n_o ( uart2_rts_n_o ), 
+        .uart2_dtr_n_o ( uart2_dtr_n_o )   
+    );
+        
+    assign uart2_cts_n_i  = '0; 
+    assign uart2_dsr_n_i  = '0;  
+    assign uart2_ri_n_i   = '0;   
+    assign uart2_cd_n_i   = '0; 
+
+    assign gpio_i[ 3:0] = '0;
+    assign gpio_i[ 7:4] = gpio_out_en_o[3:0] & gpio_o[3:0];
 
 
     /////////////////
@@ -495,7 +510,7 @@ module tb_croc_soc #(
         $dumpvars(1,i_croc_soc);
         `endif
 
-        uart_rx_i  = 1'b0;
+        uart_rxd_i  = 1'b0;
         fetch_en_i = 1'b0;
         
         // wait for reset

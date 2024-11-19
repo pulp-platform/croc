@@ -9,7 +9,7 @@
 
 // Address map
 #define SOCCTRL_BASE_ADDR 0x03000000
-#define UART_BASE_ADDR    0x03002000
+#define UART_BASE_ADDR    0x20004000
 #define GPIO_BASE_ADDR    0x03005000
 #define TIMER_BASE_ADDR   0x0300A000
 
@@ -19,6 +19,6 @@
 
 // Peripheral configs
 // UART
-#define UART_BYTE_ALIGN 4
+#define UART_BYTE_ALIGN 8
 #define UART_FREQ       TB_FREQUENCY
 #define UART_BAUD       TB_BAUDRATE
