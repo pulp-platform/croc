@@ -1,0 +1,33 @@
+From 18ec2bffd1f80315a203c0973a961e75288b679f Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Tue, 19 Nov 2024 12:49:02 +0100
+Subject: [PATCH] fix-always_ff-syntax
+
+---
+ delta_counter.sv | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/delta_counter.sv b/delta_counter.sv
+index 90b5cff..ccef8b5 100644
+--- a/delta_counter.sv
++++ b/delta_counter.sv
+@@ -9,6 +9,7 @@
+ // specific language governing permissions and limitations under the License.
+ 
+ // Up/down counter with variable delta
++`include "common_cells/registers.svh"
+ 
+ module delta_counter #(
+     parameter int unsigned WIDTH = 4,
+@@ -28,7 +29,7 @@ module delta_counter #(
+     logic [WIDTH:0] counter_q, counter_d;
+     if (STICKY_OVERFLOW) begin : gen_sticky_overflow
+         logic overflow_d, overflow_q;
+-        always_ff @(posedge clk_i or negedge rst_ni) overflow_q <= ~rst_ni ? 1'b0 : overflow_d;
++        `FF(overflow_q, overflow_d, '0, clk_i, rst_ni)
+         always_comb begin
+             overflow_d = overflow_q;
+             if (clear_i || load_i) begin
+-- 
+2.34.1
+
