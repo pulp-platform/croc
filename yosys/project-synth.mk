@@ -28,11 +28,14 @@ export YOSYS_KEEP_HIER_INST :=  "t:croc_soc*" \
 								"t:gpio__*" \
 								"t:timer_unit*" \
 								"t:reg_uart_wrap*" \
+								"t:tc_clk*" \
 								"t:tc_sram*" \
 								"t:soc_ctrl_reg_top*" \
+								"t:obi_xbar*" \
 								"t:obi_err_sbr*" \
 								"t:*cdc*" \
-								"t:*clint_sync_*"
+								"t:*clint_sync_*" \
+#								"t:ibex_if_stage*" \
 
 # the paths (full names) of all instances matching these strings is reported
 # for floorplaning or writing constraints
