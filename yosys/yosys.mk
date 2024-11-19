@@ -61,7 +61,10 @@ $(YOSYS_OUT)/$(RTL_NAME)_yosys_slang.v: $(SV_FLIST)
 	BUILD="$(YOSYS_OUT)" \
 	REPORTS="$(YOSYS_REPORTS)" \
 	NETLIST="$(YOSYS_OUT)/$(RTL_NAME)_yosys_slang.v" \
-	$(YOSYS) -c $(YOSYS_DIR)/scripts/yosys_synthesis_slang.tcl
+	$(YOSYS) -c $(YOSYS_DIR)/scripts/yosys_synthesis_slang.tcl \
+		2>&1 | TZ=UTC gawk '{ print strftime("[%Y-%m-%d %H:%M %Z]"), $$0 }' \
+		     | tee "$(YOSYS_DIR)/$(RTL_NAME).log" \
+		     | gawk -f $(YOSYS_DIR)/scripts/filter_output.awk;
 		
 
 clean:
