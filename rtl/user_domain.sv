@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: SHL-0.51
 //
 // Authors:
+// - Hannah Pochert <hpochert@student.ethz.ch>
+// - Luisa Wüthrich <lwuethri@student.ethz.ch>
 // - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
 module user_domain import user_pkg::*; import croc_pkg::*; #(
@@ -22,8 +24,8 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   input  logic [      GpioCount-1:0] gpio_in_sync_i, // synchronized GPIO inputs
   output logic [NumExternalIrqs-1:0] interrupts_o // interrupts to core
 );
-
-  assign interrupts_o = '0;  
+  
+  assign interrupts_o = '0;   
 
 
   //////////////////////
@@ -46,6 +48,10 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   sbr_obi_req_t [NumDemuxSbr-1:0] all_user_sbr_obi_req;
   sbr_obi_rsp_t [NumDemuxSbr-1:0] all_user_sbr_obi_rsp;
 
+  // ROM Subordinate Bus
+  sbr_obi_req_t user_rom_obi_req;
+  sbr_obi_rsp_t user_rom_obi_rsp;
+
   // Error Subordinate Bus
   sbr_obi_req_t user_error_obi_req;
   sbr_obi_rsp_t user_error_obi_rsp;
@@ -53,6 +59,9 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   // Fanout into more readable signals
   assign user_error_obi_req              = all_user_sbr_obi_req[UserError];
   assign all_user_sbr_obi_rsp[UserError] = user_error_obi_rsp;
+
+  assign user_rom_obi_req                = all_user_sbr_obi_req[UserRom];
+  assign all_user_sbr_obi_rsp[UserRom]   = user_rom_obi_rsp;
 
 
   //-----------------------------------------------------------------------------------------------
@@ -99,6 +108,18 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
 //-------------------------------------------------------------------------------------------------
 // User Subordinates
 //-------------------------------------------------------------------------------------------------
+  
+  // ROM Subordinate
+  user_rom #(
+    .ObiCfg      ( SbrObiCfg     ),
+    .obi_req_t   ( sbr_obi_req_t ),
+    .obi_rsp_t   ( sbr_obi_rsp_t )
+  ) i_rom (
+    .clk_i,
+    .rst_ni,
+    .obi_req_i  ( user_rom_obi_req ),
+    .obi_rsp_o  ( user_rom_obi_rsp )
+  );
 
   // Error Subordinate
   obi_err_sbr #(
