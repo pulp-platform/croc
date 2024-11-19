@@ -11,7 +11,25 @@
 package croc_pkg;
 
   localparam int unsigned HartId = 32'd0;
-  localparam int unsigned PulpJtagIdCode = 32'h1_0000_db3;
+
+    // Default JTAG ID code type
+  typedef struct packed {
+    bit [ 3:0]  version;
+    bit [15:0]  part_num;
+    bit [10:0]  manufacturer;
+    bit         _one;
+  } jtag_idcode_t;
+
+  // PULP Platform manufacturer and default Cheshire part number
+  localparam bit [10:0] JtagPulpManufacturer = 11'h6d9;
+  localparam bit [15:0] JtagCrocPartNum      = 16'hC0C5;
+  localparam bit [ 3:0] JtagCrocVersion      = 4'h0;
+  localparam jtag_idcode_t PulpJtagIdCode = '{
+    _one          : 1,
+    manufacturer  : JtagPulpManufacturer,
+    part_num      : JtagCrocPartNum,
+    version       : JtagCrocVersion
+  };
 
   typedef enum logic {
     Jtag = 1'b0
@@ -42,8 +60,8 @@ package croc_pkg;
   localparam bit [31:0]   PeriphAddrRange   = 32'h1000_0000;
 
   localparam bit [31:0]   SramBaseAddr      = 32'h1000_0000;
-  localparam int unsigned NumSramBanks      = 32'd2;
-  localparam int unsigned SramBankNumWords  = 512;
+  localparam int unsigned NumSramBanks      = 32'd3;
+  localparam int unsigned SramBankNumWords  = 2048;
   localparam int unsigned SramBankAddrWidth = cf_math_pkg::idx_width(SramBankNumWords);
   localparam int unsigned SramAddrRange     = NumSramBanks*SramBankNumWords*4;
 
