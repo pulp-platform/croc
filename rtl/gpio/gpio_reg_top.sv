@@ -125,7 +125,7 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
       reg2hw[idx].dir         = reg_q.dir[idx];
       reg2hw[idx].en          = reg_q.en[idx];
       reg2hw[idx].out         = reg_q.out[idx];
-      reg2hw[idx].toggle      = toggle_out;
+      reg2hw[idx].toggle      = toggle_out[idx];
       reg2hw[idx].intrpt_en   = reg_q.intrpt_en[idx];
       reg2hw[idx].intrpt      = reg_q.intrpt[idx];
       reg2hw[idx].intrpt_edge = reg_q.intrpt_edge[idx];
