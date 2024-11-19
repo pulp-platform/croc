@@ -17,6 +17,7 @@
   `define USE_LEDS
   `define USE_FAN
   `define USE_VIO
+  //`define USE_NEOPIXEL
 `endif
 
 `define ila(__name, __signal)  \
@@ -60,6 +61,10 @@ module croc_xilinx import croc_pkg::*; #(
   output logic  jtag_vdd_o,
   output logic  jtag_gnd_o,
 `endif
+
+//`ifdef USE_NEOPIXEL
+  output logic neopixel_data_o,
+//`endif
 
 `ifdef USE_FAN
   input  logic [2:0]  fan_sw, // switch 4-6
@@ -122,6 +127,10 @@ module croc_xilinx import croc_pkg::*; #(
   logic [GpioCount-1:0] gpio_o;
 `endif
 
+// `ifndef USE_NEOPIXEL
+//   logic neopixel_data_o;
+// `endif
+
   ////////////
   //  VIOs  //
   ////////////
@@ -165,6 +174,7 @@ module croc_xilinx import croc_pkg::*; #(
     end
   end
 
+  //logic soc_neopixel_data_o;
 
   //////////////////
   //  Reset Sync  //
@@ -201,13 +211,13 @@ module croc_xilinx import croc_pkg::*; #(
   logic rtc_clk_d, rtc_clk_q;
   logic [15:0] counter_d, counter_q;
 
-  // Divide soc_clk (20 MHz) by 610 => ~32.768kHz RTC Clock
+  // Divide soc_clk (50 MHz) by 1526 => ~32.768kHz RTC Clock
   // TODO: does genesys 2 have a 32.768kHz reference clock?
   always_comb begin
     counter_d = counter_q + 1;
     rtc_clk_d = rtc_clk_q;
 
-    if(counter_q == 610) begin
+    if(counter_q == 1526) begin
       counter_d = '0;
       rtc_clk_d = ~rtc_clk_q;
     end
@@ -249,7 +259,7 @@ module croc_xilinx import croc_pkg::*; #(
   i_croc_soc (
     .clk_i           ( soc_clk        ),
     .rst_ni          ( rst_n          ),
-    .ref_clk_i       ( rtc_clk_q      ),
+    .ref_clk_i       ( soc_ref_clk_i  ),
     .testmode_i      ( soc_testmode_i ),
     .fetch_en_i      ( soc_fetch_en   ),
     .status_o        ( status_o       ),
@@ -265,7 +275,9 @@ module croc_xilinx import croc_pkg::*; #(
 
     .gpio_i          ( soc_gpio_i        ),             
     .gpio_o          ( soc_gpio_o        ),            
-    .gpio_out_en_o   ( soc_gpio_out_en_o ) 
+    .gpio_out_en_o   ( soc_gpio_out_en_o ),
+
+    .neopixel_data_o ( neopixel_data_o ) 
   );
 
 endmodule
