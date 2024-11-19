@@ -35,7 +35,6 @@ export YOSYS_KEEP_HIER_INST :=  "t:croc_soc*" \
 								"t:obi_err_sbr*" \
 								"t:*cdc*" \
 								"t:*clint_sync_*" \
-#								"t:ibex_if_stage*" \
 
 # the paths (full names) of all instances matching these strings is reported
 # for floorplaning or writing constraints
