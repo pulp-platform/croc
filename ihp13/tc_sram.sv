@@ -276,7 +276,87 @@ module tc_sram #(
      .A_REN   ( ~we_i   ),
      .A_DIN   ( wdata64 ),
      .A_DOUT  ( rdata64 ),
-     `IHP13_TC_SRAM_256x48_TIEOFF
+     `IHP13_TC_SRAM_256x64_TIEOFF
+    );
+  end else if (NumWords == 1024 && DataWidth == 32 && P1L1) begin: gen_1024x32xBx1
+    logic [63:0] wdata64, rdata64, bm64;
+    logic sel_d, sel_q;
+
+    // muxing neighboring bits instead of upper/lower 32bit reduces routing
+    always_comb begin : gen_bit_interleaving
+      for (int i = 0; i < 32; i++) begin
+          // duplicate each bit
+          wdata64[2*i]   = wdata_i[0][i]; // even bits (active if addr LSB is 0)
+          bm64[2*i]      = bm[0][i] & ~addr_i[0][0];
+          wdata64[2*i+1] = wdata_i[0][i]; // odd bits  (active if addr LSB is 1)
+          bm64[2*i+1]    = bm[0][i] & addr_i[0][0];
+
+          if(~sel_q) begin
+            rdata_o[0][i] = rdata64[2*i];   // even bits
+          end else begin
+            rdata_o[0][i] = rdata64[2*i+1]; // odd bits
+          end
+      end
+    end
+
+    // LSB needed for read in next cycle
+    assign sel_d = addr_i[0][0];
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin : proc_mem_sel_q
+      if(~rst_ni)             sel_q <= '0;
+      else if (req_i & ~we_i) sel_q <= sel_d;
+    end
+
+    RM_IHPSG13_1P_512x64_c2_bm_bist i_cut (
+     .A_CLK   ( clk_i   ),
+     .A_ADDR  ( addr_i [0][9:1] ),
+     .A_BM    ( bm64    ),
+     .A_MEN   ( req_i   ),
+     .A_WEN   ( we_i    ),
+     .A_REN   ( ~we_i   ),
+     .A_DIN   ( wdata64 ),
+     .A_DOUT  ( rdata64 ),
+     `IHP13_TC_SRAM_512x64_TIEOFF
+    );
+  end else if (NumWords == 2048 && DataWidth == 32 && P1L1) begin: gen_2048x32xBx1
+    logic [63:0] wdata64, rdata64, bm64;
+    logic sel_d, sel_q;
+
+    // muxing neighboring bits instead of upper/lower 32bit reduces routing
+    always_comb begin : gen_bit_interleaving
+      for (int i = 0; i < 32; i++) begin
+          // duplicate each bit
+          wdata64[2*i]   = wdata_i[0][i]; // even bits (active if addr LSB is 0)
+          bm64[2*i]      = bm[0][i] & ~addr_i[0][0];
+          wdata64[2*i+1] = wdata_i[0][i]; // odd bits  (active if addr LSB is 1)
+          bm64[2*i+1]    = bm[0][i] & addr_i[0][0];
+
+          if(~sel_q) begin
+            rdata_o[0][i] = rdata64[2*i];   // even bits
+          end else begin
+            rdata_o[0][i] = rdata64[2*i+1]; // odd bits
+          end
+      end
+    end
+
+    // LSB needed for read in next cycle
+    assign sel_d = addr_i[0][0];
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin : proc_mem_sel_q
+      if(~rst_ni)             sel_q <= '0;
+      else if (req_i & ~we_i) sel_q <= sel_d;
+    end
+
+    RM_IHPSG13_1P_1024x64_c2_bm_bist i_cut (
+     .A_CLK   ( clk_i   ),
+     .A_ADDR  ( addr_i [0][10:1] ),
+     .A_BM    ( bm64    ),
+     .A_MEN   ( req_i   ),
+     .A_WEN   ( we_i    ),
+     .A_REN   ( ~we_i   ),
+     .A_DIN   ( wdata64 ),
+     .A_DOUT  ( rdata64 ),
+     `IHP13_TC_SRAM_1024x64_TIEOFF
     );
   end else if (NumWords == 512 && DataWidth <= 48 && P1L1) begin: gen_512x48xBx1
     // L1I and L1D tag caches, alligned to 48bit
