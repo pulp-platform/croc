@@ -6,21 +6,20 @@
 # - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
 # get environment variables
-source [file join [file dirname [info script]] yosys_common.tcl]
+set script_dir [file dirname [info script]]
+source $script_dir/yosys_common.tcl
 
 # constraints file
-set abc_constr [file join [file dirname [info script]] ../src/abc.constr]
+set abc_constr [file join $script_dir ../src/abc.constr]
 
 # ABC script without DFF optimizations
-set abc_combinational_script [file join [file dirname [info script]] abc-opt.script]
+set abc_combinational_script $script_dir/abc-opt.script
 
 # process abc file (written to WORK directory)
 set abc_comb_script   [processAbcScript $abc_combinational_script]
 
-# read library files
-foreach file $lib_list {
-	yosys read_liberty -lib "$file"
-}
+# read liberty files and prepare some variables
+source $script_dir/init_tech.tcl
 
 # read design
 foreach file $vlog_files {
@@ -131,8 +130,8 @@ yosys tee -q -o "${report_dir}/${proj_name}_pre_tech.json" stat -json -tech cmos
 # mapping to technology
 
 puts "Using combinational-only abc optimizations"
-yosys dfflibmap -liberty "$tech_cells"
-yosys abc -liberty "$tech_cells" -D $period_ps -script $abc_comb_script -constr $abc_constr -showtmp
+yosys dfflibmap {*}$tech_cells_args
+yosys abc {*}$tech_cells_args -D $period_ps -script $abc_comb_script -constr $abc_constr -showtmp
 
 yosys clean -purge
 
@@ -145,12 +144,12 @@ yosys splitnets -ports -format __v
 yosys setundef -zero
 yosys clean -purge
 
-yosys hilomap -singleton -hicell {*}[split ${tech_tiehi} " "] -locell {*}[split ${tech_tielo} " "]
+yosys hilomap -singleton -hicell {*}$tech_cell_tiehi -locell {*}$tech_cell_tielo
 
 # final reports
 yosys tee -q -o "${report_dir}/${proj_name}_synth.rpt" check
 yosys tee -q -o "${report_dir}/${proj_name}_area.rpt" stat -top $top_design {*}$liberty_args
-yosys tee -q -o "${report_dir}/${proj_name}_area_logic.rpt" stat -top $top_design -liberty "$tech_cells"
+yosys tee -q -o "${report_dir}/${proj_name}_area_logic.rpt" stat -top $top_design {*}$tech_cells_args
 
 # final netlist
 yosys write_verilog -noattr -noexpr -nohex -nodec $netlist

@@ -13,10 +13,6 @@ set variables {
     top_design  { TOP_DESIGN               ""                       }
     hier_depth  { HIER_DEPTH               0                        }
     period_ps   { YOSYS_TARGET_PERIOD_PS   5000                     }
-    tech_cells  { YOSYS_TECH_CELLS         ""                       }
-    tech_macros { YOSYS_TECH_MACROS        ""                       }
-    tech_tiehi  { YOSYS_TECH_TIEHI         ""                       }
-    tech_tielo  { YOSYS_TECH_TIELO         ""                       }
     proj_name   { PROJ_NAME                ""                       }
     build_dir   { BUILD                    "[set dir [pwd]]/out"    }
     work_dir    { WORK                     "[set dir [pwd]]/WORK"   }
@@ -42,10 +38,6 @@ foreach var [dict keys $variables] {
 if {[string eq $netlist ""]} {
     set netlist ${build_dir}/${top_design}_netlist.v
 }
-
-set lib_list [concat [split $tech_cells] [split $tech_macros] ]
-set liberty_args_list [lmap lib $lib_list {concat "-liberty" $lib}]
-set liberty_args [concat {*}$liberty_args_list]
 
 proc envVarValid {var_name} {
     if { [info exists ::env($var_name)]} {

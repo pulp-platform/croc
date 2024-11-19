@@ -131,7 +131,6 @@ $(PICKLE_OUT)/croc_sv2v.v: $(PICKLE_OUT)/croc_svase.sv
 ## Generate verilog file for synthesis
 pickle: $(PICKLE_OUT)/croc_sv2v.v
 
-include ihp13/technology.mk
 include yosys/yosys.mk
 include openroad/openroad.mk
 

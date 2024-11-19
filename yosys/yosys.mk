@@ -16,7 +16,6 @@ YOSYS_WORK		:= $(YOSYS_DIR)/WORK
 YOSYS_REPORTS	:= $(YOSYS_DIR)/reports
 
 # Project variables
-include $(TECH_DIR)/technology.mk
 include $(YOSYS_DIR)/project-synth.mk
 
 TOP_DESIGN		?= croc_chip
