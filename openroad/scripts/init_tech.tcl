@@ -3,25 +3,36 @@
 # SPDX-License-Identifier: SHL-0.51
 
 # Authors:
-# - Tobias Senti <tsenti@ethz.ch>
+# - Tobias Senti      <tsenti@ethz.ch>
 # - Jannis Schönleber <janniss@iis.ee.ethz.ch>
 # - Philippe Sauter   <phsauter@iis.ee.ethz.ch>
 
 # Initialize the PDK
 
-utl::report "Init tech from Github PDK"
+# if {[file exists "../.cockpitrc"]} {
+# 	utl::report "Init tech from ETHZ DZ cockpit"
+# 	set pdk_dir "../technology"
+# 	set pdk_cells_lib ${pdk_dir}/lib
+# 	set pdk_cells_lef ${pdk_dir}/lef
+# 	set pdk_sram_lib  ${pdk_dir}/lib
+# 	set pdk_sram_lef  ${pdk_dir}/lef
+# 	set pdk_io_lib    ${pdk_dir}/lib
+# 	set pdk_io_lef    ${pdk_dir}/lef
+# } else {
+	utl::report "Init tech from Github PDK"
+	if {![info exists pdk_dir]} {
+		set pdk_dir "../ihp13/pdk"
+	}
+	set pdk_cells_lib ${pdk_dir}/ihp-sg13g2/libs.ref/sg13g2_stdcell/lib
+	set pdk_cells_lef ${pdk_dir}/ihp-sg13g2/libs.ref/sg13g2_stdcell/lef
+	set pdk_sram_lib  ${pdk_dir}/ihp-sg13g2/libs.ref/sg13g2_sram/lib
+	set pdk_sram_lef  ${pdk_dir}/ihp-sg13g2/libs.ref/sg13g2_sram/lef
+	set pdk_io_lib    ${pdk_dir}/ihp-sg13g2/libs.ref/sg13g2_io/lib
+	set pdk_io_lef    ${pdk_dir}/ihp-sg13g2/libs.ref/sg13g2_io/lef
+# }
 
-if {![info exists pdk_dir]} {
-	set pdk_dir "../ihp13/pdk"
-}
+set pdk_pad_lef   ../ihp13/bondpad/lef
 
-set pdk_cells_lib ${pdk_dir}/ihp-sg13g2/libs.ref/sg13g2_stdcell/lib
-set pdk_cells_lef ${pdk_dir}/ihp-sg13g2/libs.ref/sg13g2_stdcell/lef
-set pdk_sram_lib  ${pdk_dir}/ihp-sg13g2/libs.ref/sg13g2_sram/lib
-set pdk_sram_lef  ${pdk_dir}/ihp-sg13g2/libs.ref/sg13g2_sram/lef
-set pdk_io_lib    ${pdk_dir}/ihp-sg13g2/libs.ref/sg13g2_io/liberty
-set pdk_io_lef    ${pdk_dir}/ihp-sg13g2/libs.ref/sg13g2_io/lef
-set pdk_pad_lef   ${pdk_dir}/../bondpad/lef
 
 # LIB
 define_corners tt ff
@@ -31,8 +42,8 @@ read_liberty -corner tt ${pdk_cells_lib}/sg13g2_stdcell_typ_1p20V_25C.lib
 read_liberty -corner ff ${pdk_cells_lib}/sg13g2_stdcell_fast_1p32V_m40C.lib
 
 puts "Init IO cells"
-read_liberty -corner tt ${pdk_io_lib}/sg13g2_iocell_typ_1p2V_3p3V_25C.lib
-read_liberty -corner ff ${pdk_io_lib}/sg13g2_iocell_fast_1p32V_3p6V_m40C.lib
+read_liberty -corner tt ${pdk_io_lib}/sg13g2_io_typ_1p2V_3p3V_25C.lib
+read_liberty -corner ff ${pdk_io_lib}/sg13g2_io_fast_1p32V_3p6V_m40C.lib
 
 puts "Init SRAM macros"
 read_liberty -corner tt ${pdk_sram_lib}/RM_IHPSG13_1P_64x64_c2_bm_bist_typ_1p20V_25C.lib
