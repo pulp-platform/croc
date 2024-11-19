@@ -62,7 +62,7 @@ VSIM_ARGS  = -t 1ns -voptargs=+acc
 VSIM_ARGS += -suppress vsim-3009 -suppress vsim-8683 -suppress vsim-8386
 
 vsim/compile_rtl.tcl: Bender.lock Bender.yml
-	$(BENDER) script vsim -t rtl -t vsim -t simulation -t verilator -DSYNTHESIS -DSIMULATION > $@
+	$(BENDER) script vsim -t rtl -t vsim -t simulation -t verilator -DSYNTHESIS -DSIMULATION  --vlog-arg="$(VLOG_ARGS)" > $@
 
 vsim/compile_netlist.tcl: Bender.lock Bender.yml
 	$(BENDER) script vsim -t ihp13 -t vsim -t simulation -t verilator -t netlist_yosys -DSYNTHESIS -DSIMULATION > $@

@@ -45,8 +45,6 @@ package gpio_reg_pkg;
   //-----------------------------------------------------------------------------------------------
   // Offsets
   //-----------------------------------------------------------------------------------------------
-  parameter int unsigned BankAddrWidth = 5; // 7 bits from h00-h7F; -2 for word addressing
-
   // Register address offsets from GPIO base address
   // Spacing between registers left to allow for future implementation
   // of multiple GPIO banks (enabling more than 32 GPIOs)
