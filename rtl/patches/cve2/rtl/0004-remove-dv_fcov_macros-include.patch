@@ -1,0 +1,50 @@
+From eb65e8c2a363aca5ba25b0e429e95d9bae57e391 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Tue, 19 Nov 2024 15:42:09 +0100
+Subject: [PATCH] remove dv_fcov_macros include
+
+---
+ cve2_controller.sv      | 1 -
+ cve2_id_stage.sv        | 1 -
+ cve2_load_store_unit.sv | 1 -
+ 3 files changed, 3 deletions(-)
+
+diff --git a/cve2_controller.sv b/cve2_controller.sv
+index 31245510..46b6ffdb 100644
+--- a/cve2_controller.sv
++++ b/cve2_controller.sv
+@@ -8,7 +8,6 @@
+  */
+ 
+ `include "lowrisc_prim/prim_assert.svh"
+-`include "dv_fcov_macros.svh"
+ 
+ module cve2_controller #(
+  ) (
+diff --git a/cve2_id_stage.sv b/cve2_id_stage.sv
+index b57188b2..a6c696c4 100644
+--- a/cve2_id_stage.sv
++++ b/cve2_id_stage.sv
+@@ -15,7 +15,6 @@
+  */
+ 
+ `include "lowrisc_prim/prim_assert.svh"
+-`include "dv_fcov_macros.svh"
+ 
+ module cve2_id_stage #(
+   parameter bit               RV32E           = 0,
+diff --git a/cve2_load_store_unit.sv b/cve2_load_store_unit.sv
+index 08775649..6d0b4d91 100644
+--- a/cve2_load_store_unit.sv
++++ b/cve2_load_store_unit.sv
+@@ -12,7 +12,6 @@
+  */
+ 
+ `include "lowrisc_prim/prim_assert.svh"
+-`include "dv_fcov_macros.svh"
+ 
+ module cve2_load_store_unit
+ (
+-- 
+2.34.1
+

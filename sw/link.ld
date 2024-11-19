@@ -19,7 +19,7 @@ SECTIONS
 {
   /DISCARD/ : { *(.riscv.attributes) *(.comment) }
 
-  .text._start 0x10000080 : { *(.text._start) } >SRAM
+  .text._start 0x10000000 : { *(.text._start) } >SRAM
   .text : { *(.text) *(.text.*) } >SRAM
   .misc : { *(.sdata) *(.*) } >SRAM
   

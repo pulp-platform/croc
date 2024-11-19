@@ -14,7 +14,7 @@ dependencies:
   riscv-dbg:            { git: "https://github.com/pulp-platform/riscv-dbg.git",            rev: "verilator-phsauter" }
   tech_cells_generic:   { git: "https://github.com/pulp-platform/tech_cells_generic.git",   version: 0.2.13 }
   register_interface:   { git: "https://github.com/pulp-platform/register_interface.git",   version: 0.4.1  }
-  ibex:                 { git: "https://github.com/pulp-platform/ibex.git",                 rev: "pulpissimo-v6.1.2"  }
+  cve2:                 { git: "https://github.com/openhwgroup/cve2.git",                   rev: "370793f52488d1022d0554d194ad24f125156acc"  }
   apb:                  { git: "https://github.com/pulp-platform/apb.git",                  version: 0.2.4  }
   timer_unit:           { git: "https://github.com/pulp-platform/timer_unit.git",           version: 1.0.3  }
   obi:                  { git: "https://github.com/pulp-platform/obi.git",                  version: 0.1.3  }
@@ -170,13 +170,13 @@ vendor_package:
   #########
   # core  #
   #########
-  - name: ibex
-    target_dir: rtl/ibex
-    upstream: { git: "https://github.com/pulp-platform/ibex.git", rev: "b18f7ef178ed07f5085051f96042c670a919fd5c" } # pulpissimo-v6.1.2
-    patch_dir: "rtl/patches/ibex"
+  # CVE2/Ibex
+  - name: cve2
+    target_dir: rtl/cve2
+    upstream: { git: "https://github.com/openhwgroup/cve2.git", rev: "370793f52488d1022d0554d194ad24f125156acc" }
+    patch_dir: "rtl/patches/cve2"
     mapping:
-      - { from: 'rtl/',                                     to: '',                 patch_dir: 'rtl/' }
-      - { from: 'README.md',                                to: 'README.md',        patch_dir: '' }
-      - { from: 'Bender.yml',                               to: 'Bender.yml',       patch_dir: '' }
-      - { from: 'doc/03_reference/images/blockdiagram.svg', to: 'blockdiagram.svg', patch_dir: '' }
-      - { from: 'vendor/lowrisc_ip/ip/prim/rtl/',           to: 'lowrisc_prim/',    patch_dir: 'lowrisc_prim/' }
+      - { from: 'rtl/',                                         to: '',                      patch_dir: 'rtl/' }
+      - { from: 'README.md',                                    to: 'README.md',             patch_dir: '' }
+      - { from: 'doc/03_reference/images/blockdiagram.svg',     to: 'blockdiagram.svg',      patch_dir: '' }
+      - { from: 'vendor/lowrisc_ip/ip/prim/rtl/',               to: 'include/lowrisc_prim/', patch_dir: 'lowrisc_prim/' }

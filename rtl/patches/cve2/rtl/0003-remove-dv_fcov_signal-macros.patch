@@ -1,0 +1,73 @@
+From 6f172a4e4a165ffed08f2da2d33e91b833322f3f Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Tue, 19 Nov 2024 15:39:31 +0100
+Subject: [PATCH] remove dv_fcov_signal macros
+
+---
+ cve2_controller.sv      | 11 -----------
+ cve2_id_stage.sv        |  8 --------
+ cve2_load_store_unit.sv |  7 -------
+ 3 files changed, 26 deletions(-)
+
+diff --git a/cve2_controller.sv b/cve2_controller.sv
+index 681ae3f9..31245510 100644
+--- a/cve2_controller.sv
++++ b/cve2_controller.sv
+@@ -750,17 +750,6 @@ module cve2_controller #(
+     end
+   end
+ 
+-  //////////
+-  // FCOV //
+-  //////////
+-
+-  `DV_FCOV_SIGNAL(logic, interrupt_taken, (ctrl_fsm_cs != IRQ_TAKEN) & (ctrl_fsm_ns == IRQ_TAKEN))
+-  `DV_FCOV_SIGNAL(logic, debug_entry_if,
+-      (ctrl_fsm_cs != DBG_TAKEN_IF) & (ctrl_fsm_ns == DBG_TAKEN_IF))
+-  `DV_FCOV_SIGNAL(logic, debug_entry_id,
+-      (ctrl_fsm_cs != DBG_TAKEN_ID) & (ctrl_fsm_ns == DBG_TAKEN_ID))
+-  `DV_FCOV_SIGNAL(logic, pipe_flush, (ctrl_fsm_cs != FLUSH) & (ctrl_fsm_ns == FLUSH))
+-  `DV_FCOV_SIGNAL(logic, debug_req, debug_req_i & ~debug_mode_q)
+ 
+   ////////////////
+   // Assertions //
+diff --git a/cve2_id_stage.sv b/cve2_id_stage.sv
+index eef60fa2..b57188b2 100644
+--- a/cve2_id_stage.sv
++++ b/cve2_id_stage.sv
+@@ -764,14 +764,6 @@ module cve2_id_stage #(
+   assign perf_wfi_wait_o = wfi_insn_dec;
+   assign perf_div_wait_o = stall_multdiv & div_en_dec;
+ 
+-  //////////
+-  // FCOV //
+-  //////////
+-
+-  `DV_FCOV_SIGNAL(logic, branch_taken,
+-    instr_executing & (id_fsm_q == FIRST_CYCLE) & branch_decision_i)
+-  `DV_FCOV_SIGNAL(logic, branch_not_taken,
+-    instr_executing & (id_fsm_q == FIRST_CYCLE) & ~branch_decision_i)
+ 
+   ////////////////
+   // Assertions //
+diff --git a/cve2_load_store_unit.sv b/cve2_load_store_unit.sv
+index 98e3d5ed..08775649 100644
+--- a/cve2_load_store_unit.sv
++++ b/cve2_load_store_unit.sv
+@@ -493,13 +493,6 @@ module cve2_load_store_unit
+ 
+   assign busy_o = (ls_fsm_cs != IDLE);
+ 
+-  //////////
+-  // FCOV //
+-  //////////
+-
+-  `DV_FCOV_SIGNAL(logic, ls_error_exception, (load_err_o | store_err_o) & ~pmp_err_q)
+-  `DV_FCOV_SIGNAL(logic, ls_pmp_exception, (load_err_o | store_err_o) & pmp_err_q)
+-
+   ////////////////
+   // Assertions //
+   ////////////////
+-- 
+2.34.1
+

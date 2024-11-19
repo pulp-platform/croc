@@ -41,23 +41,19 @@ module core_wrap import croc_pkg::*; #() (
   // CPU Control Signals
   input  logic        fetch_enable_i,
 
-  output logic        core_sleep_o
+  output logic        core_busy_o
 );
   // Interrupt signals
   logic [31:0] core_irqs;
 
-  // Ibex expects 0x00 offset (adds reset offset 0x80 internally)
+  // lowest 8 bits are ignored internally
   logic[31:0] ibex_boot_addr;
   assign ibex_boot_addr = boot_addr_i & 32'hFFFFFF00; 
 // ifdef ordered according to priority
-`ifdef VERILATOR
-  ibex_core #(
-`elsif SYNTHESIS
-  ibex_core #(
-`elsif TRACE_EXECUTION
-  ibex_core_tracing #(
+`ifdef TRACE_EXECUTION
+  cve2_core_tracing #(
 `else
-  ibex_core #(
+  cve2_core #(
 `endif
     .PMPEnable          ( 1'b0                ),
     .PMPGranularity     ( 0                   ),
@@ -65,17 +61,10 @@ module core_wrap import croc_pkg::*; #() (
     .MHPMCounterNum     ( 0                   ),
     .MHPMCounterWidth   ( 40                  ),
     .RV32E              ( 0                   ),
-    .RV32M              ( ibex_pkg::RV32MNone ),
-    .RV32B              ( ibex_pkg::RV32BNone ),
-    .RegFile            ( ibex_pkg::RegFileFF ),
-    .BranchTargetALU    ( 1'b0                ),
-    .WritebackStage     ( 1'b0                ),
-    .ICache             ( 1'b0                ),
-    .ICacheECC          ( 1'b0                ),
-    .BranchPredictor    ( 1'b0                ),
+    .RV32M              ( cve2_pkg::RV32MNone ),
+    .RV32B              ( cve2_pkg::RV32BNone ),
     .DbgTriggerEn       ( 1'b1                ),
     .DbgHwBreakNum      ( 1                   ),
-    .SecureIbex         ( 1'b0                ),
     .DmHaltAddr         ( DebugAddrOffset + dm::HaltAddress[31:0]      ),
     .DmExceptionAddr    ( DebugAddrOffset + dm::ExceptionAddress[31:0] )
   ) i_ibex (
@@ -110,17 +99,14 @@ module core_wrap import croc_pkg::*; #() (
     .irq_external_i     ( 1'b0         ),
     .irq_fast_i         ( irqs_i       ),
     .irq_nm_i           ( 1'b0         ),
-    .irq_x_i            ( '0 ),
-    .irq_x_ack_o        ( ),
-    .irq_x_ack_id_o     ( ),
+    .irq_pending_o      ( ),
 
-    .external_perf_i    ( '0 ),
+
+    .crash_dump_o       ( ),
 
     .debug_req_i,
     .fetch_enable_i,
-    .alert_minor_o      ( ),
-    .alert_major_o      ( ),
-    .core_sleep_o
+    .core_busy_o
   );
 
 endmodule

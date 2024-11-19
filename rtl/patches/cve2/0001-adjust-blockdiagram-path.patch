@@ -1,0 +1,25 @@
+From b29bab50d89f40c5523d99012396d8c0e7433896 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Tue, 19 Nov 2024 14:43:00 +0100
+Subject: [PATCH] adjust-blockdiagram-path
+
+---
+ README.md | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/README.md b/README.md
+index 23d220fa..d750c868 100644
+--- a/README.md
++++ b/README.md
+@@ -16,7 +16,7 @@ Integer Multiplication and Division (M), and Compressed (C) extensions.
+ The block diagram below shows the *small* parametrization with a 2-stage
+ pipeline.
+ 
+-<p align="center"><img src="doc/03_reference/images/blockdiagram.svg" width="650"></p>
++<p align="center"><img src="blockdiagram.svg" width="650"></p>
+ 
+ CV32E20 was initially developed as part of the [PULP platform](https://www.pulp-platform.org)
+ under the name [&#34;Zero-riscy&#34;](https://doi.org/10.1109/PATMOS.2017.8106976), and has been
+-- 
+2.34.1
+

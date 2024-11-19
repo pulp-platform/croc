@@ -1,0 +1,47 @@
+From 202695875dfe4b061bb9e327b943d3b8b7aff9f6 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Tue, 19 Nov 2024 16:17:33 +0100
+Subject: [PATCH] adjust include paths
+
+---
+ prim_assert.sv => prim_assert.svh | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+ rename vendor/lowrisc_ip/ip/prim/rtl/{prim_assert.sv => prim_assert.svh} (95%)
+
+diff --git a/prim_assert.sv b/prim_assert.svh
+similarity index 95%
+rename from prim_assert.sv
+rename to prim_assert.svh
+index a5b17a82..e8162497 100644
+--- a/prim_assert.sv
++++ b/prim_assert.svh
+@@ -82,14 +82,14 @@
+ //  ASSUME_I:     Assume an immediate property
+ 
+ `ifdef VERILATOR
+- `include "prim_assert_dummy_macros.svh"
++ `include "lowrisc_prim/prim_assert_dummy_macros.svh"
+ `elsif SYNTHESIS
+- `include "prim_assert_dummy_macros.svh"
++ `include "lowrisc_prim/prim_assert_dummy_macros.svh"
+ `elsif YOSYS
+- `include "prim_assert_yosys_macros.svh"
++ `include "lowrisc_prim/prim_assert_yosys_macros.svh"
+  `define INC_ASSERT
+ `else
+- `include "prim_assert_standard_macros.svh"
++ `include "lowrisc_prim/prim_assert_standard_macros.svh"
+  `define INC_ASSERT
+ `endif
+ 
+@@ -140,6 +140,6 @@
+    `COVER(__name, __prop, __clk, __rst)                                                     \
+ `endif
+ 
+-`include "prim_assert_sec_cm.svh"
++`include "lowrisc_prim/prim_assert_sec_cm.svh"
+ 
+ `endif // PRIM_ASSERT_SV
+-- 
+2.34.1
+

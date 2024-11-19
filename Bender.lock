@@ -28,11 +28,11 @@ packages:
     source:
       Path: rtl/common_verification
     dependencies: []
-  ibex:
+  cve2:
     revision: null
     version: null
     source:
-      Path: rtl/ibex
+      Path: rtl/cve2
     dependencies:
     - tech_cells_generic
   obi:
