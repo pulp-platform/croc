@@ -77,9 +77,6 @@ module uart_register #(
   always_comb begin
     
     //---Defaults---------------------------------------------------------------------------------
-    reg_d   = new_reg;
-    new_reg = reg_q;
-
     err     = w_err_q;
     w_err_d = 1'b0;
 
@@ -88,12 +85,14 @@ module uart_register #(
     uart_reg_read.obi_read_lsr  = 1'b0;
     uart_reg_read.obi_read_msr  = 1'b0;
     uart_reg_read.obi_write_thr = 1'b0;
+    uart_reg_read.obi_write_dllm = 1'b0;
     
     rsp_data = 32'h0;  
 
     //--------------------------------------------------------------------------------------------
     // WRITE
     //--------------------------------------------------------------------------------------------
+    new_reg = reg_q;
 
     //----UART-Intern-Writes----------------------------------------------------------------------
     new_reg.strct.FCR[1] = uart_reg_write.fcr_rx_valid? uart_reg_write.fcr_rx_fifo_rst : reg_q.strct.FCR[1];
@@ -118,11 +117,12 @@ module uart_register #(
     new_reg.strct.MSR[3] = uart_reg_write.msr_valid[3] ? uart_reg_write.msr.arr[3] : reg_q.strct.MSR[3];
     new_reg.strct.MSR[7:4] = uart_reg_write.msr.arr[7:4];
 
+    reg_d = new_reg;
 
     //----OBI-Writes------------------------------------------------------------------------------
     if (obi_req_i.req & obi_req_i.a.we & obi_req_i.a.be[0]) begin
 
-      w_err_d = 1'b0; 
+      w_err_d = 1'b0;
 
       if (~reg_q.strct.LCR[7]) begin // DLAB = 0 Address Decode
 
@@ -162,10 +162,28 @@ module uart_register #(
         case (word_addr_d)
           DLL_OFFSET: begin
             reg_d.strct.DLL = obi_req_i.a.wdata[RegWidth-1:0];
+            uart_reg_read.obi_write_dllm = 1'b1;
           end
 
           DLM_OFFSET: begin
             reg_d.strct.DLM = obi_req_i.a.wdata[RegWidth-1:0];
+            uart_reg_read.obi_write_dllm = 1'b1;
+          end
+
+          FCR_OFFSET: begin
+            reg_d.strct.FCR = obi_req_i.a.wdata[RegWidth-1:0];
+          end
+
+          LCR_OFFSET: begin
+            reg_d.strct.LCR = obi_req_i.a.wdata[RegWidth-1:0];
+          end
+
+          MCR_OFFSET: begin
+            reg_d.strct.MCR = obi_req_i.a.wdata[RegWidth-1:0];
+          end
+
+          SPR_OFFSET: begin
+            reg_d.strct.SPR = SPR_DEFAULT;
           end
 
           default: begin

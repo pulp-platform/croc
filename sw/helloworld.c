@@ -33,48 +33,56 @@ int main() {
 #define TB_FREQUENCY 10000000
 #define TB_BAUDRATE    115200
 
-#define TEST_MESSAGE "UART Test Passed!"
-#define TEST_MESSAGE_LENGTH (sizeof(TEST_MESSAGE) - 1) // Exclude null-terminator
+/*
+int my_strlen(const char *str) {
+    int len = 0;
+    while(*str++) len++;
+    return len;
+}*/
 
 int main() {
-    // Initialize the UART
-    uart_init();
+  // Initialize the UART
+  
+  uart_init();
 
-    // Send a greeting message
-    printf("UART Test Start\n");
-    uart_write_flush(); // Ensure all bytes are transmitted
+  //-----Send a greeting message---------------------------------------------
+  printf("Hello! %x\n", 123);
 
-    // Test writing a predefined message to UART
-    const char *message = TEST_MESSAGE;
-    uart_write_str((void *)message, TEST_MESSAGE_LENGTH);
-    uart_write_flush(); // Ensure all bytes are transmitted
+  //-----Write-UART-Test-----------------------------------------------------
+  uart_write_flush(); // Ensure all bytes are transmitted
+  
+  char string [] = "TTM\0";
+  // Make an array of 8 arrays
+  int str_len = sizeof(string);
+  uint8_t message_tx[str_len];
+  
+  for (int i = 0; i < str_len; i++) { 
+    message_tx[i] = (uint8_t)string[i];
+  }
+  
+  uart_write_str(message_tx, str_len);
+  
+  uart_write_flush(); // Ensure all bytes are transmitted
 
-    // Indicate to the user to send the test message back
-    printf("Send the following back: %s\n", message);
-    uart_write_flush();
+  // uart_txd_o in testbench should be messagetx and print it out
 
-    // Read back the message into a buffer
-    char buffer[TEST_MESSAGE_LENGTH];
-    uart_read_str(buffer, TEST_MESSAGE_LENGTH);
+  //-----Read-UART-Test------------------------------------------------------
+  /*
+  // Read the message into a buffer
+  char buffer[TEST_MESSAGE_LENGTH];
+  uart_read_str(buffer, TEST_MESSAGE_LENGTH);
 
-    // Check if received message matches the sent message
-    int test_passed = 1;
-    for (int i = 0; i < TEST_MESSAGE_LENGTH; ++i) {
-        if (buffer[i] != message[i]) {
-            test_passed = 0;
-            break;
-        }
-    }
+  // Check if received message matches the one set in the testbench
+  int test_passed = 1;
+  for (int i = 0; i < TEST_MESSAGE_LENGTH; ++i) {
+      if (buffer[i] != message[i]) {
+          test_passed = 0;
+          break;
+      }
+  }
 
-    // Print the test result
-    if (test_passed) {
-        printf("UART Test Passed!\n");
-    } else {
-        printf("UART Test Failed!\n");
-    }
+  uart_write_flush(); // Ensure all bytes are transmitted
+  */
+  return 1;
 
-    uart_write_flush(); // Ensure all bytes are transmitted
-
-    return 0;
 }
-

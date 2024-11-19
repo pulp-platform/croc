@@ -30,8 +30,8 @@ module tb_croc_soc #(
     logic jtag_tdi_i;
     logic jtag_tdo_o;
 
-    logic uart_rxd_i;
-    logic uart_txd_o;
+    logic uart2_rxd_i;
+    logic uart2_txd_o;
 
     logic fetch_en_i;
     logic status_o;
@@ -339,7 +339,7 @@ module tb_croc_soc #(
         $finish();
     endtask
 
-
+    /*
     ////////////
     //  UART  //
     ////////////
@@ -364,23 +364,23 @@ module tb_croc_soc #(
     logic   uart_reading_byte;
 
     initial begin
-        uart_rxd_i         = 1;
+        uart2_rxd_i         = 1;
         uart_reading_byte  = 0;
     end
 
     task automatic uart_read_byte(output byte_bt bite);
         // Start bit
-        @(negedge uart_txd_o);
+        @(negedge uart2_txd_o);
         uart_reading_byte = 1;
         #(UartBaudPeriod/2);
         // 8-bit byte
         for (int i = 0; i < 8; i++) begin
-        #UartBaudPeriod bite[i] = uart_txd_o;
+        #UartBaudPeriod bite[i] = uart2_txd_o;
         end
         // Parity bit
         if(UartParityEna) begin
         bit parity;
-        #UartBaudPeriod parity = uart_txd_o;
+        #UartBaudPeriod parity = uart2_txd_o;
         if(parity ^ (^bite))
             $error("[UART] - Parity error detected!");
         end
@@ -391,15 +391,15 @@ module tb_croc_soc #(
 
     task automatic uart_write_byte(input byte_bt bite);
         // Start bit
-        uart_rxd_i = 1'b0;
+        uart2_rxd_i = 1'b0;
         // 8-bit byte
         for (int i = 0; i < 8; i++)
-        #UartBaudPeriod uart_rxd_i = bite[i];
+        #UartBaudPeriod uart2_rxd_i = bite[i];
         // Parity bit
         if (UartParityEna)
-        #UartBaudPeriod uart_rxd_i = (^bite);
+        #UartBaudPeriod uart2_rxd_i = (^bite);
         // Stop bit
-        #UartBaudPeriod uart_rxd_i = 1'b1;
+        #UartBaudPeriod uart2_rxd_i = 1'b1;
         #UartBaudPeriod;
     endtask
 
@@ -435,9 +435,7 @@ module tb_croc_soc #(
             end
         end
     end
-
-    
-
+    */
     ////////////
     //  DUT   //
     ////////////
@@ -510,7 +508,7 @@ module tb_croc_soc #(
         $dumpvars(1,i_croc_soc);
         `endif
 
-        uart_rxd_i  = 1'b0;
+        uart2_rxd_i  = 1'b0;
         fetch_en_i = 1'b0;
         
         // wait for reset

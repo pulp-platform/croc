@@ -5,9 +5,8 @@ module uart_rx #()
   input logic  clk_i,
   input logic  rst_ni,
 
-  input logic  oversample_rate,
   input logic  oversample_rate_edge,
-  input logic  baud_rate,
+  input logic  baud_rate_edge,
 
   input logic  rxd,
 
@@ -30,7 +29,8 @@ module uart_rx #()
   logic timing_bit_center_edge;
   logic timing_clear;
   logic timing_init_clear;
-  logic timing_load, timing_offset;
+  logic timing_load;
+  logic [4:0] timing_offset;
   logic [4:0] timing_count;
 
   //--Synchronization-Signals---------------------------------------------------------------------
@@ -144,11 +144,10 @@ module uart_rx #()
     filtered_rxd = 1'b0;
     if (timing_count == 5'b00101) begin // Start reset in cycle 5: "Majority Init"
       high_count_d = 2'b00;
-    end else begin
+    end else if (oversample_rate_edge) begin
       if (sync_rxd & (timing_count <= 5'b01000)) begin // Take samples in Cycle 6, 7, 8
         high_count_d = high_count_q + 1;
-      end
-      if (timing_count == 5'b01000) begin // filtered_rxd is set for Oversample Cycle 8
+      end else if (timing_count == 5'b01000) begin // filtered_rxd is set for Oversample Cycle 8
         if ((high_count_d == 2'b10) | (high_count_d == 2'b11) ) begin
           filtered_rxd = 1'b1;
         end
@@ -157,7 +156,7 @@ module uart_rx #()
 
   end
 
-  `FF(high_count_q, high_count_d, '0, oversample_rate, rst_ni)
+  `FF(high_count_q, high_count_d, '0, clk_i, rst_ni) 
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // FIFO Instantiation//
@@ -185,31 +184,30 @@ module uart_rx #()
     .data_o    (fifo_data_o), // output data
     .pop_i     (fifo_pop)     // pop head from queue
   );
-
   
+  ////////////////////////////////////////////////////////////////////////////////////////////////
+  // General Logic //
+  ////////////////////////////////////////////////////////////////////////////////////////////////
   always_comb begin
-
-  ////////////////////////////////////////////////////////////////////////////////////////////////
-  // FIFO Combinational //
-  ////////////////////////////////////////////////////////////////////////////////////////////////
 
     //--------------------------------------------------------------------------------------------
     // Defaults
     //--------------------------------------------------------------------------------------------
-    // Reset
-    fifo_clear    = 1'b1;
-    // Trigger
-    trigger       = 1'b0;
-    tl_characters = 4'b0001;
-    // Write
-    fifo_push     = 1'b0;
-    fifo_data_i   = '0;
-    // Timeout
-    timeout       = 1'b0;
-    // FIFO Error
-    fifo_error_index_d = fifo_error_index_q;
 
-    // Register Interface Writes
+    //--FIFO Combinational------------------------------------------------------------------------
+    fifo_clear    = 1'b1; // Reset
+
+    trigger       = 1'b0;    // Trigger
+    tl_characters = 4'b0001; // Trigger
+    
+    fifo_push     = 1'b0; // Write
+    fifo_data_i   = '0;   // Write
+    
+    timeout       = 1'b0; // Timeout
+    
+    fifo_error_index_d = fifo_error_index_q; // FIFO Error
+
+    //--Register Interface------------------------------------------------------------------------
     reg_write.fcr_rx_valid      = 1'b0;
     reg_write.fcr_rx_fifo_rst   = 1'b0;
 
@@ -224,144 +222,40 @@ module uart_rx #()
     reg_write.lsr_par_err       = 1'b0;
     reg_write.lsr_break_intrpt  = 1'b0;
 
-    if (reg_read.fcr.strct.fifo_en) begin
-    //--------------------------------------------------------------------------------------------
-    // FIFO Reset
-    //--------------------------------------------------------------------------------------------
-      fifo_clear = 1'b0;
-      
-      if (reg_read.fcr.strct.rx_fifo_rst) begin
-        fifo_clear                = 1'b1;
-        reg_write.fcr_rx_fifo_rst = 1'b0; 
-        reg_write.fcr_rx_valid    = 1'b1;
-      end 
-    //--------------------------------------------------------------------------------------------
-    // FIFO Trigger Output
-    //--------------------------------------------------------------------------------------------
-      case (reg_read.fcr.strct.rx_fifo_tl)
-        2'b00: tl_characters = 4'b0001; // 1 Character
-        2'b01: tl_characters = 4'b0100; // 4 Characters
-        2'b10: tl_characters = 4'b1000; // 8 Characters
-        2'b11: tl_characters = 4'b1110; // 14 Characters
-        default: tl_characters = 4'b0001; 
-      endcase
-      
-      if (tl_characters <= fifo_usage) begin
-        trigger = 1'b1;
-      end
+    //--Statemachine Combinational----------------------------------------------------------------
+    state_d     = state_q; // Pass along state
+    break_d     = break_q; // Break Interrupt information for Parity and Stop Bits  
+
+    rsr_finish  = 1'b0;
+    par_finish  = 1'b0;
+    stop_finish = 1'b0;   
+    write_init  = 1'b0;
+
+    timing_init_clear = 1'b0;
+    timing_load       = 1'b0;
+    timing_offset     = 5'b00000;
 
     //--------------------------------------------------------------------------------------------
-    // FIFO Write from RSR
+    // Word Length 
     //--------------------------------------------------------------------------------------------
-      if (write_init) begin
-        if (fifo_full) begin
-          reg_write.lsr_overrun_err = 1'b1;
-          reg_write.lsr_valid[1]    = 1'b1;
-        end else begin
-          fifo_push       = 1'b1;
-          break_interrupt = & (~{break_q, rsr_q}); // Interrupt if all character bits are 0s
-          fifo_data_i     = {parity_err_q, framing_err_q, break_interrupt, rsr_q}; // 11 Bits 
-
-          if (parity_err_q | framing_err_q | break_interrupt) begin
-            fifo_error_index_d     = fifo_usage;   
-            reg_write.lsr_fifo_err = 1'b1;
-            reg_write.lsr_valid[5] = 1'b1;
-          end
-        end
-      end
+    case (reg_read.lcr.strct.word_len)
+      2'b00: word_len_bits = 3'b100; // 5 Bits (4th index in rsr)
+      2'b01: word_len_bits = 3'b101; // 6 Bits (5th index in rsr)
+      2'b10: word_len_bits = 3'b110; // 7 Bits (6th index in rsr)
+      2'b11: word_len_bits = 3'b111; // 8 Bits (7th index in rsr)
+      default: word_len_bits = 3'b111; 
+    endcase
 
     //--------------------------------------------------------------------------------------------
-    // FIFO Timeout
+    // Clear RHR & LSR after OBI read
     //--------------------------------------------------------------------------------------------
-      // timeout_trigger = (1 Startbit + 8 Databits + 1 Paritybit + 2 Stopbits) * 4
-      timeout_trigger = 6'b000001 + 6'b001000 + 6'b000001 + 6'b000010; // Timeout Trigger Level
-      timeout_trigger = timeout_trigger << 2; // Multiply by 4
-
-      timeout_count_d = timeout_count_q;
-
-      if (reg_read.fcr.strct.fifo_en & (~fifo_empty)) begin
-        if (write_init | reg_read.obi_read_rhr) begin
-          timeout_count_d = '0;
-        end else begin
-          timeout_count_d = timeout_count_q + 1;
-          if (timeout_trigger == timeout_count_q) begin
-            timeout = 1'b1;
-            timeout_count_d = '0;
-          end
-        end
-      end else begin
-        timeout_count_d = 1'b0; 
-      end
-
-    end
-  
-  ////////////////////////////////////////////////////////////////////////////////////////////////
-  // WRITE RHR Combinational //
-  ////////////////////////////////////////////////////////////////////////////////////////////////
-
-    //--Defaults----------------------------------------------------------------------------------
-    fifo_clear = 1'b1;
-    fifo_pop   = 1'b0;
-    rhr_full_d = rhr_full_q;
-
-    //--------------------------------------------------------------------------------------------
-    // Clear RHR after OBI read
-    //--------------------------------------------------------------------------------------------
-    if (reg_read.obi_read_rhr) begin
+    if (reg_read.obi_read_rhr) begin // Clear RHR
       reg_write.rhr.strct.char_rx = '0;
       reg_write.rhr_valid         = 1'b1;
       rhr_full_d                  = 1'b0;
     end
-
-    //--------------------------------------------------------------------------------------------
-    // Write RHR
-    //--------------------------------------------------------------------------------------------
-    if (reg_read.fcr.strct.fifo_en) begin // FIFO enabled
-
-      //--Write-FIFO-to-RHR-----------------------------------------------------------------------
-      if ((~rhr_full_q) & (~fifo_empty)) begin
-        reg_write.rhr.strct.char_rx      = fifo_data_o[7:0];
-        reg_write.rhr_valid              = 1'b1;
-        rhr_full_d                       = 1'b1;
-        // If Fifo Enabled, always set LSR bits with the Data on top of the FIFO
-        reg_write.lsr_break_intrpt = fifo_data_o[8];
-        reg_write.lsr_frame_err    = fifo_data_o[9];
-        reg_write.lsr_par_err      = fifo_data_o[10];
-        reg_write.lsr_valid[4:2]   = 1'b1;
-        fifo_pop                   = 1'b1;
-
-        if (4'b0000 != fifo_error_index_q) begin
-          fifo_error_index_d = fifo_error_index_q - 'b0001; 
-        end
-      end
-      reg_write.lsr_data_ready = ~fifo_empty; // Set Data Ready Bit
-
-    end else begin // FIFO disabled : RHR acts as 1-Byte Holding Register
     
-      //--Write-RSR-to-RHR------------------------------------------------------------------------
-      if (write_init) begin
-        if (rhr_full_q) begin
-          reg_write.lsr_data_ready  = 1'b1; // Set Data Ready Bit
-          reg_write.lsr_overrun_err = 1'b1;
-          reg_write.lsr_valid[1]    = 1'b1;
-        end 
-        reg_write.rhr.strct.char_rx      = rsr_q; // If full, RHR just gets overwritten
-        reg_write.rhr_valid              = 1'b1;
-        rhr_full_d                       = 1'b1;
-
-        break_interrupt                  = & (~{break_q, rsr_q}); // All character bits 0 ?
-        reg_write.lsr_par_err            = parity_err_q;
-        reg_write.lsr_frame_err          = framing_err_q;
-        reg_write.lsr_break_intrpt       = break_interrupt;
-        reg_write.lsr_valid[4:2]         = 1'b1;
-      end 
-
-    end
-
-    //--------------------------------------------------------------------------------------------
-    // Clear LSR after OBI read
-    //--------------------------------------------------------------------------------------------
-    if (reg_read.obi_read_lsr) begin
+    if (reg_read.obi_read_lsr) begin // Cleaar LSR
       reg_write.lsr_overrun_err  = 1'b0;
       reg_write.lsr_par_err      = 1'b0;
       reg_write.lsr_frame_err    = 1'b0;
@@ -378,19 +272,62 @@ module uart_rx #()
   ////////////////////////////////////////////////////////////////////////////////////////////////
 
     //--------------------------------------------------------------------------------------------
-    // Defaults
+    // RSR - Receiver Shift Register (serial to parallel)
     //--------------------------------------------------------------------------------------------
-    state_d     = state_q;
-    break_d     = break_q; // Break Interrupt information for Parity and Stop Bits  
+    // After rsr_finish, rsr_q is stored until the next time we are in START state
+    rsr_d      = rsr_q;
+    bitcount_d = bitcount_q;
 
-    rsr_finish  = 1'b0;
-    par_finish  = 1'b0;
-    stop_finish = 1'b0;   
-    write_init  = 1'b0;
+    if (state_q == RXDATA) begin
+      if (timing_bit_center_edge & (bitcount_q <= word_len_bits)) begin 
+        rsr_d[bitcount_q] = filtered_rxd; 
+        bitcount_d        = bitcount_q + 1;
+        if (bitcount_q == word_len_bits) begin 
+          rsr_finish = 1'b1;
+        end
+      end
+    end
 
-    timing_init_clear = 1'b0;
-    timing_load       = 1'b0;
-    timing_offset     = 5'b00000;
+    //--------------------------------------------------------------------------------------------
+    // Parity Check
+    //--------------------------------------------------------------------------------------------
+    parity_err_d = parity_err_q;
+    
+    if (state_q == RXPAR) begin
+      parity_err_d = 1'b0;
+      data_parity  = ^rsr_q; // XOR to compute parity of data bits
+
+      if (timing_bit_center_edge) begin
+        case (reg_read.lcr.arr[5:4]) // Read Parity Configuration 
+          3'b00: parity_err_d = (data_parity == filtered_rxd); // Odd Parity
+          3'b01: parity_err_d = (data_parity != filtered_rxd); // Even Parity
+          3'b10: parity_err_d = (~filtered_rxd);               // Forced 1
+          3'b11: parity_err_d = filtered_rxd;                  // Forced 0
+          default: parity_err_d = 1'b0;
+        endcase
+        break_d    = break_q | filtered_rxd;
+        par_finish = 1'b1;
+      end
+    end
+
+    //--------------------------------------------------------------------------------------------
+    // Stop Bit Check 
+    //--------------------------------------------------------------------------------------------
+    framing_err_d = framing_err_q;
+    
+    if (state_q == RXSTOP) begin
+      framing_err_d = 1'b0;
+      if (timing_bit_center_edge) begin
+        break_d     = break_q | filtered_rxd;
+        write_init  = 1'b1;
+        stop_finish = 1'b1;
+        if (!filtered_rxd) begin
+          framing_err_d = 1'b1;
+        end else begin
+          framing_err_d = 1'b0;
+        end
+      end
+    end
 
     //--------------------------------------------------------------------------------------------
     // State Transformation
@@ -457,71 +394,135 @@ module uart_rx #()
       default: state_d = RXIDLE;
     endcase
 
-    //--------------------------------------------------------------------------------------------
-    // RSR - Receiver Shift Register (serial to parallel)
-    //--------------------------------------------------------------------------------------------
-    // After rsr_finish, rsr_q is stored until the next time we are in START state
-    rsr_d      = rsr_q;
-    bitcount_d = bitcount_q;
+  ////////////////////////////////////////////////////////////////////////////////////////////////
+  // WRITE RHR Combinational //
+  ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    case (reg_read.lcr.strct.word_len)
-      2'b00: word_len_bits = 3'b100; // 5 Bits (4th index in rsr)
-      2'b01: word_len_bits = 3'b101; // 6 Bits (5th index in rsr)
-      2'b10: word_len_bits = 3'b110; // 7 Bits (6th index in rsr)
-      2'b11: word_len_bits = 3'b111; // 8 Bits (7th index in rsr)
-      default: word_len_bits = 3'b111; 
-    endcase
+    //--Defaults----------------------------------------------------------------------------------
+    fifo_clear = 1'b1;
+    fifo_pop   = 1'b0;
+    rhr_full_d = rhr_full_q;
 
-    if (state_q == RXDATA) begin
-      if (timing_bit_center_edge & (bitcount_q <= word_len_bits)) begin 
-        rsr_d[bitcount_q] = filtered_rxd; 
-        bitcount_d        = bitcount_q + 1;
-        if (bitcount_q == word_len_bits) begin 
-          rsr_finish = 1'b1;
+    //--------------------------------------------------------------------------------------------
+    // Write RHR
+    //--------------------------------------------------------------------------------------------
+    if (reg_read.fcr.strct.fifo_en) begin // FIFO enabled
+
+      //--Write-FIFO-to-RHR-----------------------------------------------------------------------
+      if ((~rhr_full_q) & (~fifo_empty)) begin
+        reg_write.rhr.strct.char_rx      = fifo_data_o[7:0];
+        reg_write.rhr_valid              = 1'b1;
+        rhr_full_d                       = 1'b1;
+        // If Fifo Enabled, always set LSR bits with the Data on top of the FIFO
+        reg_write.lsr_break_intrpt = fifo_data_o[8];
+        reg_write.lsr_frame_err    = fifo_data_o[9];
+        reg_write.lsr_par_err      = fifo_data_o[10];
+        reg_write.lsr_valid[4:2]   = 1'b1;
+        fifo_pop                   = 1'b1;
+
+        if (4'b0000 != fifo_error_index_q) begin
+          fifo_error_index_d = fifo_error_index_q - 'b0001; 
         end
       end
+      reg_write.lsr_data_ready = ~fifo_empty; // Set Data Ready Bit
+
+    end else begin // FIFO disabled : RHR acts as 1-Byte Holding Register
+    
+      //--Write-RSR-to-RHR------------------------------------------------------------------------
+      if (write_init) begin
+        if (rhr_full_q) begin
+          reg_write.lsr_data_ready  = 1'b1; // Set Data Ready Bit
+          reg_write.lsr_overrun_err = 1'b1;
+          reg_write.lsr_valid[1]    = 1'b1;
+        end 
+        reg_write.rhr.strct.char_rx      = rsr_q; // If full, RHR just gets overwritten
+        reg_write.rhr_valid              = 1'b1;
+        rhr_full_d                       = 1'b1;
+
+        break_interrupt                  = & (~{break_q, rsr_q}); // All character bits 0 ?
+        reg_write.lsr_par_err            = parity_err_q;
+        reg_write.lsr_frame_err          = framing_err_q;
+        reg_write.lsr_break_intrpt       = break_interrupt;
+        reg_write.lsr_valid[4:2]         = 1'b1;
+      end 
+
     end
 
-    //--------------------------------------------------------------------------------------------
-    // Parity Check
-    //--------------------------------------------------------------------------------------------
-    parity_err_d = parity_err_q;
-    
-    if (state_q == RXPAR) begin
-      parity_err_d = 1'b0;
-      data_parity  = ^rsr_q; // XOR to compute parity of data bits
+  ////////////////////////////////////////////////////////////////////////////////////////////////
+  // FIFO Combinational //
+  ////////////////////////////////////////////////////////////////////////////////////////////////
 
-      if (timing_bit_center_edge) begin
-        case (reg_read.lcr.arr[5:4]) // Read Parity Configuration 
-          3'b00: parity_err_d = (data_parity == filtered_rxd); // Odd Parity
-          3'b01: parity_err_d = (data_parity != filtered_rxd); // Even Parity
-          3'b10: parity_err_d = (~filtered_rxd);               // Forced 1
-          3'b11: parity_err_d = filtered_rxd;                  // Forced 0
-          default: parity_err_d = 1'b0;
-        endcase
-        break_d    = break_q | filtered_rxd;
-        par_finish = 1'b1;
+    if (reg_read.fcr.strct.fifo_en) begin
+    //--------------------------------------------------------------------------------------------
+    // FIFO Reset
+    //--------------------------------------------------------------------------------------------
+      fifo_clear = 1'b0;
+      
+      if (reg_read.fcr.strct.rx_fifo_rst) begin
+        fifo_clear                = 1'b1;
+        reg_write.fcr_rx_fifo_rst = 1'b0; 
+        reg_write.fcr_rx_valid    = 1'b1;
+      end 
+    //--------------------------------------------------------------------------------------------
+    // FIFO Trigger Output
+    //--------------------------------------------------------------------------------------------
+      case (reg_read.fcr.strct.rx_fifo_tl)
+        2'b00: tl_characters = 4'b0001; // 1 Character
+        2'b01: tl_characters = 4'b0100; // 4 Characters
+        2'b10: tl_characters = 4'b1000; // 8 Characters
+        2'b11: tl_characters = 4'b1110; // 14 Characters
+        default: tl_characters = 4'b0001; 
+      endcase
+      
+      if (tl_characters <= fifo_usage) begin
+        trigger = 1'b1;
       end
-    end
 
     //--------------------------------------------------------------------------------------------
-    // Stop Bit Check 
+    // FIFO Write from RSR
     //--------------------------------------------------------------------------------------------
-    framing_err_d = framing_err_q;
-    
-    if (state_q == RXSTOP) begin
-      framing_err_d = 1'b0;
-      if (timing_bit_center_edge) begin
-        break_d     = break_q | filtered_rxd;
-        write_init  = 1'b1;
-        stop_finish = 1'b1;
-        if (!filtered_rxd) begin
-          framing_err_d = 1'b1;
+      if (write_init) begin
+        if (fifo_full) begin
+          reg_write.lsr_overrun_err = 1'b1;
+          reg_write.lsr_valid[1]    = 1'b1;
         end else begin
-          framing_err_d = 1'b0;
+          fifo_push       = 1'b1;
+          break_interrupt = & (~{break_q, rsr_q}); // Interrupt if all character bits are 0s
+          fifo_data_i     = {parity_err_q, framing_err_q, break_interrupt, rsr_q}; // 11 Bits 
+
+          if (parity_err_q | framing_err_q | break_interrupt) begin
+            fifo_error_index_d     = fifo_usage;   
+            reg_write.lsr_fifo_err = 1'b1;
+            reg_write.lsr_valid[5] = 1'b1;
+          end
         end
       end
+
+    //--------------------------------------------------------------------------------------------
+    // FIFO Timeout
+    //--------------------------------------------------------------------------------------------
+      // timeout_trigger = (1 Startbit + 8 Databits + 1 Paritybit + 2 Stopbits) * 4
+      timeout_trigger = 6'b000001 + 6'b001000 + 6'b000001 + 6'b000010; // Timeout Trigger Level
+      timeout_trigger = timeout_trigger << 2; // Multiply by 4
+
+      timeout_count_d = timeout_count_q;
+
+      if (reg_read.fcr.strct.fifo_en & (~fifo_empty)) begin
+        if (write_init | reg_read.obi_read_rhr) begin
+          timeout_count_d = '0;
+        end else if (baud_rate_edge) begin
+          timeout_count_d = timeout_count_q + 1;
+          if (timeout_trigger == timeout_count_q) begin
+            timeout = 1'b1;
+            timeout_count_d = '0;
+          end
+        end
+      end else begin
+        timeout_count_d = 1'b0; 
+      end
+
     end
+
 
   end
 
@@ -531,7 +532,7 @@ module uart_rx #()
 
   //--FIFO----------------------------------------------------------------------------------------
   `FF(fifo_error_index_q, fifo_error_index_d, '0, clk_i, rst_ni)
-  `FF(timeout_count_q, timeout_count_d, '0, baud_rate, rst_ni)
+  `FF(timeout_count_q, timeout_count_d, '0, clk_i, rst_ni)
 
   //--Write-RHR-----------------------------------------------------------------------------------
   `FF(rhr_full_q, rhr_full_d, '0, clk_i, rst_ni)

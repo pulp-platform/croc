@@ -53,6 +53,11 @@ module uart #(
   tx_reg_write_t     tx_reg_write;
   modem_reg_write_t  modem_reg_write;
   intrpt_reg_write_t intrpt_reg_write;
+
+  //--Baudenable-Interface-Signals----------------------------------------------------------------
+  logic oversample_rate_edge_i;
+  logic double_rate_edge_i;
+  logic baud_rate_edge_i;
   
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // REGISTER INTERFACE //
@@ -125,10 +130,9 @@ module uart #(
     .clk_i,
     .rst_ni,
 
-    .oversample_rate_o     (oversample_rate_i),
     .oversample_rate_edge_o(oversample_rate_edge_i),
-    .double_baud_rate_o    (double_baud_rate_i),
-    .baud_rate_o           (baud_rate_i),
+    .double_rate_edge_o    (double_rate_edge_i),
+    .baud_rate_edge_o      (baud_rate_edge_i),
 
     .reg_read
   );
@@ -142,9 +146,8 @@ module uart #(
     .clk_i,
     .rst_ni,
     
-    .oversample_rate     (oversample_rate_i),
     .oversample_rate_edge(oversample_rate_edge_i),
-    .baud_rate           (baud_rate_i),
+    .baud_rate_edge      (baud_rate_edge_i),
 
     .rxd,
 
@@ -164,8 +167,8 @@ module uart #(
     .clk_i,
     .rst_ni,
 
-    .baud_rate       (baud_rate_i),
-    .double_baud_rate(double_baud_rate_i),
+    .baud_rate_edge  (baud_rate_edge_i),
+    .double_rate_edge(double_rate_edge_i),
 
     .txd,
 

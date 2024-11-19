@@ -23,9 +23,7 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   input  mgr_obi_rsp_t user_mgr_obi_rsp_i,
 
   input  logic [      GpioCount-1:0] gpio_in_sync_i, // synchronized GPIO inputs
-
-  output logic neopixel_data_o, 
-
+  output logic                       neopixel_data_o, 
   output logic [NumExternalIrqs-1:0] interrupts_o,   // interrupts to core
 
   input  logic rxd_i,    // UART Serial Input 

@@ -4,10 +4,9 @@ module uart_baudgeneration #()
   input logic  clk_i,
   input logic  rst_ni,
 
-  output logic oversample_rate_o,
   output logic oversample_rate_edge_o,
-  output logic double_baud_rate_o,
-  output logic baud_rate_o,
+  output logic double_rate_edge_o,
+  output logic baud_rate_edge_o,
 
   input uart_pkg::reg_read_t reg_read
 );
@@ -22,8 +21,17 @@ module uart_baudgeneration #()
   //--Clock-Division-Signals----------------------------------------------------------------------
   logic [15:0] divisor;
 
-  //--Edge-Detection-Signals----------------------------------------------------------------------
-  logic serial_d, serial_q;
+  //--Oversample-Signals--------------------------------------------------------------------------
+  logic        oversample_clear;
+  logic [15:0] oversample_count;
+
+  //--Double-Signals------------------------------------------------------------------------------
+  logic       serial_double_q, serial_double_d;
+
+  //--Baud-Signals--------------------------------------------------------------------------------
+  logic       baud_clear;
+  logic [3:0] baud_count;
+  logic       serial_baud_q, serial_baud_d;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // Clock Division //
@@ -33,89 +41,62 @@ module uart_baudgeneration #()
   // Oversample 16x
   //----------------------------------------------------------------------------------------------
 
-  //--Clock---------------------------------------------------------------------------------------
-
   // Concatenate Most significant Byte and Least Significant Byte of Divisor 
-  assign divisor = {reg_read.dlm.arr, reg_read.dll.arr};
-  // Set Outptut
-  assign oversample_rate_o = oversample_rate;
+  assign divisor = {reg_read.dlm.arr, reg_read.dll.arr} - 16'd1; //TODO Divisor - 1?
 
-  clk_int_div #(
-    .DIV_VALUE_WIDTH      (16),
-    .DEFAULT_DIV_VALUE    (1),
-    .ENABLE_CLOCK_IN_RESET(1'b1)
-  ) i_div_oversample (
-    .clk_i,
+  assign oversample_clear = (oversample_count == divisor) | (reg_read.obi_write_dllm) ? 1'b1 : 1'b0; 
+
+  counter #(
+    .WIDTH          (16), 
+    .STICKY_OVERFLOW(0)
+  ) i_counter_1 (
+    .clk_i, 
     .rst_ni,
-
-    .en_i          (1'b1),
-    .test_mode_en_i(1'b0),
-    .div_i         (divisor),
-
-    .div_valid_i   (1'b1), 
-    .div_ready_o   (), 
-
-    .clk_o         (oversample_rate), // oversample_rate = (clk / divisor) = 16 * Baudrate
-    .cycl_count_o  ()
+    .clear_i   ( oversample_clear ), // Synchronous clear: Sets Counter 0 in the next cycle
+    .en_i      ( 1'b1             ),        
+    .load_i    ( 1'b0             ),  
+    .down_i    ( 1'b0             ), // Always count upwards
+    .d_i       ( '0               ),
+    .q_o       ( oversample_count ),
+    .overflow_o(                  )
   );
 
-  //--Edge-Detect---------------------------------------------------------------------------------
-  assign serial_d = oversample_rate;
-
-  assign oversample_rate_edge_o = (~serial_d) & serial_q;
-  
-  `FF(serial_q, serial_d, '0, clk_i, rst_ni)
-
-  //----------------------------------------------------------------------------------------------
-  // Oversample 2x - Double
-  //----------------------------------------------------------------------------------------------
-
-  // Set Outptut
-  assign double_baud_rate_o = double_rate;
-
-  clk_int_div #(
-    .DIV_VALUE_WIDTH      (16),
-    .DEFAULT_DIV_VALUE    (1),
-    .ENABLE_CLOCK_IN_RESET(1'b1)
-  ) i_div_double (
-    .clk_i         (oversample_rate),
-    .rst_ni,
-
-    .en_i          (1'b1),
-    .test_mode_en_i(1'b0),
-    .div_i         (8),
-
-    .div_valid_i   (1'b1), 
-    .div_ready_o   (), 
-
-    .clk_o         (double_rate),
-    .cycl_count_o  ()
-  );
+  //--Oversample-Edge-----------------------------------------------------------------------------
+  assign oversample_rate_edge_o = (oversample_count == '0) ? 1'b1 : 1'b0; // Is only high one clock cycle
 
   //----------------------------------------------------------------------------------------------
   // Baudrate
   //----------------------------------------------------------------------------------------------
 
-  // Set Outptut
-  assign baud_rate_o = baud_rate;
+  assign baud_clear = (baud_count == 4'b1111) ? 1'b1 : 1'b0; 
 
-  clk_int_div #(
-    .DIV_VALUE_WIDTH      (16),
-    .DEFAULT_DIV_VALUE    (1),
-    .ENABLE_CLOCK_IN_RESET(1'b1)
-  ) i_div_baud (
-    .clk_i         (oversample_rate),
+  counter #(
+    .WIDTH          (4), 
+    .STICKY_OVERFLOW(0)
+  ) i_counter_3 (
+    .clk_i, 
     .rst_ni,
-
-    .en_i          (1'b1),
-    .test_mode_en_i(1'b0),
-    .div_i         (16),
-
-    .div_valid_i   (1'b1),      
-    .div_ready_o   (), 
-
-    .clk_o         (baud_rate),
-    .cycl_count_o  ()
+    .clear_i   ( baud_clear       ), // Synchronous clear: Sets Counter 0 in the next cycle
+    .en_i      ( oversample_clear ),        
+    .load_i    ( 1'b0             ),  
+    .down_i    ( 1'b0             ), // Always count upwards
+    .d_i       ( '0               ),
+    .q_o       ( baud_count       ),
+    .overflow_o(                  )
   );
+
+  //--Baud-Edge-----------------------------------------------------------------------------------
+  assign serial_baud_d = (baud_count == '0) ? 1'b1 : 1'b0; 
+
+  assign baud_rate_edge_o = (~serial_baud_d) & serial_baud_q;
+  
+  `FF(serial_baud_q, serial_baud_d, '0, clk_i, rst_ni)
+
+  //--Double-Edge---------------------------------------------------------------------------------
+  assign serial_double_d = (baud_count == '0) | (baud_count == 4'b1000) ? 1'b1 : 1'b0; 
+
+  assign double_rate_edge_o = (~serial_double_d) & serial_double_q;
+  
+  `FF(serial_double_q, serial_double_d, '0, clk_i, rst_ni)
 
 endmodule

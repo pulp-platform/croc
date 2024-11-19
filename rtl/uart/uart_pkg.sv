@@ -285,6 +285,7 @@ package uart_pkg;
     logic       obi_read_lsr;
     logic       obi_read_msr;
     logic       obi_write_thr;
+    logic       obi_write_dllm;
   } reg_read_t;
 
   typedef struct packed {
