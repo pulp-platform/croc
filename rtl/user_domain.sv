@@ -115,7 +115,7 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
     ) i_mux (
       .clk_i,
       .rst_ni,
-      .testmode_i      ( test_enable_i           ), 
+      .testmode_i      ( testmode_i              ), 
       .sbr_ports_req_i ( all_user_mgr_obi_req    ), //those are all the user managers inputed in the mux as an array
       .sbr_ports_rsp_o ( all_user_mgr_obi_rsp    ),
       .mgr_port_req_o  ( user_mgr_obi_req_o      ), //this is THE mgr (from users) that got selected(with round robin) 
@@ -272,7 +272,7 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   ) i_neopixel (
     .clk_i,
     .rst_ni,
-    .testmode_i ( test_enable_i ),
+    .testmode_i ( testmode_i ),
 
     .obi_req_i  ( user_neopixel_obi_req ),
     .obi_rsp_o  ( user_neopixel_obi_rsp ),
