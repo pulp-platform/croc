@@ -339,11 +339,11 @@ module tb_croc_soc #(
         $finish();
     endtask
 
-    
+
     ////////////
     //  UART  //
     ////////////
-    
+
     typedef bit [ 7:0] byte_bt;
     localparam int unsigned UartDivisior = ClkFrequency / (UartBaudRate*16);
     localparam UartRealBaudRate = ClkFrequency / (UartDivisior*16);
@@ -365,7 +365,7 @@ module tb_croc_soc #(
 
     initial begin
         uart2_rxd_i         = 1;
-        uart_reading_byte  = 0;
+        uart_reading_byte   = 0;
     end
 
     task automatic uart_read_byte(output byte_bt bite);
@@ -435,7 +435,9 @@ module tb_croc_soc #(
             end
         end
     end
-    
+
+
+
     ////////////
     //  DUT   //
     ////////////

@@ -103,15 +103,15 @@ croc_domain #(
   .user_mgr_obi_rsp_o  ( user_mgr_obi_rsp ),
 
   .interrupts_i ( interrupts  ),
-  .core_busy_o  ( status_o    )
+  .core_busy_o ( status_o    )
 );
 
 user_domain #(
   .GpioCount( GpioCount ) 
 ) i_user (
   .clk_i,
-  .ref_clk_i,
   .rst_ni ( synced_rst_n ),
+  .ref_clk_i,
   .testmode_i,
   .modulated_o,
 
