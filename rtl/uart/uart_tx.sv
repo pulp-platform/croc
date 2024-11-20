@@ -146,6 +146,17 @@ module uart_tx #()
   ////////////////////////////////////////////////////////////////////////////////////////////////
 
     //--------------------------------------------------------------------------------------------
+    // TSR - Transmitter Shift Register (parallel to serial)
+    //--------------------------------------------------------------------------------------------
+    if (state_q == TXDATA & (tsr_count_q <= word_len_bits)) begin
+      if (baud_rate_edge) begin
+        txd_d       = tsr_q[tsr_count_q];
+        tsr_count_d = tsr_count_q + 1;
+        tsr_finish  = (tsr_count_q == word_len_bits)? 1'b1 : 1'b0;
+      end
+    end
+
+    //--------------------------------------------------------------------------------------------
     // State Transition
     //--------------------------------------------------------------------------------------------
     case(state_q)
@@ -231,17 +242,6 @@ module uart_tx #()
 
       default: state_d = TXIDLE;
     endcase
-
-    //----------------------------------------------------------------------------------------------
-    // TSR - Transmitter Shift Register (parallel to serial)
-    //----------------------------------------------------------------------------------------------
-    if (state_q == TXDATA & (tsr_count_q <= word_len_bits)) begin
-      if (baud_rate_edge) begin
-        txd_d       = tsr_q[tsr_count_q];
-        tsr_count_d = tsr_count_q + 1;
-        tsr_finish  = (tsr_count_q == word_len_bits)? 1'b1 : 1'b0;
-      end
-    end
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // FIFO Combinational //

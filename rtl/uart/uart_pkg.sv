@@ -96,11 +96,11 @@ package uart_pkg;
   parameter logic [7:0] DLM_DEFAULT = 8'h01;
   //parameter logic [31:0] PSD_DEFAULT = 8'h00;
 
-  // corresponds to 96'h01010000600000C1000000
+  // corresponds to 96'h
   parameter logic [12*8-1:0] register_default = {
-    DLM_DEFAULT, DLL_DEFAULT, SPR_DEFAULT, MSR_DEFAULT,
-    LSR_DEFAULT, MCR_DEFAULT, LCR_DEFAULT, FCR_DEFAULT,
-    ISR_DEFAULT, IER_DEFAULT, THR_DEFAULT, RHR_DEFAULT
+    RHR_DEFAULT, THR_DEFAULT, IER_DEFAULT, ISR_DEFAULT,
+    FCR_DEFAULT, LCR_DEFAULT, MCR_DEFAULT, LSR_DEFAULT,
+    MSR_DEFAULT, SPR_DEFAULT, DLL_DEFAULT, DLM_DEFAULT
   };
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -120,75 +120,75 @@ package uart_pkg;
   } THR_bits_t;
 
   typedef struct packed {
-    logic dtr;               // Data Ready or Reception Timeout
-    logic thr_empty;         // THR Empty
-    logic rlstat;            // Receive Line Status 
-    logic mstat;             // Modem Status
-    logic unused4;           // 0
-    logic unused5;           // 0
-    logic unused;            // Optional: DMA
     logic unused7;           // Optional: DMA
+    logic unused;            // Optional: DMA
+    logic unused5;           // 0
+    logic unused4;           // 0
+    logic mstat;             // Modem Status
+    logic rlstat;            // Receive Line Status 
+    logic thr_empty;         // THR Empty
+    logic dtr;               // Data Ready or Reception Timeout
   } IER_bits_t;
 
   typedef struct packed {
-    logic       status; // Intrpt Status
-    logic [2:0] id;  // Intrpt Code ID
-    logic       unused4;     // Optional: DMA
-    logic       unused5;     // Optional: DMA
     logic [1:0] fifos_en;    // UART Standard: 2'b00: 8250 | 2'b01: 16550 | 2'b10: 16750 | 2'b11: 16550A 
+    logic unused5;           // Optional: DMA
+    logic unused4;           // Optional: DMA
+    logic [2:0] id;          // Intrpt Code ID
+    logic       status;      // Intrpt Status
   } ISR_bits_t;
 
   typedef struct packed {
-    logic       fifo_en;     // FIFO Enable
-    logic       rx_fifo_rst; // Rx FIFO reset
-    logic       tx_fifo_rst; // Tx FIFO reset
-    logic       unused3;     // Optional: DMA
-    logic        unused4;     // Optional: DMA
+    logic [1:0] rx_fifo_tl;  // Rx FIFO Trigger Level
     logic       unused5;     // 0
-    logic [1:0] rx_fifo_tl ; // Rx FIFO Trigger Level
+    logic       unused4;     // Optional: DMA
+    logic       unused3;     // Optional: DMA
+    logic       tx_fifo_rst; // Tx FIFO reset
+    logic       rx_fifo_rst; // Rx FIFO reset
+    logic       fifo_en;     // FIFO Enable
   } FCR_bits_t;
 
   typedef struct packed {
-    logic [1:0] word_len;    // Word Length 2'b00: 5 | 2'b01: 6 | 2'b10: 7 | 2'b11: 8
-    logic       stop_bits;   // Stop Bits 
-    logic       par_en;      // Parity Enable
-    logic       even_par;    // Even Parity 
-    logic       force_par;   // Force Parity
-    logic        set_break;   // Set Break
     logic       dlab;        // DLAB Address multiplexing 
+    logic       set_break;   // Set Break
+    logic       force_par;   // Force Parity
+    logic       even_par;    // Even Parity 
+    logic       par_en;      // Parity Enable
+    logic       stop_bits;   // Stop Bits 
+    logic [1:0] word_len;    // Word Length 2'b00: 5 | 2'b01: 6 | 2'b10: 7 | 2'b11: 8
   } LCR_bits_t;
 
   typedef struct packed {
-    logic       dtr;         // DaTa Ready
-    logic       rts;         // Request to Send
-    logic       out1;        // Optional: Gpio Output
-    logic       out2;        // Optional: Gpio Output
-    logic       loopback;    // Loop Back
-    logic       unused5;     // 0
-    logic       unused6;     // 0
     logic       unused7;     // 0
+    logic       unused6;     // 0
+    logic       unused5;     // 0
+    logic       loopback;    // Loop Back
+    logic       out2;        // Optional: Gpio Output
+    logic       out1;        // Optional: Gpio Output
+    logic       rts;         // Request to Send
+    logic       dtr;         // DaTa Ready
   } MCR_bits_t;
 
   typedef struct packed {
-    logic data_ready;        // Data Ready
-    logic overrun_err;       // Overrun Error
-    logic par_err;           // Parity Error
-    logic frame_err;         // Framing Error
-    logic break_intrpt;      // Break Interrupt
-    logic thr_empty;         // THR Empty
-    logic tx_empty;          // Transmitter Empty
     logic fifo_err;          // FIFO Data Error
+    logic tx_empty;          // Transmitter Empty
+    logic thr_empty;         // THR Empty
+    logic break_intrpt;      // Break Interrupt
+    logic frame_err;         // Framing Error
+    logic par_err;           // Parity Error
+    logic overrun_err;       // Overrun Error
+    logic data_ready;        // Data Ready
   } LSR_bits_t;
 
   typedef struct packed {
-    logic d_cts;             // Delta Clear to Send
-    logic d_dsr;             // Delta 
-    logic te_ri;             // Trailing Edge RI: Detects trailing Edge (Transition high to low)
-    logic d_cd;              // Delta CD: Indicates change 
-    logic cts;               // Clear to Send
-    logic dsr;               // Data Set Ready 
-    logic ri;                // Ring Indicator
     logic cd;                // Carrier Detect
+    logic ri;                // Ring Indicator
+    logic dsr;               // Data Set Ready 
+    logic cts;               // Clear to Send
+    logic d_cd;              // Delta CD: Indicates change 
+    logic te_ri;             // Trailing Edge RI: Detects trailing Edge (Transition high to low)
+    logic d_dsr;             // Delta 
+    logic d_cts;             // Delta Clear to Send
   } MSR_bits_t;
 
   typedef struct packed {

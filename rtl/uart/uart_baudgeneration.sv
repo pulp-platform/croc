@@ -68,10 +68,10 @@ module uart_baudgeneration #()
   // Baudrate
   //----------------------------------------------------------------------------------------------
 
-  assign baud_clear = (baud_count == 4'b1111) ? 1'b1 : 1'b0; 
+  assign baud_clear = (baud_count == 5'b10000) ? 1'b1 : 1'b0; 
 
   counter #(
-    .WIDTH          (4), 
+    .WIDTH          (5), 
     .STICKY_OVERFLOW(0)
   ) i_counter_3 (
     .clk_i, 

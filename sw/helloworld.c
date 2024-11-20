@@ -30,8 +30,6 @@ int main() {
 #include "uart.h"
 #include "print.h"
 
-#define TB_FREQUENCY 10000000
-#define TB_BAUDRATE    115200
 
 /*
 int my_strlen(const char *str) {
@@ -49,9 +47,18 @@ int main() {
   printf("Hello! %x\n", 123);
 
   //-----Write-UART-Test-----------------------------------------------------
-  uart_write_flush(); // Ensure all bytes are transmitted
-  
-  char string [] = "TTM\0";
+  /*uart_write_flush(); // Ensure all bytes are transmitted
+
+  uart_write(0x41);
+  uart_write(0x42);
+  uart_write(0x43);
+  uart_write(0x44);
+  uart_write(10);
+  uart_write(13);
+*/
+  uart_write_flush();
+  /*
+  char string [] = "TTM\n\r\0";
   // Make an array of 8 arrays
   int str_len = sizeof(string);
   uint8_t message_tx[str_len];
@@ -63,7 +70,7 @@ int main() {
   uart_write_str(message_tx, str_len);
   
   uart_write_flush(); // Ensure all bytes are transmitted
-
+  */
   // uart_txd_o in testbench should be messagetx and print it out
 
   //-----Read-UART-Test------------------------------------------------------
