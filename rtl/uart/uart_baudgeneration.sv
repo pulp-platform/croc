@@ -30,7 +30,7 @@ module uart_baudgeneration #()
 
   //--Baud-Signals--------------------------------------------------------------------------------
   logic       baud_clear;
-  logic [3:0] baud_count;
+  logic [4:0] baud_count;
   logic       serial_baud_q, serial_baud_d;
 
   ////////////////////////////////////////////////////////////////////////////////////////////////

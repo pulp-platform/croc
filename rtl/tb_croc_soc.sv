@@ -375,7 +375,7 @@ module tb_croc_soc #(
         #(UartBaudPeriod/2);
         // 8-bit byte
         for (int i = 0; i < 8; i++) begin
-        #UartBaudPeriod bite[i] = uart2_txd_o; $display("@%t", $time);
+        #UartBaudPeriod bite[i] = uart2_txd_o; // $display("@%t", $time);
         end
         // Parity bit
         if(UartParityEna) begin
