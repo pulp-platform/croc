@@ -64,7 +64,7 @@ package neopixel_pkg;
     //----Writeable NeoPixel Register-------------------------------------------------------------------
 
     // How many Register for the NeoPixel
-    parameter int NumNeoPixelReg = 6;
+    parameter int NumNeoPixelReg = 7;
 
     typedef struct packed {
         logic [RegisterDepth - 1:0] num_neopixel;   // Number of NeoPixel attached register
@@ -73,6 +73,7 @@ package neopixel_pkg;
         logic [RegisterDepth - 1:0] t0h;            // 0 code, high volate time register
         logic [RegisterDepth - 1:0] t0l;            // 0 code, low volate time register
         logic [RegisterDepth - 1:0] t_latch;        // low voltage time register
+        logic [RegisterDepth - 1:0] sleep; 
     } neopixel_write_reg_fields_t;
 
     typedef union packed {
@@ -116,14 +117,15 @@ package neopixel_pkg;
 
     // Registers used for the neopixel_controller
     // How many neopixel did you attach to the controller
-    parameter logic [BlockAwNeopixel - 1:0] NUM_NEOPIXEL_OFFSET     = 11'h 60;
+    parameter logic [BlockAwNeopixel - 1:0] NUM_NEOPIXEL_OFFSET     = 11'h 40;
     // Timing constraints for the timing control
     // you have to calculate the values
-    parameter logic [BlockAwNeopixel - 1:0] NEOPIXEL_T1H_OFFSET      = 11'h 80;
-    parameter logic [BlockAwNeopixel - 1:0] NEOPIXEL_T1L_OFFSET      = 11'h A0;
-    parameter logic [BlockAwNeopixel - 1:0] NEOPIXEL_T0H_OFFSET      = 11'h C0;
-    parameter logic [BlockAwNeopixel - 1:0] NEOPIXEL_T0L_OFFSET      = 11'h E0;
-    parameter logic [BlockAwNeopixel - 1:0] NEOPIXEL_T_LATCH_OFFSET  = 11'h 100;
+    parameter logic [BlockAwNeopixel - 1:0] NEOPIXEL_T1H_OFFSET      = 11'h 60;
+    parameter logic [BlockAwNeopixel - 1:0] NEOPIXEL_T1L_OFFSET      = 11'h 80;
+    parameter logic [BlockAwNeopixel - 1:0] NEOPIXEL_T0H_OFFSET      = 11'h A0;
+    parameter logic [BlockAwNeopixel - 1:0] NEOPIXEL_T0L_OFFSET      = 11'h C0;
+    parameter logic [BlockAwNeopixel - 1:0] NEOPIXEL_T_LATCH_OFFSET  = 11'h E0;
+    parameter logic [BlockAwNeopixel - 1:0] NEOPIXEL_SLEEP_OFFSET  = 11'h 100;
 
     // Registers used for the DMA
     parameter logic [BlockAwNeopixel - 1:0] DMA_SRC_ADDR_OFFSET      = 11'h 120;
@@ -138,11 +140,9 @@ package neopixel_pkg;
 
     localparam int unsigned MaxNumNeoPixel = 256;
 
-    localparam int unsigned MaxNumAnimation = 8;
-
     localparam int unsigned NumBitsPerPixel = 24;
 
-    localparam int unsigned CounterWidth = 16;
+    localparam int unsigned CounterWidth = 32;
 
     /////////////////////////
     // FIFO for color data //

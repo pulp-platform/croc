@@ -139,6 +139,11 @@ module neopixel_reg import neopixel_pkg::*; #(
               (~be_mask & reg_neopixel_q.str.t_latch) | (be_mask & obi_req_i.a.wdata);
           end
 
+          NEOPIXEL_SLEEP_OFFSET: begin
+            reg_neopixel_d.str.sleep =
+              (~be_mask & reg_neopixel_q.str.sleep) | (be_mask & obi_req_i.a.wdata);
+          end
+
           DMA_SRC_ADDR_OFFSET: begin
             reg_dma_d.str.src_addr =
               (~be_mask & reg_dma_q.str.src_addr) | (be_mask & obi_req_i.a.wdata);
@@ -205,6 +210,10 @@ module neopixel_reg import neopixel_pkg::*; #(
 
           NEOPIXEL_T_LATCH_OFFSET: begin
             rsp_data = reg_neopixel_q.str.t_latch;
+          end
+
+          NEOPIXEL_SLEEP_OFFSET: begin
+            rsp_data = reg_neopixel_q.str.sleep;
           end
 
           DMA_SRC_ADDR_OFFSET: begin

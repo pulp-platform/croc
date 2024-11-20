@@ -28,7 +28,7 @@ module neopixel_controller import neopixel_pkg::*; #() (
     /////////////////////////////////////////////////////////////
 
     // Timing constants and number of NeoPixels to control
-    logic [CounterWidth - 1:0] t1h, t1l, t0h, t0l, t_latch;
+    logic [CounterWidth - 1:0] t1h, t1l, t0h, t0l, t_latch, sleep;
     logic [RegisterDepth - 1:0] num_neopixel;
 
     // Extract timing values and number of NeoPixels from input struct
@@ -38,6 +38,7 @@ module neopixel_controller import neopixel_pkg::*; #() (
     assign t0h          = timing_constraints_i.str.t0h;
     assign t0l          = timing_constraints_i.str.t0l;
     assign t_latch      = timing_constraints_i.str.t_latch;
+    assign sleep        = timing_constraints_i.str.sleep;
 
     // Counter logic for precise timing
     logic [CounterWidth - 1:0] counter_q; // Counter value
@@ -55,7 +56,7 @@ module neopixel_controller import neopixel_pkg::*; #() (
         .en_i       ( counter_en        ), // If 1, counter_q is increased
         .load_i     ( 1'b0              ), // No loading new values
         .down_i     ( 1'b0              ), // Count up
-        .delta_i    ( 16'd1             ), // Increment by 1 each clock cycle
+        .delta_i    ( 32'd1             ), // Increment by 1 each clock cycle
         .d_i        ( '0                ), // No external load data
         .q_o        ( counter_q         ), // Counter output
         .overflow_o (                   )
@@ -85,6 +86,8 @@ module neopixel_controller import neopixel_pkg::*; #() (
     // The data is sent in GRB order
     logic [23:0] active_color_data_q, active_color_data_d;
 
+    logic last_state_idle_d, last_state_idle_q;
+
     // Indexcounter for the active_color_data array
     logic [$clog2(24) - 1:0] active_color_data_index_q, active_color_data_index_d;
 
@@ -94,6 +97,7 @@ module neopixel_controller import neopixel_pkg::*; #() (
     // Next state and output logic
     always_comb begin
         state_d = state_q;
+        last_state_idle_d = last_state_idle_q;
         data_o = 1'b0;
         counter_clear = 1'b0;
         counter_en = 1'b0;
@@ -109,12 +113,19 @@ module neopixel_controller import neopixel_pkg::*; #() (
                 neopixel_index_d = 0;
                 active_color_data_index_d = 0;
 
-                if (~fifo_empty_i & num_neopixel > 0) begin
-                    // Start transmission if FIFO has data and NeoPixels are defined
-                    state_d = BIT_HIGH;
-                    counter_clear = 1'b1;
-                    active_color_data_d = fifo_data_i;
-                    fifo_pop_o = 1;
+                if (last_state_idle_q) begin
+                    if (sleep != 0)begin
+                        counter_en = 1'b1;
+                        last_state_idle_d = (counter_q == sleep)? 0: last_state_idle_q;
+                    end
+                end else begin
+                    if (~fifo_empty_i & num_neopixel > 0) begin
+                        // Start transmission if FIFO has data and NeoPixels are defined
+                        state_d = BIT_HIGH;
+                        counter_clear = 1'b1;
+                        active_color_data_d = fifo_data_i;
+                        fifo_pop_o = 1;
+                    end
                 end
             end
 
@@ -162,18 +173,20 @@ module neopixel_controller import neopixel_pkg::*; #() (
                 counter_en = 1'b1; // Enable the counter
 
                 if (counter_q == t_latch - 1) begin
-                    if (~fifo_empty_i) begin
-                        // FIFO has data, send data
-                        state_d = BIT_HIGH;
-                        counter_clear = 1'b1;
-                        active_color_data_index_d = 0;
-                        neopixel_index_d = 0;
-                        active_color_data_d = fifo_data_i;
-                        fifo_pop_o = 1;
-                    end else begin
+                    // if (~fifo_empty_i) begin
+                    //     // FIFO has data, send data
+                    //     state_d = BIT_HIGH;
+                    //     counter_clear = 1'b1;
+                    //     active_color_data_index_d = 0;
+                    //     neopixel_index_d = 0;
+                    //     active_color_data_d = fifo_data_i;
+                    //     fifo_pop_o = 1;
+                    // end else begin
                         // FIFO is empty, wait for new data
                         state_d = IDLE;
-                    end
+                        counter_clear = 1'b1;
+                        last_state_idle_d = 1'b1;
+                    // end
                 end
             end
 
@@ -189,5 +202,6 @@ module neopixel_controller import neopixel_pkg::*; #() (
     `FF(active_color_data_q, active_color_data_d, '0, clk_i, rst_ni)
     `FF(active_color_data_index_q, active_color_data_index_d, '0, clk_i, rst_ni)
     `FF(neopixel_index_q, neopixel_index_d, '0, clk_i, rst_ni)
+    `FF(last_state_idle_q, last_state_idle_d, '0, clk_i, rst_ni)
 
 endmodule

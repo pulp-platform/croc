@@ -241,7 +241,7 @@ module tb_croc_soc #(
         input logic [31:0] t0h,
         input logic [31:0] t0l,
         input logic [31:0] t_latch,
-        //input logic [31:0] sleep,
+        input logic [31:0] sleep,
         input int unsigned idle_cycles = 10
     );
 
@@ -252,7 +252,7 @@ module tb_croc_soc #(
         jtag_write_reg32(start_addr + 32'h 60, t0h);
         jtag_write_reg32(start_addr + 32'h 80, t0l);
         jtag_write_reg32(start_addr + 32'h A0, t_latch);
-        //jtag_write_reg32(start_addr + 32'h C0, sleep);
+        jtag_write_reg32(start_addr + 32'h C0, sleep);
         $display("@%t | [JTAG] FINISHED: Writing to timing register for neopixel", $time);
     endtask 
 
@@ -512,7 +512,7 @@ module tb_croc_soc #(
         jtag_read_string(user_pkg::UserRomAddrOffset);
 
         // write to timing register for the neopixel controller
-        jtag_fill_timingregister(neopixel_pkg::NeoPixelRegisterAddrOffset + 11'h 60, 32'd2, 32'd8, 32'd4, 32'd4, 32'd8, 32'd500);
+        jtag_fill_timingregister(neopixel_pkg::NeoPixelRegisterAddrOffset + 11'h 40, 32'd2, 32'd8, 32'd4, 32'd4, 32'd8, 32'd500, 32'd1000);
 
         // write to fifo in neopixel using OBI
         $display("@%t | [JTAG] START: Writing to fifo for neopixel", $time);
