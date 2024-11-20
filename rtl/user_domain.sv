@@ -157,8 +157,8 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   assign user_rom_obi_req                = all_user_sbr_obi_req[UserRom];
   assign all_user_sbr_obi_rsp[UserRom]   = user_rom_obi_rsp;
 
-  assign user_neopixel_obi_req                = all_user_sbr_obi_req[UserNeopixel];
-  assign all_user_sbr_obi_rsp[UserNeopixel]   = user_neopixel_obi_rsp;
+  assign user_neopixel_obi_req                = all_user_sbr_obi_req[UserNeoPixel];
+  assign all_user_sbr_obi_rsp[UserNeoPixel]   = user_neopixel_obi_rsp;
 
   assign user_uart_obi_req               = all_user_sbr_obi_req[UserUart];
   assign all_user_sbr_obi_rsp[UserUart]  = user_uart_obi_rsp;
