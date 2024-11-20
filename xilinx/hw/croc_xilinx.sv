@@ -74,7 +74,10 @@ module croc_xilinx import croc_pkg::*; #(
 `endif
 
   output logic  uart_tx_o,
-  input  logic  uart_rx_i
+  input  logic  uart_rx_i,
+
+  output logic  uart2_rx_i,
+  input  logic  uart2_tx_o
 );
 
   ////////////////////////
@@ -280,7 +283,17 @@ module croc_xilinx import croc_pkg::*; #(
     .gpio_o          ( soc_gpio_o        ),            
     .gpio_out_en_o   ( soc_gpio_out_en_o ),
 
-    .neopixel_data_o ( neopixel_data_o ) 
+    .neopixel_data_o ( neopixel_data_o ),
+
+    // Project NEWART
+    .uart2_rxd_i     ( uart2_rx_i      ),
+    .uart2_txd_o     ( uart2_tx_o      ),
+    .uart2_cts_n_i   ( 1'b1            ),
+    .uart2_dsr_n_i   ( 1'b1            ),
+    .uart2_ri_n_i    ( 1'b1            ),
+    .uart2_cd_n_i    ( 1'b1            ),
+    .uart2_rts_n_o   (                 ),
+    .uart2_dtr_n_o   (                 )
   );
 
 endmodule

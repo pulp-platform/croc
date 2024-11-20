@@ -99,4 +99,8 @@ set_property -dict { PACKAGE_PIN U27   IOSTANDARD LVCMOS33 } [get_ports { neopix
 # PMOD Header JC (Sound)
 set_property -dict { PACKAGE_PIN AC26  IOSTANDARD LVCMOS33 } [get_ports { modulated_o }]; #IO_L19P_T3_13 Sch=jc[1]
 
+# PMOD Header JC (UART2)
+set_property -dict { PACKAGE_PIN AH30  IOSTANDARD LVCMOS33 } [get_ports { uart2_rx_i }]; #IO_L18N_T2_13 Sch=jc[3]
+set_property -dict { PACKAGE_PIN AK29  IOSTANDARD LVCMOS33 } [get_ports { uart2_tx_o }]; #IO_L15P_T2_DQS_13 Sch=jc[4]
+
 # tclint-enable line-length, spacing
