@@ -179,13 +179,10 @@ module neopixel_reg import neopixel_pkg::*; #(
             rsp_data = MaxNumNeoPixel;
           end
 
-           MAX_NUM_ANIMATION_OFFSET: begin
-            rsp_data = MaxNumAnimation;
-          end
-
           MIN_FREQ_OFFSET: begin
             rsp_data = 3_000_000;
           end
+
           NUM_NEOPIXEL_OFFSET: begin
             rsp_data = reg_neopixel_q.str.num_neopixel;
           end

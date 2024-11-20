@@ -108,10 +108,8 @@ package neopixel_pkg;
 
     // How many maximal NeoPixel can this controller support?
     parameter logic [BlockAwNeopixel - 1:0] MAX_NUM_NEOPIXEL_OFFSET  = 11'h 0;
-    // How many maximal Animation can this controller support?
-    parameter logic [BlockAwNeopixel - 1:0] MAX_NUM_ANIMATION_OFFSET  = 11'h 20;
     // What is the minimum allowed frequency
-    parameter logic [BlockAwNeopixel - 1:0] MIN_FREQ_OFFSET  = 11'h 40;
+    parameter logic [BlockAwNeopixel - 1:0] MIN_FREQ_OFFSET  = 11'h 20;
 
     //----Writeable Register-------------------------------------------------------------------------------
     // After the chip is printed you can write into with Software
@@ -132,7 +130,7 @@ package neopixel_pkg;
     parameter logic [BlockAwNeopixel - 1:0] DMA_NUM_BYTES_OFFSET     = 11'h 140;
     parameter logic [BlockAwNeopixel - 1:0] DMA_VALID_OFFSET         = 11'h 160;
 
-    parameter logic [BlockAwNeopixel - 1:0] FIFO_ACCESS_OFFSET      = 11'h 1A0;
+    parameter logic [BlockAwNeopixel - 1:0] FIFO_ACCESS_OFFSET      = 11'h 180;
 
     //////////////
     // NeoPixel //

@@ -92,9 +92,8 @@ croc_domain #(
   .user_mgr_obi_req_i  ( user_mgr_obi_req ),
   .user_mgr_obi_rsp_o  ( user_mgr_obi_rsp ),
 
-  .irq0_i       ( synced_irq0 ),
   .interrupts_i ( interrupts  ),
-  .core_sleep_o ( status_o    )
+  .core_busy_o ( status_o    )
 );
 
 user_domain #(
