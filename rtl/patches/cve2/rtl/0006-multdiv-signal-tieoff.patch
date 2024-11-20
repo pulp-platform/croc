@@ -1,0 +1,26 @@
+From af0c88b8d041450140f8ca63a10604a8ff61eb10 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Wed, 20 Nov 2024 03:24:07 +0100
+Subject: [PATCH] multdiv signal tieoff
+
+---
+ cve2_ex_block.sv | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/cve2_ex_block.sv b/cve2_ex_block.sv
+index 98713a3d..09a203d3 100644
+--- a/cve2_ex_block.sv
++++ b/cve2_ex_block.sv
+@@ -165,6 +165,9 @@ module cve2_ex_block #(
+       .valid_o           (multdiv_valid),
+       .multdiv_result_o  (multdiv_result)
+     );
++  end else begin
++    assign multdiv_alu_operand_a = '0;
++    assign multdiv_alu_operand_b = '0;
+   end
+ 
+   // Multiplier/divider may require multiple cycles. The ALU output is valid in the same cycle
+-- 
+2.39.3
+

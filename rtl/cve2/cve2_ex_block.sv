@@ -165,6 +165,9 @@ module cve2_ex_block #(
       .valid_o           (multdiv_valid),
       .multdiv_result_o  (multdiv_result)
     );
+  end else begin
+    assign multdiv_alu_operand_a = '0;
+    assign multdiv_alu_operand_b = '0;
   end
 
   // Multiplier/divider may require multiple cycles. The ALU output is valid in the same cycle
