@@ -32,7 +32,7 @@ test:
 	echo $(OR_OUT_FILES)
 
 ## Place & Route flow using OpenROAD
-$(OR_OUT_FILES): $(NETLIST) $(OR_DIR)/scripts/*.tcl $(OR_DIR)/src/*.tcl $(OR_DIR)/src/*.sdc
+$(OR_OUT_FILES): $(OR_DIR)/scripts/*.tcl $(OR_DIR)/src/*.tcl $(OR_DIR)/src/*.sdc
 	mkdir -p $(SAVE)
 	mkdir -p $(REPORTS)
 	mkdir -p $(OR_OUT)

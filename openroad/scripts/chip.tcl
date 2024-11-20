@@ -39,8 +39,8 @@ report_checks -format end -no_line_splits                >> ${report_dir}/${proj
 report_checks -format end -no_line_splits                >> ${report_dir}/${proj_name}_checks.rpt
 
 # Size of the chip
-set chipW            1760.0
-set chipH            1760.0
+set chipW  [expr 2235 - 2*(39+70)];
+set chipH  [expr 2235 - 2*(39+70)];
 
 # thickness of annular ring for pads (length of a pad)
 set padRing           180.0
@@ -62,6 +62,7 @@ utl::report "Create Power Grid"
 source scripts/power_grid.tcl
 save_checkpoint ${proj_name}.power_grid
 report_image "${proj_name}.power" true
+
 
 ###############################################################################
 # Initial Repair Netlist                                                      #
@@ -286,4 +287,4 @@ write_verilog                  out/${proj_name}.v
 write_db                       out/${proj_name}.odb
 write_sdc                      out/${proj_name}.sdc
 
-exit
+gui::show

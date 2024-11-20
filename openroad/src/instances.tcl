@@ -24,6 +24,8 @@ set IBEX            $CROC/i_core_wrap.i_ibex
 set SRAM            $CROC/gen_sram_bank
 set JTAG            $CROC/i_dmi_jtag
 set SRAM_256x32     gen_256x32xBx1.i_cut
+set SRAM_1024x32    gen_1024x32xBx1.i_cut
+set SRAM_2048x32    gen_2048x32xBx1.i_cut
 
 # memory banks
 set sram {\[0\].i_sram/}
@@ -33,5 +35,5 @@ set bank1_sram0 $SRAM$sram$SRAM_2048x32
 set sram {\[2\].i_sram/}
 set bank2_sram0 $SRAM$sram$SRAM_2048x32
 
-set JTAG_ASYNC_REQ [get_nets $JTAG.i_dmi_cdc/i_cdc_req/*async_*]
-set JTAG_ASYNC_RSP [get_nets $JTAG.i_dmi_cdc/i_cdc_resp/*async_*]
+set JTAG_ASYNC_REQ [get_nets $JTAG/i_dmi_cdc.i_cdc_req/*async_*]
+set JTAG_ASYNC_RSP [get_nets $JTAG/i_dmi_cdc.i_cdc_req/*async_*]

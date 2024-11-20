@@ -31,6 +31,9 @@ export YOSYS_KEEP_HIER_INST :=  "t:croc_soc$$*" \
 								"t:tc_sram$$*" \
 								"t:soc_ctrl_reg_top$$*" \
 								"t:user_domain$$*" \
+								"t:user_rom$$*" \
+								"t:neopixel$$*" \
+								"t:uart$$*" \
 								"t:cdc_*$$*" \
 								"t:sync$$*" \
 

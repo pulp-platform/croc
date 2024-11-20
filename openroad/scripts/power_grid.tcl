@@ -118,6 +118,8 @@ add_pdn_stripe -grid {core_grid} -layer {Metal1} -width {0.44} -offset {0} \
                -followpins -extend_to_core_ring
 
 
+sram_power "sram_1024x64"  "RM_IHPSG13_1P_1024x64_c2_bm_bist" 
+
 sram_power "sram_256x64"  "RM_IHPSG13_1P_256x64_c2_bm_bist" 
 
 # Top power grid

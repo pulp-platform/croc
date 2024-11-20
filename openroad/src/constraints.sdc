@@ -46,7 +46,7 @@ create_clock -name clk_rtc -period $TCK_RTC [get_ports ref_clk_i]
 
 # Define which clocks are asynchronous to each other
 # -allow_paths re-activates timing checks between asyncs -> we must constrain CDCs!
-set_clock_groups -asynchronous -name clk_groups_async \
+set_clock_groups -asynchronous -allow_paths -name clk_groups_async \
      -group {clk_rtc} \
      -group {clk_jtg} \
      -group {clk_sys}
@@ -123,3 +123,30 @@ set_input_delay  -min -add_delay -clock clk_sys [ expr $TCK_SYS * 0.10 ] [get_po
 set_input_delay  -max -add_delay -clock clk_sys [ expr $TCK_SYS * 0.30 ] [get_ports uart_rx_i]
 set_output_delay -min -add_delay -clock clk_sys [ expr $TCK_SYS * 0.10 ] [get_ports uart_tx_o]
 set_output_delay -max -add_delay -clock clk_sys [ expr $TCK_SYS * 0.30 ] [get_ports uart_tx_o]
+
+##############
+## NEOPIXEL ##
+##############
+puts "NEOPIXEL..."
+
+set_output_delay -min -add_delay -clock clk_sys [ expr $TCK_SYS * 0.10 ] [get_ports neopixel_data_o]
+set_output_delay -max -add_delay -clock clk_sys [ expr $TCK_SYS * 0.30 ] [get_ports neopixel_data_o]
+
+###########
+## UART2 ##
+###########
+puts "UART2..."
+
+set_input_delay  -min -add_delay -clock clk_sys [ expr $TCK_SYS * 0.10 ] [get_ports uart2_*_i]
+set_input_delay  -max -add_delay -clock clk_sys [ expr $TCK_SYS * 0.30 ] [get_ports uart2_*_i]
+set_output_delay -min -add_delay -clock clk_sys [ expr $TCK_SYS * 0.10 ] [get_ports uart2_*_o]
+set_output_delay -max -add_delay -clock clk_sys [ expr $TCK_SYS * 0.30 ] [get_ports uart2_*_o]
+
+
+######################
+## Modulated Signal ##
+######################
+puts "Modulated..."
+
+set_output_delay -min -add_delay -clock clk_sys [ expr $TCK_SYS * 0.10 ] [get_ports modulated_o]
+set_output_delay -max -add_delay -clock clk_sys [ expr $TCK_SYS * 0.30 ] [get_ports modulated_o]
