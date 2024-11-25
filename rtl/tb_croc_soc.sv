@@ -5,7 +5,7 @@
 // Authors:
 // - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
-//`define TRACE_WAVE
+`define TRACE_WAVE
 
 module tb_croc_soc #(
     parameter time         ClkPeriod     = 100ns,
@@ -343,14 +343,14 @@ module tb_croc_soc #(
             
             if (bite == "\n" || uart_read_buf.size() > 80) begin
                  if (uart_read_buf.size() > 0) begin
-                    automatic string uart_str = "";
-                    $write("@%t | [UART] as hex: ( ", $time);
+                    automatic string uart_str = "";               
                     foreach (uart_read_buf[i]) begin
-                        $write("%02x ", uart_read_buf[i]);
                         uart_str = {uart_str, uart_read_buf[i]};
                     end
                     
-                    $display(")\n@%t | [UART] %s", $time, uart_str);
+                    $display("@%t | [UART] %s", $time, uart_str);
+                    uart_read_buf.push_back(bite);
+                    $display("@%t | [UART] raw: %p", $time, uart_read_buf);
   
                 end else begin
                     $display("@%t | [UART] ???", $time);
@@ -396,8 +396,9 @@ module tb_croc_soc #(
         .gpio_out_en_o ( gpio_out_en_o )
     );
 
-    assign gpio_i[ 3:0] = '0;
-    assign gpio_i[ 7:4] = gpio_out_en_o[3:0] & gpio_o[3:0];
+    assign gpio_i[ 3:0]          = '0;
+    assign gpio_i[ 7:4]          = gpio_out_en_o[3:0] & gpio_o[3:0]; // loop back
+    assign gpio_i[GpioCount-1:8] = '0;
 
 
     /////////////////
@@ -438,7 +439,7 @@ module tb_croc_soc #(
 
         // finish simulation
         repeat(50) @(posedge clk);
-        `ifdef TRACE
+        `ifdef TRACE_WAVE
         $dumpflush;
         `endif
         $finish();
