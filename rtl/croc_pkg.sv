@@ -60,8 +60,8 @@ package croc_pkg;
   localparam bit [31:0]   PeriphAddrRange   = 32'h1000_0000;
 
   localparam bit [31:0]   SramBaseAddr      = 32'h1000_0000;
-  localparam int unsigned NumSramBanks      = 32'd3;
-  localparam int unsigned SramBankNumWords  = 2048;
+  localparam int unsigned NumSramBanks      = 32'd2;
+  localparam int unsigned SramBankNumWords  = 512;
   localparam int unsigned SramBankAddrWidth = cf_math_pkg::idx_width(SramBankNumWords);
   localparam int unsigned SramAddrRange     = NumSramBanks*SramBankNumWords*4;
 
