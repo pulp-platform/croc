@@ -7,11 +7,11 @@
 
 # Tools
 BENDER	  ?= bender
-MORTY 	  ?= morty
-SVASE 	  ?= svase
-SV2V  	  ?= sv2v
 PYTHON3   ?= python3
 VERILATOR ?= /foss/tools/bin/verilator
+YOSYS     ?= yosys
+OPENROAD  ?= openroad
+KLAYOUT   ?= klayout
 VSIM      ?= vsim
 REGGEN    ?= $(PYTHON3) $(shell $(BENDER) path register_interface)/vendor/lowrisc_opentitan/util/regtool.py
 
@@ -41,17 +41,17 @@ clean-deps:
 ############
 # Software #
 ############
-SW := /sw/bin/helloworld.hex
+SW_HEX := sw/bin/helloworld.hex
 
-$(SW):
+$(SW_HEX): sw/*.c sw/*.h sw/*.S sw/*.ld
 	$(MAKE) -C sw/ compile
 
 ## Build the helloworld software
-software: $(SW)
+software: $(SW_HEX)
 
-sw: $(SW)
+sw: $(SW_HEX)
 
-.PHONY: software
+.PHONY: software sw
 
 ##################
 # RTL Simulation #
@@ -68,13 +68,13 @@ vsim/compile_netlist.tcl: Bender.lock Bender.yml
 	$(BENDER) script vsim -t ihp13 -t vsim -t simulation -t verilator -t netlist_yosys -DSYNTHESIS -DSIMULATION > $@
 
 ## Simulate RTL using Questasim/Modelsim/vsim
-vsim: vsim/compile_rtl.tcl $(SW)
+vsim: vsim/compile_rtl.tcl $(SW_HEX)
 	rm -rf vsim/work
 	cd vsim; $(VSIM) -c -do "source compile_rtl.tcl; exit"
 	cd vsim; $(VSIM) -gui tb_croc_soc $(VSIM_ARGS)
 
 ## Simulate netlist using Questasim/Modelsim/vsim
-vsim-yosys: vsim/compile_netlist.tcl $(SW) yosys/out/croc_yosys_debug.v
+vsim-yosys: vsim/compile_netlist.tcl $(SW_HEX) yosys/out/croc_yosys_debug.v
 	rm -rf vsim/work
 	cd vsim; $(VSIM) -c -do "source compile_netlist.tcl; source compile_tech.tcl; exit"
 	cd vsim; $(VSIM) -gui tb_croc_soc $(VSIM_ARGS)
@@ -89,7 +89,7 @@ verilator/croc.f: Bender.lock Bender.yml
 	$(BENDER) script verilator -t rtl -t verilator -DSYNTHESIS -DVERILATOR > $@
 
 ## Simulate RTL using Verilator
-verilator/obj_dir/Vtb_croc_soc: verilator/croc.f $(SW)
+verilator/obj_dir/Vtb_croc_soc: verilator/croc.f $(SW_HEX)
 	cd verilator; $(VERILATOR) $(VERILATOR_ARGS) -CFLAGS "-O0" --top tb_croc_soc -f croc.f
 
 verilator: verilator/obj_dir/Vtb_croc_soc
@@ -104,36 +104,13 @@ verilator: verilator/obj_dir/Vtb_croc_soc
 TOP_DESIGN     ?= croc_chip
 DUT_DESIGN	   ?= croc_soc
 BENDER_TARGETS ?= asic ihp13 rtl synthesis
-MORTY_DEFINES  ?= VERILATOR SYNTHESIS MORTY TARGET_ASIC TARGET_SYNTHESIS COMMON_CELLS_ASSERTS_OFF
+SV_DEFINES     ?= VERILATOR SYNTHESIS TARGET_ASIC TARGET_SYNTHESIS COMMON_CELLS_ASSERTS_OFF
 PICKLE_OUT	   ?= $(PROJ_DIR)/pickle
 SV_FLIST       ?= $(PROJ_DIR)/croc.flist
 
-# list of source files
-$(PICKLE_OUT)/croc_sources.json: Bender.lock Bender.yml rtl/*/Bender.yml
-	mkdir -p pickle
-	$(BENDER) sources -f $(foreach t,$(BENDER_TARGETS),-t $(t)) > $@
-
-# pickle source files into one file/context
-$(PICKLE_OUT)/croc_morty.sv: $(PICKLE_OUT)/croc_sources.json rtl/* ihp13/*.sv
-	$(MORTY) -q -f $< -o $@ $(foreach d,$(MORTY_DEFINES),-D $(d)=1)
-
-# simplify SystemVerilog by propagating parameters and unfolding generate statements
-$(PICKLE_OUT)/croc_svase.sv: $(PICKLE_OUT)/croc_morty.sv
-	$(SVASE) $(TOP_DESIGN) $@ $<
-	sed -i 's/module $(TOP_DESIGN)__[[:digit:]]\+/module $(TOP_DESIGN)/' $@
-	sed -i 's/ $(DUT_DESIGN)__[[:digit:]]\+ / $(DUT_DESIGN) /' $@
-
-# convert SystemVerilog to Verilog
-$(PICKLE_OUT)/croc_sv2v.v: $(PICKLE_OUT)/croc_svase.sv
-	$(SV2V) --oversized-numbers --write $@ $<
-
-.PHONY: pickle
-
-## Generate verilog file for synthesis
-pickle: $(PICKLE_OUT)/croc_sv2v.v
-
+# generate file list given to yosys-slang frontend
 $(SV_FLIST): Bender.lock Bender.yml rtl/*/Bender.yml
-	$(BENDER) script flist-plus $(foreach t,$(BENDER_TARGETS),-t $(t)) $(foreach d,$(MORTY_DEFINES),-D $(d)=1) > $@
+	$(BENDER) script flist-plus $(foreach t,$(BENDER_TARGETS),-t $(t)) $(foreach d,$(SV_DEFINES),-D $(d)=1) > $@
 
 include yosys/yosys.mk
 include openroad/openroad.mk
@@ -165,3 +142,19 @@ help: Makefile
 	done
 
 .PHONY: help
+
+
+###########
+# Cleanup #
+###########
+
+clean: 
+	rm -f $(SV_FLIST)
+	rm -f klayout/croc_chip.gds
+	rm -rf verilator/obj_dir/
+	rm -f verilator/croc.f
+	rm -f verilator/croc.vcd
+	$(MAKE) ys_clean
+	$(MAKE) or_clean
+
+.PHONY: clean

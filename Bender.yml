@@ -57,7 +57,7 @@ sources:
     files:
       - yosys/out/croc_yosys_debug.v
 
-  - target: simulation
+  - target: any(simulation, verilator)
     files:
       - rtl/tb_croc_soc.sv
 

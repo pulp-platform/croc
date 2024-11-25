@@ -12,7 +12,7 @@ YOSYS    ?= yosys
 # directory of the path to the last called Makefile (this one)
 YOSYS_DIR 		:= $(realpath $(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
 YOSYS_OUT		:= $(YOSYS_DIR)/out
-YOSYS_WORK		:= $(YOSYS_DIR)/WORK
+YOSYS_WORK		:= $(YOSYS_DIR)/tmp
 YOSYS_REPORTS	:= $(YOSYS_DIR)/reports
 
 # Project variables
@@ -47,10 +47,10 @@ $(NETLIST) $(NETLIST_DEBUG): $(SV_FLIST)
 		     | gawk -f $(YOSYS_DIR)/scripts/filter_output.awk;
 		
 
-clean:
+ys_clean:
 	rm -rf $(YOSYS_OUT)
 	rm -rf $(YOSYS_WORK)
 	rm -rf $(YOSYS_REPORTS) 
 	rm -f $(YOSYS_DIR)/$(RTL_NAME).log
 
-.PHONY: clean yosys synth yosys-slang
+.PHONY: ys_clean yosys synth yosys-slang

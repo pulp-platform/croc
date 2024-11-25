@@ -28,9 +28,6 @@ backend: $(OR_OUT)/$(PROJ_NAME).def
 
 openroad: $(OR_OUT)/$(PROJ_NAME).def
 
-test: 
-	echo $(OR_OUT_FILES)
-
 ## Place & Route flow using OpenROAD
 $(OR_OUT_FILES): $(NETLIST) $(OR_DIR)/scripts/*.tcl $(OR_DIR)/src/*.tcl $(OR_DIR)/src/*.sdc
 	mkdir -p $(SAVE)
@@ -48,4 +45,10 @@ $(OR_OUT_FILES): $(NETLIST) $(OR_DIR)/scripts/*.tcl $(OR_DIR)/src/*.tcl $(OR_DIR
 		-log $(PROJ_NAME).log \
 		2>&1 | TZ=UTC gawk '{ print strftime("[%Y-%m-%d %H:%M %Z]"), $$0 }';
 
-.PHONY: backend openroad clean
+or_clean:
+	rm -rf $(SAVE)
+	rm -rf $(REPORTS)
+	rm -rf $(OR_OUT) 
+	rm -f $(PROJ_NAME).log
+
+.PHONY: backend openroad or_clean
