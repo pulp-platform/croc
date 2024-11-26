@@ -50,6 +50,19 @@ module tb_croc_soc #(
     localparam bit [31:0] CoreStatusAddr = croc_pkg::SocCtrlAddrOffset
                                            + soc_ctrl_reg_pkg::SOC_CTRL_CORESTATUS_OFFSET;
 
+    /////////////////////////////
+    //  Command Line Arguments //
+    /////////////////////////////
+    string binary_path;
+    initial begin
+        if ($value$plusargs("binary=%s", binary_path)) begin
+            $display("Running program: %s", binary_path);
+        end else begin
+            $display("No binary path provided. Running helloworld.");
+            binary_path = "../sw/bin/helloworld.hex";
+        end
+    end
+
 
     //////////////
     //  Clocks  //
@@ -99,6 +112,7 @@ module tb_croc_soc #(
     );
 
     initial begin
+      #(ClkPeriod/2);
       jtag_dbg.reset_master();
     end
 
@@ -148,6 +162,24 @@ module tb_croc_soc #(
         jtag_write(dm::SBCS, JtagInitSbcs, 0, 1);
         jtag_write(dm::SBAddress1, '0); // 32-bit addressing only
         $display("@%t | [JTAG] Initialization success", $time);
+    endtask
+
+    // Halt the core
+    task automatic jtag_halt;
+      dm::dmstatus_t status;
+      // Halt hart 0
+      jtag_write(dm::DMControl, dm::dmcontrol_t'{haltreq: 1, dmactive: 1, default: '0});
+      $display("@%t | [JTAG] Halting hart 0... ", $time);
+      do jtag_dbg.read_dmi_exp_backoff(dm::DMStatus, status);
+      while (~status.allhalted);
+      $display("@%t | [JTAG] Halted", $time);
+    endtask
+
+    task automatic jtag_resume;
+      dm::dmstatus_t status;
+      // Halt hart 0
+      jtag_write(dm::DMControl, dm::dmcontrol_t'{resumereq: 1, dmactive: 1, default: '0});
+      $display("@%t | [JTAG] Resumed hart 0 ", $time);
     endtask
 
     task automatic jtag_read_reg32(
@@ -421,18 +453,22 @@ module tb_croc_soc #(
         // wait for reset
         #ClkPeriod;
 
-        //  init jtag
+        // init jtag
         jtag_init();
-
-        // write test value to sram
-        jtag_write_reg32(croc_pkg::SramBaseAddr, 32'h1234_5678, 1'b1);
-
-        // load binary to sram
-        jtag_load_hex("../sw/bin/helloworld.hex");
 
         $display("@%t | [CORE] Start fetching instructions", $time);
         fetch_en_i = 1'b1;
-        jtag_write_reg32(FetchEnAddr, 32'h01);
+
+        // halt core
+        jtag_halt();
+
+        // write test value to sram
+        jtag_write_reg32(croc_pkg::SramBaseAddr, 32'h1234_5678, 1'b1);
+        // load binary to sram
+        jtag_load_hex(binary_path);
+
+        // resume core
+        jtag_resume();
 
         // wait for non-zero return value (written into core status register)
         jtag_wait_for_eoc(tb_data);

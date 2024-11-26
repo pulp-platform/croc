@@ -71,7 +71,7 @@ vsim/compile_netlist.tcl: Bender.lock Bender.yml
 vsim: vsim/compile_rtl.tcl $(SW_HEX)
 	rm -rf vsim/work
 	cd vsim; $(VSIM) -c -do "source compile_rtl.tcl; exit"
-	cd vsim; $(VSIM) -gui tb_croc_soc $(VSIM_ARGS)
+	cd vsim; $(VSIM) +binary="$(realpath $(SW_HEX))" -gui tb_croc_soc $(VSIM_ARGS)
 
 ## Simulate netlist using Questasim/Modelsim/vsim
 vsim-yosys: vsim/compile_netlist.tcl $(SW_HEX) yosys/out/croc_yosys_debug.v
@@ -93,7 +93,7 @@ verilator/obj_dir/Vtb_croc_soc: verilator/croc.f $(SW_HEX)
 	cd verilator; $(VERILATOR) $(VERILATOR_ARGS) -CFLAGS "-O0" --top tb_croc_soc -f croc.f
 
 verilator: verilator/obj_dir/Vtb_croc_soc
-	cd verilator; obj_dir/Vtb_croc_soc
+	cd verilator; obj_dir/Vtb_croc_soc +binary="$(realpath $(SW_HEX))"
 
 .PHONY: verilator vsim vsim-yosys verilator-yosys
 
