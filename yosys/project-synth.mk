@@ -20,11 +20,11 @@ export YOSYS_FLATTEN_HIER := 1
 export YOSYS_KEEP_HIER_INST :=  "t:croc_soc$$*" \
 								"t:croc_domain$$*" \
 								"t:core_wrap$$*" \
-								"t:ibex_register_file$$*" \
-								"t:ibex_cs_registers$$*" \
+								"t:cve2_register_file_ff$$*" \
+								"t:cve2_cs_registers$$*" \
 								"t:dmi_jtag$$*" \
 								"t:dm_top$$*" \
-								"t:gpio$$" \
+								"t:gpio$$*" \
 								"t:timer_unit$$*" \
 								"t:reg_uart_wrap$$*" \
 								"t:tc_clk*$$*" \
