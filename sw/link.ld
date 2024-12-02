@@ -23,8 +23,8 @@ SECTIONS
   .text : { *(.text) *(.text.*) } >SRAM
   .misc : { *(.sdata) *(.*) } >SRAM
   
-  __global_pointer$ = ADDR(.misc); 
-  __stack_pointer$  = ORIGIN(SRAM) + LENGTH(SRAM) -4;
+  __global_pointer$ = ADDR(.misc)  + SIZEOF(.misc) / 2; 
+  __stack_pointer$  = ORIGIN(SRAM) + LENGTH(SRAM);
 
   status  = 0x03000008;
 }

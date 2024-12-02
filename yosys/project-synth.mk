@@ -20,11 +20,11 @@ export YOSYS_FLATTEN_HIER := 1
 export YOSYS_KEEP_HIER_INST :=  "t:croc_soc$$*" \
 								"t:croc_domain$$*" \
 								"t:core_wrap$$*" \
-								"t:ibex_register_file$$*" \
-								"t:ibex_cs_registers$$*" \
+								"t:cve2_register_file_ff$$*" \
+								"t:cve2_cs_registers$$*" \
 								"t:dmi_jtag$$*" \
 								"t:dm_top$$*" \
-								"t:gpio$$" \
+								"t:gpio$$*" \
 								"t:timer_unit$$*" \
 								"t:reg_uart_wrap$$*" \
 								"t:tc_clk*$$*" \
@@ -37,9 +37,3 @@ export YOSYS_KEEP_HIER_INST :=  "t:croc_soc$$*" \
 # the paths (full names) of all instances matching these strings is reported
 # for floorplaning or writing constraints
 export YOSYS_REPORT_INSTS :=	"t:*RM_IHPSG13_*"
-
-# export tech files to the environment so its easily available in yosys
-export YOSYS_TECH_CELLS 	:= $(TECH_CELLS)
-export YOSYS_TECH_MACROS	:= $(TECH_MACROS)
-export YOSYS_TECH_TIEHI 	:= $(TECH_CELL_TIEHI)
-export YOSYS_TECH_TIELO 	:= $(TECH_CELL_TIELO)

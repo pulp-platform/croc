@@ -6,12 +6,16 @@ As it is oriented towards education, it forgoes some configurability to increase
 
 Croc is developed as part of the PULP project, a joint effort between ETH Zurich and the University of Bologna.
 
+Croc was sucesfully taped out in Nov 2024. The chip is called [MLEM](http://asic.ee.ethz.ch/2024/MLEM.html), named after the sound Yoshi makes when eating a tasty fruit.
+MLEM was designed and prepared for tapeout by ETHZ students as a bachelor project. The exact code and scripts used for the tapeout can be seen in the frozen [mlem-tapeout](https://github.com/pulp-platform/croc/tree/mlem-tapeout) branch.
+
+
 ## Architecture
 
 ![Croc block diagram](doc/croc_arch.svg)
 
 The SoC is composed of two main parts:
-- The `croc_domain` containing an Ibex core, SRAM, an OBI crossbar and a few simple peripherals 
+- The `croc_domain` containing a CVE2 core (a fork of Ibex), SRAM, an OBI crossbar and a few simple peripherals 
 - The `user_domain` where students are invited to add their own designs or other open-source designs (peripherals, accelerators...)
 
 The main interconnect is OBI, you can find [the spec online](https://github.com/openhwgroup/obi/blob/072d9173c1f2d79471d6f2a10eae59ee387d4c6f/OBI-v1.6.0.pdf). 
@@ -21,15 +25,17 @@ To make it easier to browse and understand, only the currently used files are in
 
 ## Configuration
 
-Many configurations are in the configuration object:
+The main SoC configurations are in `rtl/croc_pkg.sv`:
 
 | Parameter           | Default          | Function                                              |
 |---------------------|------------------|-------------------------------------------------------|
 | `HartId`            | `0`              | Core's Hart ID                                        |
-| `PulpJtagIdCode`    | `32'h1_0000_db3` | Debug module ID code                                  |
+| `PulpJtagIdCode`    | `32'hED9_C0C50`  | Debug module ID code                                  |
 | `NumExternalIrqs`   | `4`              | Number of external interrupts into Croc domain        |
 | `BankNumWords`      | `512`            | Number of 32bit words in a memory bank                |
 | `NumSramBanks`      | `2`              | Number of memory banks                                |
+
+The SRAMs are instantiated via a technology wrapper called `tc_sram` (tc: tech_cells), the technology-independent implementation is in `rtl/tech_cells_generic/tc_sram.sv`. A number of SRAM configurations are implemented using IHP130 SRAM memories in `ihp13/tc_sram.sv`. If an unimplemented SRAM configuration is instantiated it will result in a `tc_sram_blackbox` module which can then be easily identified from the synthesis results.
 
 ## Bootmodes
 
@@ -37,59 +43,54 @@ Currently the only way to boot is via JTAG.
 
 ## Memory Map
 
-If possible, the memory map should be remain compatible with [Cheshire's memory map](https://pulp-platform.github.io/cheshire/um/arch/#memory-map).  
-As a guideline each new subordinate should occupy multiples of 4KB of the address space (`32'h0000_1000`).
+If possible, the memory map should remain compatible with [Cheshire's memory map](https://pulp-platform.github.io/cheshire/um/arch/#memory-map).  
+Further each new subordinate should occupy multiples of 4KB of the address space (`32'h0000_1000`).
 
+The address map of the default configuration is as follows:
 
 | Start Address   | Stop Address    | Description                                |
 |-----------------|-----------------|--------------------------------------------|
 | `32'h0000_0000` | `32'h0004_0000` | Debug module (JTAG)                        |
 | `32'h0300_0000` | `32'h0300_1000` | SoC control/info registers                 |
 | `32'h0300_2000` | `32'h0300_3000` | UART peripheral                            |
+| `32'h0300_5000` | `32'h0300_6000` | GPIO peripheral                            |
 | `32'h0300_A000` | `32'h0300_B000` | Timer peripheral                           |
 | `32'h1000_0000` | `+SRAM_SIZE`    | Memory banks (SRAM)                        |
 | `32'h2000_0000` | `32'h8000_0000` | Passthrough to user domain                 |
 | `32'h2000_0000` | `32'h2000_1000` | reserved for string formatted user ROM*    |
 
 
-*If people modify Croc we suggest they add a ROM at this address location containing additional information.
-Like their names, a project link or similar. This can then be written out via UART.  
+*If people modify Croc we suggest they add a ROM at this address containing additional information 
+like the names of the developers, a project link or similar. This can then be written out via UART.  
 We ask people to format the ROM like a C string with zero termination and using ASCII encoding if feasible.  
-
+The [MLEM user ROM](https://github.com/pulp-platform/croc/blob/mlem-tapeout/rtl/user_domain/user_rom.sv) may serve as a reference implementation.
 
 ## Flow
 ```mermaid
 graph LR;
-	Bender-->Morty;
-	Morty-->SVase;
-	SVase-->SV2V;
-	SV2V-->Yosys;
+	Bender-->Yosys;
 	Yosys-->OpenRoad;
-	OpenRoad-->klayout;
+	OpenRoad-->KLayout;
 ```
 1. Bender provides a list of SystemVerilog files
-2. These files are pickled into one context using Morty
-3. The pickled file is simplified using SVase
-4. The simplified SystemVerilog code is run through SV2V
-5. This gives us synthesizable Verilog which is then loaded into Yosys
-6. In Yosys the Verilog RTL goes through various passes and is mapped to the technology cells
-7. The netlist, constraints and floorplan are loaded into OpenRoad for Place&Route
-8. The design as def is read by klayout and the geometry of the cells and macros are merged
+2. Yosys parses, elaborates, optimizes and maps the design to the technology cells
+3. The netlist, constraints and floorplan are loaded into OpenRoad for Place&Route
+4. The design as def is read by klayout and the geometry of the cells and macros are merged
 
-The final gds is still missing the following things:
+Currently, the final GDS is still missing the following things:
 - metal density fill
-- pads
 - sealring
-All are added in klayout once your design is final.
+These can be added in KLayout, check the [IHP repository](https://github.com/IHP-GmbH/IHP-Open-PDK/tree/main) (possible the dev branch) for a reference script.
 
-### Results
+### Example Results
 Cell/Module placement                      |  Routing
 :-----------------------------------------:|:------------------------------------:
-![Chip module view](doc/croc_modules.png)  |  ![Chip routed](doc/croc_routed.png)
+![Chip module view](doc/croc_modules.jpg)  |  ![Chip routed](doc/croc_routed.jpg)
 
 
 ## Requirements
-We are using the excelent docker container maintained by Harald Pretl. If you get stuck with installing the tools, we urge you to check the [Tool Repository](https://github.com/iic-jku/IIC-OSIC-TOOLS).
+We are using the excellent docker container maintained by Harald Pretl. If you get stuck with installing the tools, we urge you to check the [Tool Repository](https://github.com/iic-jku/IIC-OSIC-TOOLS).  
+The current supported version is 2024.11, no other version is tested or officially supported.
 
 ### ETHZ systems
 An environment setup for bash is provided.
@@ -128,10 +129,8 @@ If something does not work, refer to the upstream [IIC-OSIC-Tools](https://githu
 You need to build/install the required tools manually:
 
 - [Bender](https://github.com/pulp-platform/bender#installation): Dependency manager
-- [Morty](https://github.com/pulp-platform/morty#install): SystemVerilog pickler
-- [SVase](https://github.com/pulp-platform/svase#install--build): SystemVerilog pre-elaborator
-- [SV2V](https://github.com/zachjs/sv2v#installation): SystemVerilog to Verilog
 - [Yosys](https://github.com/YosysHQ/yosys#building-from-source): Synthesis tool
+- [Yosys-Slang](https://github.com/povik/yosys-slang): SystemVerilog frontend for Yosys
 - [OpenRoad](https://github.com/The-OpenROAD-Project/OpenROAD/blob/master/docs/user/Build.md): Place & Route tool
 - (Optional) [Verilator](https://github.com/verilator/verilator): Simulator
 - (Optional) Questasim/Modelsim: Simulator
@@ -142,20 +141,17 @@ The SoC is fully functional as-is and a simple software example is provided for 
 To run the synthesis and place & route flow execute:
 ```sh
 make checkout
-make pickle
 make yosys
 make openroad
 make klayout
 ```
-_Note_: The bonding pads, metal fill and seal ring (all done in klayout) are currently still missing
-
 
 To simulate you can use:
 ```sh
 make verilator
 ```
 
-If you have Questasim/Modelsim, you can also use:
+If you have Questasim/Modelsim, you can also run:
 ```sh
 make vsim
 ```
