@@ -52,28 +52,28 @@ package neopixel_pkg;
     /////////////////////////////////////
 
     //-----------------------------------------------------------------------------------------------
-    // Register Union
+    // Register Unions
     //-----------------------------------------------------------------------------------------------
 
-    // Address widths within the block : Defines the max no of Block Addresses (2047)
+    // Address widths within the block : Defines the max no of Block Addresses
     parameter int BlockAwNeopixel = 10;
 
-    // How much space a Register has
+    // Register space
     parameter int RegisterDepth = 32;
 
     //----Writeable NeoPixel Register-------------------------------------------------------------------
 
-    // How many Register for the NeoPixel
+    // Number of Register for the NeoPixel
     parameter int NumNeoPixelReg = 7;
 
     typedef struct packed {
-        logic [RegisterDepth - 1:0] num_neopixel;   // Number of NeoPixel attached register
-        logic [RegisterDepth - 1:0] t1h;            // 1 code, high volate time register
-        logic [RegisterDepth - 1:0] t1l;            // 1 code, low volate time register
-        logic [RegisterDepth - 1:0] t0h;            // 0 code, high volate time register
-        logic [RegisterDepth - 1:0] t0l;            // 0 code, low volate time register
-        logic [RegisterDepth - 1:0] t_latch;        // low voltage time register
-        logic [RegisterDepth - 1:0] sleep; 
+        logic [RegisterDepth - 1:0] num_neopixel;   // Number of NeoPixel attached
+        logic [RegisterDepth - 1:0] t1h;            // 1 code, high voltage time
+        logic [RegisterDepth - 1:0] t1l;            // 1 code, low voltage time
+        logic [RegisterDepth - 1:0] t0h;            // 0 code, high voltage time
+        logic [RegisterDepth - 1:0] t0l;            // 0 code, low voltage time
+        logic [RegisterDepth - 1:0] t_latch;        // Low voltage time
+        logic [RegisterDepth - 1:0] sleep;          // Sleep time in idle state
     } neopixel_write_reg_fields_t;
 
     typedef union packed {
@@ -83,7 +83,7 @@ package neopixel_pkg;
 
     //----Writeable DMA Register-------------------------------------------------------------------
 
-    // How many Register for the DMA
+    // Number of Register for the DMA
     parameter int NumDmaReg = 3;
 
     typedef struct packed {
@@ -102,21 +102,19 @@ package neopixel_pkg;
     // Register Address Offsets //
     //----------------------------------------------------------------------------------------------------
 
-    // Every Register gets 32 bits
-
     //----Information Register----------------------------------------------------------------------------
     // After the chip is printed Software can't change them
 
-    // How many maximal NeoPixel can this controller support?
+    // Number of NeoPixel the controller can support
     parameter logic [BlockAwNeopixel - 1:0] MAX_NUM_NEOPIXEL_OFFSET  = 11'h 0;
-    // What is the minimum allowed frequency
+    // Minimum frequency for which the NeoPixel still works
     parameter logic [BlockAwNeopixel - 1:0] MIN_FREQ_OFFSET  = 11'h 20;
 
     //----Writeable Register-------------------------------------------------------------------------------
-    // After the chip is printed you can write into with Software
+    // After the chip is printed you can write into it with Software
 
     // Registers used for the neopixel_controller
-    // How many neopixel did you attach to the controller
+    // Number of NeoPixel which 
     parameter logic [BlockAwNeopixel - 1:0] NUM_NEOPIXEL_OFFSET     = 11'h 40;
     // Timing constraints for the timing control
     // you have to calculate the values
@@ -160,6 +158,9 @@ package neopixel_pkg;
     /////////
     // DMA //
     /////////
+
+    // DMA needs a rready signal, for all other OBI signals rready has been disabled
+    // A new OBI signal construct is needed
 
     localparam obi_pkg::obi_cfg_t MgrDmaObiCfg = '{
                                   UseRReady:          1'b1,

@@ -10,10 +10,9 @@ module neopixel_controller import neopixel_pkg::*; #() (
     /// FIFO control signals
     /// FIFO is empty
     input  logic fifo_empty_i,
-    /// Data read from the FIFOS
+    /// Data which is read from the FIFO
     input  logic [23:0] fifo_data_i,
     /// Pop head from FIFO so that the next data can be read
-    /// You can only pop it if it goes 1 and then back to 0
     output logic fifo_pop_o,
 
     /// Timing Constraints
@@ -24,7 +23,7 @@ module neopixel_controller import neopixel_pkg::*; #() (
 );
 
     /////////////////////////////////////////////////////////////
-    // Counter and Timing for correct Neopixel Timing Protocol //
+    // Counter and Timing for correct NeoPixel Timing Protocol //
     /////////////////////////////////////////////////////////////
 
     // Timing constants and number of NeoPixels to control
@@ -41,7 +40,8 @@ module neopixel_controller import neopixel_pkg::*; #() (
     assign sleep        = timing_constraints_i.str.sleep;
 
     // Counter logic for precise timing
-    logic [CounterWidth - 1:0] counter_q; // Counter value
+    // Counter value
+    logic [CounterWidth - 1:0] counter_q;
     // Control signals for the counter
     logic counter_en, counter_clear;
 
@@ -113,12 +113,11 @@ module neopixel_controller import neopixel_pkg::*; #() (
                 neopixel_index_d = 0;
                 active_color_data_index_d = 0;
 
-                if (last_state_idle_q) begin
-                    if (sleep != 0)begin
-                        counter_en = 1'b1;
-                        last_state_idle_d = (counter_q == sleep)? 0: last_state_idle_q;
-                    end
+                if (last_state_idle_q & sleep != 0) begin
+                    counter_en = 1'b1;
+                    last_state_idle_d = (counter_q == sleep)? 1'b0: last_state_idle_q;
                 end else begin
+                    last_state_idle_d = 1'b0;
                     if (~fifo_empty_i & num_neopixel > 0) begin
                         // Start transmission if FIFO has data and NeoPixels are defined
                         state_d = BIT_HIGH;
@@ -149,7 +148,7 @@ module neopixel_controller import neopixel_pkg::*; #() (
                     counter_clear = 1'b1; // Reset counter for next state
 
                     if (active_color_data_index_q < 23) begin
-                        // More bits remain continue with the next bit
+                        // More bits remain, continue with the next bit
                         state_d = BIT_HIGH;
                         active_color_data_index_d = active_color_data_index_q + 1;
                     end else if ((neopixel_index_q < num_neopixel - 1)) begin
@@ -162,7 +161,7 @@ module neopixel_controller import neopixel_pkg::*; #() (
                         active_color_data_d = (fifo_empty_i ? '0 : fifo_data_i);
                         fifo_pop_o = (fifo_empty_i ? 0 : 1);
                     end else begin
-                        // All neopixel have data, go to latch state
+                        // All NeoPixel have data, go to latch state
                         state_d = LATCH;
                     end
                 end
@@ -173,20 +172,9 @@ module neopixel_controller import neopixel_pkg::*; #() (
                 counter_en = 1'b1; // Enable the counter
 
                 if (counter_q == t_latch - 1) begin
-                    // if (~fifo_empty_i) begin
-                    //     // FIFO has data, send data
-                    //     state_d = BIT_HIGH;
-                    //     counter_clear = 1'b1;
-                    //     active_color_data_index_d = 0;
-                    //     neopixel_index_d = 0;
-                    //     active_color_data_d = fifo_data_i;
-                    //     fifo_pop_o = 1;
-                    // end else begin
-                        // FIFO is empty, wait for new data
                         state_d = IDLE;
                         counter_clear = 1'b1;
                         last_state_idle_d = 1'b1;
-                    // end
                 end
             end
 

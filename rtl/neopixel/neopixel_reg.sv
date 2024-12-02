@@ -19,12 +19,13 @@ module neopixel_reg import neopixel_pkg::*; #(
     /// OBI response interface : r.rdata, r.rid, r.err, r.r_optional | gnt, rvalid
     output obi_rsp_t obi_rsp_o,
 
-    /// Send timing contraints to neopixel_dma
+    /// Send timing contraints to neopixel_controller
     output neopixel_write_reg_union_t timing_constraints_o,
 
     /// Send dma information to neopixel_dma
     output dma_write_reg_union_t dma_constraints_o,
 
+    ///
     input logic dma_req_ready_i,
 
     /// 1 DMA can write to FIFO, 0 OBI can write to FIFO

@@ -3,7 +3,6 @@ quietly WaveActivateNextPane {} 0
 add wave -noupdate /tb_croc_soc/i_croc_soc/i_user/i_neopixel/i_neopixel_controller/clk_i
 add wave -noupdate /tb_croc_soc/i_croc_soc/i_user/i_neopixel/i_neopixel_controller/rst_ni
 add wave -noupdate /tb_croc_soc/i_croc_soc/i_user/i_neopixel/i_neopixel_controller/fifo_empty_i
-add wave -noupdate /tb_croc_soc/i_croc_soc/i_user/i_neopixel/i_neopixel_controller/fifo_usage_i
 add wave -noupdate /tb_croc_soc/i_croc_soc/i_user/i_neopixel/i_neopixel_controller/fifo_data_i
 add wave -noupdate /tb_croc_soc/i_croc_soc/i_user/i_neopixel/i_neopixel_controller/fifo_pop_o
 add wave -noupdate /tb_croc_soc/i_croc_soc/i_user/i_neopixel/i_neopixel_controller/timing_constraints_i
@@ -13,11 +12,11 @@ add wave -noupdate /tb_croc_soc/i_croc_soc/i_user/i_neopixel/i_neopixel_controll
 add wave -noupdate /tb_croc_soc/i_croc_soc/i_user/i_neopixel/i_neopixel_controller/t0h
 add wave -noupdate /tb_croc_soc/i_croc_soc/i_user/i_neopixel/i_neopixel_controller/t0l
 add wave -noupdate /tb_croc_soc/i_croc_soc/i_user/i_neopixel/i_neopixel_controller/t_latch
+add wave -noupdate /tb_croc_soc/i_croc_soc/i_user/i_neopixel/i_neopixel_controller/sleep
 add wave -noupdate /tb_croc_soc/i_croc_soc/i_user/i_neopixel/i_neopixel_controller/num_neopixel
 add wave -noupdate /tb_croc_soc/i_croc_soc/i_user/i_neopixel/i_neopixel_controller/counter_q
 add wave -noupdate /tb_croc_soc/i_croc_soc/i_user/i_neopixel/i_neopixel_controller/counter_en
 add wave -noupdate /tb_croc_soc/i_croc_soc/i_user/i_neopixel/i_neopixel_controller/counter_clear
-add wave -noupdate /tb_croc_soc/i_croc_soc/i_user/i_neopixel/i_neopixel_controller/counter_overflow
 add wave -noupdate /tb_croc_soc/i_croc_soc/i_user/i_neopixel/i_neopixel_controller/state_d
 add wave -noupdate /tb_croc_soc/i_croc_soc/i_user/i_neopixel/i_neopixel_controller/state_q
 add wave -noupdate /tb_croc_soc/i_croc_soc/i_user/i_neopixel/i_neopixel_controller/active_color_data_q
