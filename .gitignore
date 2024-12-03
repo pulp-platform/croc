@@ -4,3 +4,5 @@ WORK
 croc.flist
 *.jou
 *.log
+*.str
+.Xil

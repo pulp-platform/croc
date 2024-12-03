@@ -56,7 +56,7 @@ package neopixel_pkg;
     //-----------------------------------------------------------------------------------------------
 
     // Address widths within the block : Defines the max no of Block Addresses
-    parameter int BlockAwNeopixel = 10;
+    parameter int AddressWidth = 10;
 
     // Register space
     parameter int RegisterDepth = 32;
@@ -106,31 +106,31 @@ package neopixel_pkg;
     // After the chip is printed Software can't change them
 
     // Number of NeoPixel the controller can support
-    parameter logic [BlockAwNeopixel - 1:0] MAX_NUM_NEOPIXEL_OFFSET  = 11'h 0;
+    parameter logic [AddressWidth - 1:0] MAX_NUM_NEOPIXEL_OFFSET  = 11'h 0;
     // Minimum frequency for which the NeoPixel still works
-    parameter logic [BlockAwNeopixel - 1:0] MIN_FREQ_OFFSET  = 11'h 20;
+    parameter logic [AddressWidth - 1:0] MIN_FREQ_OFFSET  = 11'h 20;
 
     //----Writeable Register-------------------------------------------------------------------------------
     // After the chip is printed you can write into it with Software
 
     // Registers used for the neopixel_controller
     // Number of NeoPixel which 
-    parameter logic [BlockAwNeopixel - 1:0] NUM_NEOPIXEL_OFFSET     = 11'h 40;
+    parameter logic [AddressWidth - 1:0] NUM_NEOPIXEL_OFFSET     = 11'h 40;
     // Timing constraints for the timing control
     // you have to calculate the values
-    parameter logic [BlockAwNeopixel - 1:0] NEOPIXEL_T1H_OFFSET      = 11'h 60;
-    parameter logic [BlockAwNeopixel - 1:0] NEOPIXEL_T1L_OFFSET      = 11'h 80;
-    parameter logic [BlockAwNeopixel - 1:0] NEOPIXEL_T0H_OFFSET      = 11'h A0;
-    parameter logic [BlockAwNeopixel - 1:0] NEOPIXEL_T0L_OFFSET      = 11'h C0;
-    parameter logic [BlockAwNeopixel - 1:0] NEOPIXEL_T_LATCH_OFFSET  = 11'h E0;
-    parameter logic [BlockAwNeopixel - 1:0] NEOPIXEL_SLEEP_OFFSET  = 11'h 100;
+    parameter logic [AddressWidth - 1:0] NEOPIXEL_T1H_OFFSET      = 11'h 60;
+    parameter logic [AddressWidth - 1:0] NEOPIXEL_T1L_OFFSET      = 11'h 80;
+    parameter logic [AddressWidth - 1:0] NEOPIXEL_T0H_OFFSET      = 11'h A0;
+    parameter logic [AddressWidth - 1:0] NEOPIXEL_T0L_OFFSET      = 11'h C0;
+    parameter logic [AddressWidth - 1:0] NEOPIXEL_T_LATCH_OFFSET  = 11'h E0;
+    parameter logic [AddressWidth - 1:0] NEOPIXEL_SLEEP_OFFSET  = 11'h 100;
 
     // Registers used for the DMA
-    parameter logic [BlockAwNeopixel - 1:0] DMA_SRC_ADDR_OFFSET      = 11'h 120;
-    parameter logic [BlockAwNeopixel - 1:0] DMA_NUM_BYTES_OFFSET     = 11'h 140;
-    parameter logic [BlockAwNeopixel - 1:0] DMA_VALID_OFFSET         = 11'h 160;
+    parameter logic [AddressWidth - 1:0] DMA_SRC_ADDR_OFFSET      = 11'h 120;
+    parameter logic [AddressWidth - 1:0] DMA_NUM_BYTES_OFFSET     = 11'h 140;
+    parameter logic [AddressWidth - 1:0] DMA_VALID_OFFSET         = 11'h 160;
 
-    parameter logic [BlockAwNeopixel - 1:0] FIFO_ACCESS_OFFSET      = 11'h 180;
+    parameter logic [AddressWidth - 1:0] FIFO_ACCESS_OFFSET      = 11'h 180;
 
     //////////////
     // NeoPixel //
