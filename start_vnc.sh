@@ -52,7 +52,7 @@ if [ -z ${DOCKER_IMAGE+z} ]; then
 fi
 
 if [ -z ${DOCKER_TAG+z} ]; then
-	DOCKER_TAG="2024.09"
+	DOCKER_TAG="2024.10"
 fi
 
 if [ -z ${CONTAINER_NAME+z} ]; then
