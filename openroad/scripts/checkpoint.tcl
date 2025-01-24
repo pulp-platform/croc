@@ -36,7 +36,7 @@ proc load_checkpoint { checkpoint_name } {
     utl::report "Loading checkpoint $checkpoint_name"
     set checkpoint ${save_dir}/${checkpoint_name}
 
-    exec unzip ${checkpoint}.zip -d ${save_dir}/${checkpoint_name}
+    exec unzip -u ${checkpoint}.zip -d ${save_dir}/${checkpoint_name}
     #read_verilog ${checkpoint}/$checkpoint_name.v
     read_db ${checkpoint}/$checkpoint_name.odb
     if { [file exists ${checkpoint}/$checkpoint_name.sdc] } {
