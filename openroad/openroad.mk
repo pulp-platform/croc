@@ -50,7 +50,21 @@ $(OR_OUT_FILES): $(NETLIST) $(OR_DIR)/scripts/*.tcl $(OR_DIR)/src/*.tcl $(OR_DIR
 or_clean:
 	rm -rf $(SAVE)
 	rm -rf $(REPORTS)
-	rm -rf $(OR_OUT) 
+	rm -rf $(OR_OUT)
 	rm -f $(PROJ_NAME).log
 
-.PHONY: backend openroad or_clean
+start_openroad:
+	cd $(OR_DIR) && \
+	PROJ_NAME="$(PROJ_NAME)" \
+	SAVE="$(SAVE)" \
+	REPORTS="$(REPORTS)" \
+	$(OPENROAD) scripts/startup.tcl
+
+start_openroad_gui:
+	cd $(OR_DIR) && \
+	PROJ_NAME="$(PROJ_NAME)" \
+	SAVE="$(SAVE)" \
+	REPORTS="$(REPORTS)" \
+	$(OPENROAD) -gui scripts/startup.tcl
+
+.PHONY: backend openroad or_clean start_openroad start_openroad_gui
