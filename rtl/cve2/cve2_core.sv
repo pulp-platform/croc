@@ -113,14 +113,11 @@ module cve2_core import cve2_pkg::*; #(
   logic        instr_valid_id;
   logic        instr_new_id;
   logic [31:0] instr_rdata_id;                 // Instruction sampled inside IF stage
-  logic [31:0] instr_rdata_alu_id;             // Instruction sampled inside IF stage (replicated to
-                                               // ease fan-out)
-  logic [15:0] instr_rdata_c_id;               // Compressed instruction sampled inside IF stage
-  logic        instr_is_compressed_id;
+
   logic        instr_perf_count_id;
   logic        instr_fetch_err;                // Bus error on instr fetch
   logic        instr_fetch_err_plus2;          // Instruction error is misaligned
-  logic        illegal_c_insn_id;              // Illegal compressed instruction sent to ID stage
+
   logic [31:0] pc_if;                          // Program counter in IF stage
   logic [31:0] pc_id;                          // Program counter in ID stage
   logic [33:0] imd_val_d_ex[2];                // Intermediate register for multicycle Ops
@@ -306,12 +303,11 @@ module cve2_core import cve2_pkg::*; #(
     .instr_valid_id_o        (instr_valid_id),
     .instr_new_id_o          (instr_new_id),
     .instr_rdata_id_o        (instr_rdata_id),
-    .instr_rdata_alu_id_o    (instr_rdata_alu_id),
-    .instr_rdata_c_id_o      (instr_rdata_c_id),
     .instr_is_compressed_id_o(instr_is_compressed_id),
+
     .instr_fetch_err_o       (instr_fetch_err),
     .instr_fetch_err_plus2_o (instr_fetch_err_plus2),
-    .illegal_c_insn_id_o     (illegal_c_insn_id),
+
     .pc_if_o                 (pc_if),
     .pc_id_o                 (pc_id),
     .pmp_err_if_i            (pmp_req_err[PMP_I]),
@@ -366,9 +362,6 @@ module cve2_core import cve2_pkg::*; #(
     // from/to IF-ID pipeline register
     .instr_valid_i        (instr_valid_id),
     .instr_rdata_i        (instr_rdata_id),
-    .instr_rdata_alu_i    (instr_rdata_alu_id),
-    .instr_rdata_c_i      (instr_rdata_c_id),
-    .instr_is_compressed_i(instr_is_compressed_id),
 
     // Jumps and branches
     .branch_decision_i(branch_decision),
@@ -385,7 +378,6 @@ module cve2_core import cve2_pkg::*; #(
 
     .instr_fetch_err_i      (instr_fetch_err),
     .instr_fetch_err_plus2_i(instr_fetch_err_plus2),
-    .illegal_c_insn_i       (illegal_c_insn_id),
 
     .pc_id_i(pc_id),
 
@@ -1234,13 +1226,9 @@ module cve2_core import cve2_pkg::*; #(
     endcase
   end
 
-  always_comb begin
-    if (instr_is_compressed_id) begin
-      rvfi_insn_id = {16'b0, instr_rdata_c_id};
-    end else begin
-      rvfi_insn_id = instr_rdata_id;
-    end
-  end
+
+  assign rvfi_insn_id = instr_rdata_id;
+
 
   // Source registers 1 and 2 are read in the first instruction cycle
   // Source register 3 is read in the second instruction cycle.

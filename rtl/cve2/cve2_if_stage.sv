@@ -34,17 +34,12 @@ module cve2_if_stage import cve2_pkg::*; #(
   output logic                        instr_valid_id_o,         // instr in IF-ID is valid
   output logic                        instr_new_id_o,           // instr in IF-ID is new
   output logic [31:0]                 instr_rdata_id_o,         // instr for ID stage
-  output logic [31:0]                 instr_rdata_alu_id_o,     // replicated instr for ID stage
-                                                                // to reduce fan-out
-  output logic [15:0]                 instr_rdata_c_id_o,       // compressed instr for ID stage
-                                                                // (mtval), meaningful only if
-                                                                // instr_is_compressed_id_o = 1'b1
+ 
   output logic                        instr_is_compressed_id_o, // compressed decoder thinks this
                                                                 // is a compressed instr
   output logic                        instr_fetch_err_o,        // bus error on fetch
   output logic                        instr_fetch_err_plus2_o,  // bus error misaligned
-  output logic                        illegal_c_insn_id_o,      // compressed decoder thinks this
-                                                                // is an invalid instr
+
   output logic [31:0]                 pc_if_o,
   output logic [31:0]                 pc_id_o,
   input  logic                        pmp_err_if_i,
@@ -91,10 +86,7 @@ module cve2_if_stage import cve2_pkg::*; #(
   logic              fetch_err;
   logic              fetch_err_plus2;
 
-  logic [31:0]       instr_decompressed;
-  logic              illegal_c_insn;
-  logic              instr_is_compressed;
-
+  logic			     instr_is_compressed;
   logic              if_instr_pmp_err;
   logic              if_instr_err;
   logic              if_instr_err_plus2;
@@ -181,6 +173,7 @@ module cve2_if_stage import cve2_pkg::*; #(
 
   assign pc_if_o     = fetch_addr;
   assign if_busy_o   = prefetch_busy;
+  assign instr_is_compressed = (fetch_rdata[1:0] != 2'b11);
 
   // PMP errors
   // An error can come from the instruction address, or the next instruction address for unaligned,
@@ -194,21 +187,6 @@ module cve2_if_stage import cve2_pkg::*; #(
   // Capture the second half of the address for errors on the second part of an instruction
   assign if_instr_err_plus2 = ((fetch_addr[2] & ~instr_is_compressed & pmp_err_if_plus2_i) |
                                fetch_err_plus2) & ~pmp_err_if_i;
-
-  // compressed instruction decoding, or more precisely compressed instruction
-  // expander
-  //
-  // since it does not matter where we decompress instructions, we do it here
-  // to ease timing closure
-  cve2_compressed_decoder compressed_decoder_i (
-    .clk_i          (clk_i),
-    .rst_ni         (rst_ni),
-    .valid_i        (fetch_valid & ~fetch_err),
-    .instr_i        (fetch_rdata),
-    .instr_o        (instr_decompressed),
-    .is_compressed_o(instr_is_compressed),
-    .illegal_instr_o(illegal_c_insn)
-  );
 
   // The ID stage becomes valid as soon as any instruction is registered in the ID stage flops.
   // Note that the current instruction is squashed by the incoming pc_set_i signal.
@@ -237,22 +215,15 @@ module cve2_if_stage import cve2_pkg::*; #(
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       instr_rdata_id_o         <= '0;
-      instr_rdata_alu_id_o     <= '0;
       instr_fetch_err_o        <= '0;
       instr_fetch_err_plus2_o  <= '0;
-      instr_rdata_c_id_o       <= '0;
       instr_is_compressed_id_o <= '0;
-      illegal_c_insn_id_o      <= '0;
       pc_id_o                  <= '0;
     end else if (if_id_pipe_reg_we) begin
-      instr_rdata_id_o         <= instr_decompressed;
-      // To reduce fan-out and help timing from the instr_rdata_id flops they are replicated.
-      instr_rdata_alu_id_o     <= instr_decompressed;
+      instr_rdata_id_o         <= fetch_rdata;
       instr_fetch_err_o        <= if_instr_err;
       instr_fetch_err_plus2_o  <= if_instr_err_plus2;
-      instr_rdata_c_id_o       <= fetch_rdata[15:0]; //if_instr_rdata[15:0];
       instr_is_compressed_id_o <= instr_is_compressed;
-      illegal_c_insn_id_o      <= illegal_c_insn;
       pc_id_o                  <= pc_if_o;
     end
   end

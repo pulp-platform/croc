@@ -31,9 +31,6 @@ module cve2_id_stage #(
   // Interface to IF stage
   input  logic                      instr_valid_i,
   input  logic [31:0]               instr_rdata_i,         // from IF-ID pipeline registers
-  input  logic [31:0]               instr_rdata_alu_i,     // from IF-ID pipeline registers
-  input  logic [15:0]               instr_rdata_c_i,       // from IF-ID pipeline registers
-  input  logic                      instr_is_compressed_i,
   output logic                      instr_req_o,
   output logic                      instr_first_cycle_id_o,
   output logic                      instr_valid_clear_o,   // kill instr in IF-ID reg
@@ -193,6 +190,28 @@ module cve2_id_stage #(
   logic [31:0] imm_a;       // contains the immediate for operand b
   logic [31:0] imm_b;       // contains the immediate for operand b
 
+  // Deocmpress instructions
+
+  logic [31:0] instr_rdata_decompressed;
+  logic [15:0] instr_rdata_c;
+  logic [31:0] instr_rdata_alu;
+  logic [31:0] instr_rdata;
+  logic instr_is_compressed;
+  logic illegal_c_insn;
+
+  cve2_compressed_decoder compressed_decoder_i (
+    .clk_i          (clk_i),
+    .rst_ni         (rst_ni),
+    .valid_i        (instr_valid_i & ~instr_fetch_err_i),
+    .instr_i        (instr_rdata_i),
+    .instr_o        (instr_rdata_decompressed),
+    .is_compressed_o(instr_is_compressed),
+    .illegal_instr_o(illegal_c_insn)
+  );
+  assign instr_rdata_c = instr_rdata_i;
+  assign instr_rdata_alu = instr_rdata_decompressed;
+  assign instr_rdata = instr_rdata_decompressed;
+
   // Register file interface
 
   rf_wd_sel_e  rf_wdata_sel;
@@ -280,7 +299,7 @@ module cve2_id_stage #(
       IMM_B_B:         imm_b = imm_b_type;
       IMM_B_U:         imm_b = imm_u_type;
       IMM_B_J:         imm_b = imm_j_type;
-      IMM_B_INCR_PC:   imm_b = instr_is_compressed_i ? 32'h2 : 32'h4;
+      IMM_B_INCR_PC:   imm_b = instr_is_compressed ? 32'h2 : 32'h4;
       IMM_B_INCR_ADDR: imm_b = 32'h4;
       default:         imm_b = 32'h4;
     endcase
@@ -352,9 +371,9 @@ module cve2_id_stage #(
 
     // from IF-ID pipeline register
     .instr_first_cycle_i(instr_first_cycle),
-    .instr_rdata_i      (instr_rdata_i),
-    .instr_rdata_alu_i  (instr_rdata_alu_i),
-    .illegal_c_insn_i   (illegal_c_insn_i),
+    .instr_rdata_i      (instr_rdata),
+    .instr_rdata_alu_i  (instr_rdata_alu),
+    .illegal_c_insn_i   (illegal_c_insn),
 
     // immediates
     .imm_a_mux_sel_o(imm_a_mux_sel),
@@ -420,18 +439,18 @@ module cve2_id_stage #(
     //   Hence, a pipeline flush is needed to instantiate another PMP check with the updated CSRs.
     // - When modifying debug CSRs - TODO: Check if this is really needed
     if (csr_op_en_o == 1'b1 && (csr_op_o == CSR_OP_WRITE || csr_op_o == CSR_OP_SET)) begin
-      if (csr_num_e'(instr_rdata_i[31:20]) == CSR_MSTATUS ||
-          csr_num_e'(instr_rdata_i[31:20]) == CSR_MIE     ||
-          csr_num_e'(instr_rdata_i[31:20]) == CSR_MSECCFG ||
+      if (csr_num_e'(instr_rdata[31:20]) == CSR_MSTATUS ||
+          csr_num_e'(instr_rdata[31:20]) == CSR_MIE     ||
+          csr_num_e'(instr_rdata[31:20]) == CSR_MSECCFG ||
           // To catch all PMPCFG/PMPADDR registers, get the shared top most 7 bits.
-          instr_rdata_i[31:25] == 7'h1D) begin
+          instr_rdata[31:25] == 7'h1D) begin
         csr_pipe_flush = 1'b1;
       end
     end else if (csr_op_en_o == 1'b1 && csr_op_o != CSR_OP_READ) begin
-      if (csr_num_e'(instr_rdata_i[31:20]) == CSR_DCSR      ||
-          csr_num_e'(instr_rdata_i[31:20]) == CSR_DPC       ||
-          csr_num_e'(instr_rdata_i[31:20]) == CSR_DSCRATCH0 ||
-          csr_num_e'(instr_rdata_i[31:20]) == CSR_DSCRATCH1) begin
+      if (csr_num_e'(instr_rdata[31:20]) == CSR_DCSR      ||
+          csr_num_e'(instr_rdata[31:20]) == CSR_DPC       ||
+          csr_num_e'(instr_rdata[31:20]) == CSR_DSCRATCH0 ||
+          csr_num_e'(instr_rdata[31:20]) == CSR_DSCRATCH1) begin
         csr_pipe_flush = 1'b1;
       end
     end
@@ -463,8 +482,8 @@ module cve2_id_stage #(
     // from IF-ID pipeline
     .instr_valid_i          (instr_valid_i),
     .instr_i                (instr_rdata_i),
-    .instr_compressed_i     (instr_rdata_c_i),
-    .instr_is_compressed_i  (instr_is_compressed_i),
+    .instr_compressed_i     (instr_rdata_c),
+    .instr_is_compressed_i  (instr_is_compressed),
     .instr_fetch_err_i      (instr_fetch_err_i),
     .instr_fetch_err_plus2_i(instr_fetch_err_plus2_i),
     .pc_id_i                (pc_id_i),
@@ -786,11 +805,11 @@ module cve2_id_stage #(
 
   // Instruction delivered to ID stage can not contain X.
   `ASSERT_KNOWN_IF(IbexIdInstrKnown, instr_rdata_i,
-      instr_valid_i && !(illegal_c_insn_i || instr_fetch_err_i))
+      instr_valid_i && !(illegal_c_insn || instr_fetch_err_i))
 
   // Instruction delivered to ID stage can not contain X.
-  `ASSERT_KNOWN_IF(IbexIdInstrALUKnown, instr_rdata_alu_i,
-      instr_valid_i && !(illegal_c_insn_i || instr_fetch_err_i))
+  `ASSERT_KNOWN_IF(IbexIdInstrALUKnown, instr_rdata_alu,
+      instr_valid_i && !(illegal_c_insn || instr_fetch_err_i))
 
   // Multicycle enable signals must be unique.
   `ASSERT(IbexMulticycleEnableUnique,
@@ -799,7 +818,7 @@ module cve2_id_stage #(
   // Duplicated instruction flops must match
   // === as DV environment can produce instructions with Xs in, so must use precise match that
   // includes Xs
-  `ASSERT(IbexDuplicateInstrMatch, instr_valid_i |-> instr_rdata_i === instr_rdata_alu_i)
+  `ASSERT(IbexDuplicateInstrMatch, instr_valid_i |-> instr_rdata_i === instr_rdata_alu)
 
   `ifdef CHECK_MISALIGNED
   `ASSERT(IbexMisalignedMemoryAccess, !lsu_addr_incr_req_i)
