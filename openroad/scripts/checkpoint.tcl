@@ -8,6 +8,7 @@
 
 # Helper macros to save and load checkpoints
 set time [elapsed_run_time]
+if { ![info exists save_dir] } {set save_dir "save"}
 
 proc save_checkpoint { checkpoint_name } {
     global save_dir time step_by_step_debug

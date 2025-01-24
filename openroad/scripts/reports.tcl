@@ -8,6 +8,8 @@
 
 # Helper scripts writing reports
 
+if { ![info exists report_dir] } {set report_dir "reports"}
+
 proc report_puts { out } {
     upvar 1 when when
     upvar 1 filename filename
