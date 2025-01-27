@@ -36,7 +36,7 @@ module tb_croc_soc #(
     logic fetch_en_i;
     logic status_o;
 
-    localparam int unsigned GpioCount = 16;
+    localparam int unsigned GpioCount = 32;
 
     logic [GpioCount-1:0] gpio_i;             
     logic [GpioCount-1:0] gpio_o;            
@@ -456,21 +456,22 @@ module tb_croc_soc #(
         // init jtag
         jtag_init();
 
+        // write test value to sram
+        jtag_write_reg32(croc_pkg::SramBaseAddr, 32'h1234_5678, 1'b1);
+        // load binary to sram
+        jtag_load_hex(binary_path);
+
         $display("@%t | [CORE] Start fetching instructions", $time);
         fetch_en_i = 1'b1;
 
         // halt core
         jtag_halt();
 
-        // write test value to sram
-        jtag_write_reg32(croc_pkg::SramBaseAddr, 32'h1234_5678, 1'b1);
-        // load binary to sram
-        jtag_load_hex(binary_path);
-
         // resume core
         jtag_resume();
 
         // wait for non-zero return value (written into core status register)
+        $display("@%t | [CORE] Wait for end of code...", $time);
         jtag_wait_for_eoc(tb_data);
 
         // finish simulation
