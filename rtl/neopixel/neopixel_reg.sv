@@ -25,9 +25,6 @@ module neopixel_reg import neopixel_pkg::*; #(
     /// Send dma information to neopixel_dma
     output dma_write_reg_union_t dma_constraints_o,
 
-    ///
-    input logic dma_req_ready_i,
-
     /// 1 DMA can write to FIFO, 0 OBI can write to FIFO
     output logic [1:0] fifo_access_o
 

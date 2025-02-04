@@ -45,6 +45,8 @@ module write_to_fifo import neopixel_pkg::*; #(
     
     // Obi signals
     logic                       valid_d, valid_q;
+    logic                       we_d, we_q;
+    logic                       w_err;
     logic [31:0]                rdata_d, rdata_q;
     logic [ObiCfg.IdWidth-1:0]  id_d, id_q;
 
@@ -56,17 +58,19 @@ module write_to_fifo import neopixel_pkg::*; #(
     assign valid_d     = obi_req_i.req & obi_rsp_o.gnt;
     assign id_d        = obi_req_i.a.aid;
     assign rdata_d     = obi_req_i.a.we ? '0 : fifo_usage;
+    assign we_d        = obi_req_i.a.we;
 
     // Register outputs for valid, ID, and read data
     `FF(valid_q, valid_d, '0, clk_i, rst_ni)
     `FF(id_q, id_d, '0, clk_i, rst_ni)
     `FF(rdata_q, rdata_d, '0, clk_i, rst_ni)
+    `FF(we_q, we_d, '0, clk_i, rst_ni)
 
     // Step 2: Response phase
     // On the next cycle, send the response back with the same ID and the data
     always_comb begin
         obi_rsp_o.r.rid         = id_q;
-        obi_rsp_o.r.err         = 0;
+        obi_rsp_o.r.err         = w_err;
         obi_rsp_o.rvalid        = valid_q;
         obi_rsp_o.r.rdata       = rdata_q;
         obi_rsp_o.r.r_optional  = '0;
@@ -92,6 +96,8 @@ module write_to_fifo import neopixel_pkg::*; #(
     always_comb begin
         push = 1'b0;
         data = '0;
+        w_err = 1'b0;
+        w_err = valid_q & we_q ? 1'b1 : 1'b0;
 
         case (fifo_access_q)
             2'b00:begin
@@ -100,6 +106,7 @@ module write_to_fifo import neopixel_pkg::*; #(
             2'b01: begin
                 push = obi_push;
                 data = obi_req_i.a.wdata[23:0];
+                w_err = 1'b0;
             end
             2'b10: begin
                 push = dma_push;

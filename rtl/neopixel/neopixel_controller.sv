@@ -49,7 +49,7 @@ module neopixel_controller import neopixel_pkg::*; #() (
     delta_counter #(
         .WIDTH              ( CounterWidth  ),
         .STICKY_OVERFLOW    ( 1'b1          )
-    ) counter_i (
+    ) i_counter (
         .clk_i      ( clk_i             ),
         .rst_ni     ( rst_ni            ),
         .clear_i    ( counter_clear     ), // Resets the counter to 0

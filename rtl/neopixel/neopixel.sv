@@ -115,16 +115,10 @@ module neopixel import neopixel_pkg::*; #(
     logic dma_req_valid_d, dma_req_valid_q;
     logic dma_read_data_once_q, dma_read_data_once_d;
 
-    // Response Signal
-    logic dma_transfer_done;
-
     // Signal exchange between FIFO and DMA
     logic [RegisterDepth - 1:0]   dma_fifo_data;
     logic dma_fifo_valid;
     logic fifo_full;
-
-    // Status
-    logic dma_busy;
 
     // Signal calculation for DMA
     assign dma_req_valid_d = dma_constraints.str.valid[0];
@@ -149,7 +143,7 @@ module neopixel import neopixel_pkg::*; #(
         .req_valid_i        ( dma_req_valid_q & ~dma_read_data_once_q ),
         .req_ready_o        ( dma_req_ready     ),
 
-        .transfer_done_o    ( dma_transfer_done ),
+        .transfer_done_o    (),
 
         .obi_req_o          ( dma_obi_req       ),
         .obi_rsp_i          ( dma_obi_rsp       ),
@@ -158,7 +152,7 @@ module neopixel import neopixel_pkg::*; #(
         .fifo_valid_o       ( dma_fifo_valid    ),
         .fifo_ready_i       ( ~fifo_full        ),
 
-        .busy_o             ( dma_busy          )
+        .busy_o             ()
     );
 
     ////////////////////////////
@@ -271,8 +265,6 @@ module neopixel import neopixel_pkg::*; #(
         .obi_rsp_o              ( neopixel_register_obi_rsp),
 
         .timing_constraints_o   ( timing_constraints ),
-
-        .dma_req_ready_i ( dma_req_ready ),
 
         .dma_constraints_o      ( dma_constraints ),
 
