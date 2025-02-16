@@ -210,7 +210,7 @@ module tb_croc_soc #(
         if (check_write) begin
             logic [31:0] rdata;
             jtag_read_reg32(addr, rdata);
-            if (rdata != data) $fatal(1,"@%t | [JTAG] Read back incorrect data 0x%h!", $time, rdata);
+            if (rdata !== data) $fatal(1,"@%t | [JTAG] Read back incorrect data 0x%h!", $time, rdata);
             else $display("@%t | [JTAG] Read back correct data", $time);
         end
     endtask
