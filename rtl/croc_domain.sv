@@ -598,7 +598,7 @@ module croc_domain import croc_pkg::*; #(
     
     .req_i      ( timer_obi_req.req     ),
     .addr_i     ( timer_obi_req.a.addr  ),
-    .wen_i      ( timer_obi_req.a.we    ),
+    .wen_i      ( ~timer_obi_req.a.we   ),
     .wdata_i    ( timer_obi_req.a.wdata ),
     .be_i       ( timer_obi_req.a.be    ),
     .id_i       ( timer_obi_req.a.aid   ),
