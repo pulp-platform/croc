@@ -12,7 +12,7 @@ INCDIR  ?= lib/inc
 # Toolchain
 
 RISCV_XLEN    ?= 32
-RISCV_MARCH   ?= rv$(RISCV_XLEN)i
+RISCV_MARCH   ?= rv$(RISCV_XLEN)i_zicsr
 RISCV_MABI    ?= ilp32
 RISCV_PREFIX  ?= riscv64-unknown-elf-
 RISCV_CC      ?= $(RISCV_PREFIX)gcc
@@ -26,7 +26,6 @@ RISCV_STRIP   ?= $(RISCV_PREFIX)strip
 
 RISCV_FLAGS    ?= -march=$(RISCV_MARCH) -mabi=$(RISCV_MABI) -mcmodel=medany -static -std=gnu99 -Os -nostdlib -fno-builtin -ffreestanding
 RISCV_CCFLAGS  ?= $(RISCV_FLAGS) -Iinclude -I$(INCDIR) -I$(CURDIR)
-RISCV_CXXFLAGS ?= $(RISCV_FLAGS)
 RISCV_LDFLAGS  ?= -static -nostartfiles -lm -lgcc $(RISCV_FLAGS)
 
 # all
@@ -39,23 +38,30 @@ BINDIR 	?= bin
 CRT0 	?= crt0.S
 LINK 	?= link.ld
 
-LIB_SOURCES := $(wildcard $(SRCDIR)/*.c) $(wildcard $(SRCDIR)/*.S)
-LIB_OBJS    := $(patsubst %.c,%.c.o,$(patsubst %.S,%.S.o,$(LIB_SOURCES)))
+LIB_SOURCES := $(wildcard $(SRCDIR)/*.[cS])
+LIB_OBJS    := $(LIB_SOURCES:$(SRCDIR)/%=$(SRCDIR)/%.o)
+
+# Build all assembly and C files in the top level as seperate binaries
+TOP_SOURCES ?= $(filter-out $(CRT0), $(wildcard *.[cS]))
+TOP_BASENAMES := $(basename $(TOP_SOURCES))
+TOP_OBJS    := $(TOP_BASENAMES:=.o)
+ALL_TARGETS := $(TOP_BASENAMES:%=$(BINDIR)/%.elf) $(TOP_BASENAMES:%=$(BINDIR)/%.dump) $(TOP_BASENAMES:%=$(BINDIR)/%.hex)
+
 
 $(BINDIR):
 	mkdir -p $(BINDIR)
 
 %.S.o: %.S
-	$(RISCV_CC) -Iinclude $(RISCV_CCFLAGS) -c $< -o $@
+	$(RISCV_CC) $(RISCV_CCFLAGS) -c $< -o $@
 
 %.c.o: %.c
-	$(RISCV_CC) -Iinclude $(RISCV_CCFLAGS) -c $< -o $@
+	$(RISCV_CC) $(RISCV_CCFLAGS) -c $< -o $@
 
-$(BINDIR)/%.elf: %.S.o $(LIB_OBJS) | $(BINDIR)
-	$(RISCV_CC) -Iinclude $(RISCV_LDFLAGS) -o $@ $^ -T$(LINK)
+$(BINDIR)/%.elf: %.S.o $(CRT0).o $(LIB_OBJS) | $(BINDIR)
+	$(RISCV_CC) $(RISCV_LDFLAGS) -o $@ $^ -T$(LINK)
 
 $(BINDIR)/%.elf: %.c.o $(CRT0).o $(LIB_OBJS) | $(BINDIR)
-	$(RISCV_CC) -Iinclude $(RISCV_LDFLAGS) -o $@ $^ -T$(LINK)
+	$(RISCV_CC) $(RISCV_LDFLAGS) -o $@ $^ -T$(LINK)
 
 $(BINDIR)/%.dump: $(BINDIR)/%.elf
 	$(RISCV_OBJDUMP) -D -s $< >$@
@@ -63,16 +69,11 @@ $(BINDIR)/%.dump: $(BINDIR)/%.elf
 $(BINDIR)/%.hex: $(BINDIR)/%.elf
 	$(RISCV_OBJCOPY) -O verilog $< $@
 
-# keep dumps
-
-.PRECIOUS: $(BINDIR)/*.dump
-
 # Phonies
-
-TOP_SOURCES  ?= $(filter-out $(CRT0), $(wildcard *.S) $(wildcard *.c))
+.PHONY: all clean compile
 
 clean:
 	rm -rf $(BINDIR)
 	rm -f *.o
 
-compile: $(addprefix $(BINDIR)/, $(addsuffix .dump,$(basename $(TOP_SOURCES))) $(addsuffix .hex,$(basename $(TOP_SOURCES)))) 
+compile: $(BINDIR) $(ALL_TARGETS)
