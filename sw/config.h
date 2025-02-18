@@ -14,7 +14,7 @@
 #define TIMER_BASE_ADDR   0x0300A000
 
 // Frequencies
-#define TB_FREQUENCY 10000000
+#define TB_FREQUENCY 20000000
 #define TB_BAUDRATE    115200
 
 // Peripheral configs
