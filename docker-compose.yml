@@ -5,8 +5,6 @@
 # Authors:
 # - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
-version: '3'
-
 services:
   pulp-docker:
     image: hpretl/iic-osic-tools:2024.10
@@ -19,4 +17,5 @@ services:
     stdin_open: true
     tty: true
     working_dir: /fosic/designs/croc
-    entrypoint: /bin/bash
+    entrypoint: /dockerstartup/scripts/ui_startup.sh
+    command: --skip bash
