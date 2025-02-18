@@ -1,0 +1,74 @@
+# Copyright (c) 2025 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Author:  Philippe Sauter <phsauter@iis.ee.ethz.ch>
+
+name: Short Flow
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  simulation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Run simulation commands in OSEDA
+        uses: ./.github/actions/oseda-cmd
+        with:
+          cmd: "make sw && make verilator"
+      - name: Upload built software
+        uses: actions/upload-artifact@v4
+        with:
+          name: croc-sw
+          path: sw/bin
+        continue-on-error: true
+      - name: Upload waveform
+        uses: actions/upload-artifact@v4
+        with:
+          name: croc-waveform
+          path: croc.vcd
+        continue-on-error: true
+
+      - name: Upload simulation output
+        uses: actions/upload-artifact@v4
+        with:
+          name: simulation-output
+          path: ${{ env.result_log }}
+      - name: Check simulation output
+        shell: bash
+        run: ./.github/scripts/check_sim.sh ${{ env.result_log }}
+
+  synthesis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup OSEDA container
+        uses: ./.github/actions/oseda-cmd
+        with:
+          cmd: "make yosys && tail -n 40 yosys/reports/*area.rpt"
+      - name: Upload synthesis reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: croc-synth-reports
+          path: yosys/reports
+        continue-on-error: true
+      - name: Upload netlist
+        uses: actions/upload-artifact@v4
+        with:
+          name: croc-netlist
+          path: yosys/out
+        continue-on-error: true
