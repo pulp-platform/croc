@@ -1,6 +1,8 @@
 #! /bin/bash
 # klayout batch mode for transferring def to gds
 
+export KLAYOUT=${KLAYOUT:-klayout}
+
 # this directory
 klayout_dir=$(realpath $(dirname "${BASH_SOURCE[0]}"))
 root_dir=$(dirname $klayout_dir)
