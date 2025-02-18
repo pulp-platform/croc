@@ -1,0 +1,49 @@
+# Copyright (c) 2025 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Author:  Philippe Sauter <phsauter@iis.ee.ethz.ch>
+
+name: Full-flow
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+  release:
+    types:
+      - created
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Checkout repository (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Run Yosys, OpenROAD and KLayout
+        uses: ./.github/actions/oseda-cmd
+        with:
+          cmd: "make yosys && make openroad && make klayout"
+      - name: Upload openroad output
+        uses: actions/upload-artifact@v4
+        with:
+          name: croc-openroad
+          path: openroad/out
+        continue-on-error: true
+      - name: Upload openroad reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: croc-openroad
+          path: openroad/reports
+        continue-on-error: true
+      - name: Upload gds
+        uses: actions/upload-artifact@v4
+        with:
+          name: croc-gds
+          path: klayout/croc_chip.gds
+        continue-on-error: true
