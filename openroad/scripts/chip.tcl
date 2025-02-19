@@ -279,6 +279,7 @@ utl::report "Filler placement"
 filler_placement $stdfill
 global_connect
 report_image "${proj_name}.final" true true false true
+report_metrics "${proj_name}.final"
 utl::report "Write output"
 write_def                      out/${proj_name}.def
 write_verilog -include_pwr_gnd out/${proj_name}_lvs.v
