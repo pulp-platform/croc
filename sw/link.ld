@@ -12,7 +12,7 @@ ENTRY(_start)
 
 MEMORY 
 {
-   SRAM (rwxail) : ORIGIN = 0x10000000, LENGTH = 2K
+   SRAM (rwxail) : ORIGIN = 0x10000000, LENGTH = 4K
 }
 
 SECTIONS
