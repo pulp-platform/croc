@@ -1,0 +1,67 @@
+[*]
+[*] GTKWave Analyzer v3.4.0 (w)1999-2022 BSI
+[*] Thu Feb 20 11:13:53 2025
+[*]
+[dumpfile] "./croc_short.vcd"
+[dumpfile_mtime] "Thu Feb 20 11:13:44 2025"
+[dumpfile_size] 607912
+[savefile] "./croc_short.gtkw"
+[timestart] 6525250000
+[size] 1920 1163
+[pos] -1 -1
+*-18.969835 6527550000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[treeopen] TOP.tb_croc_soc.
+[treeopen] TOP.tb_croc_soc.i_croc_soc.
+[treeopen] TOP.tb_croc_soc.i_croc_soc.i_croc.
+[treeopen] TOP.tb_croc_soc.i_croc_soc.i_user.
+[sst_width] 297
+[signals_width] 219
+[sst_expanded] 1
+[sst_vpaned_height] 338
+@29
+TOP.tb_croc_soc.i_croc_soc.i_croc.clk_i
+@200
+-CVE2 (data) A
+@28
+TOP.tb_croc_soc.i_croc_soc.i_croc.core_data_obi_req.req
+TOP.tb_croc_soc.i_croc_soc.i_croc.core_data_obi_rsp.gnt
+TOP.tb_croc_soc.i_croc_soc.i_croc.core_data_obi_req.a.aid[0]
+@22
+TOP.tb_croc_soc.i_croc_soc.i_croc.core_data_obi_req.a.addr[31:0]
+TOP.tb_croc_soc.i_croc_soc.i_croc.core_data_obi_req.a.be[3:0]
+TOP.tb_croc_soc.i_croc_soc.i_croc.core_data_obi_req.a.wdata[31:0]
+@28
+TOP.tb_croc_soc.i_croc_soc.i_croc.core_data_obi_req.a.we
+@200
+-CVE2 (data) R
+@28
+TOP.tb_croc_soc.i_croc_soc.i_croc.core_data_obi_rsp.r.err
+TOP.tb_croc_soc.i_croc_soc.i_croc.core_data_obi_rsp.r.rid[0]
+@22
+TOP.tb_croc_soc.i_croc_soc.i_croc.core_data_obi_rsp.r.rdata[31:0]
+@28
+TOP.tb_croc_soc.i_croc_soc.i_croc.core_data_obi_rsp.rvalid
+@200
+-Peripheral A
+@28
+TOP.tb_croc_soc.i_croc_soc.i_user.user_sbr_obi_req_i.req
+TOP.tb_croc_soc.i_croc_soc.i_user.user_sbr_obi_rsp_o.gnt
+TOP.tb_croc_soc.i_croc_soc.i_user.user_sbr_obi_req_i.a.aid[2:0]
+@22
+TOP.tb_croc_soc.i_croc_soc.i_user.user_sbr_obi_req_i.a.addr[31:0]
+TOP.tb_croc_soc.i_croc_soc.i_user.user_sbr_obi_req_i.a.be[3:0]
+TOP.tb_croc_soc.i_croc_soc.i_user.user_sbr_obi_req_i.a.wdata[31:0]
+@28
+TOP.tb_croc_soc.i_croc_soc.i_user.user_sbr_obi_req_i.a.we
+@200
+-Peripheral R
+@28
+TOP.tb_croc_soc.i_croc_soc.i_user.user_sbr_obi_rsp_o.r.err
+TOP.tb_croc_soc.i_croc_soc.i_user.user_sbr_obi_rsp_o.r.rid[2:0]
+@22
+TOP.tb_croc_soc.i_croc_soc.i_user.user_sbr_obi_rsp_o.r.rdata[31:0]
+@28
+TOP.tb_croc_soc.i_croc_soc.i_user.user_sbr_obi_rsp_o.rvalid
+[pattern_trace] 1
+[pattern_trace] 0

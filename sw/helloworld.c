@@ -5,6 +5,7 @@
 // Authors:
 // - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
+#include "config.h"
 #include "uart.h"
 #include "print.h"
 #include "gpio.h"
@@ -31,5 +32,9 @@ int main() {
     ); // wait a few cycles to give GPIO signal time to propagate
     printf("GPIO (expect 0x50): %x\n", *reg8(GPIO_BASE_ADDR, GPIO_IN_REG_OFFSET));
     uart_write_flush();
+
+    // TODO : Define USER_ROM_BASE_ADDR in config.h, read eight 32-bit words from
+    // the ROM and print them using %x
+
     return 1;
 }

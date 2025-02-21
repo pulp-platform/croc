@@ -435,7 +435,7 @@ module croc_domain import croc_pkg::*; #(
     .obi_rsp_t   ( sbr_obi_rsp_t ),
     .NumMgrPorts ( NumPeriphs    ),
     .NumMaxTrans ( 2             )
-  ) i_obi_demux (
+  ) i_peripheral_demux (
     .clk_i,
     .rst_ni,
 

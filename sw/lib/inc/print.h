@@ -35,6 +35,14 @@ void printf(const char *fmt, ...) {
                         putchar(buffer[j]);
                     }
                 }
+            } else if (*fmt == 'c') { // char
+                char chr = (char) va_arg(args, int);
+                putchar(chr);
+            } else if (*fmt == 's') { // string
+                char *str = va_arg(args, char *);
+                while(*str) {
+                    putchar(*str++);
+                }
             }
         } else {
             putchar(*fmt);

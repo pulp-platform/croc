@@ -481,4 +481,22 @@ module tb_croc_soc #(
         $finish();
     end
 
+    // Used to generate short traces for student task
+    initial begin
+        `ifdef TRACE_WAVE_SHORT
+        #6525250ns;
+        $dumpfile("croc_short.vcd");
+
+        $dumpvars(1,TOP.tb_croc_soc.i_croc_soc.i_croc.clk_i);
+        $dumpvars(1,TOP.tb_croc_soc.i_croc_soc.i_croc.core_data_obi_req);
+        $dumpvars(1,TOP.tb_croc_soc.i_croc_soc.i_croc.core_data_obi_rsp);
+        $dumpvars(1,TOP.tb_croc_soc.i_croc_soc.i_user.user_sbr_obi_req_i);
+        $dumpvars(1,TOP.tb_croc_soc.i_croc_soc.i_user.user_sbr_obi_rsp_o);
+
+        $dumpflush;
+        #2300ns;
+        $finish();
+        `endif
+    end
+
 endmodule

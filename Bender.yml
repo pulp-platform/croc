@@ -43,6 +43,8 @@ sources:
       - rtl/gpio/gpio.sv
       # Level 2
       - rtl/croc_domain.sv
+      - rtl/user_domain/user_rom.sv
+      - rtl/user_domain/user_setbitacc.sv
       - rtl/user_domain.sv
       # Level 3
       - rtl/croc_soc.sv

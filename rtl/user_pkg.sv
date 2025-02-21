@@ -16,12 +16,13 @@ package user_pkg;
   
   // None
 
-
   /////////////////////////////////////
   // User Subordinate Address maps ////
   /////////////////////////////////////
 
-  localparam int unsigned NumUserDomainSubordinates = 0;
+  // TODO 2: Declare a unique index for the UserROM memory domain and modify this file accordingly
+
+  localparam int unsigned NumUserDomainSubordinates = 1;
 
   localparam bit [31:0] UserRomAddrOffset   = croc_pkg::UserBaseAddr; // 32'h2000_0000;
   localparam bit [31:0] UserRomAddrRange    = 32'h0000_1000;          // every subordinate has at least 4KB
@@ -31,10 +32,14 @@ package user_pkg;
 
   // Enum for bus indices
   typedef enum int {
-    UserError = 0
+    UserError = 0,
+    UserRom = 1
   } user_demux_outputs_e;
 
   // Address rules given to address decoder
-  localparam croc_pkg::addr_map_rule_t [NumDemuxSbrRules-1:0] user_addr_map = '0;
+  // UserError does not appear as it will be used as default rule
+  localparam croc_pkg::addr_map_rule_t [NumDemuxSbrRules-1:0] user_addr_map = '{
+    '{ idx:UserRom, start_addr: UserRomAddrOffset, end_addr: UserRomAddrOffset + UserRomAddrRange}
+  };
 
 endpackage
