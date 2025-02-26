@@ -1,3 +1,11 @@
+# Note on EX1
+Because of the directory structure of github repositpory, the file locations are a little different compared with the guidance on the VLSI website.
+The adder8 design is placed under `croc/adder8` folder.
+The `Makefile` already contains a target to run the Verilator simulation, but we highly recommand you to follow the steps described in Exercise 1 to understand the process.
+
+The Post-layout simulation unfortunately cannot be published at this moment because of the use of some commercial tool.
+We are now working on a workaround and plan to switch to open-sourced tool in the second half of the year.
+
 # Croc System-on-Chip
 
 A simple SoC for education using PULP IPs. Croc includes all scripts necessary to produce a nearly finished chip in [IHPs open-source 130nm technology](https://github.com/IHP-GmbH/IHP-Open-PDK/tree/main).
