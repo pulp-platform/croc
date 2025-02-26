@@ -1,0 +1,4 @@
+*.png
+*.svg
+*.sh
+!logo_template.svg
