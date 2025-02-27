@@ -399,6 +399,47 @@ module tb_croc_soc #(
     assign gpio_i[ 3:0] = '0;
     assign gpio_i[ 7:4] = gpio_out_en_o[3:0] & gpio_o[3:0];
 
+    int fd = 0;
+    initial begin
+        int i  = 0;
+        fd = $fopen ("stimuli.txt", "w");
+        forever begin
+            // wait one delta cycle
+            #0;
+            // write time
+            $fwrite(fd, "%010d", $time);
+            $fwrite(fd, ".");
+            // write stimuli
+            #TAppl;
+            $fwrite(fd, "%01b%01b%01b%01b%01b%01b%01b%01b%01b%01b%16b",
+                    i_croc_soc.clk_i,
+                    i_croc_soc.rst_ni,
+                    i_croc_soc.ref_clk_i,
+                    i_croc_soc.testmode_i,
+                    i_croc_soc.fetch_en_i,
+                    i_croc_soc.jtag_tck_i,
+                    i_croc_soc.jtag_tdi_i,
+                    i_croc_soc.jtag_tms_i,
+                    i_croc_soc.jtag_trst_ni,
+                    i_croc_soc.uart_rx_i,
+                    i_croc_soc.gpio_i
+            );
+            $fwrite(fd, ".");
+            // write responses
+            #(TTest-TAppl);
+            $fwrite(fd, "%01b%01b%01b%16b%16b",
+                    i_croc_soc.status_o,
+                    i_croc_soc.jtag_tdo_o,
+                    i_croc_soc.uart_tx_o,
+                    i_croc_soc.gpio_o,
+                    i_croc_soc.gpio_out_en_o
+            );
+            // wait for next clock
+            $fwrite(fd, "\n");
+            @(posedge clk);
+        end
+    end
+
 
     /////////////////
     //  Testbench  //
