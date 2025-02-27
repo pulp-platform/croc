@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   viewBox="0 0 200 200"
+   version="1.1"
+   id="svg4"
+   sodipodi:docname="logo_template.svg"
+   inkscape:version="1.0.2 (e86c870879, 2021-01-15)">
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1147"
+     id="namedview14"
+     showgrid="false"
+     inkscape:zoom="4.5197396"
+     inkscape:cx="100"
+     inkscape:cy="116.72664"
+     inkscape:window-x="1920"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg4"
+     inkscape:document-rotation="0" />
+  <metadata
+     id="metadata10">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs8" />
+  <text
+     x="95.980461"
+     y="31.120604"
+     text-anchor="middle"
+     dominant-baseline="middle"
+     id="text2"
+     style="font-size:24px"><tspan
+       id="tspan835"
+       x="95.980461"
+       y="31.120604"
+       style="font-size:24px">Croc Test Chip</tspan><tspan
+       id="tspan837"
+       x="95.980461"
+       y="61.120598"
+       style="font-size:24px" /></text>
+  <text
+     x="95.329773"
+     y="76.670319"
+     text-anchor="middle"
+     dominant-baseline="middle"
+     id="text2-3"
+     style="font-size:24px"><tspan
+       id="tspan835-6"
+       x="95.329773"
+       y="76.670319"
+       style="font-size:24px">#DATE#</tspan><tspan
+       id="tspan837-7"
+       x="95.329773"
+       y="106.67032"
+       style="font-size:24px" /></text>
+  <text
+     x="98.377258"
+     y="119.98215"
+     text-anchor="middle"
+     dominant-baseline="middle"
+     id="text2-3-5"
+     style="font-size:24px"><tspan
+       id="tspan835-6-3"
+       x="98.377258"
+       y="119.98215"
+       style="font-size:24px">#HASH#</tspan><tspan
+       id="tspan837-7-5"
+       x="98.377258"
+       y="149.98215"
+       style="font-size:24px" /></text>
+  <text
+     x="98.935471"
+     y="170.45549"
+     text-anchor="middle"
+     dominant-baseline="middle"
+     id="text2-3-5-3"
+     style="font-size:13.3333px">#REPO#</text>
+</svg>
