@@ -33,13 +33,13 @@ jobs:
       - name: Upload openroad output
         uses: actions/upload-artifact@v4
         with:
-          name: croc-openroad
+          name: croc-openroad-out
           path: openroad/out
         continue-on-error: true
       - name: Upload openroad reports
         uses: actions/upload-artifact@v4
         with:
-          name: croc-openroad
+          name: croc-openroad-reports
           path: openroad/reports
         continue-on-error: true
       - name: Upload gds
