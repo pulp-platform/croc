@@ -33,6 +33,15 @@ sources:
   - rtl/soc_ctrl/soc_ctrl_reg_pkg.sv
   - rtl/gpio/gpio_reg_pkg.sv
 
+  - rtl/uart/uart_pkg.sv
+  - rtl/uart/uart_baudgeneration.sv
+  - rtl/uart/uart_interrupts.sv
+  - rtl/uart/uart_modem.sv
+  - rtl/uart/uart_rx.sv
+  - rtl/uart/uart_tx.sv
+  - rtl/uart/uart_register.sv
+  - rtl/uart/uart.sv
+
     # RTL
   - target: not(netlist_yosys)
     files:

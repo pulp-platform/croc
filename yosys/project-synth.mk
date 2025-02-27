@@ -26,13 +26,12 @@ export YOSYS_KEEP_HIER_INST :=  "t:croc_soc$$*" \
 								"t:dm_top$$*" \
 								"t:gpio$$*" \
 								"t:timer_unit$$*" \
-								"t:reg_uart_wrap$$*" \
+								"t:uart$$*" \
 								"t:tc_clk*$$*" \
 								"t:tc_sram$$*" \
 								"t:soc_ctrl_reg_top$$*" \
 								"t:user_domain$$*" \
-								"t:cdc_*$$*" \
-								"t:sync$$*" \
+								"t:cdc_*$$*"
 
 # the paths (full names) of all instances matching these strings is reported
 # for floorplaning or writing constraints

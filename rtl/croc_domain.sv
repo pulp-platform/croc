@@ -516,59 +516,32 @@ module croc_domain import croc_pkg::*; #(
   );
 
   // UART
-  reg_req_t uart_reg_req;
-  reg_rsp_t uart_reg_rsp;
-
-  periph_to_reg #(
-    .AW    ( SbrObiCfg.AddrWidth  ),
-    .DW    ( SbrObiCfg.DataWidth  ),
-    .BW    ( 8                    ),
-    .IW    ( SbrObiCfg.IdWidth    ),
-    .req_t ( reg_req_t            ),
-    .rsp_t ( reg_rsp_t            )
-  ) i_uart_translate (
-    .clk_i,
-    .rst_ni,
-
-    .req_i     ( uart_obi_req.req     ),
-    .add_i     ( uart_obi_req.a.addr  ),
-    .wen_i     ( ~uart_obi_req.a.we   ),
-    .wdata_i   ( uart_obi_req.a.wdata ),
-    .be_i      ( uart_obi_req.a.be    ),
-    .id_i      ( uart_obi_req.a.aid   ),
-
-    .gnt_o     ( uart_obi_rsp.gnt     ),
-    .r_rdata_o ( uart_obi_rsp.r.rdata ),
-    .r_opc_o   ( uart_obi_rsp.r.err   ),
-    .r_id_o    ( uart_obi_rsp.r.rid   ),
-    .r_valid_o ( uart_obi_rsp.rvalid  ),
-
-    .reg_req_o ( uart_reg_req ),
-    .reg_rsp_i ( uart_reg_rsp )
-  );
-
-  reg_uart_wrap #(
-    .AddrWidth  ( 32        ),
-    .reg_req_t  ( reg_req_t ),
-    .reg_rsp_t  ( reg_rsp_t )
+  uart #(
+    .ObiCfg    ( SbrObiCfg     ),
+    .obi_req_t ( sbr_obi_req_t ),
+    .obi_rsp_t ( sbr_obi_rsp_t )
   ) i_uart (
     .clk_i,
     .rst_ni,
-    .reg_req_i  ( uart_reg_req  ),
-    .reg_rsp_o  ( uart_reg_rsp  ),
-    .intr_o     ( uart_irq      ),
-    .out2_no    ( ),
-    .out1_no    ( ),
-    .rts_no     ( ),
-    .dtr_no     ( ),
-    .cts_ni     ( 1'b0 ),
-    .dsr_ni     ( 1'b0 ),
-    .dcd_ni     ( 1'b0 ),
-    .rin_ni     ( 1'b0 ),
-    .sin_i      ( uart_rx_i ),
-    .sout_o     ( uart_tx_o )
-  );
-  assign uart_obi_rsp.r.r_optional = '0;
+   
+    .obi_req_i ( uart_obi_req ),
+    .obi_rsp_o ( uart_obi_rsp ),
+    .irq_o     ( uart_irq     ), 
+    .irq_no    ( ), 
+
+    .rxd_i     ( uart_rx_i ),
+    .txd_o     ( uart_tx_o ),
+
+    // Modem control pins are optional
+    .cts_ni    ( 1'b1 ),
+    .dsr_ni    ( 1'b1 ),
+    .ri_ni     ( 1'b1 ),
+    .cd_ni     ( 1'b1 ),
+    .rts_no    ( ), 
+    .dtr_no    ( ),
+    .out1_no   ( ),
+    .out2_no   ( )
+);
 
   // GPIO
   gpio #(
