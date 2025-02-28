@@ -255,7 +255,7 @@ module uart_tx #()
       end 
 
       //--Set-LSR---------------------------------------------------------------------------------
-      if (fifo_empty) begin 
+      if (~fifo_full) begin 
         reg_write_o.thr_empty = 1'b1;
         reg_write_o.thr_valid = 1'b1;
         if (fifo_empty & tsr_empty) begin
