@@ -16,7 +16,7 @@ const char hex_symbols[16] = {'0', '1', '2', '3', '4', '5', '6', '7',
 uint8_t format_hex32(char *buffer, uint32_t num) {
     uint8_t idx = 0;
     if (num == 0) {
-        buffer[0] == hex_symbols[0];
+        buffer[0] = hex_symbols[0];
         return 1;
     }
 
