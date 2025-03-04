@@ -55,7 +55,7 @@ sources:
   # netlist for simulation
   - target: netlist_yosys
     files:
-      - yosys/out/croc_yosys_debug.v
+      - yosys/out/croc_chip_yosys_debug.v
 
   - target: any(simulation, verilator)
     files:
