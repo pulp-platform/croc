@@ -18,7 +18,7 @@ defpath="$root_dir/openroad/out/croc.def"
 ################
 ## technology ##
 ################
-if [[ -f "$root_dir/.cockpitrc" ]]; then
+if [[ -f "$root_dir/cockpit.log" ]]; then
     echo "Init tech from ETHZ DZ cockpit"
     pdk_dir=$(realpath "$root_dir/technology")
     pdk_cells_lef_dir="${pdk_dir}/lef"
