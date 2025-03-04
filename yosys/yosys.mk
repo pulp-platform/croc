@@ -12,45 +12,46 @@ YOSYS    ?= yosys
 # directory of the path to the last called Makefile (this one)
 YOSYS_DIR 		:= $(realpath $(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
 YOSYS_OUT		:= $(YOSYS_DIR)/out
-YOSYS_WORK		:= $(YOSYS_DIR)/tmp
+YOSYS_TMP		:= $(YOSYS_DIR)/tmp
 YOSYS_REPORTS	:= $(YOSYS_DIR)/reports
 
-# Project variables
-include $(YOSYS_DIR)/project-synth.mk
-
+# top level to be synthesized
 TOP_DESIGN		?= croc_chip
-RTL_NAME		?= croc
+# target period in picoseconds
+PERIOD_PS		?= 10000
 
-PICKLE_OUT		:= $(realpath $(YOSYS_DIR)/..)/pickle
+# file containing include dirs, defines and paths to all source files
+SV_FLIST    	:= $(realpath $(YOSYS_DIR)/..)/croc.flist
 
-VLOG_FILES  	:= $(PICKLE_OUT)/$(RTL_NAME)_sv2v.v
-NETLIST			:= $(YOSYS_OUT)/$(RTL_NAME)_yosys.v
-NETLIST_DEBUG	:= $(YOSYS_OUT)/$(RTL_NAME)_debug_yosys.v
+# path to the resulting netlists (debug preserves multibit signals)
+NETLIST			:= $(YOSYS_OUT)/$(TOP_DESIGN)_yosys.v
+NETLIST_DEBUG	:= $(YOSYS_OUT)/$(TOP_DESIGN)_debug_yosys.v
+
 
 ## Synthesize netlist using Yosys
 yosys: $(NETLIST)
 
-$(NETLIST) $(NETLIST_DEBUG): $(SV_FLIST)
+$(NETLIST) $(NETLIST_DEBUG):  $(SV_FLIST)
 	@mkdir -p $(YOSYS_OUT)
-	@mkdir -p $(YOSYS_WORK)
+	@mkdir -p $(YOSYS_TMP)
 	@mkdir -p $(YOSYS_REPORTS)
+	cd $(YOSYS_DIR) && \
 	SV_FLIST="$(SV_FLIST)" \
 	TOP_DESIGN="$(TOP_DESIGN)" \
-	PROJ_NAME="$(RTL_NAME)" \
-	WORK="$(YOSYS_WORK)" \
-	BUILD="$(YOSYS_OUT)" \
+	PERIOD_PS="$(PERIOD_PS)" \
+	TMP="$(YOSYS_TMP)" \
+	OUT="$(YOSYS_OUT)" \
 	REPORTS="$(YOSYS_REPORTS)" \
-	NETLIST="$(NETLIST)" \
 	$(YOSYS) -c $(YOSYS_DIR)/scripts/yosys_synthesis.tcl \
 		2>&1 | TZ=UTC gawk '{ print strftime("[%Y-%m-%d %H:%M %Z]"), $$0 }' \
-		     | tee "$(YOSYS_DIR)/$(RTL_NAME).log" \
+		     | tee "$(YOSYS_DIR)/$(TOP_DESIGN).log" \
 		     | gawk -f $(YOSYS_DIR)/scripts/filter_output.awk;
 		
 
 ys_clean:
 	rm -rf $(YOSYS_OUT)
-	rm -rf $(YOSYS_WORK)
+	rm -rf $(YOSYS_TMP)
 	rm -rf $(YOSYS_REPORTS) 
-	rm -f $(YOSYS_DIR)/$(RTL_NAME).log
+	rm -f $(YOSYS_DIR)/$(TOP_DESIGN).log
 
-.PHONY: ys_clean yosys synth yosys-slang
+.PHONY: ys_clean yosys
