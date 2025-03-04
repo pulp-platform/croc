@@ -9,14 +9,11 @@
 
 # list of global variables that may be used
 set variables {
-    vlog_files  { VLOG_FILES               ""                       }
     sv_flist    { SV_FLIST                 ""                       }
     top_design  { TOP_DESIGN               ""                       }
-    hier_depth  { HIER_DEPTH               0                        }
     period_ps   { YOSYS_TARGET_PERIOD_PS   5000                     }
-    proj_name   { PROJ_NAME                ""                       }
     build_dir   { BUILD                    "[set dir [pwd]]/out"    }
-    work_dir    { WORK                     "[set dir [pwd]]/WORK"   }
+    tmp_dir     { TMP                      "[set dir [pwd]]/tmp"    }
     report_dir  { REPORTS                  "[set dir [pwd]]/report" }
     netlist     { NETLIST                  ""                       }
 }
@@ -50,9 +47,9 @@ proc envVarValid {var_name} {
 }
 
 proc processAbcScript {abc_script} {
-    global work_dir period_ps
+    global tmp_dir period_ps
     set src_dir [file join [file dirname [info script]] ../src]
-    set abc_out_path $work_dir/[file tail $abc_script]
+    set abc_out_path $tmp_dir/[file tail $abc_script]
 
     set raw [read -nonewline [open $abc_script r]]
     set abc_script_delay [string map -nocase [list "{D}" [subst "-D $period_ps"]] $raw]
