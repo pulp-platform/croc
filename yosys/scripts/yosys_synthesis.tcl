@@ -23,6 +23,8 @@ source $script_dir/init_tech.tcl
 
 yosys plugin -i slang.so
 
+puts [pwd]
+
 # read design (default: top_design=croc_chip, sv_flist=croc.flist)
 # see yosys/configuration.mk
 yosys read_slang --top $top_design -f $sv_flist \
