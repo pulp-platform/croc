@@ -162,6 +162,17 @@ The most important make targets are documented, you can list them with:
 make help
 ```
 
+### Building on Croc
+To add your own design, we recommend creating a new directory under `rtl/` or put single source files (small designs) into `rtl/user_domain`, then go into `Bender.yml` and add the files in the indicated places.
+This will make Bender aware of the files and any script it contains will contain your design as well.
+
+Then re-generate the default synthesis file-list:
+```sh
+make yosys-flist
+```
+
+If you want to add an existing design and it already containts a `Bender.yml` in its repository, you can add it as a dependency in the `Bender.yml` and reading the guide below.
+
 ## Bender
 The dependency manager [Bender](https://github.com/pulp-platform/bender) is used in most pulp-platform IPs.
 Usually each dependency would be in a seperate repository, each with a `Bender.yml` file to describe where the RTL files are, how you can use this dependency and which additional dependency it has.
