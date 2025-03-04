@@ -54,10 +54,10 @@ module croc_chip import croc_pkg::*; #() (
   inout  wire gpio29_io,
   inout  wire gpio30_io,
   inout  wire gpio31_io,
-  inout  wire unused0_o,
-  inout  wire unused1_o,
-  inout  wire unused2_o,
-  inout  wire unused3_o
+  output wire unused0_o,
+  output wire unused1_o,
+  output wire unused2_o,
+  output wire unused3_o
 ); 
     logic soc_clk_i;
     logic soc_rst_ni;
