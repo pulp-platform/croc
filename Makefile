@@ -46,7 +46,7 @@ SW_HEX := sw/bin/helloworld.hex
 $(SW_HEX): sw/*.c sw/*.h sw/*.S sw/*.ld
 	$(MAKE) -C sw/ compile
 
-## Build the helloworld software
+## Build all top-level programs in sw/
 software: $(SW_HEX)
 
 sw: $(SW_HEX)
@@ -74,7 +74,7 @@ vsim: vsim/compile_rtl.tcl $(SW_HEX)
 	cd vsim; $(VSIM) +binary="$(realpath $(SW_HEX))" -gui tb_croc_soc $(VSIM_ARGS)
 
 ## Simulate netlist using Questasim/Modelsim/vsim
-vsim-yosys: vsim/compile_netlist.tcl $(SW_HEX) yosys/out/croc_yosys_debug.v
+vsim-yosys: vsim/compile_netlist.tcl $(SW_HEX) yosys/out/croc_chip_yosys_debug.v
 	rm -rf vsim/work
 	cd vsim; $(VSIM) -c -do "source compile_netlist.tcl; source compile_tech.tcl; exit"
 	cd vsim; $(VSIM) -gui tb_croc_soc $(VSIM_ARGS)
@@ -88,29 +88,28 @@ VERILATOR_ARGS += --timing --autoflush --trace --trace-structs
 verilator/croc.f: Bender.lock Bender.yml
 	$(BENDER) script verilator -t rtl -t verilator -DSYNTHESIS -DVERILATOR > $@
 
-## Simulate RTL using Verilator
 verilator/obj_dir/Vtb_croc_soc: verilator/croc.f $(SW_HEX)
 	cd verilator; $(VERILATOR) $(VERILATOR_ARGS) -CFLAGS "-O0" --top tb_croc_soc -f croc.f
 
+## Simulate RTL using Verilator
 verilator: verilator/obj_dir/Vtb_croc_soc
 	cd verilator; obj_dir/Vtb_croc_soc +binary="$(realpath $(SW_HEX))"
 
-.PHONY: verilator vsim vsim-yosys verilator-yosys
+.PHONY: verilator vsim vsim-yosys
 
 
 ####################
 # Open Source Flow #
 ####################
+# Bender manages the different IPs and can be used to generate file-lists for synthesis
 TOP_DESIGN     ?= croc_chip
 DUT_DESIGN	   ?= croc_soc
 BENDER_TARGETS ?= asic ihp13 rtl synthesis
-SV_DEFINES     ?= VERILATOR SYNTHESIS TARGET_ASIC TARGET_SYNTHESIS COMMON_CELLS_ASSERTS_OFF
-PICKLE_OUT	   ?= $(PROJ_DIR)/pickle
-SV_FLIST       ?= $(PROJ_DIR)/croc.flist
+SV_DEFINES     ?= VERILATOR SYNTHESIS COMMON_CELLS_ASSERTS_OFF
 
-# generate file list given to yosys-slang frontend
-$(SV_FLIST): Bender.lock Bender.yml rtl/*/Bender.yml
-	$(BENDER) script flist-plus $(foreach t,$(BENDER_TARGETS),-t $(t)) $(foreach d,$(SV_DEFINES),-D $(d)=1) > $@
+## Generate croc.flist used to read design in yosys
+yosys-flist: Bender.lock Bender.yml rtl/*/Bender.yml
+	$(BENDER) script flist-plus $(foreach t,$(BENDER_TARGETS),-t $(t)) $(foreach d,$(SV_DEFINES),-D $(d)=1) > $(PROJ_DIR)/croc.flist
 
 include yosys/yosys.mk
 include openroad/openroad.mk
@@ -118,9 +117,10 @@ include openroad/openroad.mk
 klayout/croc_chip.gds: $(OR_OUT)/croc.def klayout/*.sh klayout/*.py
 	./klayout/def2gds.sh
 
+## Generate merged .gds from openroads .def output
 klayout: klayout/croc_chip.gds
 
-.PHONY: klayout
+.PHONY: klayout yosys-flist
 
 
 #################
@@ -148,6 +148,7 @@ help: Makefile
 # Cleanup #
 ###########
 
+## Delete generated files and directories
 clean: 
 	rm -f $(SV_FLIST)
 	rm -f klayout/croc_chip.gds

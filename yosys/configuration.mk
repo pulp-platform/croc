@@ -5,6 +5,16 @@
 # Authors:
 # - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
+# top level to be synthesized
+TOP_DESIGN		?= croc_chip
+
+# file containing include dirs, defines and paths to all source files
+SV_FLIST    	:= $(realpath $(YOSYS_DIR)/..)/croc.flist
+
+# path to the resulting netlists (debug preserves multibit signals)
+NETLIST			:= $(YOSYS_OUT)/$(TOP_DESIGN)_yosys.v
+NETLIST_DEBUG	:= $(YOSYS_OUT)/$(TOP_DESIGN)_debug_yosys.v
+
 # target clock-period in pico-seconds
 export YOSYS_TARGET_PERIOD_PS := 10000
 
@@ -36,4 +46,4 @@ export YOSYS_KEEP_HIER_INST :=  "t:croc_soc$$*" \
 
 # the paths (full names) of all instances matching these strings is reported
 # for floorplaning or writing constraints
-export YOSYS_REPORT_INSTS :=	"t:*RM_IHPSG13_*"
+export YOSYS_REPORT_INSTS :=	"t:RM_IHPSG13_*"
