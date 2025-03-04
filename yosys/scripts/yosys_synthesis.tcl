@@ -5,48 +5,52 @@
 # Authors:
 # - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
+# This flows assumes it is beign executed in the yosys/ directory
+# but just to be sure, we go there
+if {[info script] ne ""} {
+    cd "[file dirname [info script]]/../"
+}
+
+# Configuration variables are in yosys_commono
 # get environment variables
-set script_dir [file dirname [info script]]
-source $script_dir/yosys_common.tcl
+source scripts/yosys_common.tcl
 
-# constraints file
-set abc_constr [file join $script_dir ../src/abc.constr]
-
-# ABC script without DFF optimizations
-set abc_combinational_script $script_dir/abc-opt.script
-
-# process abc file (written to WORK directory)
-set abc_comb_script   [processAbcScript $abc_combinational_script]
+# ABC logic optimization script
+set abc_script [processAbcScript scripts/abc-opt.script]
 
 # read liberty files and prepare some variables
-source $script_dir/init_tech.tcl
+source scripts/init_tech.tcl
 
 yosys plugin -i slang.so
-
-# read design
-yosys read_slang --top $top_design -f $sv_flist \
+# default from yosys_common.tcl: top_design=croc_chip; sv_flist=../croc.flist
+yosys read_slang --top $top_design -F $sv_flist \
         --compat-mode --keep-hierarchy \
         --allow-use-before-declare --ignore-unknown-modules
 
-
-# blackbox requested modules
-if { [info exists ::env(YOSYS_BLACKBOX_MODULES)] } {
-    foreach sel $::env(YOSYS_BLACKBOX_MODULES) {
-        puts "Blackboxing the module ${sel}"
-        yosys select -list {*}$sel
-	    yosys blackbox {*}$sel
-        yosys setattr -set keep_hierarchy 1 {*}$sel
-    }
-}
-
 # preserve hierarchy of selected modules/instances
-if { [info exists ::env(YOSYS_KEEP_HIER_INST)] } {
-    foreach sel $::env(YOSYS_KEEP_HIER_INST) {
-        puts "Keeping hierarchy of selection: $sel"
-        yosys select -list {*}$sel
-        yosys setattr -set keep_hierarchy 1 {*}$sel
-    }
-}
+# 't' means type as in select all instances of this type/module
+# yosys-slang uniquifies all modules with the naming scheme:
+# <module-name>$<instance-name> -> match for t:<module-name>$$
+yosys setattr -set keep_hierarchy 1 "t:croc_soc$*"
+yosys setattr -set keep_hierarchy 1 "t:croc_domain$*"
+yosys setattr -set keep_hierarchy 1 "t:user_domain$*"
+yosys setattr -set keep_hierarchy 1 "t:core_wrap$*"
+yosys setattr -set keep_hierarchy 1 "t:cve2_register_file_ff$*"
+yosys setattr -set keep_hierarchy 1 "t:cve2_cs_registers$*"
+yosys setattr -set keep_hierarchy 1 "t:dmi_jtag$*"
+yosys setattr -set keep_hierarchy 1 "t:dm_top$*"
+yosys setattr -set keep_hierarchy 1 "t:gpio$*"
+yosys setattr -set keep_hierarchy 1 "t:timer_unit$*"
+yosys setattr -set keep_hierarchy 1 "t:reg_uart_wrap$*"
+yosys setattr -set keep_hierarchy 1 "t:soc_ctrl_reg_top$*"
+yosys setattr -set keep_hierarchy 1 "t:tc_clk*$*"
+yosys setattr -set keep_hierarchy 1 "t:tc_sram$*"
+yosys setattr -set keep_hierarchy 1 "t:cdc_*$*"
+yosys setattr -set keep_hierarchy 1 "t:sync$*"
+
+
+# blackbox modules (applies the *blackbox* attribute)
+yosys blackbox "t:tc_sram_blackbox$*"
 
 # map dont_touch attribute commonly applied to output-nets of async regs to keep
 yosys attrmap -rename dont_touch keep
@@ -57,29 +61,29 @@ yosys attrmvcp -copy -attr keep
 # -----------------------------------------------------------------------------
 # this section heavily borrows from the yosys synth command:
 # synth - check
-yosys hierarchy -check -top $top_design
+yosys hierarchy -top $top_design
+yosys check
 yosys proc
-yosys tee -q -o "${report_dir}/${proj_name}_initial.rpt" stat
-yosys write_verilog -norename -noexpr -attr2comment ${build_dir}/${proj_name}_yosys_initial.v
+yosys tee -q -o "${rep_dir}/${top_design}_elaborated.rpt" stat
+yosys write_verilog -norename -noexpr -attr2comment ${tmp_dir}/${top_design}_yosys_elaborated.v
 
 # synth - coarse:
-# yosys synth -run coarse -noalumacc
+# similar to yosys synth -run coarse -noalumacc
 yosys opt_expr
-yosys opt_clean
-yosys check
 yosys opt -noff
 yosys fsm
-yosys opt
-yosys tee -q -o "${report_dir}/${proj_name}_initial_opt.rpt" stat
+yosys tee -q -o "${rep_dir}/${top_design}_initial_opt.rpt" stat
 yosys wreduce 
 yosys peepopt
 yosys opt_clean
 yosys opt -full
 yosys booth
-yosys alumacc
 yosys share
 yosys opt
-yosys memory
+yosys memory -nomap
+yosys tee -q -o "${rep_dir}/${top_design}_memories.rpt" stat
+yosys write_verilog -norename -noexpr -attr2comment ${tmp_dir}/${top_design}_yosys_memories.v
+yosys memory_map
 yosys opt -fast
 
 yosys opt_dff -sat -nodffe -nosdff
@@ -87,8 +91,8 @@ yosys share
 yosys opt -full
 yosys clean -purge
 
-yosys write_verilog -norename ${work_dir}/${proj_name}_abstract.yosys.v
-yosys tee -q -o "${report_dir}/${proj_name}_abstract.rpt" stat -tech cmos
+yosys write_verilog -norename ${tmp_dir}/${top_design}_yosys_abstract.v
+yosys tee -q -o "${rep_dir}/${top_design}_abstract.rpt" stat -tech cmos
 
 yosys techmap
 yosys opt -fast
@@ -96,65 +100,63 @@ yosys clean -purge
 
 
 # -----------------------------------------------------------------------------
-yosys tee -q -o "${report_dir}/${proj_name}_generic.rpt" stat -tech cmos
-yosys tee -q -o "${report_dir}/${proj_name}_generic.json" stat -json -tech cmos
+yosys tee -q -o "${rep_dir}/${top_design}_generic.rpt" stat -tech cmos
+yosys tee -q -o "${rep_dir}/${top_design}_generic.json" stat -json -tech cmos
 
-if {[envVarValid "YOSYS_FLATTEN_HIER"]} {
-	yosys flatten
-}
+# flatten all hierarchy except marked modules
+yosys flatten
 
 yosys clean -purge
 
 
 # -----------------------------------------------------------------------------
+# Preserve flip-flop names as far as possible
 # split internal nets
 yosys splitnets -format __v
 # rename DFFs from the driven signal
 yosys rename -wire -suffix _reg t:*DFF*
-yosys select -write ${report_dir}/${proj_name}_registers.rpt t:*DFF*
+yosys select -write ${rep_dir}/${top_design}_registers.rpt t:*DFF*
 # rename all other cells
 yosys autoname t:*DFF* %n
 yosys clean -purge
 
-# print paths to important instances
-yosys select -write ${report_dir}/${proj_name}_registers.rpt t:*DFF*
-set report [open ${report_dir}/${proj_name}_instances.rpt "w"]
-close $report
-if { [info exists ::env(YOSYS_REPORT_INSTS)] } {
-    foreach sel $::env(YOSYS_REPORT_INSTS) {
-        yosys tee -q -a ${report_dir}/${proj_name}_instances.rpt  select -list {*}$sel
-    }
-}
-
-yosys tee -q -o "${report_dir}/${proj_name}_pre_tech.rpt" stat -tech cmos
-yosys tee -q -o "${report_dir}/${proj_name}_pre_tech.json" stat -json -tech cmos
+# print paths to important instances (hierarchy and naming is final here)
+yosys select -write ${rep_dir}/${top_design}_registers.rpt t:*DFF*
+yosys tee -q -o ${rep_dir}/${top_design}_instances.rpt  select -list "t:RM_IHPSG13_*"
+yosys tee -q -a ${rep_dir}/${top_design}_instances.rpt  select -list "t:tc_clk*$*"
 
 
 # -----------------------------------------------------------------------------
 # mapping to technology
 
-puts "Using combinational-only abc optimizations"
+# first map flip-flops
 yosys dfflibmap {*}$tech_cells_args
-yosys abc {*}$tech_cells_args -D $period_ps -script $abc_comb_script -constr $abc_constr -showtmp
+
+# then perform bit-level optimization and mapping on all combinational clouds in ABC
+set period_ps 10000
+# pre-process abc file (written to tmp directory)
+set abc_comb_script   [processAbcScript scripts/abc-opt.script]
+# call ABC
+yosys abc {*}$tech_cells_args -D $period_ps -script $abc_comb_script -constr src/abc.constr -showtmp
 
 yosys clean -purge
 
 
 # -----------------------------------------------------------------------------
 # prep for openROAD
-yosys write_verilog -norename -noexpr -attr2comment ${build_dir}/${proj_name}_yosys_debug.v
+yosys write_verilog -norename -noexpr -attr2comment ${out_dir}/${top_design}_yosys_debug.v
 
 yosys splitnets -ports -format __v
 yosys setundef -zero
 yosys clean -purge
-
+# map constants to tie cells
 yosys hilomap -singleton -hicell {*}$tech_cell_tiehi -locell {*}$tech_cell_tielo
 
 # final reports
-yosys tee -q -o "${report_dir}/${proj_name}_synth.rpt" check
-yosys tee -q -o "${report_dir}/${proj_name}_area.rpt" stat -top $top_design {*}$liberty_args
-yosys tee -q -o "${report_dir}/${proj_name}_area_logic.rpt" stat -top $top_design {*}$tech_cells_args
+yosys tee -q -o "${rep_dir}/${top_design}_synth.rpt" check
+yosys tee -q -o "${rep_dir}/${top_design}_area.rpt" stat -top $top_design {*}$liberty_args
+yosys tee -q -o "${rep_dir}/${top_design}_area_logic.rpt" stat -top $top_design {*}$tech_cells_args
 
 # final netlist
-yosys write_verilog -noattr -noexpr -nohex -nodec $netlist
+yosys write_verilog -noattr -noexpr -nohex -nodec ${out_dir}/${top_design}_yosys.v
 
