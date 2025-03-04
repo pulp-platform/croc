@@ -9,7 +9,7 @@
 
 # Initialize the PDK
 
-if {[file exists "../.cockpitrc"]} {
+if {[file exists "../cockpit.log"]} {
 	utl::report "Init tech from ETHZ DZ cockpit"
 	set pdk_dir "../technology"
 	set pdk_cells_lib ${pdk_dir}/lib
@@ -29,7 +29,7 @@ if {[file exists "../.cockpitrc"]} {
 	set pdk_sram_lef  ${pdk_dir}/ihp-sg13g2/libs.ref/sg13g2_sram/lef
 	set pdk_io_lib    ${pdk_dir}/ihp-sg13g2/libs.ref/sg13g2_io/lib
 	set pdk_io_lef    ${pdk_dir}/ihp-sg13g2/libs.ref/sg13g2_io/lef
-# }
+}
 
 set pdk_pad_lef   ../ihp13/bondpad/lef
 
@@ -46,23 +46,13 @@ read_liberty -corner tt ${pdk_io_lib}/sg13g2_io_typ_1p2V_3p3V_25C.lib
 read_liberty -corner ff ${pdk_io_lib}/sg13g2_io_fast_1p32V_3p6V_m40C.lib
 
 puts "Init SRAM macros"
-read_liberty -corner tt ${pdk_sram_lib}/RM_IHPSG13_1P_64x64_c2_bm_bist_typ_1p20V_25C.lib
-read_liberty -corner ff ${pdk_sram_lib}/RM_IHPSG13_1P_64x64_c2_bm_bist_fast_1p32V_m55C.lib
+foreach file [glob -directory $pdk_sram_lib *_typ_1p20V_25C.lib] {
+	read_liberty -corner tt "$file"
+}
 
-read_liberty -corner tt ${pdk_sram_lib}/RM_IHPSG13_1P_256x48_c2_bm_bist_typ_1p20V_25C.lib
-read_liberty -corner ff ${pdk_sram_lib}/RM_IHPSG13_1P_256x48_c2_bm_bist_fast_1p32V_m55C.lib
-
-read_liberty -corner tt ${pdk_sram_lib}/RM_IHPSG13_1P_256x64_c2_bm_bist_typ_1p20V_25C.lib
-read_liberty -corner ff ${pdk_sram_lib}/RM_IHPSG13_1P_256x64_c2_bm_bist_fast_1p32V_m55C.lib
-
-read_liberty -corner tt ${pdk_sram_lib}/RM_IHPSG13_1P_512x64_c2_bm_bist_typ_1p20V_25C.lib
-read_liberty -corner ff ${pdk_sram_lib}/RM_IHPSG13_1P_512x64_c2_bm_bist_fast_1p32V_m55C.lib
-
-read_liberty -corner tt ${pdk_sram_lib}/RM_IHPSG13_1P_1024x64_c2_bm_bist_typ_1p20V_25C.lib
-read_liberty -corner ff ${pdk_sram_lib}/RM_IHPSG13_1P_1024x64_c2_bm_bist_fast_1p32V_m55C.lib
-
-read_liberty -corner tt ${pdk_sram_lib}/RM_IHPSG13_1P_2048x64_c2_bm_bist_typ_1p20V_25C.lib
-read_liberty -corner ff ${pdk_sram_lib}/RM_IHPSG13_1P_2048x64_c2_bm_bist_fast_1p32V_m55C.lib
+foreach file [glob -directory $pdk_sram_lib *_fast_1p32V_m55C.lib] {
+	read_liberty -corner ff "$file"
+}
 
 puts "Init tech-lef"
 read_lef ${pdk_cells_lef}/sg13g2_tech.lef
@@ -71,12 +61,10 @@ puts "Init cell-lef"
 read_lef ${pdk_cells_lef}/sg13g2_stdcell.lef
 read_lef ${pdk_io_lef}/sg13g2_io.lef
 read_lef ${pdk_pad_lef}/bondpad_70x70.lef
-read_lef ${pdk_sram_lef}/RM_IHPSG13_1P_64x64_c2_bm_bist.lef
-read_lef ${pdk_sram_lef}/RM_IHPSG13_1P_256x48_c2_bm_bist.lef
-read_lef ${pdk_sram_lef}/RM_IHPSG13_1P_256x64_c2_bm_bist.lef
-read_lef ${pdk_sram_lef}/RM_IHPSG13_1P_512x64_c2_bm_bist.lef
-read_lef ${pdk_sram_lef}/RM_IHPSG13_1P_1024x64_c2_bm_bist.lef
-read_lef ${pdk_sram_lef}/RM_IHPSG13_1P_2048x64_c2_bm_bist.lef
+
+foreach file [glob -directory $pdk_sram_lef *.lef] {
+	read_lef "$file"
+}
 
 set ctsBuf [ list sg13g2_buf_16 sg13g2_buf_8 sg13g2_buf_4 sg13g2_buf_2 ]
 set ctsBufRoot sg13g2_buf_8

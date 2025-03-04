@@ -9,7 +9,7 @@
 set yosys_dir [file dirname [file dirname [info script]]]
 set root_dir [file dirname $yosys_dir]
 
-if {[file exists "$root_dir/.cockpitrc"]} {
+if {[file exists "$root_dir/cockpit.log"]} {
 	puts "0. Executing init_tech: load technology from ETHZ DZ cockpit"
 	set pdk_dir "$root_dir/technology"
 	set pdk_cells_lib ${pdk_dir}/lib

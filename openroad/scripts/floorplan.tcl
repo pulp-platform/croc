@@ -36,29 +36,9 @@ source src/padring.tcl
 ##########################################################################
 # RAM sizes
 ##########################################################################
-set RamMaster64x64    [[ord::get_db] findMaster "RM_IHPSG13_1P_64x64_c2_bm_bist"]
-set RamSize64x64_W    [ord::dbu_to_microns [$RamMaster64x64 getWidth]]
-set RamSize64x64_H    [ord::dbu_to_microns [$RamMaster64x64 getHeight]]
-
 set RamMaster256x64   [[ord::get_db] findMaster "RM_IHPSG13_1P_256x64_c2_bm_bist"]
 set RamSize256x64_W   [ord::dbu_to_microns [$RamMaster256x64 getWidth]]
 set RamSize256x64_H   [ord::dbu_to_microns [$RamMaster256x64 getHeight]]
-
-set RamMaster256x48   [[ord::get_db] findMaster "RM_IHPSG13_1P_256x48_c2_bm_bist"]
-set RamSize256x48_W   [ord::dbu_to_microns [$RamMaster256x48 getWidth]]
-set RamSize256x48_H   [ord::dbu_to_microns [$RamMaster256x48 getHeight]]
-
-set RamMaster512x64   [[ord::get_db] findMaster "RM_IHPSG13_1P_512x64_c2_bm_bist"]
-set RamSize512x64_W   [ord::dbu_to_microns [$RamMaster512x64 getWidth]]
-set RamSize512x64_H   [ord::dbu_to_microns [$RamMaster512x64 getHeight]]
-
-set RamMaster1024x64  [[ord::get_db] findMaster "RM_IHPSG13_1P_1024x64_c2_bm_bist"]
-set RamSize1024x64_W  [ord::dbu_to_microns [$RamMaster1024x64 getWidth]]
-set RamSize1024x64_H  [ord::dbu_to_microns [$RamMaster1024x64 getHeight]]
-
-set RamMaster2048x64  [[ord::get_db] findMaster "RM_IHPSG13_1P_2048x64_c2_bm_bist"]
-set RamSize2048x64_W  [ord::dbu_to_microns [$RamMaster2048x64 getWidth]]
-set RamSize2048x64_H  [ord::dbu_to_microns [$RamMaster2048x64 getHeight]]
 
 
 ##########################################################################
