@@ -12,6 +12,7 @@ expected_lines=(
   "\[JTAG\] Halting hart 0"
   "\[JTAG\] Resumed hart 0"
   "\[UART\] Hello World!"
+  "\[UART\] Loopback received: internal msg"
   "\[UART\] Result: 0x8940, Cycles: 0xBD"
   "\[UART\] Tick"
   "\[UART\] Tock"
