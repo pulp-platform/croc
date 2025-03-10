@@ -30,10 +30,14 @@
 
 // Register fields
 #define UART_LINE_STATUS_DATA_READY_BIT 0
-#define UART_LINE_STATUS_THR_EMPTY_BIT 5
+#define UART_LINE_STATUS_THR_EMPTY_BIT  5
 #define UART_LINE_STATUS_TMIT_EMPTY_BIT 6
 
 void uart_init();
+
+void uart_loopback_enable();
+
+void uart_loopback_disable();
 
 int uart_read_ready();
 
