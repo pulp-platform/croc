@@ -82,14 +82,15 @@ vsim-yosys: vsim/compile_netlist.tcl $(SW_HEX) yosys/out/croc_chip_yosys_debug.v
 
 # Verilator
 VERILATOR_ARGS  = --binary -j 0 -Wno-fatal
-VERILATOR_ARGS += -Wno-style
+VERILATOR_ARGS += -Wno-style -Wno-WIDTHEXPAND
 VERILATOR_ARGS += --timing --autoflush --trace --trace-structs
+VERILATOR_ARGS +=  --unroll-count 1 --unroll-stmts 1
 
 verilator/croc.f: Bender.lock Bender.yml
 	$(BENDER) script verilator -t rtl -t verilator -DSYNTHESIS -DVERILATOR > $@
 
 verilator/obj_dir/Vtb_croc_soc: verilator/croc.f $(SW_HEX)
-	cd verilator; $(VERILATOR) $(VERILATOR_ARGS) -CFLAGS "-O0" --top tb_croc_soc -f croc.f
+	cd verilator; $(VERILATOR) $(VERILATOR_ARGS) -O3 -CFLAGS "-O1 -march=native" --top tb_croc_soc -f croc.f
 
 ## Simulate RTL using Verilator
 verilator: verilator/obj_dir/Vtb_croc_soc
