@@ -56,7 +56,7 @@ set mprOffsetY 0.6
 # macro power grid (stripes on TopMetal1/TopMetal2 depending on orientation)
 set mpgWidth 6
 set mpgSpacing 4
-set mpgOffset 20; # arbitrary 
+set mpgOffset 20; # arbitrary
 
 ##########################################################################
 ##  SRAM power rings
@@ -118,7 +118,7 @@ add_pdn_stripe -grid {core_grid} -layer {Metal1} -width {0.44} -offset {0} \
                -followpins -extend_to_core_ring
 
 
-sram_power "sram_256x64"  "RM_IHPSG13_1P_256x64_c2_bm_bist" 
+sram_power "sram_256x64"  "RM_IHPSG13_1P_256x64_c2_bm_bist"
 
 # Top power grid
 # Top 2 Stripe
@@ -126,7 +126,7 @@ add_pdn_stripe -grid {core_grid} -layer {TopMetal2} -width $tpg2Width \
                -pitch $tpg2Pitch -spacing $tpg2Spacing -offset $tpg2Offset \
                -extend_to_core_ring -snap_to_grid -number_of_straps 7
 
-# "The add_pdn_connect command is used to define which layers in the power grid are to be connected together. 
+# "The add_pdn_connect command is used to define which layers in the power grid are to be connected together.
 #  During power grid generation, vias will be added for overlapping power nets and overlapping ground nets."
 # M1 is declared vertical but tracks still horizontal
 # vertical TopMetal2 to below horizonals (M1 has horizontal power tracks)
@@ -142,4 +142,4 @@ add_pdn_connect -grid {core_grid} -layers {Metal3 Metal2}
 ##########################################################################
 ##  Generate
 ##########################################################################
-pdngen -failed_via_report ${report_dir}/${proj_name}_pdngen.rpt
+pdngen -failed_via_report ${report_dir}/${log_id_str}_${proj_name}_pdngen.rpt
