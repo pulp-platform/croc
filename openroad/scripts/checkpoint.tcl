@@ -8,6 +8,7 @@
 
 # Helper macros to save and load checkpoints
 set time [elapsed_run_time]
+if { ![info exists save_dir] } {set save_dir "save"}
 
 proc save_checkpoint { checkpoint_name } {
     global save_dir time step_by_step_debug
@@ -35,7 +36,7 @@ proc load_checkpoint { checkpoint_name } {
     utl::report "Loading checkpoint $checkpoint_name"
     set checkpoint ${save_dir}/${checkpoint_name}
 
-    exec unzip ${checkpoint}.zip -d ${save_dir}/${checkpoint_name}
+    exec unzip -u ${checkpoint}.zip -d ${save_dir}/${checkpoint_name}
     #read_verilog ${checkpoint}/$checkpoint_name.v
     read_db ${checkpoint}/$checkpoint_name.odb
     if { [file exists ${checkpoint}/$checkpoint_name.sdc] } {
