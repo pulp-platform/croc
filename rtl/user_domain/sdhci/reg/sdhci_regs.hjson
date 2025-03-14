@@ -1,0 +1,983 @@
+// Swaccess translation:
+// RO: ro
+// ROC: ro, resval="0"
+// RW: rw
+// RW1C: rw1c
+// RWAC: rw1s
+// HwInit: ro, hro
+// Rsvd: ro, hro, resval="0"
+
+{ name: "sdhci"
+  clock_primary: "clk_i"
+  bus_interfaces: [
+      // TODO OBI/AXI?
+    { protocol: "reg_iface", direction: "device" }
+  ]
+  regwidth: 32
+  // TODO do interrupt correctly?
+  interrupt_list: [{
+    name: "sdhci_interrupt"
+    desc: "Normal and Error Interrupt"
+  }]
+  registers: [
+    { name: "system_address"
+      desc: ""
+      fields: [
+        { bits: "31:0"
+          name: "dma_system_address"
+          desc: ""
+          swaccess: "rw"
+        }
+      ]
+    }
+    { name: "block_size_and_count"
+      desc: ""
+      fields: [
+        // Block Size
+        { bits: "15"
+          name: "rsvd_15"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "14:12"
+          name: "host_dma_buffer_boundary"
+          desc: ""
+          swaccess: "rw"
+        }
+        { bits: "11:0"
+          name: "transfer_block_size"
+          desc: ""
+          swaccess: "rw"
+        }
+
+        // Block Count
+        { bits: "31:16"
+          name: "blocks_count_for_current_transfer"
+          desc: ""
+          swaccess: "rw"
+        }
+      ]
+    }
+    { name: "argument"
+      desc: ""
+      fields: [
+        { bits: "31:0"
+          name: "command_argument"
+          desc: ""
+          swaccess: "rw"
+        }
+      ]
+    }
+    { name: "transfer_mode_and_command"
+      desc: ""
+      fields: [
+        // Transfer mode
+        { bits: "15:6"
+          name: "rsvd_15"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "5"
+          name: "multi_single_bit_block_select"
+          desc: ""
+          enum: [
+            { value: "0"
+              name: "Single Block"
+              desc: ""
+            }
+            { value: "1"
+              name: "Multiple Block"
+              desc: ""
+            }
+          ]
+          swaccess: "rw"
+        }
+        { bits: "4"
+          name: "data_transfer_direction_select"
+          desc: ""
+          swaccess: "rw"
+        }
+        { bits: "3"
+          name: "rsvd_3"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "2"
+          name: "auto_cmd12_enable"
+          desc: ""
+          swaccess: "rw"
+        }
+        { bits: "1"
+          name: "block_count_enable"
+          desc: ""
+          swaccess: "rw"
+        }
+        { bits: "0"
+          name: "dma_enable"
+          desc: ""
+          swaccess: "rw"
+        }
+
+        // Command
+        { bits: "31:30"
+          name: "rsvd_31"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "29:24"
+          name: "command_index"
+          desc: ""
+          swaccess: "rw"
+        }
+        { bits: "23:22"
+          name: "command_type"
+          desc: ""
+          swaccess: "rw"
+        }
+        { bits: "21"
+          name: "data_present_select"
+          desc: ""
+          swaccess: "rw"
+        }
+        { bits: "20"
+          name: "command_index_check_enable"
+          desc: ""
+          swaccess: "rw"
+        }
+        { bits: "19"
+          name: "command_crc_check_enable"
+          desc: ""
+          swaccess: "rw"
+        }
+        { bits: "18"
+          name: "rsvd_18"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "17:16"
+          name: "response_type_select"
+          desc: ""
+          swaccess: "rw"
+        }
+      ]
+    }
+    { name: "response0"
+      desc: ""
+      fields: [
+        { bits: "31:0"
+          name: "response"
+          desc: ""
+          swaccess: "ro"
+          resval: "0"
+        }
+      ]
+    }
+    { name: "response1"
+      desc: ""
+      fields: [
+        { bits: "31:0"
+          name: "response"
+          desc: ""
+          swaccess: "ro"
+          resval: "0"
+        }
+      ]
+    }
+    { name: "response2"
+      desc: ""
+      fields: [
+        { bits: "31:0"
+          name: "response"
+          desc: ""
+          swaccess: "ro"
+          resval: "0"
+        }
+      ]
+    }
+    { name: "response3"
+      desc: ""
+      fields: [
+        { bits: "31:0"
+          name: "response"
+          desc: ""
+          swaccess: "ro"
+          resval: "0"
+        }
+      ]
+    }
+    { name: "buffer_data_port"
+      desc: ""
+      fields: [
+        { bits: "31:0"
+          name: "buffer_data"
+          desc: ""
+          swaccess: "rw"
+        }
+      ]
+    }
+    { name: "present_state"
+      desc: ""
+      swaccess: "ro"
+      resval: "0"
+      fields: [
+        { bits: "31:25"
+          name: "rsvd_31"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "24"
+          name: "cmd_line_signal_level"
+          desc: ""
+        }
+        { bits: "23:20"
+          name: "dat_line_signal_level"
+          desc: ""
+        }
+        { bits: "19"
+          name: "write_protect_switch_pin_level"
+          desc: ""
+        }
+        { bits: "18"
+          name: "card_detect_pin_level"
+          desc: ""
+        }
+        { bits: "17"
+          name: "card_state_stable"
+          desc: ""
+        }
+        { bits: "16"
+          name: "card_inserted"
+          desc: ""
+        }
+        { bits: "15:12"
+          name: "rsvd_15"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "11"
+          name: "buffer_read_enable"
+          desc: ""
+        }
+        { bits: "10"
+          name: "buffer_write_enable"
+          desc: ""
+        }
+        { bits: "9"
+          name: "read_transfer_active"
+          desc: ""
+        }
+        { bits: "8"
+          name: "write_transfer_active"
+          desc: ""
+        }
+        { bits: "7:3"
+          name: "rsvd_7"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "2"
+          name: "dat_line_active"
+          desc: ""
+        }
+        { bits: "1"
+          name: "command_inhibit_dat"
+          desc: ""
+        }
+        { bits: "0"
+          name: "command_inhibit_cmd"
+          desc: ""
+        }
+      ]
+    }
+    { name: "host_and_power_and_block_gap_and_wakeup_control"
+      desc: ""
+      swaccess: "rw"
+      fields: [
+        // Host control
+        { bits: "7:3"
+          name: "rsvd_7"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "2"
+          name: "high_speed_enable"
+          desc: ""
+        }
+        { bits: "1"
+          name: "data_transfer_width"
+          desc: ""
+        }
+        { bits: "0"
+          name: "led_control"
+          desc: ""
+        }
+
+        // Power Control
+        { bits: "15:12"
+          name: "rsvd_15"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "11:9"
+          name: "sd_bus_voltage_select"
+          desc: ""
+        }
+        { bits: "8"
+          name: "sd_bus_power"
+          desc: ""
+        }
+
+        // Block Gap Control
+        { bits: "23:20"
+          name: "rsvd_23"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "19"
+          name: "interrupt_at_block_gap"
+          desc: ""
+          swaccess: "rw"
+        }
+        { bits: "18"
+          name: "read_wait_control"
+          desc: ""
+          swaccess: "rw"
+        }
+        { bits: "17"
+          name: "continue_request"
+          desc: ""
+          swaccess: "rw1s"
+        }
+        { bits: "16"
+          name: "stop_at_block_gap_request"
+          desc: ""
+          swaccess: "rw"
+        }
+
+        // Wakup Control
+        { bits: "31:27"
+          name: "rsvd_31"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "26"
+          name: "wakeup_event_enable_on_sd_card_removal"
+          desc: ""
+          swaccess: "rw"
+        }
+        { bits: "25"
+          name: "wakeup_event_enable_on_sd_card_insertion"
+          desc: ""
+          swaccess: "rw"
+        }
+        { bits: "24"
+          name: "wakeup_event_enable_on_card_interrupt"
+          desc: ""
+          swaccess: "rw"
+        }
+      ]
+    }
+    { name: "clock_and_timeout_control_and_software_reset"
+      desc: ""
+      fields: [
+        // Clock Control
+        { bits: "15:8"
+          name: "sdclk_frequency_select"
+          desc: ""
+          swaccess: "rw"
+        }
+        { bits: "7:3"
+          name: "rsvd_7"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "2"
+          name: "sd_clock_enable"
+          desc: ""
+          swaccess: "rw"
+        }
+        { bits: "1"
+          name: "internal_clock_stable"
+          desc: ""
+          swaccess: "ro"
+          resval: "0"
+        }
+        { bits: "0"
+          name: "internal_clock_enable"
+          desc: ""
+          swaccess: "rw"
+        }
+
+        // Timeout Control
+        { bits: "23:20"
+          name: "rsvd_23"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "19:16"
+          name: "data_timeout_counter_value"
+          desc: ""
+          swaccess: "rw"
+        }
+
+        // Software Reset
+        { bits: "31:28"
+          name: "rsvd_31"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "26"
+          name: "software_reset_for_dat_line"
+          desc: ""
+          swaccess: "rw1s"
+        }
+        { bits: "25"
+          name: "software_reset_for_cmd_line"
+          desc: ""
+          swaccess: "rw1s"
+        }
+        { bits: "24"
+          name: "software_reset_for_all"
+          desc: ""
+          swaccess: "rw1s"
+        }
+      ]
+    }
+    { name: "normal_and_error_interrupt_status"
+      desc: ""
+      swaccess: "rw1c"
+      fields: [
+        // Normal Interrupt Status
+
+        { bits: "15"
+          name: "error_interrupt"
+          desc: ""
+          swaccess: "ro"
+          resval: "0"
+        }
+        { bits: "14:9"
+          name: "rsvd_14"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "8"
+          name: "card_interrupt"
+          desc: ""
+          swaccess: "ro"
+          resval: "0"
+        }
+        { bits: "7"
+          name: "card_removal"
+          desc: ""
+        }
+        { bits: "6"
+          name: "card_insertion"
+          desc: ""
+        }
+        { bits: "5"
+          name: "buffer_read_ready"
+          desc: ""
+        }
+        { bits: "4"
+          name: "buffer_write_ready"
+          desc: ""
+        }
+        { bits: "3"
+          name: "dma_interrupt"
+          desc: ""
+        }
+        { bits: "2"
+          name: "block_gap_event"
+          desc: ""
+        }
+        { bits: "1"
+          name: "transfer_complete"
+          desc: ""
+        }
+        { bits: "0"
+          name: "command_complete"
+          desc: ""
+        }
+
+        // Error Interrupt Status
+        { bits: "31:28"
+          name: "vendor_specific_error_status"
+          desc: ""
+        }
+        { bits: "27:25"
+          name: "rsvd_27"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "24"
+          name: "auto_cmd12_error"
+          desc: ""
+        }
+        { bits: "23"
+          name: "current_limit_error"
+          desc: ""
+        }
+        { bits: "22"
+          name: "data_end_bit_error"
+          desc: ""
+        }
+        { bits: "21"
+          name: "data_crc_error"
+          desc: ""
+        }
+        { bits: "20"
+          name: "data_timeout_error"
+          desc: ""
+        }
+        { bits: "19"
+          name: "command_index_error"
+          desc: ""
+        }
+        { bits: "18"
+          name: "command_end_bit_error"
+          desc: ""
+        }
+        { bits: "17"
+          name: "command_crc_error"
+          desc: ""
+        }
+        { bits: "16"
+          name: "command_timeout_error"
+          desc: ""
+        }
+      ]
+    }
+    { name: "normal_and_error_interrupt_status_enable"
+      desc: ""
+      swaccess: "rw"
+      fields: [
+        // Normal Interrupt Status Enable
+        { bits: "15"
+          name: "fixed_to_0"
+          desc: ""
+          swaccess: "ro"
+          resval: "0"
+        }
+        { bits: "14:9"
+          name: "rsvd_14"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "8"
+          name: "card_interrupt_status_enable"
+          desc: ""
+        }
+        { bits: "7"
+          name: "card_removal_status_enable"
+          desc: ""
+        }
+        { bits: "6"
+          name: "card_insertion_status_enable"
+          desc: ""
+        }
+        { bits: "5"
+          name: "buffer_read_ready_status_enable"
+          desc: ""
+        }
+        { bits: "4"
+          name: "buffer_write_ready_status_enable"
+          desc: ""
+        }
+        { bits: "3"
+          name: "dma_interrupt_status_enable"
+          desc: ""
+        }
+        { bits: "2"
+          name: "block_gap_event_status_enable"
+          desc: ""
+        }
+        { bits: "1"
+          name: "transfer_complete_status_enable"
+          desc: ""
+        }
+        { bits: "0"
+          name: "command_complete_status_enable"
+          desc: ""
+        }
+
+        // Error Interrupt Status Enable
+        { bits: "31:28"
+          name: "vendor_specific_error_status_enable"
+          desc: ""
+        }
+        { bits: "27:25"
+          name: "rsvd_27"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "24"
+          name: "auto_cmd12_error_status_enable"
+          desc: ""
+        }
+        { bits: "23"
+          name: "current_limit_error_status_enable"
+          desc: ""
+        }
+        { bits: "22"
+          name: "data_end_bit_error_status_enable"
+          desc: ""
+        }
+        { bits: "21"
+          name: "data_crc_error_status_enable"
+          desc: ""
+        }
+        { bits: "20"
+          name: "data_timeout_error_status_enable"
+          desc: ""
+        }
+        { bits: "19"
+          name: "command_index_error_status_enable"
+          desc: ""
+        }
+        { bits: "18"
+          name: "command_end_bit_error_status_enable"
+          desc: ""
+        }
+        { bits: "17"
+          name: "command_crc_error_status_enable"
+          desc: ""
+        }
+        { bits: "16"
+          name: "command_timeout_error_status_enable"
+          desc: ""
+        }
+      ]
+    }
+    { name: "normal_and_error_interrupt_signal_enable"
+      desc: ""
+      swaccess: "rw"
+      fields: [
+        // Normal Interrupt Singal Enable
+        { bits: "15"
+          name: "fixed_to_0"
+          desc: ""
+          swaccess: "ro"
+          resval: "0"
+        }
+        { bits: "14:9"
+          name: "rsvd_14"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "8"
+          name: "card_interrupt_signal_enable"
+          desc: ""
+        }
+        { bits: "7"
+          name: "card_removal_signal_enable"
+          desc: ""
+        }
+        { bits: "6"
+          name: "card_insertion_signal_enable"
+          desc: ""
+        }
+        { bits: "5"
+          name: "buffer_read_ready_signal_enable"
+          desc: ""
+        }
+        { bits: "4"
+          name: "buffer_write_ready_signal_enable"
+          desc: ""
+        }
+        { bits: "3"
+          name: "dma_interrupt_signal_enable"
+          desc: ""
+        }
+        { bits: "2"
+          name: "block_gap_event_signal_enable"
+          desc: ""
+        }
+        { bits: "1"
+          name: "transfer_complete_signal_enable"
+          desc: ""
+        }
+        { bits: "0"
+          name: "command_complete_signal_enable"
+          desc: ""
+        }
+
+        // Error Interrupt Singal Enable
+        { bits: "31:28"
+          name: "vendor_specific_error_signal_enable"
+          desc: ""
+        }
+        { bits: "27:25"
+          name: "rsvd_27"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "24"
+          name: "auto_cmd12_error_signal_enable"
+          desc: ""
+        }
+        { bits: "23"
+          name: "current_limit_error_signal_enable"
+          desc: ""
+        }
+        { bits: "22"
+          name: "data_end_bit_error_signal_enable"
+          desc: ""
+        }
+        { bits: "21"
+          name: "data_crc_error_signal_enable"
+          desc: ""
+        }
+        { bits: "20"
+          name: "data_timeout_error_signal_enable"
+          desc: ""
+        }
+        { bits: "19"
+          name: "command_index_error_signal_enable"
+          desc: ""
+        }
+        { bits: "18"
+          name: "command_end_bit_error_signal_enable"
+          desc: ""
+        }
+        { bits: "17"
+          name: "command_crc_error_signal_enable"
+          desc: ""
+        }
+        { bits: "16"
+          name: "command_timeout_error_signal_enable"
+          desc: ""
+        }
+      ]
+    }
+    { name: "auto_cmd12_error_status"
+      desc: ""
+      swaccess: "ro"
+      resval: "0"
+      fields: [
+        { bits: "15:8"
+          name: "rsvd_15"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "7"
+          name: "command_not_issued_by_auto_cmd12_error"
+          desc: ""
+        }
+        { bits: "6:5"
+          name: "rsvd_6"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "4"
+          name: "auto_cmd12_index_error"
+          desc: ""
+        }
+        { bits: "3"
+          name: "auto_cmd12_end_bit_error"
+          desc: ""
+        }
+        { bits: "2"
+          name: "auto_cmd12_crc_error"
+          desc: ""
+        }
+        { bits: "1"
+          name: "auto_cmd12_timeout_error"
+          desc: ""
+        }
+        { bits: "0"
+          name: "auto_cmd12_not_executed"
+          desc: ""
+        }
+      ]
+    }
+    { name: "capabilities"
+      desc: ""
+      swaccess: "ro"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:27"
+          name: "rsvd_63"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "26"
+          name: "voltage_support_1_8v"
+          desc: ""
+        }
+        { bits: "25"
+          name: "voltage_support_3_0v"
+          desc: ""
+        }
+        { bits: "24"
+          name: "voltage_support_3_3v"
+          desc: ""
+        }
+        { bits: "23"
+          name: "suspend_resume_support"
+          desc: ""
+        }
+        { bits: "22"
+          name: "dma_support"
+          desc: ""
+        }
+        { bits: "21"
+          name: "high_speed_support"
+          desc: ""
+        }
+        { bits: "20:18"
+          name: "rsvd_20"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "17:16"
+          name: "max_block_length"
+          desc: ""
+        }
+        { bits: "15:14"
+          name: "rsvd_15"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "13:8"
+          name: "base_clock_frequency_for_sd_clock"
+          desc: ""
+        }
+        { bits: "7"
+          name: "timeout_clock_unit"
+          desc: ""
+        }
+        { bits: "6"
+          name: "rsvd_6"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "5:0"
+          name: "timeout_clock_frequency"
+          desc: ""
+        }
+      ]
+    }
+    // Capabilities (Reserved)
+    { reserved: 1 }
+
+    { name: "maximum_current_capabilities"
+      desc: ""
+      swaccess: "ro"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:24"
+          name: "rsvd_63"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "23:16"
+          name: "maximum_current_for_1_8v"
+          desc: ""
+        }
+        { bits: "15:8"
+          name: "maximum_current_for_3_0v"
+          desc: ""
+        }
+        { bits: "7:0"
+          name: "maximum_current_for_3_3v"
+          desc: ""
+        }
+      ]
+    }
+    // Maximum Current Capabilities (Reserved)
+    { reserved: 1 }
+
+    { reserved: 41 }
+
+    // Shared Registry Area
+    { reserved: 2 }
+
+    { name: "slot_interrupt_status_and_host_controller_version"
+      desc: ""
+      swaccess: "ro"
+      fields: [
+        // Slot Interrupt Status
+        { bits: "15:8"
+          name: "rsvd_15"
+          desc: ""
+          swaccess: "ro"
+          hwaccess: "hro"
+          resval: "0"
+        }
+        { bits: "7:0"
+          resval: "0"
+          name: "interrupt_signal_for_each_slot"
+          desc: ""
+        }
+
+        // Host Controller Version
+        { bits: "31:24"
+          name: "vendor_version_number"
+          desc: ""
+          resval: "0"
+        }
+        { bits: "23:16"
+          name: "specification_version_number"
+          desc: ""
+          resval: "0"
+        }
+      ]
+    }
+  ]
+}
