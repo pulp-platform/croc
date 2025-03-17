@@ -19,6 +19,9 @@ REGGEN    ?= $(PYTHON3) $(shell $(BENDER) path register_interface)/vendor/lowris
 # directory of the path to the last called Makefile (this one)
 PROJ_DIR  := $(realpath $(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
 
+SV_FILE_LIST := $(shell find . -name "*.sv" -o -name "*.svh" -o -name "*.v")
+# SV_FILE_LIST := $(shell $(BENDER) script flist --relative-path $(foreach t,$(BENDER_TARGETS),-t $(t)) $(foreach d,$(SV_DEFINES),-D $(d)=1))
+
 
 default: help
 
@@ -89,7 +92,7 @@ VERILATOR_ARGS +=  --unroll-count 1 --unroll-stmts 1
 verilator/croc.f: Bender.lock Bender.yml
 	$(BENDER) script verilator -t rtl -t verilator -DSYNTHESIS -DVERILATOR > $@
 
-verilator/obj_dir/Vtb_croc_soc: verilator/croc.f $(SW_HEX)
+verilator/obj_dir/Vtb_croc_soc: verilator/croc.f $(SW_HEX) $(SV_FILE_LIST)
 	cd verilator; $(VERILATOR) $(VERILATOR_ARGS) -O3 -CFLAGS "-O1 -march=native" --top tb_croc_soc -f croc.f
 
 ## Simulate RTL using Verilator
