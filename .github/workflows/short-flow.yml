@@ -35,7 +35,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: croc-waveform
-          path: croc.vcd
+          path: verilator/croc.vcd
         continue-on-error: true
 
       - name: Upload simulation output
