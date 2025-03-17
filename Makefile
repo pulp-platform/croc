@@ -128,6 +128,20 @@ klayout: klayout/croc_chip.gds
 .PHONY: klayout yosys-flist
 
 
+#######################
+# Generated Registers #
+#######################
+reggen: rtl/user_domain/sdhci/reg/sdhci_reg_pkg.sv
+
+rtl/%_reg_pkg.sv: rtl/%_regs.hjson
+	$(REGGEN) $< -r -t $(shell dirname $@)
+
+rtl/%_reg_top.sv: rtl/%_regs.hjson
+	$(REGGEN) $< -r -t $(shell dirname $@)
+
+.PHONY: reggen
+
+
 #################
 # Documentation #
 #################

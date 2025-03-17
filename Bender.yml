@@ -10,7 +10,7 @@ package:
 dependencies:
   # IMPORTANT: see vendor_package at the bottom
   common_cells:         { git: "https://github.com/pulp-platform/common_cells.git",         version: 1.37.0 }
-  common_verification:  { git: "https://github.com/pulp-platform/common_verification.git",  rev: "verilator-fix"      }
+  common_verification:  { git: "https://github.com/pulp-platform/common_verification.git",  version: 0.2.5  }
   riscv-dbg:            { git: "https://github.com/pulp-platform/riscv-dbg.git",            rev: "verilator-phsauter" }
   tech_cells_generic:   { git: "https://github.com/pulp-platform/tech_cells_generic.git",   version: 0.2.13 }
   register_interface:   { git: "https://github.com/pulp-platform/register_interface.git",   version: 0.4.1  }
@@ -92,7 +92,7 @@ vendor_package:
 
   - name: common_verification
     target_dir: rtl/common_verification
-    upstream: { git: "https://github.com/pulp-platform/common_verification.git", rev: "e1180111e2bb9def1eb790d96a3a65993b84536f" } # branch verilator-fix
+    upstream: { git: "https://github.com/pulp-platform/common_verification.git", rev: "fb1885f48ea46164a10568aeff51884389f67ae3" } # v0.2.5
     patch_dir: "rtl/patches/common_verification"
     mapping:
       - { from: 'src/clk_rst_gen.sv', to: 'clk_rst_gen.sv', patch_dir: 'src/' }
@@ -129,13 +129,14 @@ vendor_package:
     upstream: { git: "https://github.com/pulp-platform/register_interface.git", rev: "3b2bf592100b769977c76e51812c55cd742882f6" } # v0.4.1
     patch_dir: "rtl/patches/register_interface"
     mapping:
-      - { from: 'src/periph_to_reg.sv',         to: 'periph_to_reg.sv',            patch_dir: 'src/' }
-      - { from: 'src/reg_intf.sv',              to: 'reg_intf.sv',                 patch_dir: 'src/' }
-      - { from: 'src/reg_to_apb.sv',            to: 'reg_to_apb.sv',               patch_dir: 'src/' }
-      - { from: 'include/register_interface/',  to: 'include/register_interface/', patch_dir: 'include/' }
-      - { from: 'vendor/lowrisc_opentitan/src', to: 'lowrisc_opentitan',           patch_dir: 'vendor/' }
-      - { from: 'Bender.yml',                   to: 'Bender.yml',                  patch_dir: '' }
-      - { from: 'README.md',                    to: 'README.md',                   patch_dir: '' }
+      - { from: 'src/periph_to_reg.sv',          to: 'periph_to_reg.sv',              patch_dir: 'src/' }
+      - { from: 'src/reg_intf.sv',               to: 'reg_intf.sv',                   patch_dir: 'src/' }
+      - { from: 'src/reg_to_apb.sv',             to: 'reg_to_apb.sv',                 patch_dir: 'src/' }
+      - { from: 'include/register_interface/',   to: 'include/register_interface/',   patch_dir: 'include/' }
+      - { from: 'vendor/lowrisc_opentitan/src',  to: 'lowrisc_opentitan',             patch_dir: 'vendor/' }
+      - { from: 'vendor/lowrisc_opentitan/util', to: 'vendor/lowrisc_opentitan/util', patch_dir: 'vendor/' }
+      - { from: 'Bender.yml',                    to: 'Bender.yml',                    patch_dir: '' }
+      - { from: 'README.md',                     to: 'README.md',                     patch_dir: '' }
 
   - name: apb
     target_dir: rtl/apb
