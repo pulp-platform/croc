@@ -109,8 +109,12 @@ BENDER_TARGETS ?= asic ihp13 rtl synthesis
 SV_DEFINES     ?= VERILATOR SYNTHESIS COMMON_CELLS_ASSERTS_OFF
 
 ## Generate croc.flist used to read design in yosys
-yosys-flist: Bender.lock Bender.yml rtl/*/Bender.yml
-	$(BENDER) script flist-plus $(foreach t,$(BENDER_TARGETS),-t $(t)) $(foreach d,$(SV_DEFINES),-D $(d)=1) > $(PROJ_DIR)/croc.flist
+SV_FLIST := $(PROJ_DIR)/croc.flist
+
+yosys-flist: $(SV_FLIST)
+
+$(SV_FLIST): Bender.lock Bender.yml rtl/*/Bender.yml
+	$(BENDER) script flist-plus $(foreach t,$(BENDER_TARGETS),-t $(t)) $(foreach d,$(SV_DEFINES),-D $(d)=1) > $@
 
 include yosys/yosys.mk
 include openroad/openroad.mk

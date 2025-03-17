@@ -63,6 +63,13 @@ int main() {
     printf("Tick\n");
     sleep_ms(10);
     printf("Tock\n");
+
+    *reg32(SDHCI_BASE_ADDR, 0) = *(uint32_t*) "SDHC";
+    printf("Write Success!\n");
+    uint32_t read[2] = { 0 };
+    read[0] = *reg32(SDHCI_BASE_ADDR, 0);
+    printf("Read Success: '%s'\n", (char*) &read);
+
     uart_write_flush();
     return 1;
 }

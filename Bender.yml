@@ -34,6 +34,8 @@ sources:
   - rtl/gpio/gpio_reg_pkg.sv
   # add your design files containing anything but modules (packages) here
 
+  - rtl/user_domain/sdhci/reg/sdhci_reg_pkg.sv
+
     # RTL
   - target: not(netlist_yosys)
     files:
@@ -48,6 +50,10 @@ sources:
       # add your design files with modules here
       # Level 3
       - rtl/croc_soc.sv
+
+      - rtl/user_domain/sdhci/reg/sdhci_reg_top.sv
+      - rtl/user_domain/sdhci/sdhci.sv
+
 
   - target: not(fpga)
     files:

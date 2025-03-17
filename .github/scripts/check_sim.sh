@@ -15,6 +15,8 @@ expected_lines=(
   "\[UART\] Result: 0x8940, Cycles: 0xBD"
   "\[UART\] Tick"
   "\[UART\] Tock"
+  "\[UART\] Write Success!"
+  "\[UART\] Read Success: 'SDHC'"
 )
 
 for line in "${expected_lines[@]}"; do

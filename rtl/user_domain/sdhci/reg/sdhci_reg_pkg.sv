@@ -7,24 +7,11 @@
 package sdhci_reg_pkg;
 
   // Address widths within the block
-  parameter int BlockAw = 9;
+  parameter int BlockAw = 8;
 
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
-
-  typedef struct packed {
-    logic        q;
-  } sdhci_reg2hw_intr_state_reg_t;
-
-  typedef struct packed {
-    logic        q;
-  } sdhci_reg2hw_intr_enable_reg_t;
-
-  typedef struct packed {
-    logic        q;
-    logic        qe;
-  } sdhci_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
@@ -565,15 +552,12 @@ package sdhci_reg_pkg;
   } sdhci_reg2hw_slot_interrupt_status_and_host_controller_version_reg_t;
 
   typedef struct packed {
-    logic        d;
+    logic [31:0] d;
     logic        de;
-  } sdhci_hw2reg_intr_state_reg_t;
+  } sdhci_hw2reg_system_address_reg_t;
 
   // Register -> HW type
   typedef struct packed {
-    sdhci_reg2hw_intr_state_reg_t intr_state; // [594:594]
-    sdhci_reg2hw_intr_enable_reg_t intr_enable; // [593:593]
-    sdhci_reg2hw_intr_test_reg_t intr_test; // [592:591]
     sdhci_reg2hw_system_address_reg_t system_address; // [590:559]
     sdhci_reg2hw_block_size_and_count_reg_t block_size_and_count; // [558:527]
     sdhci_reg2hw_argument_reg_t argument; // [526:495]
@@ -597,42 +581,32 @@ package sdhci_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    sdhci_hw2reg_intr_state_reg_t intr_state; // [1:0]
+    sdhci_hw2reg_system_address_reg_t system_address; // [32:0]
   } sdhci_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] SDHCI_INTR_STATE_OFFSET = 9'h 0;
-  parameter logic [BlockAw-1:0] SDHCI_INTR_ENABLE_OFFSET = 9'h 4;
-  parameter logic [BlockAw-1:0] SDHCI_INTR_TEST_OFFSET = 9'h 8;
-  parameter logic [BlockAw-1:0] SDHCI_SYSTEM_ADDRESS_OFFSET = 9'h c;
-  parameter logic [BlockAw-1:0] SDHCI_BLOCK_SIZE_AND_COUNT_OFFSET = 9'h 10;
-  parameter logic [BlockAw-1:0] SDHCI_ARGUMENT_OFFSET = 9'h 14;
-  parameter logic [BlockAw-1:0] SDHCI_TRANSFER_MODE_AND_COMMAND_OFFSET = 9'h 18;
-  parameter logic [BlockAw-1:0] SDHCI_RESPONSE0_OFFSET = 9'h 1c;
-  parameter logic [BlockAw-1:0] SDHCI_RESPONSE1_OFFSET = 9'h 20;
-  parameter logic [BlockAw-1:0] SDHCI_RESPONSE2_OFFSET = 9'h 24;
-  parameter logic [BlockAw-1:0] SDHCI_RESPONSE3_OFFSET = 9'h 28;
-  parameter logic [BlockAw-1:0] SDHCI_BUFFER_DATA_PORT_OFFSET = 9'h 2c;
-  parameter logic [BlockAw-1:0] SDHCI_PRESENT_STATE_OFFSET = 9'h 30;
-  parameter logic [BlockAw-1:0] SDHCI_HOST_AND_POWER_AND_BLOCK_GAP_AND_WAKEUP_CONTROL_OFFSET = 9'h 34;
-  parameter logic [BlockAw-1:0] SDHCI_CLOCK_AND_TIMEOUT_CONTROL_AND_SOFTWARE_RESET_OFFSET = 9'h 38;
-  parameter logic [BlockAw-1:0] SDHCI_NORMAL_AND_ERROR_INTERRUPT_STATUS_OFFSET = 9'h 3c;
-  parameter logic [BlockAw-1:0] SDHCI_NORMAL_AND_ERROR_INTERRUPT_STATUS_ENABLE_OFFSET = 9'h 40;
-  parameter logic [BlockAw-1:0] SDHCI_NORMAL_AND_ERROR_INTERRUPT_SIGNAL_ENABLE_OFFSET = 9'h 44;
-  parameter logic [BlockAw-1:0] SDHCI_AUTO_CMD12_ERROR_STATUS_OFFSET = 9'h 48;
-  parameter logic [BlockAw-1:0] SDHCI_CAPABILITIES_OFFSET = 9'h 4c;
-  parameter logic [BlockAw-1:0] SDHCI_MAXIMUM_CURRENT_CAPABILITIES_OFFSET = 9'h 54;
-  parameter logic [BlockAw-1:0] SDHCI_SLOT_INTERRUPT_STATUS_AND_HOST_CONTROLLER_VERSION_OFFSET = 9'h 108;
-
-  // Reset values for hwext registers and their fields
-  parameter logic [0:0] SDHCI_INTR_TEST_RESVAL = 1'h 0;
-  parameter logic [0:0] SDHCI_INTR_TEST_SDHCI_INTERRUPT_RESVAL = 1'h 0;
+  parameter logic [BlockAw-1:0] SDHCI_SYSTEM_ADDRESS_OFFSET = 8'h 0;
+  parameter logic [BlockAw-1:0] SDHCI_BLOCK_SIZE_AND_COUNT_OFFSET = 8'h 4;
+  parameter logic [BlockAw-1:0] SDHCI_ARGUMENT_OFFSET = 8'h 8;
+  parameter logic [BlockAw-1:0] SDHCI_TRANSFER_MODE_AND_COMMAND_OFFSET = 8'h c;
+  parameter logic [BlockAw-1:0] SDHCI_RESPONSE0_OFFSET = 8'h 10;
+  parameter logic [BlockAw-1:0] SDHCI_RESPONSE1_OFFSET = 8'h 14;
+  parameter logic [BlockAw-1:0] SDHCI_RESPONSE2_OFFSET = 8'h 18;
+  parameter logic [BlockAw-1:0] SDHCI_RESPONSE3_OFFSET = 8'h 1c;
+  parameter logic [BlockAw-1:0] SDHCI_BUFFER_DATA_PORT_OFFSET = 8'h 20;
+  parameter logic [BlockAw-1:0] SDHCI_PRESENT_STATE_OFFSET = 8'h 24;
+  parameter logic [BlockAw-1:0] SDHCI_HOST_AND_POWER_AND_BLOCK_GAP_AND_WAKEUP_CONTROL_OFFSET = 8'h 28;
+  parameter logic [BlockAw-1:0] SDHCI_CLOCK_AND_TIMEOUT_CONTROL_AND_SOFTWARE_RESET_OFFSET = 8'h 2c;
+  parameter logic [BlockAw-1:0] SDHCI_NORMAL_AND_ERROR_INTERRUPT_STATUS_OFFSET = 8'h 30;
+  parameter logic [BlockAw-1:0] SDHCI_NORMAL_AND_ERROR_INTERRUPT_STATUS_ENABLE_OFFSET = 8'h 34;
+  parameter logic [BlockAw-1:0] SDHCI_NORMAL_AND_ERROR_INTERRUPT_SIGNAL_ENABLE_OFFSET = 8'h 38;
+  parameter logic [BlockAw-1:0] SDHCI_AUTO_CMD12_ERROR_STATUS_OFFSET = 8'h 3c;
+  parameter logic [BlockAw-1:0] SDHCI_CAPABILITIES_OFFSET = 8'h 40;
+  parameter logic [BlockAw-1:0] SDHCI_MAXIMUM_CURRENT_CAPABILITIES_OFFSET = 8'h 48;
+  parameter logic [BlockAw-1:0] SDHCI_SLOT_INTERRUPT_STATUS_AND_HOST_CONTROLLER_VERSION_OFFSET = 8'h fc;
 
   // Register index
   typedef enum int {
-    SDHCI_INTR_STATE,
-    SDHCI_INTR_ENABLE,
-    SDHCI_INTR_TEST,
     SDHCI_SYSTEM_ADDRESS,
     SDHCI_BLOCK_SIZE_AND_COUNT,
     SDHCI_ARGUMENT,
@@ -655,29 +629,26 @@ package sdhci_reg_pkg;
   } sdhci_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] SDHCI_PERMIT [22] = '{
-    4'b 0001, // index[ 0] SDHCI_INTR_STATE
-    4'b 0001, // index[ 1] SDHCI_INTR_ENABLE
-    4'b 0001, // index[ 2] SDHCI_INTR_TEST
-    4'b 1111, // index[ 3] SDHCI_SYSTEM_ADDRESS
-    4'b 1111, // index[ 4] SDHCI_BLOCK_SIZE_AND_COUNT
-    4'b 1111, // index[ 5] SDHCI_ARGUMENT
-    4'b 1111, // index[ 6] SDHCI_TRANSFER_MODE_AND_COMMAND
-    4'b 1111, // index[ 7] SDHCI_RESPONSE0
-    4'b 1111, // index[ 8] SDHCI_RESPONSE1
-    4'b 1111, // index[ 9] SDHCI_RESPONSE2
-    4'b 1111, // index[10] SDHCI_RESPONSE3
-    4'b 1111, // index[11] SDHCI_BUFFER_DATA_PORT
-    4'b 1111, // index[12] SDHCI_PRESENT_STATE
-    4'b 1111, // index[13] SDHCI_HOST_AND_POWER_AND_BLOCK_GAP_AND_WAKEUP_CONTROL
-    4'b 1111, // index[14] SDHCI_CLOCK_AND_TIMEOUT_CONTROL_AND_SOFTWARE_RESET
-    4'b 1111, // index[15] SDHCI_NORMAL_AND_ERROR_INTERRUPT_STATUS
-    4'b 1111, // index[16] SDHCI_NORMAL_AND_ERROR_INTERRUPT_STATUS_ENABLE
-    4'b 1111, // index[17] SDHCI_NORMAL_AND_ERROR_INTERRUPT_SIGNAL_ENABLE
-    4'b 0011, // index[18] SDHCI_AUTO_CMD12_ERROR_STATUS
-    4'b 1111, // index[19] SDHCI_CAPABILITIES
-    4'b 1111, // index[20] SDHCI_MAXIMUM_CURRENT_CAPABILITIES
-    4'b 1111  // index[21] SDHCI_SLOT_INTERRUPT_STATUS_AND_HOST_CONTROLLER_VERSION
+  parameter logic [3:0] SDHCI_PERMIT [19] = '{
+    4'b 0000, // index[ 0] SDHCI_SYSTEM_ADDRESS
+    4'b 1111, // index[ 1] SDHCI_BLOCK_SIZE_AND_COUNT
+    4'b 1111, // index[ 2] SDHCI_ARGUMENT
+    4'b 1111, // index[ 3] SDHCI_TRANSFER_MODE_AND_COMMAND
+    4'b 1111, // index[ 4] SDHCI_RESPONSE0
+    4'b 1111, // index[ 5] SDHCI_RESPONSE1
+    4'b 1111, // index[ 6] SDHCI_RESPONSE2
+    4'b 1111, // index[ 7] SDHCI_RESPONSE3
+    4'b 1111, // index[ 8] SDHCI_BUFFER_DATA_PORT
+    4'b 1111, // index[ 9] SDHCI_PRESENT_STATE
+    4'b 1111, // index[10] SDHCI_HOST_AND_POWER_AND_BLOCK_GAP_AND_WAKEUP_CONTROL
+    4'b 1111, // index[11] SDHCI_CLOCK_AND_TIMEOUT_CONTROL_AND_SOFTWARE_RESET
+    4'b 1111, // index[12] SDHCI_NORMAL_AND_ERROR_INTERRUPT_STATUS
+    4'b 1111, // index[13] SDHCI_NORMAL_AND_ERROR_INTERRUPT_STATUS_ENABLE
+    4'b 1111, // index[14] SDHCI_NORMAL_AND_ERROR_INTERRUPT_SIGNAL_ENABLE
+    4'b 0011, // index[15] SDHCI_AUTO_CMD12_ERROR_STATUS
+    4'b 1111, // index[16] SDHCI_CAPABILITIES
+    4'b 1111, // index[17] SDHCI_MAXIMUM_CURRENT_CAPABILITIES
+    4'b 1111  // index[18] SDHCI_SLOT_INTERRUPT_STATUS_AND_HOST_CONTROLLER_VERSION
   };
 
 endpackage

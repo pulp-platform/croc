@@ -10,7 +10,7 @@
 module sdhci_reg_top #(
   parameter type reg_req_t = logic,
   parameter type reg_rsp_t = logic,
-  parameter int AW = 9
+  parameter int AW = 8
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -68,14 +68,6 @@ module sdhci_reg_top #(
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic intr_state_qs;
-  logic intr_state_wd;
-  logic intr_state_we;
-  logic intr_enable_qs;
-  logic intr_enable_wd;
-  logic intr_enable_we;
-  logic intr_test_wd;
-  logic intr_test_we;
   logic [31:0] system_address_qs;
   logic [31:0] system_address_wd;
   logic system_address_we;
@@ -427,76 +419,6 @@ module sdhci_reg_top #(
   logic [7:0] slot_interrupt_status_and_host_controller_version_vendor_version_number_qs;
 
   // Register instances
-  // R[intr_state]: V(False)
-
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("W1C"),
-    .RESVAL  (1'h0)
-  ) u_intr_state (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (intr_state_we),
-    .wd     (intr_state_wd),
-
-    // from internal hardware
-    .de     (hw2reg.intr_state.de),
-    .d      (hw2reg.intr_state.d ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_state.q ),
-
-    // to register interface (read)
-    .qs     (intr_state_qs)
-  );
-
-
-  // R[intr_enable]: V(False)
-
-  prim_subreg #(
-    .DW      (1),
-    .SWACCESS("RW"),
-    .RESVAL  (1'h0)
-  ) u_intr_enable (
-    .clk_i   (clk_i    ),
-    .rst_ni  (rst_ni  ),
-
-    // from register interface
-    .we     (intr_enable_we),
-    .wd     (intr_enable_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.intr_enable.q ),
-
-    // to register interface (read)
-    .qs     (intr_enable_qs)
-  );
-
-
-  // R[intr_test]: V(True)
-
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_intr_test (
-    .re     (1'b0),
-    .we     (intr_test_we),
-    .wd     (intr_test_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (reg2hw.intr_test.qe),
-    .q      (reg2hw.intr_test.q ),
-    .qs     ()
-  );
-
-
   // R[system_address]: V(False)
 
   prim_subreg #(
@@ -512,8 +434,8 @@ module sdhci_reg_top #(
     .wd     (system_address_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.system_address.de),
+    .d      (hw2reg.system_address.d ),
 
     // to internal hardware
     .qe     (),
@@ -4747,31 +4669,28 @@ module sdhci_reg_top #(
 
 
 
-  logic [21:0] addr_hit;
+  logic [18:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[ 0] = (reg_addr == SDHCI_INTR_STATE_OFFSET);
-    addr_hit[ 1] = (reg_addr == SDHCI_INTR_ENABLE_OFFSET);
-    addr_hit[ 2] = (reg_addr == SDHCI_INTR_TEST_OFFSET);
-    addr_hit[ 3] = (reg_addr == SDHCI_SYSTEM_ADDRESS_OFFSET);
-    addr_hit[ 4] = (reg_addr == SDHCI_BLOCK_SIZE_AND_COUNT_OFFSET);
-    addr_hit[ 5] = (reg_addr == SDHCI_ARGUMENT_OFFSET);
-    addr_hit[ 6] = (reg_addr == SDHCI_TRANSFER_MODE_AND_COMMAND_OFFSET);
-    addr_hit[ 7] = (reg_addr == SDHCI_RESPONSE0_OFFSET);
-    addr_hit[ 8] = (reg_addr == SDHCI_RESPONSE1_OFFSET);
-    addr_hit[ 9] = (reg_addr == SDHCI_RESPONSE2_OFFSET);
-    addr_hit[10] = (reg_addr == SDHCI_RESPONSE3_OFFSET);
-    addr_hit[11] = (reg_addr == SDHCI_BUFFER_DATA_PORT_OFFSET);
-    addr_hit[12] = (reg_addr == SDHCI_PRESENT_STATE_OFFSET);
-    addr_hit[13] = (reg_addr == SDHCI_HOST_AND_POWER_AND_BLOCK_GAP_AND_WAKEUP_CONTROL_OFFSET);
-    addr_hit[14] = (reg_addr == SDHCI_CLOCK_AND_TIMEOUT_CONTROL_AND_SOFTWARE_RESET_OFFSET);
-    addr_hit[15] = (reg_addr == SDHCI_NORMAL_AND_ERROR_INTERRUPT_STATUS_OFFSET);
-    addr_hit[16] = (reg_addr == SDHCI_NORMAL_AND_ERROR_INTERRUPT_STATUS_ENABLE_OFFSET);
-    addr_hit[17] = (reg_addr == SDHCI_NORMAL_AND_ERROR_INTERRUPT_SIGNAL_ENABLE_OFFSET);
-    addr_hit[18] = (reg_addr == SDHCI_AUTO_CMD12_ERROR_STATUS_OFFSET);
-    addr_hit[19] = (reg_addr == SDHCI_CAPABILITIES_OFFSET);
-    addr_hit[20] = (reg_addr == SDHCI_MAXIMUM_CURRENT_CAPABILITIES_OFFSET);
-    addr_hit[21] = (reg_addr == SDHCI_SLOT_INTERRUPT_STATUS_AND_HOST_CONTROLLER_VERSION_OFFSET);
+    addr_hit[ 0] = (reg_addr == SDHCI_SYSTEM_ADDRESS_OFFSET);
+    addr_hit[ 1] = (reg_addr == SDHCI_BLOCK_SIZE_AND_COUNT_OFFSET);
+    addr_hit[ 2] = (reg_addr == SDHCI_ARGUMENT_OFFSET);
+    addr_hit[ 3] = (reg_addr == SDHCI_TRANSFER_MODE_AND_COMMAND_OFFSET);
+    addr_hit[ 4] = (reg_addr == SDHCI_RESPONSE0_OFFSET);
+    addr_hit[ 5] = (reg_addr == SDHCI_RESPONSE1_OFFSET);
+    addr_hit[ 6] = (reg_addr == SDHCI_RESPONSE2_OFFSET);
+    addr_hit[ 7] = (reg_addr == SDHCI_RESPONSE3_OFFSET);
+    addr_hit[ 8] = (reg_addr == SDHCI_BUFFER_DATA_PORT_OFFSET);
+    addr_hit[ 9] = (reg_addr == SDHCI_PRESENT_STATE_OFFSET);
+    addr_hit[10] = (reg_addr == SDHCI_HOST_AND_POWER_AND_BLOCK_GAP_AND_WAKEUP_CONTROL_OFFSET);
+    addr_hit[11] = (reg_addr == SDHCI_CLOCK_AND_TIMEOUT_CONTROL_AND_SOFTWARE_RESET_OFFSET);
+    addr_hit[12] = (reg_addr == SDHCI_NORMAL_AND_ERROR_INTERRUPT_STATUS_OFFSET);
+    addr_hit[13] = (reg_addr == SDHCI_NORMAL_AND_ERROR_INTERRUPT_STATUS_ENABLE_OFFSET);
+    addr_hit[14] = (reg_addr == SDHCI_NORMAL_AND_ERROR_INTERRUPT_SIGNAL_ENABLE_OFFSET);
+    addr_hit[15] = (reg_addr == SDHCI_AUTO_CMD12_ERROR_STATUS_OFFSET);
+    addr_hit[16] = (reg_addr == SDHCI_CAPABILITIES_OFFSET);
+    addr_hit[17] = (reg_addr == SDHCI_MAXIMUM_CURRENT_CAPABILITIES_OFFSET);
+    addr_hit[18] = (reg_addr == SDHCI_SLOT_INTERRUPT_STATUS_AND_HOST_CONTROLLER_VERSION_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -4797,295 +4716,283 @@ module sdhci_reg_top #(
                (addr_hit[15] & (|(SDHCI_PERMIT[15] & ~reg_be))) |
                (addr_hit[16] & (|(SDHCI_PERMIT[16] & ~reg_be))) |
                (addr_hit[17] & (|(SDHCI_PERMIT[17] & ~reg_be))) |
-               (addr_hit[18] & (|(SDHCI_PERMIT[18] & ~reg_be))) |
-               (addr_hit[19] & (|(SDHCI_PERMIT[19] & ~reg_be))) |
-               (addr_hit[20] & (|(SDHCI_PERMIT[20] & ~reg_be))) |
-               (addr_hit[21] & (|(SDHCI_PERMIT[21] & ~reg_be)))));
+               (addr_hit[18] & (|(SDHCI_PERMIT[18] & ~reg_be)))));
   end
 
-  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
-  assign intr_state_wd = reg_wdata[0];
-
-  assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
-  assign intr_enable_wd = reg_wdata[0];
-
-  assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
-  assign intr_test_wd = reg_wdata[0];
-
-  assign system_address_we = addr_hit[3] & reg_we & !reg_error;
+  assign system_address_we = addr_hit[0] & reg_we & !reg_error;
   assign system_address_wd = reg_wdata[31:0];
 
-  assign block_size_and_count_transfer_block_size_we = addr_hit[4] & reg_we & !reg_error;
+  assign block_size_and_count_transfer_block_size_we = addr_hit[1] & reg_we & !reg_error;
   assign block_size_and_count_transfer_block_size_wd = reg_wdata[11:0];
 
-  assign block_size_and_count_host_dma_buffer_boundary_we = addr_hit[4] & reg_we & !reg_error;
+  assign block_size_and_count_host_dma_buffer_boundary_we = addr_hit[1] & reg_we & !reg_error;
   assign block_size_and_count_host_dma_buffer_boundary_wd = reg_wdata[14:12];
 
-  assign block_size_and_count_blocks_count_for_current_transfer_we = addr_hit[4] & reg_we & !reg_error;
+  assign block_size_and_count_blocks_count_for_current_transfer_we = addr_hit[1] & reg_we & !reg_error;
   assign block_size_and_count_blocks_count_for_current_transfer_wd = reg_wdata[31:16];
 
-  assign argument_we = addr_hit[5] & reg_we & !reg_error;
+  assign argument_we = addr_hit[2] & reg_we & !reg_error;
   assign argument_wd = reg_wdata[31:0];
 
-  assign transfer_mode_and_command_dma_enable_we = addr_hit[6] & reg_we & !reg_error;
+  assign transfer_mode_and_command_dma_enable_we = addr_hit[3] & reg_we & !reg_error;
   assign transfer_mode_and_command_dma_enable_wd = reg_wdata[0];
 
-  assign transfer_mode_and_command_block_count_enable_we = addr_hit[6] & reg_we & !reg_error;
+  assign transfer_mode_and_command_block_count_enable_we = addr_hit[3] & reg_we & !reg_error;
   assign transfer_mode_and_command_block_count_enable_wd = reg_wdata[1];
 
-  assign transfer_mode_and_command_auto_cmd12_enable_we = addr_hit[6] & reg_we & !reg_error;
+  assign transfer_mode_and_command_auto_cmd12_enable_we = addr_hit[3] & reg_we & !reg_error;
   assign transfer_mode_and_command_auto_cmd12_enable_wd = reg_wdata[2];
 
-  assign transfer_mode_and_command_data_transfer_direction_select_we = addr_hit[6] & reg_we & !reg_error;
+  assign transfer_mode_and_command_data_transfer_direction_select_we = addr_hit[3] & reg_we & !reg_error;
   assign transfer_mode_and_command_data_transfer_direction_select_wd = reg_wdata[4];
 
-  assign transfer_mode_and_command_multi_single_bit_block_select_we = addr_hit[6] & reg_we & !reg_error;
+  assign transfer_mode_and_command_multi_single_bit_block_select_we = addr_hit[3] & reg_we & !reg_error;
   assign transfer_mode_and_command_multi_single_bit_block_select_wd = reg_wdata[5];
 
-  assign transfer_mode_and_command_response_type_select_we = addr_hit[6] & reg_we & !reg_error;
+  assign transfer_mode_and_command_response_type_select_we = addr_hit[3] & reg_we & !reg_error;
   assign transfer_mode_and_command_response_type_select_wd = reg_wdata[17:16];
 
-  assign transfer_mode_and_command_command_crc_check_enable_we = addr_hit[6] & reg_we & !reg_error;
+  assign transfer_mode_and_command_command_crc_check_enable_we = addr_hit[3] & reg_we & !reg_error;
   assign transfer_mode_and_command_command_crc_check_enable_wd = reg_wdata[19];
 
-  assign transfer_mode_and_command_command_index_check_enable_we = addr_hit[6] & reg_we & !reg_error;
+  assign transfer_mode_and_command_command_index_check_enable_we = addr_hit[3] & reg_we & !reg_error;
   assign transfer_mode_and_command_command_index_check_enable_wd = reg_wdata[20];
 
-  assign transfer_mode_and_command_data_present_select_we = addr_hit[6] & reg_we & !reg_error;
+  assign transfer_mode_and_command_data_present_select_we = addr_hit[3] & reg_we & !reg_error;
   assign transfer_mode_and_command_data_present_select_wd = reg_wdata[21];
 
-  assign transfer_mode_and_command_command_type_we = addr_hit[6] & reg_we & !reg_error;
+  assign transfer_mode_and_command_command_type_we = addr_hit[3] & reg_we & !reg_error;
   assign transfer_mode_and_command_command_type_wd = reg_wdata[23:22];
 
-  assign transfer_mode_and_command_command_index_we = addr_hit[6] & reg_we & !reg_error;
+  assign transfer_mode_and_command_command_index_we = addr_hit[3] & reg_we & !reg_error;
   assign transfer_mode_and_command_command_index_wd = reg_wdata[29:24];
 
-  assign buffer_data_port_we = addr_hit[11] & reg_we & !reg_error;
+  assign buffer_data_port_we = addr_hit[8] & reg_we & !reg_error;
   assign buffer_data_port_wd = reg_wdata[31:0];
 
-  assign host_and_power_and_block_gap_and_wakeup_control_led_control_we = addr_hit[13] & reg_we & !reg_error;
+  assign host_and_power_and_block_gap_and_wakeup_control_led_control_we = addr_hit[10] & reg_we & !reg_error;
   assign host_and_power_and_block_gap_and_wakeup_control_led_control_wd = reg_wdata[0];
 
-  assign host_and_power_and_block_gap_and_wakeup_control_data_transfer_width_we = addr_hit[13] & reg_we & !reg_error;
+  assign host_and_power_and_block_gap_and_wakeup_control_data_transfer_width_we = addr_hit[10] & reg_we & !reg_error;
   assign host_and_power_and_block_gap_and_wakeup_control_data_transfer_width_wd = reg_wdata[1];
 
-  assign host_and_power_and_block_gap_and_wakeup_control_high_speed_enable_we = addr_hit[13] & reg_we & !reg_error;
+  assign host_and_power_and_block_gap_and_wakeup_control_high_speed_enable_we = addr_hit[10] & reg_we & !reg_error;
   assign host_and_power_and_block_gap_and_wakeup_control_high_speed_enable_wd = reg_wdata[2];
 
-  assign host_and_power_and_block_gap_and_wakeup_control_sd_bus_power_we = addr_hit[13] & reg_we & !reg_error;
+  assign host_and_power_and_block_gap_and_wakeup_control_sd_bus_power_we = addr_hit[10] & reg_we & !reg_error;
   assign host_and_power_and_block_gap_and_wakeup_control_sd_bus_power_wd = reg_wdata[8];
 
-  assign host_and_power_and_block_gap_and_wakeup_control_sd_bus_voltage_select_we = addr_hit[13] & reg_we & !reg_error;
+  assign host_and_power_and_block_gap_and_wakeup_control_sd_bus_voltage_select_we = addr_hit[10] & reg_we & !reg_error;
   assign host_and_power_and_block_gap_and_wakeup_control_sd_bus_voltage_select_wd = reg_wdata[11:9];
 
-  assign host_and_power_and_block_gap_and_wakeup_control_stop_at_block_gap_request_we = addr_hit[13] & reg_we & !reg_error;
+  assign host_and_power_and_block_gap_and_wakeup_control_stop_at_block_gap_request_we = addr_hit[10] & reg_we & !reg_error;
   assign host_and_power_and_block_gap_and_wakeup_control_stop_at_block_gap_request_wd = reg_wdata[16];
 
-  assign host_and_power_and_block_gap_and_wakeup_control_continue_request_we = addr_hit[13] & reg_we & !reg_error;
+  assign host_and_power_and_block_gap_and_wakeup_control_continue_request_we = addr_hit[10] & reg_we & !reg_error;
   assign host_and_power_and_block_gap_and_wakeup_control_continue_request_wd = reg_wdata[17];
 
-  assign host_and_power_and_block_gap_and_wakeup_control_read_wait_control_we = addr_hit[13] & reg_we & !reg_error;
+  assign host_and_power_and_block_gap_and_wakeup_control_read_wait_control_we = addr_hit[10] & reg_we & !reg_error;
   assign host_and_power_and_block_gap_and_wakeup_control_read_wait_control_wd = reg_wdata[18];
 
-  assign host_and_power_and_block_gap_and_wakeup_control_interrupt_at_block_gap_we = addr_hit[13] & reg_we & !reg_error;
+  assign host_and_power_and_block_gap_and_wakeup_control_interrupt_at_block_gap_we = addr_hit[10] & reg_we & !reg_error;
   assign host_and_power_and_block_gap_and_wakeup_control_interrupt_at_block_gap_wd = reg_wdata[19];
 
-  assign host_and_power_and_block_gap_and_wakeup_control_wakeup_event_enable_on_card_interrupt_we = addr_hit[13] & reg_we & !reg_error;
+  assign host_and_power_and_block_gap_and_wakeup_control_wakeup_event_enable_on_card_interrupt_we = addr_hit[10] & reg_we & !reg_error;
   assign host_and_power_and_block_gap_and_wakeup_control_wakeup_event_enable_on_card_interrupt_wd = reg_wdata[24];
 
-  assign host_and_power_and_block_gap_and_wakeup_control_wakeup_event_enable_on_sd_card_insertion_we = addr_hit[13] & reg_we & !reg_error;
+  assign host_and_power_and_block_gap_and_wakeup_control_wakeup_event_enable_on_sd_card_insertion_we = addr_hit[10] & reg_we & !reg_error;
   assign host_and_power_and_block_gap_and_wakeup_control_wakeup_event_enable_on_sd_card_insertion_wd = reg_wdata[25];
 
-  assign host_and_power_and_block_gap_and_wakeup_control_wakeup_event_enable_on_sd_card_removal_we = addr_hit[13] & reg_we & !reg_error;
+  assign host_and_power_and_block_gap_and_wakeup_control_wakeup_event_enable_on_sd_card_removal_we = addr_hit[10] & reg_we & !reg_error;
   assign host_and_power_and_block_gap_and_wakeup_control_wakeup_event_enable_on_sd_card_removal_wd = reg_wdata[26];
 
-  assign clock_and_timeout_control_and_software_reset_internal_clock_enable_we = addr_hit[14] & reg_we & !reg_error;
+  assign clock_and_timeout_control_and_software_reset_internal_clock_enable_we = addr_hit[11] & reg_we & !reg_error;
   assign clock_and_timeout_control_and_software_reset_internal_clock_enable_wd = reg_wdata[0];
 
-  assign clock_and_timeout_control_and_software_reset_sd_clock_enable_we = addr_hit[14] & reg_we & !reg_error;
+  assign clock_and_timeout_control_and_software_reset_sd_clock_enable_we = addr_hit[11] & reg_we & !reg_error;
   assign clock_and_timeout_control_and_software_reset_sd_clock_enable_wd = reg_wdata[2];
 
-  assign clock_and_timeout_control_and_software_reset_sdclk_frequency_select_we = addr_hit[14] & reg_we & !reg_error;
+  assign clock_and_timeout_control_and_software_reset_sdclk_frequency_select_we = addr_hit[11] & reg_we & !reg_error;
   assign clock_and_timeout_control_and_software_reset_sdclk_frequency_select_wd = reg_wdata[15:8];
 
-  assign clock_and_timeout_control_and_software_reset_data_timeout_counter_value_we = addr_hit[14] & reg_we & !reg_error;
+  assign clock_and_timeout_control_and_software_reset_data_timeout_counter_value_we = addr_hit[11] & reg_we & !reg_error;
   assign clock_and_timeout_control_and_software_reset_data_timeout_counter_value_wd = reg_wdata[19:16];
 
-  assign clock_and_timeout_control_and_software_reset_software_reset_for_all_we = addr_hit[14] & reg_we & !reg_error;
+  assign clock_and_timeout_control_and_software_reset_software_reset_for_all_we = addr_hit[11] & reg_we & !reg_error;
   assign clock_and_timeout_control_and_software_reset_software_reset_for_all_wd = reg_wdata[24];
 
-  assign clock_and_timeout_control_and_software_reset_software_reset_for_cmd_line_we = addr_hit[14] & reg_we & !reg_error;
+  assign clock_and_timeout_control_and_software_reset_software_reset_for_cmd_line_we = addr_hit[11] & reg_we & !reg_error;
   assign clock_and_timeout_control_and_software_reset_software_reset_for_cmd_line_wd = reg_wdata[25];
 
-  assign clock_and_timeout_control_and_software_reset_software_reset_for_dat_line_we = addr_hit[14] & reg_we & !reg_error;
+  assign clock_and_timeout_control_and_software_reset_software_reset_for_dat_line_we = addr_hit[11] & reg_we & !reg_error;
   assign clock_and_timeout_control_and_software_reset_software_reset_for_dat_line_wd = reg_wdata[26];
 
-  assign normal_and_error_interrupt_status_command_complete_we = addr_hit[15] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_command_complete_we = addr_hit[12] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_command_complete_wd = reg_wdata[0];
 
-  assign normal_and_error_interrupt_status_transfer_complete_we = addr_hit[15] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_transfer_complete_we = addr_hit[12] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_transfer_complete_wd = reg_wdata[1];
 
-  assign normal_and_error_interrupt_status_block_gap_event_we = addr_hit[15] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_block_gap_event_we = addr_hit[12] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_block_gap_event_wd = reg_wdata[2];
 
-  assign normal_and_error_interrupt_status_dma_interrupt_we = addr_hit[15] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_dma_interrupt_we = addr_hit[12] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_dma_interrupt_wd = reg_wdata[3];
 
-  assign normal_and_error_interrupt_status_buffer_write_ready_we = addr_hit[15] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_buffer_write_ready_we = addr_hit[12] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_buffer_write_ready_wd = reg_wdata[4];
 
-  assign normal_and_error_interrupt_status_buffer_read_ready_we = addr_hit[15] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_buffer_read_ready_we = addr_hit[12] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_buffer_read_ready_wd = reg_wdata[5];
 
-  assign normal_and_error_interrupt_status_card_insertion_we = addr_hit[15] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_card_insertion_we = addr_hit[12] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_card_insertion_wd = reg_wdata[6];
 
-  assign normal_and_error_interrupt_status_card_removal_we = addr_hit[15] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_card_removal_we = addr_hit[12] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_card_removal_wd = reg_wdata[7];
 
-  assign normal_and_error_interrupt_status_command_timeout_error_we = addr_hit[15] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_command_timeout_error_we = addr_hit[12] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_command_timeout_error_wd = reg_wdata[16];
 
-  assign normal_and_error_interrupt_status_command_crc_error_we = addr_hit[15] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_command_crc_error_we = addr_hit[12] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_command_crc_error_wd = reg_wdata[17];
 
-  assign normal_and_error_interrupt_status_command_end_bit_error_we = addr_hit[15] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_command_end_bit_error_we = addr_hit[12] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_command_end_bit_error_wd = reg_wdata[18];
 
-  assign normal_and_error_interrupt_status_command_index_error_we = addr_hit[15] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_command_index_error_we = addr_hit[12] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_command_index_error_wd = reg_wdata[19];
 
-  assign normal_and_error_interrupt_status_data_timeout_error_we = addr_hit[15] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_data_timeout_error_we = addr_hit[12] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_data_timeout_error_wd = reg_wdata[20];
 
-  assign normal_and_error_interrupt_status_data_crc_error_we = addr_hit[15] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_data_crc_error_we = addr_hit[12] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_data_crc_error_wd = reg_wdata[21];
 
-  assign normal_and_error_interrupt_status_data_end_bit_error_we = addr_hit[15] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_data_end_bit_error_we = addr_hit[12] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_data_end_bit_error_wd = reg_wdata[22];
 
-  assign normal_and_error_interrupt_status_current_limit_error_we = addr_hit[15] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_current_limit_error_we = addr_hit[12] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_current_limit_error_wd = reg_wdata[23];
 
-  assign normal_and_error_interrupt_status_auto_cmd12_error_we = addr_hit[15] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_auto_cmd12_error_we = addr_hit[12] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_auto_cmd12_error_wd = reg_wdata[24];
 
-  assign normal_and_error_interrupt_status_vendor_specific_error_status_we = addr_hit[15] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_vendor_specific_error_status_we = addr_hit[12] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_vendor_specific_error_status_wd = reg_wdata[31:28];
 
-  assign normal_and_error_interrupt_status_enable_command_complete_status_enable_we = addr_hit[16] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_enable_command_complete_status_enable_we = addr_hit[13] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_enable_command_complete_status_enable_wd = reg_wdata[0];
 
-  assign normal_and_error_interrupt_status_enable_transfer_complete_status_enable_we = addr_hit[16] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_enable_transfer_complete_status_enable_we = addr_hit[13] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_enable_transfer_complete_status_enable_wd = reg_wdata[1];
 
-  assign normal_and_error_interrupt_status_enable_block_gap_event_status_enable_we = addr_hit[16] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_enable_block_gap_event_status_enable_we = addr_hit[13] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_enable_block_gap_event_status_enable_wd = reg_wdata[2];
 
-  assign normal_and_error_interrupt_status_enable_dma_interrupt_status_enable_we = addr_hit[16] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_enable_dma_interrupt_status_enable_we = addr_hit[13] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_enable_dma_interrupt_status_enable_wd = reg_wdata[3];
 
-  assign normal_and_error_interrupt_status_enable_buffer_write_ready_status_enable_we = addr_hit[16] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_enable_buffer_write_ready_status_enable_we = addr_hit[13] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_enable_buffer_write_ready_status_enable_wd = reg_wdata[4];
 
-  assign normal_and_error_interrupt_status_enable_buffer_read_ready_status_enable_we = addr_hit[16] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_enable_buffer_read_ready_status_enable_we = addr_hit[13] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_enable_buffer_read_ready_status_enable_wd = reg_wdata[5];
 
-  assign normal_and_error_interrupt_status_enable_card_insertion_status_enable_we = addr_hit[16] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_enable_card_insertion_status_enable_we = addr_hit[13] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_enable_card_insertion_status_enable_wd = reg_wdata[6];
 
-  assign normal_and_error_interrupt_status_enable_card_removal_status_enable_we = addr_hit[16] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_enable_card_removal_status_enable_we = addr_hit[13] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_enable_card_removal_status_enable_wd = reg_wdata[7];
 
-  assign normal_and_error_interrupt_status_enable_card_interrupt_status_enable_we = addr_hit[16] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_enable_card_interrupt_status_enable_we = addr_hit[13] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_enable_card_interrupt_status_enable_wd = reg_wdata[8];
 
-  assign normal_and_error_interrupt_status_enable_command_timeout_error_status_enable_we = addr_hit[16] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_enable_command_timeout_error_status_enable_we = addr_hit[13] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_enable_command_timeout_error_status_enable_wd = reg_wdata[16];
 
-  assign normal_and_error_interrupt_status_enable_command_crc_error_status_enable_we = addr_hit[16] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_enable_command_crc_error_status_enable_we = addr_hit[13] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_enable_command_crc_error_status_enable_wd = reg_wdata[17];
 
-  assign normal_and_error_interrupt_status_enable_command_end_bit_error_status_enable_we = addr_hit[16] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_enable_command_end_bit_error_status_enable_we = addr_hit[13] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_enable_command_end_bit_error_status_enable_wd = reg_wdata[18];
 
-  assign normal_and_error_interrupt_status_enable_command_index_error_status_enable_we = addr_hit[16] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_enable_command_index_error_status_enable_we = addr_hit[13] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_enable_command_index_error_status_enable_wd = reg_wdata[19];
 
-  assign normal_and_error_interrupt_status_enable_data_timeout_error_status_enable_we = addr_hit[16] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_enable_data_timeout_error_status_enable_we = addr_hit[13] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_enable_data_timeout_error_status_enable_wd = reg_wdata[20];
 
-  assign normal_and_error_interrupt_status_enable_data_crc_error_status_enable_we = addr_hit[16] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_enable_data_crc_error_status_enable_we = addr_hit[13] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_enable_data_crc_error_status_enable_wd = reg_wdata[21];
 
-  assign normal_and_error_interrupt_status_enable_data_end_bit_error_status_enable_we = addr_hit[16] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_enable_data_end_bit_error_status_enable_we = addr_hit[13] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_enable_data_end_bit_error_status_enable_wd = reg_wdata[22];
 
-  assign normal_and_error_interrupt_status_enable_current_limit_error_status_enable_we = addr_hit[16] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_enable_current_limit_error_status_enable_we = addr_hit[13] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_enable_current_limit_error_status_enable_wd = reg_wdata[23];
 
-  assign normal_and_error_interrupt_status_enable_auto_cmd12_error_status_enable_we = addr_hit[16] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_enable_auto_cmd12_error_status_enable_we = addr_hit[13] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_enable_auto_cmd12_error_status_enable_wd = reg_wdata[24];
 
-  assign normal_and_error_interrupt_status_enable_vendor_specific_error_status_enable_we = addr_hit[16] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_status_enable_vendor_specific_error_status_enable_we = addr_hit[13] & reg_we & !reg_error;
   assign normal_and_error_interrupt_status_enable_vendor_specific_error_status_enable_wd = reg_wdata[31:28];
 
-  assign normal_and_error_interrupt_signal_enable_command_complete_signal_enable_we = addr_hit[17] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_signal_enable_command_complete_signal_enable_we = addr_hit[14] & reg_we & !reg_error;
   assign normal_and_error_interrupt_signal_enable_command_complete_signal_enable_wd = reg_wdata[0];
 
-  assign normal_and_error_interrupt_signal_enable_transfer_complete_signal_enable_we = addr_hit[17] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_signal_enable_transfer_complete_signal_enable_we = addr_hit[14] & reg_we & !reg_error;
   assign normal_and_error_interrupt_signal_enable_transfer_complete_signal_enable_wd = reg_wdata[1];
 
-  assign normal_and_error_interrupt_signal_enable_block_gap_event_signal_enable_we = addr_hit[17] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_signal_enable_block_gap_event_signal_enable_we = addr_hit[14] & reg_we & !reg_error;
   assign normal_and_error_interrupt_signal_enable_block_gap_event_signal_enable_wd = reg_wdata[2];
 
-  assign normal_and_error_interrupt_signal_enable_dma_interrupt_signal_enable_we = addr_hit[17] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_signal_enable_dma_interrupt_signal_enable_we = addr_hit[14] & reg_we & !reg_error;
   assign normal_and_error_interrupt_signal_enable_dma_interrupt_signal_enable_wd = reg_wdata[3];
 
-  assign normal_and_error_interrupt_signal_enable_buffer_write_ready_signal_enable_we = addr_hit[17] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_signal_enable_buffer_write_ready_signal_enable_we = addr_hit[14] & reg_we & !reg_error;
   assign normal_and_error_interrupt_signal_enable_buffer_write_ready_signal_enable_wd = reg_wdata[4];
 
-  assign normal_and_error_interrupt_signal_enable_buffer_read_ready_signal_enable_we = addr_hit[17] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_signal_enable_buffer_read_ready_signal_enable_we = addr_hit[14] & reg_we & !reg_error;
   assign normal_and_error_interrupt_signal_enable_buffer_read_ready_signal_enable_wd = reg_wdata[5];
 
-  assign normal_and_error_interrupt_signal_enable_card_insertion_signal_enable_we = addr_hit[17] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_signal_enable_card_insertion_signal_enable_we = addr_hit[14] & reg_we & !reg_error;
   assign normal_and_error_interrupt_signal_enable_card_insertion_signal_enable_wd = reg_wdata[6];
 
-  assign normal_and_error_interrupt_signal_enable_card_removal_signal_enable_we = addr_hit[17] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_signal_enable_card_removal_signal_enable_we = addr_hit[14] & reg_we & !reg_error;
   assign normal_and_error_interrupt_signal_enable_card_removal_signal_enable_wd = reg_wdata[7];
 
-  assign normal_and_error_interrupt_signal_enable_card_interrupt_signal_enable_we = addr_hit[17] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_signal_enable_card_interrupt_signal_enable_we = addr_hit[14] & reg_we & !reg_error;
   assign normal_and_error_interrupt_signal_enable_card_interrupt_signal_enable_wd = reg_wdata[8];
 
-  assign normal_and_error_interrupt_signal_enable_command_timeout_error_signal_enable_we = addr_hit[17] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_signal_enable_command_timeout_error_signal_enable_we = addr_hit[14] & reg_we & !reg_error;
   assign normal_and_error_interrupt_signal_enable_command_timeout_error_signal_enable_wd = reg_wdata[16];
 
-  assign normal_and_error_interrupt_signal_enable_command_crc_error_signal_enable_we = addr_hit[17] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_signal_enable_command_crc_error_signal_enable_we = addr_hit[14] & reg_we & !reg_error;
   assign normal_and_error_interrupt_signal_enable_command_crc_error_signal_enable_wd = reg_wdata[17];
 
-  assign normal_and_error_interrupt_signal_enable_command_end_bit_error_signal_enable_we = addr_hit[17] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_signal_enable_command_end_bit_error_signal_enable_we = addr_hit[14] & reg_we & !reg_error;
   assign normal_and_error_interrupt_signal_enable_command_end_bit_error_signal_enable_wd = reg_wdata[18];
 
-  assign normal_and_error_interrupt_signal_enable_command_index_error_signal_enable_we = addr_hit[17] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_signal_enable_command_index_error_signal_enable_we = addr_hit[14] & reg_we & !reg_error;
   assign normal_and_error_interrupt_signal_enable_command_index_error_signal_enable_wd = reg_wdata[19];
 
-  assign normal_and_error_interrupt_signal_enable_data_timeout_error_signal_enable_we = addr_hit[17] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_signal_enable_data_timeout_error_signal_enable_we = addr_hit[14] & reg_we & !reg_error;
   assign normal_and_error_interrupt_signal_enable_data_timeout_error_signal_enable_wd = reg_wdata[20];
 
-  assign normal_and_error_interrupt_signal_enable_data_crc_error_signal_enable_we = addr_hit[17] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_signal_enable_data_crc_error_signal_enable_we = addr_hit[14] & reg_we & !reg_error;
   assign normal_and_error_interrupt_signal_enable_data_crc_error_signal_enable_wd = reg_wdata[21];
 
-  assign normal_and_error_interrupt_signal_enable_data_end_bit_error_signal_enable_we = addr_hit[17] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_signal_enable_data_end_bit_error_signal_enable_we = addr_hit[14] & reg_we & !reg_error;
   assign normal_and_error_interrupt_signal_enable_data_end_bit_error_signal_enable_wd = reg_wdata[22];
 
-  assign normal_and_error_interrupt_signal_enable_current_limit_error_signal_enable_we = addr_hit[17] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_signal_enable_current_limit_error_signal_enable_we = addr_hit[14] & reg_we & !reg_error;
   assign normal_and_error_interrupt_signal_enable_current_limit_error_signal_enable_wd = reg_wdata[23];
 
-  assign normal_and_error_interrupt_signal_enable_auto_cmd12_error_signal_enable_we = addr_hit[17] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_signal_enable_auto_cmd12_error_signal_enable_we = addr_hit[14] & reg_we & !reg_error;
   assign normal_and_error_interrupt_signal_enable_auto_cmd12_error_signal_enable_wd = reg_wdata[24];
 
-  assign normal_and_error_interrupt_signal_enable_vendor_specific_error_signal_enable_we = addr_hit[17] & reg_we & !reg_error;
+  assign normal_and_error_interrupt_signal_enable_vendor_specific_error_signal_enable_we = addr_hit[14] & reg_we & !reg_error;
   assign normal_and_error_interrupt_signal_enable_vendor_specific_error_signal_enable_wd = reg_wdata[31:28];
 
   // Read data return
@@ -5093,33 +5000,21 @@ module sdhci_reg_top #(
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[0] = intr_state_qs;
-      end
-
-      addr_hit[1]: begin
-        reg_rdata_next[0] = intr_enable_qs;
-      end
-
-      addr_hit[2]: begin
-        reg_rdata_next[0] = '0;
-      end
-
-      addr_hit[3]: begin
         reg_rdata_next[31:0] = system_address_qs;
       end
 
-      addr_hit[4]: begin
+      addr_hit[1]: begin
         reg_rdata_next[11:0] = block_size_and_count_transfer_block_size_qs;
         reg_rdata_next[14:12] = block_size_and_count_host_dma_buffer_boundary_qs;
         reg_rdata_next[15] = block_size_and_count_rsvd_15_qs;
         reg_rdata_next[31:16] = block_size_and_count_blocks_count_for_current_transfer_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[2]: begin
         reg_rdata_next[31:0] = argument_qs;
       end
 
-      addr_hit[6]: begin
+      addr_hit[3]: begin
         reg_rdata_next[0] = transfer_mode_and_command_dma_enable_qs;
         reg_rdata_next[1] = transfer_mode_and_command_block_count_enable_qs;
         reg_rdata_next[2] = transfer_mode_and_command_auto_cmd12_enable_qs;
@@ -5137,27 +5032,27 @@ module sdhci_reg_top #(
         reg_rdata_next[31:30] = transfer_mode_and_command_rsvd_31_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[4]: begin
         reg_rdata_next[31:0] = response0_qs;
       end
 
-      addr_hit[8]: begin
+      addr_hit[5]: begin
         reg_rdata_next[31:0] = response1_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[6]: begin
         reg_rdata_next[31:0] = response2_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[7]: begin
         reg_rdata_next[31:0] = response3_qs;
       end
 
-      addr_hit[11]: begin
+      addr_hit[8]: begin
         reg_rdata_next[31:0] = buffer_data_port_qs;
       end
 
-      addr_hit[12]: begin
+      addr_hit[9]: begin
         reg_rdata_next[0] = present_state_command_inhibit_cmd_qs;
         reg_rdata_next[1] = present_state_command_inhibit_dat_qs;
         reg_rdata_next[2] = present_state_dat_line_active_qs;
@@ -5176,7 +5071,7 @@ module sdhci_reg_top #(
         reg_rdata_next[31:25] = present_state_rsvd_31_qs;
       end
 
-      addr_hit[13]: begin
+      addr_hit[10]: begin
         reg_rdata_next[0] = host_and_power_and_block_gap_and_wakeup_control_led_control_qs;
         reg_rdata_next[1] = host_and_power_and_block_gap_and_wakeup_control_data_transfer_width_qs;
         reg_rdata_next[2] = host_and_power_and_block_gap_and_wakeup_control_high_speed_enable_qs;
@@ -5195,7 +5090,7 @@ module sdhci_reg_top #(
         reg_rdata_next[31:27] = host_and_power_and_block_gap_and_wakeup_control_rsvd_31_qs;
       end
 
-      addr_hit[14]: begin
+      addr_hit[11]: begin
         reg_rdata_next[0] = clock_and_timeout_control_and_software_reset_internal_clock_enable_qs;
         reg_rdata_next[1] = clock_and_timeout_control_and_software_reset_internal_clock_stable_qs;
         reg_rdata_next[2] = clock_and_timeout_control_and_software_reset_sd_clock_enable_qs;
@@ -5209,7 +5104,7 @@ module sdhci_reg_top #(
         reg_rdata_next[31:28] = clock_and_timeout_control_and_software_reset_rsvd_31_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[12]: begin
         reg_rdata_next[0] = normal_and_error_interrupt_status_command_complete_qs;
         reg_rdata_next[1] = normal_and_error_interrupt_status_transfer_complete_qs;
         reg_rdata_next[2] = normal_and_error_interrupt_status_block_gap_event_qs;
@@ -5234,7 +5129,7 @@ module sdhci_reg_top #(
         reg_rdata_next[31:28] = normal_and_error_interrupt_status_vendor_specific_error_status_qs;
       end
 
-      addr_hit[16]: begin
+      addr_hit[13]: begin
         reg_rdata_next[0] = normal_and_error_interrupt_status_enable_command_complete_status_enable_qs;
         reg_rdata_next[1] = normal_and_error_interrupt_status_enable_transfer_complete_status_enable_qs;
         reg_rdata_next[2] = normal_and_error_interrupt_status_enable_block_gap_event_status_enable_qs;
@@ -5259,7 +5154,7 @@ module sdhci_reg_top #(
         reg_rdata_next[31:28] = normal_and_error_interrupt_status_enable_vendor_specific_error_status_enable_qs;
       end
 
-      addr_hit[17]: begin
+      addr_hit[14]: begin
         reg_rdata_next[0] = normal_and_error_interrupt_signal_enable_command_complete_signal_enable_qs;
         reg_rdata_next[1] = normal_and_error_interrupt_signal_enable_transfer_complete_signal_enable_qs;
         reg_rdata_next[2] = normal_and_error_interrupt_signal_enable_block_gap_event_signal_enable_qs;
@@ -5284,7 +5179,7 @@ module sdhci_reg_top #(
         reg_rdata_next[31:28] = normal_and_error_interrupt_signal_enable_vendor_specific_error_signal_enable_qs;
       end
 
-      addr_hit[18]: begin
+      addr_hit[15]: begin
         reg_rdata_next[0] = auto_cmd12_error_status_auto_cmd12_not_executed_qs;
         reg_rdata_next[1] = auto_cmd12_error_status_auto_cmd12_timeout_error_qs;
         reg_rdata_next[2] = auto_cmd12_error_status_auto_cmd12_crc_error_qs;
@@ -5295,7 +5190,7 @@ module sdhci_reg_top #(
         reg_rdata_next[15:8] = auto_cmd12_error_status_rsvd_15_qs;
       end
 
-      addr_hit[19]: begin
+      addr_hit[16]: begin
         reg_rdata_next[5:0] = capabilities_timeout_clock_frequency_qs;
         reg_rdata_next[6] = capabilities_rsvd_6_qs;
         reg_rdata_next[7] = capabilities_timeout_clock_unit_qs;
@@ -5312,14 +5207,14 @@ module sdhci_reg_top #(
         reg_rdata_next[31:27] = capabilities_rsvd_63_qs;
       end
 
-      addr_hit[20]: begin
+      addr_hit[17]: begin
         reg_rdata_next[7:0] = maximum_current_capabilities_maximum_current_for_3_3v_qs;
         reg_rdata_next[15:8] = maximum_current_capabilities_maximum_current_for_3_0v_qs;
         reg_rdata_next[23:16] = maximum_current_capabilities_maximum_current_for_1_8v_qs;
         reg_rdata_next[31:24] = maximum_current_capabilities_rsvd_63_qs;
       end
 
-      addr_hit[21]: begin
+      addr_hit[18]: begin
         reg_rdata_next[7:0] = slot_interrupt_status_and_host_controller_version_interrupt_signal_for_each_slot_qs;
         reg_rdata_next[15:8] = slot_interrupt_status_and_host_controller_version_rsvd_15_qs;
         reg_rdata_next[23:16] = slot_interrupt_status_and_host_controller_version_specification_version_number_qs;
@@ -5348,7 +5243,7 @@ endmodule
 
 module sdhci_reg_top_intf
 #(
-  parameter int AW = 9,
+  parameter int AW = 8,
   localparam int DW = 32
 ) (
   input logic clk_i,

@@ -9,16 +9,17 @@
 
 { name: "sdhci"
   clock_primary: "clk_i"
+  reset_primary: "rst_ni",
   bus_interfaces: [
       // TODO OBI/AXI?
     { protocol: "reg_iface", direction: "device" }
   ]
   regwidth: 32
   // TODO do interrupt correctly?
-  interrupt_list: [{
-    name: "sdhci_interrupt"
-    desc: "Normal and Error Interrupt"
-  }]
+  // interrupt_list: [{
+  //   name: "sdhci_interrupt"
+  //   desc: "Normal and Error Interrupt"
+  // }]
   registers: [
     { name: "system_address"
       desc: ""
@@ -27,6 +28,7 @@
           name: "dma_system_address"
           desc: ""
           swaccess: "rw"
+          hwaccess: "hrw"
         }
       ]
     }

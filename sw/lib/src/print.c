@@ -8,39 +8,40 @@
 #include "util.h"
 #include "config.h"
 
-const char hex_symbols[16] = {'0', '1', '2', '3', '4', '5', '6', '7', 
-                              '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-
-/// @brief format number as hexadecimal digits
-/// @return number of characters written to buffer
-uint8_t format_hex32(char *buffer, uint32_t num) {
-    uint8_t idx = 0;
-    if (num == 0) {
-        buffer[0] = hex_symbols[0];
-        return 1;
-    }
-
-    while (num > 0) {
-        buffer[idx++] = hex_symbols[num & 0xF];
-        num >>= 4;
-    }
-    return idx;
-}
+const char print_lookup[16] = {'0', '1', '2', '3', '4', '5', '6', '7',
+                                '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
 void printf(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
-    char buffer[12];  // holds string while assembling
-    uint8_t idx;
 
     while (*fmt) {
         if (*fmt == '%') {
             fmt++;
             if (*fmt == 'x') { // hex
-                idx = format_hex32(buffer, va_arg(args, unsigned int));
-                // print from buffer
-                for (int j = idx - 1; j >= 0; j--) {
-                    putchar(buffer[j]);
+                unsigned int hex = va_arg(args, unsigned int);
+                char buffer[11];  // holds string while assembling
+                unsigned int i = 0;
+
+                if (hex == 0) {
+                    putchar('0');
+                } else {
+                    while (hex > 0) {
+                        buffer[i++] = print_lookup[hex & 0xF];
+                        hex >>= 4;
+                    }
+                    // print from stack
+                    for (int j = i - 1; j >= 0; j--) {
+                        putchar(buffer[j]);
+                    }
+                }
+            } else if (*fmt == 'c') { // char
+                char chr = (char) va_arg(args, int);
+                putchar(chr);
+            } else if (*fmt == 's') { // string
+                char *str = va_arg(args, char *);
+                while(*str) {
+                    putchar(*str++);
                 }
             }
         } else {
