@@ -630,7 +630,7 @@ package sdhci_reg_pkg;
 
   // Register width information to check illegal writes
   parameter logic [3:0] SDHCI_PERMIT [19] = '{
-    4'b 0000, // index[ 0] SDHCI_SYSTEM_ADDRESS
+    4'b 1111, // index[ 0] SDHCI_SYSTEM_ADDRESS
     4'b 1111, // index[ 1] SDHCI_BLOCK_SIZE_AND_COUNT
     4'b 1111, // index[ 2] SDHCI_ARGUMENT
     4'b 1111, // index[ 3] SDHCI_TRANSFER_MODE_AND_COMMAND

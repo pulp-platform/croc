@@ -28,7 +28,6 @@
           name: "dma_system_address"
           desc: ""
           swaccess: "rw"
-          hwaccess: "hrw"
         }
       ]
     }
