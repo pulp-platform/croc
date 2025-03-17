@@ -171,6 +171,6 @@
 /fosic/designs/croc/rtl/user_domain.sv
 /fosic/designs/croc/rtl/croc_soc.sv
 /fosic/designs/croc/rtl/user_domain/sdhci/reg/sdhci_reg_top.sv
-/fosic/designs/croc/rtl/user_domain/sdhci/sdhci.sv
+/fosic/designs/croc/rtl/user_domain/sdhci/user_sdhci.sv
 /fosic/designs/croc/rtl/croc_chip.sv
 

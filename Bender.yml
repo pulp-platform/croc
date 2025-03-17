@@ -52,7 +52,7 @@ sources:
       - rtl/croc_soc.sv
 
       - rtl/user_domain/sdhci/reg/sdhci_reg_top.sv
-      - rtl/user_domain/sdhci/sdhci.sv
+      - rtl/user_domain/sdhci/user_sdhci.sv
 
 
   - target: not(fpga)
