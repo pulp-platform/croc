@@ -58,10 +58,10 @@ $(BINDIR):
 	$(RISCV_CC) $(RISCV_CCFLAGS) -c $< -o $@
 
 $(BINDIR)/%.elf: %.S.o $(CRT0).o $(LIB_OBJS) | $(BINDIR)
-	$(RISCV_CC) $(RISCV_LDFLAGS) -o $@ $^ -T$(LINK)
+	$(RISCV_CC) -o $@ $^ $(RISCV_LDFLAGS) -T$(LINK)
 
 $(BINDIR)/%.elf: %.c.o $(CRT0).o $(LIB_OBJS) | $(BINDIR)
-	$(RISCV_CC) $(RISCV_LDFLAGS) -o $@ $^ -T$(LINK)
+	$(RISCV_CC) -o $@ $^ $(RISCV_LDFLAGS) -T$(LINK)
 
 $(BINDIR)/%.dump: $(BINDIR)/%.elf
 	$(RISCV_OBJDUMP) -D -s $< >$@
