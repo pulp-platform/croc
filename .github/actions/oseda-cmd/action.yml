@@ -29,34 +29,6 @@ runs:
         echo "UID=$(id -u)" >> $GITHUB_ENV
         echo "GID=$(id -g)" >> $GITHUB_ENV
 
-    - name: Get image name from docker-compose
-      id: get-image
-      shell: bash
-      run: |
-        IMAGE=$(docker compose config | awk '/image:/{print $2}' | head -n 1)
-        if [ -z "$IMAGE" ]; then
-          echo "ERROR: No image found in docker-compose.yml"
-          exit 1
-        fi
-        echo "IMAGE_NAME=$IMAGE" >> $GITHUB_ENV
-
-    - name: Download Docker image from cache
-      continue-on-error: true
-      uses: actions/cache/restore@v4
-      with:
-        key: oseda-${{ env.IMAGE_NAME }}
-        path: /tmp/oseda.tar.gz
-
-    - name: Load or pull Docker image
-      shell: bash
-      run: |
-        if [ -f "/tmp/oseda.tar.gz" ]; then
-          docker import /tmp/oseda.tar.gz
-          echo "Loaded image $IMAGE_NAME from artifacts/cache"
-        else
-          docker compose pull
-        fi
-
     - name: Determine service name if not provided
       shell: bash
       run: |
