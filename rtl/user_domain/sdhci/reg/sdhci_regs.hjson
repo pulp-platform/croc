@@ -23,6 +23,7 @@
   registers: [
     { name: "system_address"
       desc: ""
+      hwaccess: "hrw"
       fields: [
         { bits: "31:0"
           name: "dma_system_address"
@@ -33,6 +34,7 @@
     }
     { name: "block_size_and_count"
       desc: ""
+      hwaccess: "hrw"
       fields: [
         // Block Size
         { bits: "15"
@@ -63,6 +65,7 @@
     }
     { name: "argument"
       desc: ""
+      hwaccess: "hrw"
       fields: [
         { bits: "31:0"
           name: "command_argument"
@@ -74,6 +77,7 @@
     { name: "transfer_mode_and_command"
       desc: ""
       hwqe: true
+      hwaccess: "hrw"
       fields: [
         // Transfer mode
         { bits: "15:6"
@@ -234,6 +238,7 @@
     { name: "present_state"
       desc: ""
       swaccess: "ro"
+      hwaccess: "hrw"
       resval: "0"
       fields: [
         { bits: "31:25"
@@ -314,6 +319,7 @@
     { name: "host_and_power_and_block_gap_and_wakeup_control"
       desc: ""
       swaccess: "rw"
+      hwaccess: "hrw"
       fields: [
         // Host control
         { bits: "7:3"
@@ -409,6 +415,7 @@
     }
     { name: "clock_and_timeout_control_and_software_reset"
       desc: ""
+      hwaccess: "hrw"
       fields: [
         // Clock Control
         { bits: "15:8"
@@ -482,6 +489,7 @@
     { name: "normal_and_error_interrupt_status"
       desc: ""
       swaccess: "rw1c"
+      hwaccess: "hrw"
       fields: [
         // Normal Interrupt Status
 
@@ -590,6 +598,7 @@
     { name: "normal_and_error_interrupt_status_enable"
       desc: ""
       swaccess: "rw"
+      hwaccess: "hrw"
       fields: [
         // Normal Interrupt Status Enable
         { bits: "15"
@@ -695,6 +704,7 @@
     { name: "normal_and_error_interrupt_signal_enable"
       desc: ""
       swaccess: "rw"
+      hwaccess: "hrw"
       fields: [
         // Normal Interrupt Singal Enable
         { bits: "15"
@@ -800,6 +810,7 @@
     { name: "auto_cmd12_error_status"
       desc: ""
       swaccess: "ro"
+      hwaccess: "hrw"
       resval: "0"
       fields: [
         { bits: "15:8"
@@ -957,6 +968,7 @@
     { name: "slot_interrupt_status_and_host_controller_version"
       desc: ""
       swaccess: "ro"
+      hwaccess: "hrw"
       fields: [
         // Slot Interrupt Status
         { bits: "15:8"
