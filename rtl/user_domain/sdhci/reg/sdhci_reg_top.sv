@@ -434,8 +434,8 @@ module sdhci_reg_top #(
     .wd     (system_address_wd),
 
     // from internal hardware
-    .de     (hw2reg.system_address.de),
-    .d      (hw2reg.system_address.d ),
+    .de     (1'b0),
+    .d      ('0  ),
 
     // to internal hardware
     .qe     (),
@@ -598,7 +598,7 @@ module sdhci_reg_top #(
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.transfer_mode_and_command.dma_enable.qe),
     .q      (reg2hw.transfer_mode_and_command.dma_enable.q ),
 
     // to register interface (read)
@@ -624,7 +624,7 @@ module sdhci_reg_top #(
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.transfer_mode_and_command.block_count_enable.qe),
     .q      (reg2hw.transfer_mode_and_command.block_count_enable.q ),
 
     // to register interface (read)
@@ -650,7 +650,7 @@ module sdhci_reg_top #(
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.transfer_mode_and_command.auto_cmd12_enable.qe),
     .q      (reg2hw.transfer_mode_and_command.auto_cmd12_enable.q ),
 
     // to register interface (read)
@@ -675,7 +675,7 @@ module sdhci_reg_top #(
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.transfer_mode_and_command.rsvd_3.qe),
     .q      (reg2hw.transfer_mode_and_command.rsvd_3.q ),
 
     // to register interface (read)
@@ -701,7 +701,7 @@ module sdhci_reg_top #(
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.transfer_mode_and_command.data_transfer_direction_select.qe),
     .q      (reg2hw.transfer_mode_and_command.data_transfer_direction_select.q ),
 
     // to register interface (read)
@@ -727,7 +727,7 @@ module sdhci_reg_top #(
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.transfer_mode_and_command.multi_single_bit_block_select.qe),
     .q      (reg2hw.transfer_mode_and_command.multi_single_bit_block_select.q ),
 
     // to register interface (read)
@@ -752,7 +752,7 @@ module sdhci_reg_top #(
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.transfer_mode_and_command.rsvd_15.qe),
     .q      (reg2hw.transfer_mode_and_command.rsvd_15.q ),
 
     // to register interface (read)
@@ -778,7 +778,7 @@ module sdhci_reg_top #(
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.transfer_mode_and_command.response_type_select.qe),
     .q      (reg2hw.transfer_mode_and_command.response_type_select.q ),
 
     // to register interface (read)
@@ -803,7 +803,7 @@ module sdhci_reg_top #(
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.transfer_mode_and_command.rsvd_18.qe),
     .q      (reg2hw.transfer_mode_and_command.rsvd_18.q ),
 
     // to register interface (read)
@@ -829,7 +829,7 @@ module sdhci_reg_top #(
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.transfer_mode_and_command.command_crc_check_enable.qe),
     .q      (reg2hw.transfer_mode_and_command.command_crc_check_enable.q ),
 
     // to register interface (read)
@@ -855,7 +855,7 @@ module sdhci_reg_top #(
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.transfer_mode_and_command.command_index_check_enable.qe),
     .q      (reg2hw.transfer_mode_and_command.command_index_check_enable.q ),
 
     // to register interface (read)
@@ -881,7 +881,7 @@ module sdhci_reg_top #(
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.transfer_mode_and_command.data_present_select.qe),
     .q      (reg2hw.transfer_mode_and_command.data_present_select.q ),
 
     // to register interface (read)
@@ -907,7 +907,7 @@ module sdhci_reg_top #(
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.transfer_mode_and_command.command_type.qe),
     .q      (reg2hw.transfer_mode_and_command.command_type.q ),
 
     // to register interface (read)
@@ -933,7 +933,7 @@ module sdhci_reg_top #(
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.transfer_mode_and_command.command_index.qe),
     .q      (reg2hw.transfer_mode_and_command.command_index.q ),
 
     // to register interface (read)
@@ -958,7 +958,7 @@ module sdhci_reg_top #(
     .d      ('0  ),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.transfer_mode_and_command.rsvd_31.qe),
     .q      (reg2hw.transfer_mode_and_command.rsvd_31.q ),
 
     // to register interface (read)
@@ -980,8 +980,8 @@ module sdhci_reg_top #(
     .wd     ('0  ),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.response0.de),
+    .d      (hw2reg.response0.d ),
 
     // to internal hardware
     .qe     (),
@@ -1006,8 +1006,8 @@ module sdhci_reg_top #(
     .wd     ('0  ),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.response1.de),
+    .d      (hw2reg.response1.d ),
 
     // to internal hardware
     .qe     (),
@@ -1032,8 +1032,8 @@ module sdhci_reg_top #(
     .wd     ('0  ),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.response2.de),
+    .d      (hw2reg.response2.d ),
 
     // to internal hardware
     .qe     (),
@@ -1058,8 +1058,8 @@ module sdhci_reg_top #(
     .wd     ('0  ),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0  ),
+    .de     (hw2reg.response3.de),
+    .d      (hw2reg.response3.d ),
 
     // to internal hardware
     .qe     (),

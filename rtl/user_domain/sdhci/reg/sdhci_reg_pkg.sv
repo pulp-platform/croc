@@ -39,48 +39,63 @@ package sdhci_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+      logic        qe;
     } dma_enable;
     struct packed {
       logic        q;
+      logic        qe;
     } block_count_enable;
     struct packed {
       logic        q;
+      logic        qe;
     } auto_cmd12_enable;
     struct packed {
       logic        q;
+      logic        qe;
     } rsvd_3;
     struct packed {
       logic        q;
+      logic        qe;
     } data_transfer_direction_select;
     struct packed {
       logic        q;
+      logic        qe;
     } multi_single_bit_block_select;
     struct packed {
       logic [9:0] q;
+      logic        qe;
     } rsvd_15;
     struct packed {
       logic [1:0]  q;
+      logic        qe;
     } response_type_select;
     struct packed {
       logic        q;
+      logic        qe;
     } rsvd_18;
     struct packed {
       logic        q;
+      logic        qe;
     } command_crc_check_enable;
     struct packed {
       logic        q;
+      logic        qe;
     } command_index_check_enable;
     struct packed {
       logic        q;
+      logic        qe;
     } data_present_select;
     struct packed {
       logic [1:0]  q;
+      logic        qe;
     } command_type;
     struct packed {
       logic [5:0]  q;
+      logic        qe;
     } command_index;
     struct packed {
       logic [1:0]  q;
+      logic        qe;
     } rsvd_31;
   } sdhci_reg2hw_transfer_mode_and_command_reg_t;
 
@@ -554,14 +569,29 @@ package sdhci_reg_pkg;
   typedef struct packed {
     logic [31:0] d;
     logic        de;
-  } sdhci_hw2reg_system_address_reg_t;
+  } sdhci_hw2reg_response0_reg_t;
+
+  typedef struct packed {
+    logic [31:0] d;
+    logic        de;
+  } sdhci_hw2reg_response1_reg_t;
+
+  typedef struct packed {
+    logic [31:0] d;
+    logic        de;
+  } sdhci_hw2reg_response2_reg_t;
+
+  typedef struct packed {
+    logic [31:0] d;
+    logic        de;
+  } sdhci_hw2reg_response3_reg_t;
 
   // Register -> HW type
   typedef struct packed {
-    sdhci_reg2hw_system_address_reg_t system_address; // [590:559]
-    sdhci_reg2hw_block_size_and_count_reg_t block_size_and_count; // [558:527]
-    sdhci_reg2hw_argument_reg_t argument; // [526:495]
-    sdhci_reg2hw_transfer_mode_and_command_reg_t transfer_mode_and_command; // [494:463]
+    sdhci_reg2hw_system_address_reg_t system_address; // [605:574]
+    sdhci_reg2hw_block_size_and_count_reg_t block_size_and_count; // [573:542]
+    sdhci_reg2hw_argument_reg_t argument; // [541:510]
+    sdhci_reg2hw_transfer_mode_and_command_reg_t transfer_mode_and_command; // [509:463]
     sdhci_reg2hw_response0_reg_t response0; // [462:431]
     sdhci_reg2hw_response1_reg_t response1; // [430:399]
     sdhci_reg2hw_response2_reg_t response2; // [398:367]
@@ -581,7 +611,10 @@ package sdhci_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    sdhci_hw2reg_system_address_reg_t system_address; // [32:0]
+    sdhci_hw2reg_response0_reg_t response0; // [131:99]
+    sdhci_hw2reg_response1_reg_t response1; // [98:66]
+    sdhci_hw2reg_response2_reg_t response2; // [65:33]
+    sdhci_hw2reg_response3_reg_t response3; // [32:0]
   } sdhci_hw2reg_t;
 
   // Register offsets

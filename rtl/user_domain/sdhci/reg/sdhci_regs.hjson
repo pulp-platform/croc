@@ -73,6 +73,7 @@
     }
     { name: "transfer_mode_and_command"
       desc: ""
+      hwqe: true
       fields: [
         // Transfer mode
         { bits: "15:6"
@@ -179,6 +180,7 @@
           name: "response"
           desc: ""
           swaccess: "ro"
+          hwaccess: "hrw"
           resval: "0"
         }
       ]
@@ -190,6 +192,7 @@
           name: "response"
           desc: ""
           swaccess: "ro"
+          hwaccess: "hrw"
           resval: "0"
         }
       ]
@@ -201,6 +204,7 @@
           name: "response"
           desc: ""
           swaccess: "ro"
+          hwaccess: "hrw"
           resval: "0"
         }
       ]
@@ -212,6 +216,7 @@
           name: "response"
           desc: ""
           swaccess: "ro"
+          hwaccess: "hrw"
           resval: "0"
         }
       ]
