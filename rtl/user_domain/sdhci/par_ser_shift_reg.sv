@@ -1,7 +1,7 @@
 //Parallel to serial converter with active low asynchronous reset
 //shifts out MSb first!
 
-
+//Untested!
 module par_ser_shift_reg #(
   parameter int unsigned  NumBits     = 40,
   parameter bit           ShiftInVal  = 0
