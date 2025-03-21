@@ -24,7 +24,7 @@ module user_sdhci #(
   localparam int unsigned AW = sdhci_reg_pkg::BlockAw;
   localparam int unsigned DW = 32;
   localparam int unsigned STRB_WIDTH = DW/8;
-  
+
   typedef logic [AW-1:0] addr_t;
   typedef logic [DW-1:0] data_t;
   typedef logic [STRB_WIDTH-1:0] strb_t;
@@ -32,17 +32,12 @@ module user_sdhci #(
 
   reg_bus_req_t s_reg_req;
   reg_bus_rsp_t s_reg_rsp;
-  
+
   assign s_reg_req.addr  = obi_req_i.a.addr;
   assign s_reg_req.write = obi_req_i.a.we;
   assign s_reg_req.wdata = obi_req_i.a.wdata;
   assign s_reg_req.wstrb = obi_req_i.a.be;
   assign s_reg_req.valid = obi_req_i.req;
-
-  assign obi_rsp_o.r.rdata      = s_reg_rsp.rdata;
-  assign obi_rsp_o.r.err        = s_reg_rsp.error;
-  assign obi_rsp_o.r.r_optional = '0;
-  assign obi_rsp_o.gnt          = s_reg_rsp.ready;
 
   logic [ObiCfg.IdWidth : 0] id_q, id_d;
   `FF(id_q, id_d, '0, clk_i, rst_ni);
