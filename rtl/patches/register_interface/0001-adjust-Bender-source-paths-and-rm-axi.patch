@@ -1,25 +1,14 @@
-From 556aeafc5b229eab650749e5d256b8c499ff2bb0 Mon Sep 17 00:00:00 2001
-From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
-Date: Wed, 21 Aug 2024 14:25:41 +0200
-Subject: [PATCH] adjust Bender source paths and rm axi
-
----
- Bender.yml | 52 +++++++---------------------------------------------
- 1 file changed, 7 insertions(+), 45 deletions(-)
-
-diff --git a/Bender.yml b/Bender.yml
-index 3e739cd..831a0b8 100644
---- a/Bender.yml
-+++ b/Bender.yml
-@@ -3,7 +3,6 @@ package:
+--- a/Bender.yml	2025-03-21 15:10:21.879089644 +0100
++++ b/Bender.yml	2025-03-21 15:10:28.787108862 +0100
+@@ -3,7 +3,6 @@
    authors: ["Fabian Schuiki <fschuiki@iis.ee.ethz.ch>", "Florian Zaruba <zarubaf@iis.ee.ethz.ch>"]
  
  dependencies:
--  axi: { git: "https://github.com/pulp-platform/axi.git", version: 0.38.0 }
+-  axi: { git: "https://github.com/pulp-platform/axi.git", version: 0.39.1 }
    apb: { git: "https://github.com/pulp-platform/apb.git", version: 0.2.2}
    common_cells: { git: "https://github.com/pulp-platform/common_cells.git", version: 1.21.0 }
    common_verification: { git: "https://github.com/pulp-platform/common_verification.git", version: 0.2.3 }
-@@ -13,48 +12,11 @@ export_include_dirs:
+@@ -13,50 +12,11 @@
  
  sources:
    # Level 0
@@ -31,22 +20,24 @@ index 3e739cd..831a0b8 100644
 +  - lowrisc_opentitan/prim_subreg_ext.sv
    # Level 1
 -  - src/apb_to_reg.sv
--  - src/axi_to_reg.sv
+-  - src/axi_lite_to_reg.sv
+-  - src/axi_to_reg_v2.sv
 -  - src/periph_to_reg.sv
--  - src/reg_cut.sv
 -  - src/reg_cdc.sv
+-  - src/reg_cut.sv
 -  - src/reg_demux.sv
 -  - src/reg_err_slv.sv
 -  - src/reg_filter_empty_writes.sv
 -  - src/reg_mux.sv
 -  - src/reg_to_apb.sv
 -  - src/reg_to_mem.sv
--  - src/reg_uniform.sv
 -  - src/reg_to_tlul.sv
+-  - src/reg_to_axi.sv
+-  - src/reg_uniform.sv
 -  - vendor/lowrisc_opentitan/src/prim_subreg_shadow.sv
 -  - vendor/lowrisc_opentitan/src/prim_subreg.sv
 -  # Level 2
--  - src/axi_lite_to_reg.sv
+-  - src/deprecated/axi_to_reg.sv
 -  - target: test
 -    files:
 -      - src/reg_test.sv
@@ -75,6 +66,3 @@ index 3e739cd..831a0b8 100644
 +  - reg_to_apb.sv
 +  - lowrisc_opentitan/prim_subreg_shadow.sv
 +  - lowrisc_opentitan/prim_subreg.sv
--- 
-2.25.1
-

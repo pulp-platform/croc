@@ -13,7 +13,7 @@ dependencies:
   common_verification:  { git: "https://github.com/pulp-platform/common_verification.git",  version: 0.2.5  }
   riscv-dbg:            { git: "https://github.com/pulp-platform/riscv-dbg.git",            rev: "verilator-phsauter" }
   tech_cells_generic:   { git: "https://github.com/pulp-platform/tech_cells_generic.git",   version: 0.2.13 }
-  register_interface:   { git: "https://github.com/pulp-platform/register_interface.git",   version: 0.4.1  }
+  register_interface:   { git: "https://github.com/micha4w/register_interface.git",         rev: "master"  }
   cve2:                 { git: "https://github.com/openhwgroup/cve2.git",                   rev: "370793f52488d1022d0554d194ad24f125156acc"  }
   apb:                  { git: "https://github.com/pulp-platform/apb.git",                  version: 0.2.4  }
   timer_unit:           { git: "https://github.com/pulp-platform/timer_unit.git",           version: 1.0.3  }
@@ -52,6 +52,7 @@ sources:
       - rtl/croc_soc.sv
 
       - rtl/user_domain/sdhci/reg/sdhci_reg_top.sv
+      - rtl/user_domain/sdhci/mock_sdcard.sv
       - rtl/user_domain/sdhci/user_sdhci.sv
 
 
@@ -126,7 +127,7 @@ vendor_package:
 
   - name: register_interface
     target_dir: rtl/register_interface
-    upstream: { git: "https://github.com/pulp-platform/register_interface.git", rev: "3b2bf592100b769977c76e51812c55cd742882f6" } # v0.4.1
+    upstream: { git: "https://github.com/micha4w/register_interface.git", rev: "9b914744ef5c71e305df6ff27205944a293d25a3" } # master
     patch_dir: "rtl/patches/register_interface"
     mapping:
       - { from: 'src/periph_to_reg.sv',          to: 'periph_to_reg.sv',              patch_dir: 'src/' }

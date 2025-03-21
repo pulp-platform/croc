@@ -51,11 +51,26 @@ module user_sdhci #(
 
   logic valid_q, valid_d;
   `FF(valid_q, valid_d, '0, clk_i, rst_ni);
-  assign valid_d           = obi_req_i.req;
-  assign obi_rsp_o.rvalid  = valid_q;
+  assign valid_d          = obi_req_i.req;
+  assign obi_rsp_o.rvalid = valid_q;
 
-  sdhci_reg_pkg::sdhci_reg2hw_t reg2hw; // Write
-  sdhci_reg_pkg::sdhci_hw2reg_t hw2reg; // Read
+  assign obi_rsp_o.gnt          = '1;
+  assign obi_rsp_o.r.r_optional = '0;
+
+  logic [ObiCfg.DataWidth-1:0] rdata_q, rdata_d;
+  `FF(rdata_q, rdata_d, '0, clk_i, rst_ni);
+  assign rdata_d           = s_reg_rsp.rdata;
+  assign obi_rsp_o.r.rdata = rdata_q;
+
+  logic error_q, error_d;
+  `FF(error_q, error_d, '0, clk_i, rst_ni);
+  assign error_d         = s_reg_rsp.error;
+  assign obi_rsp_o.r.err = error_q;
+
+
+// Actuall SDHCI logic
+  sdhci_reg_pkg::sdhci_reg2hw_t reg2hw;
+  sdhci_reg_pkg::sdhci_hw2reg_t hw2reg;
 
   sdhci_reg_top #(
     .reg_req_t(reg_bus_req_t),
@@ -71,4 +86,13 @@ module user_sdhci #(
     .devmode_i ('b1)
   );
 
+  always_comb begin
+    hw2reg.present_state.command_inhibit_cmd.d = '0;
+    hw2reg.present_state.command_inhibit_cmd.de = '0;
+
+    if (reg2hw.command.command_index.qe == '1) begin
+      hw2reg.present_state.command_inhibit_cmd.d = '1;
+      hw2reg.present_state.command_inhibit_cmd.de = '1;
+    end
+  end
 endmodule
