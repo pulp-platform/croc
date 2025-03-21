@@ -20,6 +20,12 @@ jobs:
   backend:
     runs-on: ubuntu-latest
     timeout-minutes: 180
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout repository (with submodules)
         uses: actions/checkout@v4
@@ -54,6 +60,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: pulp-platform/artistic
+          ref: 33986fa39e07d89a8337d65e84b01113bf18ea03
           path: artistic
       - name: Update package lists and install Inkscape, img2pdf
         run: |
@@ -127,7 +134,9 @@ jobs:
         run: |
           mkdir -p artistic/renderics
           cp -v .github/config/croc_ci.json artistic/renderics/croc_ci.json
+          cp -v .github/config/croc_map_ci.json artistic/renderics/croc_map_ci.json
           sed "s|/fosic/designs|/home/runner/work/croc|g" artistic/renderics/croc_ci.json > artistic/renderics/croc_ci_runner.json
+          sed "s|/fosic/designs|/home/runner/work/croc|g" artistic/renderics/croc_map_ci.json > artistic/renderics/croc_map_ci_runner.json
       - name: Analyze render
         uses: ./.github/actions/oseda-cmd
         with:
@@ -148,7 +157,7 @@ jobs:
         uses: ./.github/actions/oseda-cmd
         with:
           cmd: "cd artistic; make gen_raw CFG_FILE=/fosic/designs/croc/artistic/renderics/croc_ci.json"
-      - name: Render
+      - name: Render PDFs
         run: |
           cd artistic; make gen_pdfs CFG_FILE=renderics/croc_ci_runner.json
       - name: Finish render
@@ -174,3 +183,34 @@ jobs:
           name: render-jpg
           path: artistic/renderics/croc_render.jpg
         continue-on-error: true
+# Map render and deploy below:
+      - name: Render b/w map layer tiles
+        uses: ./.github/actions/oseda-cmd
+        with:
+          cmd: "cd artistic; make gen_raw CFG_FILE=/fosic/designs/croc/artistic/renderics/croc_map_ci.json"
+      - name: Render Map Tiles
+        run: |
+          cd artistic; make gen_tiles CFG_FILE=renderics/croc_map_ci_runner.json
+      - name: Mapify Tiles
+        run: |
+          cd artistic; python3 scripts/mapify.py renderics/croc_map_ci_runner.json | sh
+      - name: Copy index.html
+        run: |
+          cp .github/config/gh-pages-map.html artistic/mapify/index.html
+      - name: Upload OpenStreetMap DB
+        uses: actions/upload-artifact@v4
+        with:
+          name: map-db
+          path: artistic/mapify
+        continue-on-error: true
+      - name: Copy GDS to be deployed
+        run: |
+          cp artistic/meerkat_work/croc_logo.gds artistic/mapify/croc_logo.gds
+      - name: Upload OpenStreetMap DB to pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: artistic/mapify
+      - name: Deploy pages (on main only)
+        if: github.ref == 'refs/heads/main'
+        id: deployment
+        uses: actions/deploy-pages@v4

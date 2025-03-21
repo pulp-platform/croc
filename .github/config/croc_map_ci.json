@@ -1,0 +1,81 @@
+{
+    "general" : {
+       "chip"       : "croc"
+    },
+    "gds" : {
+        "file"        : "/fosic/designs/croc/artistic/meerkat_work/croc_chip.gds.gz",
+        "x_offset_um" : -144,
+        "y_offset_um" : -144,
+        "width_um"    : 2048,
+        "height_um"   : 2048
+    },
+    "image": {
+        "px_width"          : 20480,
+        "px_height"         : 20480,
+        "overrender_factor" : 1,
+        "num_segs_width"    : 5,
+        "num_segs_height"   : 5
+    },
+    "paper": {
+        "width_cm"  : 84.1,
+        "height_cm" : "-"
+    },
+    "colors" : {
+        "CONT" : {"layer" :   "6/0", "color" : "#0000CD", "alpha" : "0.8" },
+        "M1"   : {"layer" :   "8/0", "color" : "#0000CD", "alpha" : "0.8" },
+        "V1"   : {"layer" :  "19/0", "color" : "#7CCD7C", "alpha" : "0.7" },
+        "M2"   : {"layer" :  "10/0", "color" : "#7CCD7C", "alpha" : "0.7" },
+        "V2"   : {"layer" :  "29/0", "color" : "#5c0c02", "alpha" : "0.6" },
+        "M3"   : {"layer" :  "30/0", "color" : "#5c0c02", "alpha" : "0.6" },
+        "V3"   : {"layer" :  "49/0", "color" : "#CD3700", "alpha" : "0.5" },
+        "M4"   : {"layer" :  "50/0", "color" : "#CD3700", "alpha" : "0.5" },
+        "V4"   : {"layer" :  "66/0", "color" : "#00CD00", "alpha" : "0.5" },
+        "M5"   : {"layer" :  "67/0", "color" : "#00CD00", "alpha" : "0.5" },
+        "TV1"  : {"layer" : "125/0", "color" : "#7FFFD4", "alpha" : "0.5" },
+        "T1"   : {"layer" : "126/0", "color" : "#7FFFD4", "alpha" : "0.5" },
+        "TV2"  : {"layer" : "133/0", "color" : "#1E90FF", "alpha" : "0.5" },
+        "T2"   : {"layer" : "134/0", "color" : "#FFFFFF", "alpha" : "0.8" }
+    },
+    "work" : {
+        "dir" : "/fosic/designs/croc/artistic/renderics"
+    },
+    "map" : {
+        "output" : "/fosic/designs/croc/artistic/mapify",
+        "layers"      : [
+            "#RENDER#",
+            "M1",
+            "M2",
+            "M3",
+            "M4",
+            "M5",
+            "T1",
+            "T2"
+        ],
+        "openmaps_tile_size_px" : 512,
+        "tmp" : "/fosic/designs/croc/artistic/mapify_tmp"
+    },
+    "tech" : {
+        "manifest_version" : 1,
+        "max_px_tile"      : 2500000000,
+        "pdk"              : "ihp13",
+        "layer_order"      : [
+            "CONT",
+            "M1",
+            "V1",
+            "M2",
+            "V2",
+            "M3",
+            "V3",
+            "M4",
+            "V4",
+            "M5",
+            "TV1",
+            "T1",
+            "TV2",
+            "T2"
+        ],
+        "db_unit_nm"       : 0.1,
+        "dry_run"          : false
+    }
+}
+
