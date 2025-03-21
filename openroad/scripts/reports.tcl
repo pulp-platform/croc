@@ -5,8 +5,11 @@
 # Authors:
 # - Jannis Schönleber <janniss@iis.ee.ethz.ch>
 # - Philippe Sauter   <phsauter@iis.ee.ethz.ch>
+# - Philip Wiese      <wiesep@iis.ee.ethz.ch>
 
 # Helper scripts writing reports
+
+if { ![info exists report_dir] } {set report_dir "reports"}
 
 proc report_puts { out } {
     upvar 1 when when
@@ -15,6 +18,9 @@ proc report_puts { out } {
     puts $fileId $out
     close $fileId
 }
+
+
+source scripts/reports_area.tcl
 
 # new version from: https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts/blob/d013d52bc0f10d71c7f943cc2eadfba89fced240/flow/scripts/report_metrics.tcl
 proc report_metrics { when {include_erc true} {include_clock_skew false} } {
@@ -183,11 +189,10 @@ proc report_metrics { when {include_erc true} {include_clock_skew false} } {
   report_power_metric -corner tt >> $filename
 
   # TODO these only work to stdout, whereas we want to append to the $filename
-  puts "\n=========================================================================="
-  puts "$when report_design_area"
-  puts "--------------------------------------------------------------------------"
-  report_design_area
-  report_design_area_metrics
+  report_puts "\n=========================================================================="
+  report_puts "$when report_design_area"
+  report_puts "--------------------------------------------------------------------------"
+  report_area_hierarchical
 }
 
 # see: https://github.com/The-OpenROAD-Project/OpenROAD-flow-scripts/blob/master/flow/scripts/save_images.tcl
