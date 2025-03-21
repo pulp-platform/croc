@@ -12,6 +12,9 @@ on:
   pull_request:
     branches:
       - main
+  push:
+    branches:
+      - main
   release:
     types:
       - created
@@ -159,7 +162,7 @@ jobs:
           cmd: "cd artistic; make gen_raw CFG_FILE=/fosic/designs/croc/artistic/renderics/croc_ci.json"
       - name: Render PDFs
         run: |
-          cd artistic; make gen_pdfs CFG_FILE=renderics/croc_ci_runner.json
+          cd artistic; make -j gen_pdfs CFG_FILE=renderics/croc_ci_runner.json
       - name: Finish render
         run: |
           mv artistic/renderics//DPI__croc_0-0.png artistic/renderics/croc_render.png
@@ -190,7 +193,7 @@ jobs:
           cmd: "cd artistic; make gen_raw CFG_FILE=/fosic/designs/croc/artistic/renderics/croc_map_ci.json"
       - name: Render Map Tiles
         run: |
-          cd artistic; make gen_tiles CFG_FILE=renderics/croc_map_ci_runner.json
+          cd artistic; make -j gen_tiles CFG_FILE=renderics/croc_map_ci_runner.json
       - name: Mapify Tiles
         run: |
           cd artistic; python3 scripts/mapify.py renderics/croc_map_ci_runner.json | sh
