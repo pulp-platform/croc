@@ -119,13 +119,14 @@ class RegBlock:
             'reserved': self._handle_reserved,
             'skipto': self._handle_skipto,
             'window': self._handle_window,
-            'multireg': self._handle_multireg
+            'multireg': self._handle_multireg,
+            'packed': self._handle_packed
         }
 
         entry_type = 'register'
         entry_body = entry  # type: object
 
-        for t in ['reserved', 'skipto', 'window', 'multireg']:
+        for t in ['reserved', 'skipto', 'window', 'multireg', 'packed']:
             t_body = entry.get(t)
             if t_body is not None:
                 # Special entries look like { window: { ... } }, so if we
@@ -206,6 +207,26 @@ class RegBlock:
         self.all_regs.append(mr)
         self.entries.append(mr)
         self.offset = mr.next_offset(self._addrsep)
+
+    def _handle_packed(self, where: str, body: object) -> None:
+        reg_bodies = check_list(body, 'packed')
+        local_offset = 0
+        for i, body in enumerate(reg_bodies):
+            reg = Register.from_raw(self._reg_width, self.offset, self._params, body)
+            reg.spans = 0
+
+            byte_width = (reg.get_width() + 7) // 8 * 8
+
+            for field in reg.fields:
+                field.bits = field.bits.make_translated(local_offset)
+            
+            local_offset += byte_width
+            self.add_register(reg)
+        
+        if local_offset > self._reg_width:
+            raise ValueError(f'Packed register is larger than regwidth ({local_offset} > {self._reg_width})')
+
+        self.offset += self._addrsep
 
     def add_register(self, reg: Register) -> None:
         assert reg.offset == self.offset

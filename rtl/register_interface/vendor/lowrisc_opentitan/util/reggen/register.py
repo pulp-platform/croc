@@ -13,11 +13,11 @@ from .reg_base import RegBase
 
 REQUIRED_FIELDS = {
     'name': ['s', "name of the register"],
-    'desc': ['t', "description of the register"],
     'fields': ['l', "list of register field description groups"]
 }
 
 OPTIONAL_FIELDS = {
+    'desc': ['t', "description of the register"],
     'swaccess': [
         's',
         "software access permission to use for "
@@ -70,12 +70,17 @@ OPTIONAL_FIELDS = {
         's',
         "alert that will be triggered if "
         "this shadowed register has storage error"
-    ]
+    ],
+    'spans': [
+        'd',
+        "sets how many regwidths this register spans"
+    ],
 }
 
 
 class Register(RegBase):
     '''Code representing a register for reggen'''
+
     def __init__(self,
                  offset: int,
                  name: str,
@@ -91,7 +96,8 @@ class Register(RegBase):
                  shadowed: bool,
                  fields: List[Field],
                  update_err_alert: Optional[str],
-                 storage_err_alert: Optional[str]):
+                 storage_err_alert: Optional[str],
+                 spans: int):
         super().__init__(offset)
         self.name = name
         self.desc = desc
@@ -173,6 +179,7 @@ class Register(RegBase):
 
         self.update_err_alert = update_err_alert
         self.storage_err_alert = storage_err_alert
+        self.spans = spans
 
     @staticmethod
     def from_raw(reg_width: int,
@@ -184,7 +191,7 @@ class Register(RegBase):
                         list(OPTIONAL_FIELDS.keys()))
 
         name = check_name(rd['name'], 'name of register')
-        desc = check_str(rd['desc'], 'desc for {} register'.format(name))
+        desc = check_str(rd.get('desc', ''), 'desc for {} register'.format(name))
 
         swaccess = SWAccess('{} register'.format(name),
                             rd.get('swaccess', 'none'))
@@ -225,6 +232,12 @@ class Register(RegBase):
                               'shadowed flag for {} register'
                               .format(name))
 
+        spans = check_int(rd.get('spans', 1),
+                          'spans flag for {} register'.format(name))
+
+        if spans > 1 and hwqe:
+            raise ValueError('Span registers ({}) don\'t yet support hwqe.'.format(name))
+
         raw_fields = check_list(rd['fields'],
                                 'fields for {} register'.format(name))
         if not raw_fields:
@@ -235,7 +248,7 @@ class Register(RegBase):
                                  swaccess,
                                  hwaccess,
                                  resval,
-                                 reg_width,
+                                 reg_width * spans,
                                  hwqe,
                                  hwre,
                                  params,
@@ -261,10 +274,10 @@ class Register(RegBase):
         return Register(offset, name, desc, swaccess, hwaccess,
                         hwext, hwqe, hwre, regwen,
                         tags, resval, shadowed, fields,
-                        update_err_alert, storage_err_alert)
+                        update_err_alert, storage_err_alert, spans)
 
     def next_offset(self, addrsep: int) -> int:
-        return self.offset + addrsep
+        return self.offset + addrsep * self.spans
 
     def sw_readable(self) -> bool:
         return self.swaccess.key not in ['wo', 'r0w1c']
@@ -284,6 +297,24 @@ class Register(RegBase):
 
     def is_homogeneous(self) -> bool:
         return len(self.fields) == 1
+
+    def crossed_byte_boundaries(self) -> int:
+        boundaries = 0
+
+        for field in self.fields:
+            bytemask = field.bits.bytemask()
+            boundaries |= bytemask & (bytemask >> 1)
+
+        return boundaries
+
+    def bytemask(self) -> int:
+        bytemask = 0
+
+        for field in self.fields:
+            bytemask |= field.bits.bytemask()
+
+        return bytemask
+
 
     def get_width(self) -> int:
         '''Get the width of the fields in the register in bits
@@ -350,7 +381,7 @@ class Register(RegBase):
                         self.swaccess, self.hwaccess,
                         self.hwext, self.hwqe, self.hwre, new_regwen,
                         self.tags, new_resval, self.shadowed, new_fields,
-                        self.update_err_alert, self.storage_err_alert)
+                        self.update_err_alert, self.storage_err_alert, 1)
 
     def _asdict(self) -> Dict[str, object]:
         rd = {

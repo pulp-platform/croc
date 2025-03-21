@@ -19,6 +19,18 @@ class Bits:
     def bitmask(self) -> int:
         return (1 << (self.msb + 1)) - (1 << self.lsb)
 
+    def bytemask(self) -> int:
+        bytemask = 0
+
+        bitmask = self.bitmask()
+        i = 0
+        while bitmask >= 2**(i*8):
+            if bitmask & (0b1111_1111 << i*8):
+                bytemask |= 1 << i
+            i += 1
+
+        return bytemask
+
     def width(self) -> int:
         return 1 + self.msb - self.lsb
 

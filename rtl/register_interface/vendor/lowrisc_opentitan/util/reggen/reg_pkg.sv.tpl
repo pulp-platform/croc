@@ -291,23 +291,28 @@ value = "{}'h {:x}".format(aw, r.offset)
   } ${lpfx}_id_e;
 
   // Register width information to check illegal writes${for_iface}
-  parameter logic [3:0] ${upfx}_PERMIT [${len(rb.flat_regs)}] = '{
+  parameter logic [3:0] ${upfx}_BYTEMASK [${len(rb.flat_regs)}] = '{
   % for i, r in enumerate(rb.flat_regs):
 <%
   index_str = "{}".format(i).rjust(idx_len)
-  width = r.get_width()
-  if width > 24:
-    mask = '1111'
-  elif width > 16:
-    mask = '0111'
-  elif width > 8:
-    mask = '0011'
-  else:
-    mask = '0001'
+  mask = "4'b {:04b}".format(r.bytemask())
 
   comma = ',' if i < len(rb.flat_regs) - 1 else ' '
 %>\
-    4'b ${mask}${comma} // index[${index_str}] ${ublock}_${r.name.upper()}
+    ${mask}${comma} // index[${index_str}] ${ublock}_${r.name.upper()}
+  % endfor
+  };
+
+  // Register boudary crossing infromation to make sure we don't write to half a register
+  parameter logic [3:0] ${upfx}_DISALLOWED_BOUNDARY_CROSSINGS [${len(rb.flat_regs)}] = '{
+  % for i, r in enumerate(rb.flat_regs):
+<%
+  index_str = "{}".format(i).rjust(idx_len)
+  mask = "3'b " + "{:03b}".format(r.crossed_byte_boundaries())[-3:]
+
+  comma = ',' if i < len(rb.flat_regs) - 1 else ' '
+%>\
+    ${mask}${comma} // index[${index_str}] ${ublock}_${r.name.upper()}
   % endfor
   };
 % endif

@@ -91,9 +91,9 @@ class Field:
             name = check_name(raw_name, 'name of {}'.format(where))
 
         raw_desc = rd.get('desc')
-        if raw_desc is None and raw_name is not None:
-            raise ValueError('Missing desc field for {}'
-                             .format(where))
+        # if raw_desc is None and raw_name is not None:
+        #     raise ValueError('Missing desc field for {}'
+        #                      .format(where))
         if raw_desc is None:
             desc = None
         else:
