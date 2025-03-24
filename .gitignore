@@ -1,2 +1,4 @@
 .bender
 tmp
+plots/
+__pycache__/
