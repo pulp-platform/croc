@@ -17,7 +17,7 @@ jobs:
   artistic:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    timeout-minutes: 180
+    timeout-minutes: 60
     permissions:
       pages: write
       id-token: write
@@ -25,6 +25,10 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Checkout repository (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: true
       - name: Get run ID of "Full Flow" workflow
         id: get-run-id
         run: |
@@ -42,6 +46,8 @@ jobs:
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
           run-id: ${{ steps.get-run-id.outputs.run-id }}
+          path: klayout/croc_chip.gds
+
       - name: Checkout ArtistIC repository
         uses: actions/checkout@v4
         with:
@@ -64,6 +70,7 @@ jobs:
           name: png-logo
           path: doc/artwork/logo.png
         continue-on-error: true
+
       - name: Install ImageMagick
         run: |
           sudo apt-get install -y imagemagick
@@ -116,6 +123,7 @@ jobs:
           name: chip-gds
           path: artistic/meerkat_work/croc_chip.gds.gz
         continue-on-error: true
+
       - name: Prepare render
         run: |
           mkdir -p artistic/renderics
