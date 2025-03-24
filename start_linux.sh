@@ -6,11 +6,10 @@
 # Authors:
 # - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
-IMG=hpretl/iic-osic-tools:2024.10
+env UID=$(id -u) GID=$(id -g) docker compose pull pulp-docker
 
-docker pull $IMG
-
-env UID=$(id -u) GID=$(id -g) docker compose run \
-  -e PS1="\[\033[01;32m\]docker-osic: \[\033[00m\]\[\033[01;34m\]\w\[\033[00m\] $" \
+env UID=$(id -u) GID=$(id -g) docker compose run --rm \
+  -e PS1="\[\033[01;32m\]osic:\[\033[00m\]\[\033[01;34m\]\w\[\033[00m\] $" \
+  -e DISPLAY=$DISPLAY \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
   pulp-docker
