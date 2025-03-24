@@ -195,9 +195,87 @@ proc print_report {sorted_hierarchies stats_ref block_ref dbu_per_uu} {
     }
 }
 
+# Save the report to a CSV file
+proc save_report_csv {sorted_hierarchies filename stats_ref block_ref dbu_per_uu} {
+    upvar $stats_ref stats
+    upvar $block_ref block
 
-sta::define_cmd_args "report_area_hierarchical" {}
-proc report_area_hierarchical {} {
+    # Set up report directory and filename
+    if { ![info exists report_dir] } { set report_dir "reports" }
+    if { ![info exists filename] } {
+        set filename "$report_dir/croc.area.csv"
+    }
+    set fileId [open $filename w]
+
+    set die_bbox [$block getDieArea]
+    set die_area [expr [$die_bbox dx] * [$die_bbox dy]]
+    set core_bbox [$block getCoreArea]
+    set core_area [expr [$core_bbox dx] * [$core_bbox dy]]
+
+    set die_area [expr $die_area / [expr $dbu_per_uu * $dbu_per_uu]]
+    set core_area [expr $core_area / [expr $dbu_per_uu * $dbu_per_uu]]
+    set num_ios [llength [$block getBTerms]]
+
+    set total_area [expr $stats(<top>:total_global_area) / [expr $dbu_per_uu * $dbu_per_uu]]
+    set stdcell_area [expr $stats(<top>:stdcell_global_area) / [expr $dbu_per_uu * $dbu_per_uu]]
+    set macro_area [expr $stats(<top>:macro_global_area) / [expr $dbu_per_uu * $dbu_per_uu]]
+    set cover_area [expr $stats(<top>:cover_global_area) / [expr $dbu_per_uu * $dbu_per_uu]]
+    set pad_area [expr $stats(<top>:pad_global_area) / [expr $dbu_per_uu * $dbu_per_uu]]
+
+    set total_active_area [expr $stdcell_area + $macro_area]
+
+    if { $core_area > 0 } {
+        set core_util [expr $total_active_area / $core_area]
+        if { $core_area > $macro_area } {
+        set stdcell_util [expr $stdcell_area / [expr $core_area - $macro_area]]
+        } else {
+        set stdcell_util 0.0
+        }
+    } else {
+        set core_util -1.0
+        set stdcell_util -1.0
+    }
+
+    set format_string [string repeat ",%s" 20]
+
+    puts $fileId [format "%s$format_string" \
+        "Hierarchy Name" \
+        "Total Global Area" "StdCell Global Area" "Macro Global Area" "Cover Global Area" "Pad Global Area" \
+        "Total Global Instances" "StdCell Global Instances" "Macro Global Instances" "Cover Global Instances" "Pad Global Instances" \
+        "Total Local Area" "StdCell Local Area" "Macro Local Area" "Cover Local Area" "Pad Local Area" \
+        "Total Local Instances" "StdCell Local Instances" "Macro Local Instances" "Cover Local Instances" "Pad Local Instances" \
+    ]
+
+    foreach hierarchy $sorted_hierarchies {
+        foreach cell_type {total macro cover pad stdcell} {
+            set global_key "${hierarchy}:${cell_type}_global"
+            set local_key "${hierarchy}:${cell_type}_local"
+
+            set global_areas($cell_type) [format "%.3f" [expr {[info exists stats(${global_key}_area)] ? $stats(${global_key}_area) / ($dbu_per_uu * $dbu_per_uu) : 0}]]
+            set local_areas($cell_type) [format "%.3f" [expr {[info exists stats(${local_key}_area)] ? $stats(${local_key}_area) / ($dbu_per_uu * $dbu_per_uu) : 0}]]
+            set global_insts($cell_type) [format "%d" [expr {[info exists stats(${global_key}_inst)] ? $stats(${global_key}_inst) : 0}]]
+            set local_insts($cell_type) [format "%d" [expr {[info exists stats(${local_key}_inst)] ? $stats(${local_key}_inst) : 0}]]
+        }
+
+        puts $fileId [format "%s$format_string" \
+        "$hierarchy" \
+        "$global_areas(total)" "$global_areas(stdcell)" "$global_areas(macro)" "$global_areas(cover)" "$global_areas(pad)" \
+        "$global_insts(total)" "$global_insts(stdcell)" "$global_insts(macro)" "$global_insts(cover)" "$global_insts(pad)" \
+        "$local_areas(total)" "$local_areas(stdcell)" "$local_areas(macro)" "$local_areas(cover)" "$local_areas(pad)" \
+        "$local_insts(total)" "$local_insts(stdcell)" "$local_insts(macro)" "$local_insts(cover)" "$local_insts(pad)" \
+        ]
+    }
+
+    close $fileId
+}
+
+
+sta::define_cmd_args "report_area_hierarchical" { [-csv] [-filenameCSV filename]}
+proc report_area_hierarchical {args} {
+    sta::parse_key_args "check_antennas" args \
+    keys {-filenameCSV} \
+    flags {-csv}
+
     upvar 1 when when
     upvar 1 filename filename
 
@@ -247,13 +325,21 @@ proc report_area_hierarchical {} {
     # Accumulate totals for parent hierarchies
     accumulate_totals $sorted_hierarchies stats
 
-    # Print the hierarchical area report
-    print_report $sorted_hierarchies stats block $dbu_per_uu
+    if { [info exists flags(-csv)] } {
+        if { ![info exists keys(-filenameCSV)] } {
+            set keys(-filenameCSV) "croc.area.csv"
+        }
+        save_report_csv $sorted_hierarchies $keys(-filenameCSV) stats block $dbu_per_uu
+    } else {
+        # Print the hierarchical area report
+        print_report $sorted_hierarchies stats block $dbu_per_uu
+    }
 }
 
 
 ################################################################################
 # Example usage
 ################################################################################
-# load_checkpoint "croc.drt"
+# load_checkpoint "07_croc.final"
 # report_area_hierarchical
+# report_area_hierarchical -csv -filenameCSV "reports/croc.area.csv"
