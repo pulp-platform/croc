@@ -29,7 +29,7 @@ module par_ser_shift_reg #(
     end
   end
   
-  'FF (dat_q, dat_d, 0, clk_i, rst_ni);
+  `FF (dat_q, dat_d, 0, clk_i, rst_ni);
 
   //output assignment
   assign dat_ser_o = dat_q[NumBits-1];

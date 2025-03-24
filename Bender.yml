@@ -53,6 +53,9 @@ sources:
 
       - rtl/user_domain/sdhci/reg/sdhci_reg_top.sv
       - rtl/user_domain/sdhci/user_sdhci.sv
+      - rtl/user_domain/sdhci/cmd_write/cmd_write.sv
+      - rtl/user_domain/sdhci/cmd_write/crc7_write.sv
+      - rtl/user_domain/sdhci/par_ser_shift_reg.sv
 
 
   - target: not(fpga)

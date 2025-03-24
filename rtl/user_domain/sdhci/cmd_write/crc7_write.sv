@@ -1,14 +1,16 @@
 //CRC7 calculation. Takes in serial data.
 //shifts out result MSb first when shift_out_crc7_i is high, output should otherwise be ignored.
 
+
+
 //Untested!
 module crc7_write (
-  input   logic clk_i;
-  input   logic rst_ni;
+  input   logic clk_i,
+  input   logic rst_ni,
 
-  input   logic shift_out_crc7_i;
-  input   logic dat_ser_i;
-  output  logic crc_ser_o;
+  input   logic shift_out_crc7_i,
+  input   logic dat_ser_i,
+  output  logic crc_ser_o
 );
   logic [2:0] lower_3_d, lower_3_q;
   logic [3:0] upper_4_d, upper_4_q;
@@ -32,8 +34,8 @@ module crc7_write (
     end
   end
   
-  'FF (lower_3_q, lower_3_d, 0, clk_i, rst_ni);
-  'FF (upper_4_q, upper_4_d, 0, clk_i, rst_ni);
+  `FF (lower_3_q, lower_3_d, 0, clk_i, rst_ni);
+  `FF (upper_4_q, upper_4_d, 0, clk_i, rst_ni);
   
   //Output assignment
   assign crc_ser_o = upper_4_q[3];
