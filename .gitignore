@@ -1,2 +1,82 @@
-.bender
-tmp
+# .gitignore files for cockpit 
+
+# all
+*.20[0-9]*-[0-9]*-[0-9]*-[0-9]*:[0-9]*:[0-9]*
+*.log
+*.log[0-9]
+*.log[0-9][0-9]
+# cockpit root
+/.llamaconfig
+/tmp
+/calibre
+/docs
+/technology
+/.setPDK.csh
+# dfii
+/dfii/.cdsinit
+/dfii/.init
+/dfii/.cadence
+/dfii/.calibreviewsetup
+/dfii/.simrc
+/dfii/.tech
+/dfii/.tmp_*
+/dfii/start_dfii
+/dfii/si.env
+/dfii/*.cdslck*
+/dfii/*/*/adexl/results
+/dfii/*/*/adexl/test_states/*/*/spectre/*_Interactive.*
+# innovus
+/innovus/enc.tcl
+/innovus/save
+/innovus/out
+/innovus/timingReports
+/innovus/powerReports
+/innovus/reports
+/innovus/extLogDir
+/innovus/work
+/innovus/work_vs2api
+/innovus/.AAE_*
+/innovus/innovus.log*
+/innovus/innovus.cmd*
+/innovus/.interactive.constr.sdc
+/innovus/.cadence
+/innovus/scripts/add_clk_decaps.tcl
+/innovus/scripts/checkdesign.tcl
+/innovus/scripts/exportall.tcl
+/innovus/scripts/fillperi-insert.tcl
+/innovus/scripts/special_cell_setting.tcl
+/innovus/src/sample
+# synopsys
+/synopsys/WORK
+/synopsys/DDC
+/synopsys/alib
+/synopsys/reports
+/synopsys/save
+/synopsys/out
+/synopsys/
+/synopsys/default.svf
+/synopsys/.synopsys_dc.setup
+/synopsys/.synopsys_pt.setup
+# sourcecode
+# modelsim
+/modelsim/README
+/modelsim/work
+/modelsim/*.csh-example
+/modelsim/modelsim.ini
+/modelsim/vcd
+/modelsim/*.wlf
+/modelsim/transcript
+# tetramax
+/tetramax/reports
+/tetramax/tmaxtcl.rc
+/tetramax/scripts/read_lib.tcl
+/tetramax/scripts/tmax.tcl
+# klayout
+/klayout/*-example
+/klayout/start_klayout
+#openroad
+/openroad/out
+/openroad/save
+#/openroad/src
+#yosys
+/yosys/out
