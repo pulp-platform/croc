@@ -10,15 +10,15 @@ package:
 dependencies:
   # IMPORTANT: see vendor_package at the bottom
   common_cells:         { git: "https://github.com/pulp-platform/common_cells.git",         version: 1.37.0 }
-  common_verification:  { git: "https://github.com/pulp-platform/common_verification.git",  rev: "verilator-fix"      }
+  common_verification:  { git: "https://github.com/pulp-platform/common_verification.git",  version: 0.2.5  }
   riscv-dbg:            { git: "https://github.com/pulp-platform/riscv-dbg.git",            rev: "verilator-phsauter" }
   tech_cells_generic:   { git: "https://github.com/pulp-platform/tech_cells_generic.git",   version: 0.2.13 }
   register_interface:   { git: "https://github.com/pulp-platform/register_interface.git",   version: 0.4.1  }
-  cve2:                 { git: "https://github.com/openhwgroup/cve2.git",                   rev: "370793f52488d1022d0554d194ad24f125156acc"  }
   apb:                  { git: "https://github.com/pulp-platform/apb.git",                  version: 0.2.4  }
   timer_unit:           { git: "https://github.com/pulp-platform/timer_unit.git",           version: 1.0.3  }
   obi:                  { git: "https://github.com/pulp-platform/obi.git",                  version: 0.1.3  }
   apb_uart:             { git: "https://github.com/pulp-platform/apb_uart.git",             version: 0.2.1  }
+  cve2:                 { path: "rtl/cve2" } # a vendor package (no Bender.yml), see below 
 
 
 sources:
@@ -86,7 +86,7 @@ vendor_package:
 
   - name: common_verification
     target_dir: rtl/common_verification
-    upstream: { git: "https://github.com/pulp-platform/common_verification.git", rev: "e1180111e2bb9def1eb790d96a3a65993b84536f" } # branch verilator-fix
+    upstream: { git: "https://github.com/pulp-platform/common_verification.git", rev: "fb1885f48ea46164a10568aeff51884389f67ae3" } # branch verilator-fix
     patch_dir: "rtl/patches/common_verification"
     mapping:
       - { from: 'src/clk_rst_gen.sv', to: 'clk_rst_gen.sv', patch_dir: 'src/' }

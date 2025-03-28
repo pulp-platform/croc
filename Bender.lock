@@ -33,8 +33,7 @@ packages:
     version: null
     source:
       Path: rtl/cve2
-    dependencies:
-    - tech_cells_generic
+    dependencies: []
   obi:
     revision: null
     version: null
