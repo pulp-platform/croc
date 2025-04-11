@@ -1,4 +1,4 @@
-# Copyright (c) 2022 ETH Zurich and University of Bologna.
+# Copyright (c) 2025 ETH Zurich and University of Bologna.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -13,8 +13,8 @@ print_stats
 
 # strash can fix some yosys-convertion edge-cases, good idea to run first
 strash
+rec_start3 ./scripts/../src/lazy_man_synth_library.aig
 
-rec_start3 src/lazy_man_synth_library.aig
 
 # main optimization iteration:
 alias &opt_iter "&st; &if -y -K 6; &syn2; &if -K 6; &st; &b"
@@ -26,7 +26,7 @@ alias &opt_iter "&st; &if -y -K 6; &syn2; &if -K 6; &st; &b"
 # &nf  select choice and map to tech
 # &ps  print statistics
 # mapping iteration
-alias &map_iter "&st; &nf {D}; &ps"
+alias &map_iter "&st; &nf -D 10000; &ps"
 
 # initial mapping iteration
 &get -n
@@ -61,10 +61,10 @@ stime
 echo "buffering for delay and fanout..."
 buffer -p
 echo "resizing cells..."
-upsize {D}
-dnsize {D}
-upsize {D}
-dnsize {D}
+upsize -D 10000
+dnsize -D 10000
+upsize -D 10000
+dnsize -D 10000
 
 echo "Final timing:"
 stime

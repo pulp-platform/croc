@@ -1,0 +1,16 @@
+# Copyright (c) 2025 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Authors:
+# - Philippe Sauter <phsauter@iis.ee.ethz.ch>
+# - Bowen Wang      <bowwang@iis.ee.ethz.ch>
+# - Enrico Zelioli  <ezelioli@iis.ee.ethz.ch>
+
+###############################
+###### Set Input Drivers ######
+###############################
+
+# TODO: Student task 8
+# 8.1 Set driving cell
+# 8.2 Set output load
