@@ -210,6 +210,10 @@ utl::report "Detailed placement"
 detailed_placement {*}$DPL_ARGS
 utl::report "Estimate parasitics"
 estimate_parasitics -placement
+
+# propagate clocks now that we have a clock-tree
+set_propagated_clock [all_clocks]
+
 report_metrics "${log_id_str}_${proj_name}.cts_unrepaired"
 
 # repair all setup timing
