@@ -68,6 +68,10 @@ sources:
       - xilinx/hw/croc_xilinx.sv
       - xilinx/hw/fan_ctrl.sv
 
+  - target: artyz720
+    files:
+      - xilinx/hw/croc_xilinx.sv
+
 vendor_package:
   #################################
   # commonly used building blocks #

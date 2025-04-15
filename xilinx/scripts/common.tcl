@@ -9,6 +9,11 @@ set bpart(genesys2) "digilentinc.com:genesys2:part0:1.1"
 set fpart(genesys2) "xc7k325tffg900-2"
 set hwdev(genesys2) "xc7k325t_0"
 
+# artyz720 board params
+set bpart(artyz720) "digilentinc.com:arty-z7-20:part0:1.1"
+set fpart(artyz720) "xc7z020clg400-1"
+set hwdev(artyz720) "xc7z020c"
+
 # vcu128 board params
 set bpart(vcu128) "xilinx.com:vcu128:part0:1.0"
 set fpart(vcu128) "xcvu37p-fsvh2892-2L-e"
