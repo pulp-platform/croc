@@ -1,2 +1,4 @@
 .bender
 tmp
+xilinx/scripts/add_sources.artyz720.tcl
+xilinx/scripts/add_sources.genesys2.tcl
