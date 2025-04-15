@@ -17,7 +17,18 @@
   `define USE_LEDS
   `define USE_FAN
   `define USE_VIO
+  `define USE_DIFF_CLK
+
 `endif
+
+`ifdef TARGET_ARTYZ720
+  `define USE_RESET
+  `define USE_STATUS
+  `define USE_SWITCHES
+  `define USE_LEDS
+  `define USE_VIO
+`endif
+
 
 `define ila(__name, __signal)  \
   (* dont_touch = "yes" *) (* mark_debug = "true" *) logic [$bits(__signal)-1:0] __name; \
@@ -27,8 +38,11 @@ module croc_xilinx import croc_pkg::*; #(
   localparam int unsigned GpioCount = 4
 ) (
   input  logic  sys_clk_p,
-  input  logic  sys_clk_n,
 
+`ifdef USE_DIFF_CLK
+  input  logic  sys_clk_n,
+`endif
+  
 `ifdef USE_RESET
   input  logic  sys_reset,
 `endif
@@ -77,6 +91,8 @@ module croc_xilinx import croc_pkg::*; #(
   wire sys_clk;
   wire soc_clk;
 
+
+`ifdef USE_RESET
   IBUFDS #(
     .IBUF_LOW_PWR ("FALSE")
   ) i_bufds_sys_clk (
@@ -84,6 +100,15 @@ module croc_xilinx import croc_pkg::*; #(
     .IB ( sys_clk_n ),
     .O  ( sys_clk   )
   );
+`endif
+
+`ifndef USE_RESET
+  IBUF i_buf_sys_clk (
+    .I  ( sysclk ),
+    .O  ( sys_clk   )
+  );
+`endif
+
 
   clkwiz i_clkwiz (
     .clk_in1  ( sys_clk ),
