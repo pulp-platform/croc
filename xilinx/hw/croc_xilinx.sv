@@ -92,7 +92,7 @@ module croc_xilinx import croc_pkg::*; #(
   wire soc_clk;
 
 
-`ifdef USE_RESET
+`ifdef USE_DIFF_CLK
   IBUFDS #(
     .IBUF_LOW_PWR ("FALSE")
   ) i_bufds_sys_clk (
@@ -102,9 +102,9 @@ module croc_xilinx import croc_pkg::*; #(
   );
 `endif
 
-`ifndef USE_RESET
+`ifndef USE_DIFF_CLK
   IBUF i_buf_sys_clk (
-    .I  ( sysclk ),
+    .I  ( sys_clk_p ),
     .O  ( sys_clk   )
   );
 `endif

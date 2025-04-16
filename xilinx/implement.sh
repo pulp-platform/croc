@@ -43,11 +43,10 @@ cd build/$BOARD.vio && \
     -tclargs $BOARD vio \
     && cd ../..
 
-# Create the CROC build directory
 mkdir -p build/$BOARD.croc
 cd build/$BOARD.croc && \
     vitis-2022.1 vivado -mode batch -log ../croc.$BOARD.log -jou ../croc.$BOARD.jou \
-    -source ../../scripts/impl_ip_$BOARD.tcl \
+    -source ../../scripts/impl_sys.tcl \
     -tclargs $BOARD croc \
     ../$BOARD.clkwiz/out.xci \
     ../$BOARD.vio/out.xci
