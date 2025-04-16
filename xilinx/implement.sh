@@ -31,22 +31,22 @@ bender script vivado -t fpga -t rtl -t $BOARD > scripts/add_sources.$BOARD.tcl
 mkdir -p build/$BOARD.clkwiz
 cd build/$BOARD.clkwiz && \
     vitis-2022.1 vivado -mode batch -log ../$BOARD.clkwiz.log -jou ../$BOARD.clkwiz.jou \
-    -source ../../scripts/impl_ip_$BOARD.tcl \
+    -source ../../scripts/impl_ip.tcl \
     -tclargs $BOARD clkwiz \
     && cd ../..
 
 # Create VIO build directory
-mkdir -p build/$BOARD.vio
-cd build/$BOARD.vio && \
-    vitis-2022.1 vivado -mode batch -log ../$BOARD.vio.log -jou ../$BOARD.vio.jou \
-    -source ../../scripts/impl_ip_$BOARD.tcl \
-    -tclargs $BOARD vio \
-    && cd ../..
+# mkdir -p build/$BOARD.vio
+# cd build/$BOARD.vio && \
+#     vitis-2022.1 vivado -mode batch -log ../$BOARD.vio.log -jou ../$BOARD.vio.jou \
+#     -source ../../scripts/impl_ip.tcl \
+#     -tclargs $BOARD vio \
+#     && cd ../..
 
-mkdir -p build/$BOARD.croc
-cd build/$BOARD.croc && \
-    vitis-2022.1 vivado -mode batch -log ../croc.$BOARD.log -jou ../croc.$BOARD.jou \
-    -source ../../scripts/impl_sys.tcl \
-    -tclargs $BOARD croc \
-    ../$BOARD.clkwiz/out.xci \
-    ../$BOARD.vio/out.xci
+# mkdir -p build/$BOARD.croc
+# cd build/$BOARD.croc && \
+#     vitis-2022.1 vivado -mode batch -log ../croc.$BOARD.log -jou ../croc.$BOARD.jou \
+#     -source ../../scripts/impl_sys.tcl \
+#     -tclargs $BOARD croc \
+#     ../$BOARD.clkwiz/out.xci \
+#     ../$BOARD.vio/out.xci
