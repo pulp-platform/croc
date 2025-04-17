@@ -62,7 +62,7 @@ set_property -dict { PACKAGE_PIN U19   IOSTANDARD LVCMOS33 }     [get_ports { jt
 set_property -dict { PACKAGE_PIN U18   IOSTANDARD LVCMOS33 }     [get_ports { jtag_tck_i   }];          #IO_L11N_T1_SRCC_13         Sch=jb_n[2]
 
 # --------------------------------------------------------------------------------------------------
-# Pmod Header JC
+# Pmod Header JA
 # --------------------------------------------------------------------------------------------------
 set_property -dict { PACKAGE_PIN T14  IOSTANDARD LVCMOS33 }     [get_ports { uart_rx_i }];          #IO_L10P_T1_34              Sch=jc_p[1]
 set_property -dict { PACKAGE_PIN U12  IOSTANDARD LVCMOS33 }     [get_ports { uart_tx_o }];          #IO_L10N_T1_34              Sch=jc_n[1]
