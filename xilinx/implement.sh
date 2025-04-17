@@ -11,16 +11,16 @@ while getopts "b:" opt; do
       ;;
     \? )
       echo "Usage: $0 [-b board_type]"
-      echo "Supported boards: genesys2, artyz720"
+      echo "Supported boards: genesys2, artyz720, zyboz720"
       exit 1
       ;;
   esac
 done
 
 # Validate board selection
-if [[ "$BOARD" != "genesys2" && "$BOARD" != "artyz720" ]]; then
+if [[ "$BOARD" != "genesys2" && "$BOARD" != "artyz720" && "$BOARD" != "zyboz720" ]]; then
     echo "Error: Unsupported board type '$BOARD'"
-    echo "Supported boards: genesys2, artyz720"
+    echo "Supported boards: genesys2, artyz720, zyboz720"
     exit 1
 fi
 

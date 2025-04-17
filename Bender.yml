@@ -72,6 +72,10 @@ sources:
     files:
       - xilinx/hw/croc_xilinx.sv
 
+  - target: zyboz720
+    files:
+      - xilinx/hw/croc_xilinx.sv
+
 vendor_package:
   #################################
   # commonly used building blocks #

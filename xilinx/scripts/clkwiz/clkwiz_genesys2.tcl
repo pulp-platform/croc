@@ -5,8 +5,6 @@
 # Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
-# Felix Niederer <fniederer@student.ethz.ch>
-
 
 create_ip -name clk_wiz -vendor xilinx.com -library ip -version 6.0 -module_name $proj
 set_property -dict [list \

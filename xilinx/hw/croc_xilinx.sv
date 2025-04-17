@@ -30,6 +30,14 @@
   `define USE_VIO
 `endif
 
+`ifdef TARGET_ZYBOZ720
+  `define USE_RESET
+  `define USE_STATUS
+  `define USE_SWITCHES
+  `define USE_LEDS
+  `define USE_VIO
+`endif
+
 
 `define ila(__name, __signal)  \
   (* dont_touch = "yes" *) (* mark_debug = "true" *) logic [$bits(__signal)-1:0] __name; \
