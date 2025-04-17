@@ -1,6 +1,8 @@
-# --------------------------------------------------------------------------------------------------
-# Constraint File for the Zybo-Z7 Board, compatible with both the Z7-20 and the Z7-10
-# --------------------------------------------------------------------------------------------------
+# Copyright 2024 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+# Felix Niederer <fniederer@student.ethz.ch>
+
 
 # --------------------------------------------------------------------------------------------------
 # Clock Source
@@ -29,7 +31,7 @@ set_input_delay -clock sys_clk 0.0 [get_ports {gpio_i*}]
 # --------------------------------------------------------------------------------------------------
 # Buttons
 # --------------------------------------------------------------------------------------------------
-set_property -dict { PACKAGE_PIN D19  IOSTANDARD LVCMOS33 }     [get_ports { sys_reset }];       #IO_L12N_T1_MRCC_35         Sch=btn[0]
+set_property -dict { PACKAGE_PIN D19  IOSTANDARD LVCMOS33 }     [get_ports { sys_reset }];     #IO_L12N_T1_MRCC_35         Sch=btn[0]
 set_property -dict { PACKAGE_PIN D20  IOSTANDARD LVCMOS33 }     [get_ports { gpio_i[1]  }];    #IO_L4N_T0_35 Sch=BTN1
 set_property -dict { PACKAGE_PIN L20  IOSTANDARD LVCMOS33 }     [get_ports { gpio_i[2]  }];    #IO_L9N_T1_DQS_AD3N_35 Sch=BTN2
 set_property -dict { PACKAGE_PIN L19  IOSTANDARD LVCMOS33 }     [get_ports { gpio_i[3] }];     #IO_L9P_T1_DQS_AD3P_35 Sch=BTN3
@@ -52,7 +54,7 @@ set_output_delay -clock sys_clk 0.0 [get_ports {gpio_o*}]
 
 
 # --------------------------------------------------------------------------------------------------
-# Pmod Header JB (Zybo Z7-20 only)
+# Pmod Header JB
 # --------------------------------------------------------------------------------------------------
 set_property -dict { PACKAGE_PIN W19   IOSTANDARD LVCMOS33 }     [get_ports { jtag_tms_i   }];          #IO_L15P_T2_DQS_13          Sch=jb_p[1]
 set_property -dict { PACKAGE_PIN W18   IOSTANDARD LVCMOS33 }     [get_ports { jtag_tdi_i   }];          #IO_L15N_T2_DQS_13          Sch=jb_n[1]

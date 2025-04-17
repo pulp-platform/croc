@@ -8,6 +8,7 @@
 // Yann Picod <ypicod@ethz.ch>
 // Paul Scheffler <paulsc@iis.ee.ethz.ch>
 // Philippe Sauter <phsauter@iis.ee.ethz.ch>
+// Felix Niederer <fniederer@student.ethz.ch>
 
 `ifdef TARGET_GENESYS2
   `define USE_RESETN

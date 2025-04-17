@@ -5,6 +5,8 @@
 # Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 # Cyril Koenig <cykoenig@iis.ee.ethz.ch>
 # Paul Scheffler <paulsc@iis.ee.ethz.ch>
+# Felix Niederer <fniederer@student.ethz.ch>
+
 
 # Initialize implementation
 set xilinx_root [file dirname [file dirname [file normalize [info script]]]]
