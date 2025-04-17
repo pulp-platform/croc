@@ -34,7 +34,7 @@ if [[ "$BOARD" != "genesys2" && "$BOARD" != "artyz720" ]]; then
     exit 1
 fi
 
-# Generate the TCL script
+# Generate sources
 bender script vivado -t fpga -t rtl -t $BOARD > scripts/add_sources.$BOARD.tcl
 
 # Build Clkwiz
