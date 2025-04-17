@@ -2,27 +2,17 @@
 
 # Default board is genesys2
 BOARD="genesys2"
-BUILD_VIO=true
 
 # Parse command line arguments
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    -b)
-      BOARD="$2"
-      shift 2
+while getopts "b:" opt; do
+  case ${opt} in
+    b )
+      BOARD=$OPTARG
       ;;
-    --no-vio)
-      BUILD_VIO=false
-      shift
-      ;;
-    -*)
-      echo "Unknown option: $1"
-      echo "Usage: $0 [-b board_type] [--no-vio]"
+    \? )
+      echo "Usage: $0 [-b board_type]"
       echo "Supported boards: genesys2, artyz720"
       exit 1
-      ;;
-    *)
-      break
       ;;
   esac
 done
@@ -34,7 +24,7 @@ if [[ "$BOARD" != "genesys2" && "$BOARD" != "artyz720" ]]; then
     exit 1
 fi
 
-# Generate sources
+# Generate the TCL script
 bender script vivado -t fpga -t rtl -t $BOARD > scripts/add_sources.$BOARD.tcl
 
 # Build Clkwiz
@@ -45,17 +35,13 @@ cd build/$BOARD.clkwiz && \
     -tclargs $BOARD clkwiz \
     && cd ../..
 
-# Build VIO if not skipped
-VIO_PATH=""
-if [ "$BUILD_VIO" = true ]; then
-    mkdir -p build/$BOARD.vio
-    cd build/$BOARD.vio && \
-        vitis-2022.1 vivado -mode batch -log ../$BOARD.vio.log -jou ../$BOARD.vio.jou \
-        -source ../../scripts/impl_ip.tcl \
-        -tclargs $BOARD vio \
-        && cd ../..
-    VIO_PATH="../$BOARD.vio/out.xci"
-fi
+# Build VIO
+mkdir -p build/$BOARD.vio
+cd build/$BOARD.vio && \
+    vitis-2022.1 vivado -mode batch -log ../$BOARD.vio.log -jou ../$BOARD.vio.jou \
+    -source ../../scripts/impl_ip.tcl \
+    -tclargs $BOARD vio \
+    && cd ../..
 
 # Build top croc module
 mkdir -p build/$BOARD.croc
@@ -64,4 +50,4 @@ cd build/$BOARD.croc && \
     -source ../../scripts/impl_sys.tcl \
     -tclargs $BOARD croc \
     ../$BOARD.clkwiz/out.xci \
-    $VIO_PATH
+    ../$BOARD.vio/out.xci
