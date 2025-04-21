@@ -15,6 +15,7 @@ set report_dir $::env(REPORTS)
 set save_dir $::env(SAVE)
 set time [elapsed_run_time]
 set step_by_step_debug 0
+set out_dir $::env(OR_OUT)
 
 # helper scripts
 source scripts/reports.tcl
@@ -68,7 +69,58 @@ utl::report "Create Floorplan"
 source scripts/floorplan.tcl
 
 utl::report "Create Power Grid"
-source scripts/power_grid.tcl
+
+# set variant_name novstripe
+# set add_ring 1
+# set add_vertical 0
+# set stripe_width 6.0
+# set stripe_pitch 204.0
+# set core_ring_width 10
+# set sram_extra_power 1
+
+# set variant_name noring
+# set add_ring 0
+# set add_vertical 1
+# set stripe_width 6.0
+# set stripe_pitch 204.0
+# set core_ring_width 10
+# set sram_extra_power 1
+
+# set variant_name narrow
+# set add_ring 1
+# set add_vertical 1
+# set stripe_width 2.0
+# set stripe_pitch 204.0
+# set core_ring_width 10
+# set sram_extra_power 1
+
+# set variant_name sparse
+# set add_ring 1
+# set add_vertical 1
+# set stripe_width 6.0
+# set stripe_pitch 700.0
+# set core_ring_width 10
+# set sram_extra_power 1
+
+# set variant_name weakring
+# set add_ring 1
+# set add_vertical 1
+# set stripe_width 6.0
+# set stripe_pitch 204.0
+# set core_ring_width 2
+# set sram_extra_power 1
+
+# set variant_name nosram
+# set add_ring 1
+# set add_vertical 1
+# set stripe_width 6.0
+# set stripe_pitch 204.0
+# set core_ring_width 10
+# set sram_extra_power 0
+
+
+# source scripts/power_grid.tcl
+source scripts/power_grid_problem.tcl
 save_checkpoint 00_${proj_name}.power_grid
 report_image "00_${proj_name}.power" true
 
@@ -334,10 +386,10 @@ report_metrics "${log_id_str}_${proj_name}.final"
 report_image "${log_id_str}_${proj_name}.final" true true false true
 
 utl::report "Write output"
-write_def                      out/${proj_name}.def
-write_verilog -include_pwr_gnd out/${proj_name}_lvs.v
-write_verilog                  out/${proj_name}.v
-write_db                       out/${proj_name}.odb
-write_sdc                      out/${proj_name}.sdc
+write_def                      ${out_dir}/${proj_name}.def
+write_verilog -include_pwr_gnd ${out_dir}/${proj_name}_lvs.v
+write_verilog                  ${out_dir}/${proj_name}.v
+write_db                       ${out_dir}/${proj_name}.odb
+write_sdc                      ${out_dir}/${proj_name}.sdc
 
 exit

@@ -59,6 +59,11 @@ sources:
     files:
       - yosys/out/croc_chip_yosys_debug.v
 
+  # netlist for post simulation
+  - target: netlist_openroad
+    files:
+      - openroad/out/croc.v
+
   - target: any(simulation, verilator)
     files:
       - rtl/tb_croc_soc.sv

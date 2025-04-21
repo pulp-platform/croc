@@ -10,6 +10,7 @@ OPENROAD 		?= openroad
 
 # Directories
 # directory of the path to the last called Makefile (this one)
+VARIANT   ?= 
 OR_DIR    := $(realpath $(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
 
 # Project variables
@@ -19,9 +20,9 @@ TOP_DESIGN 	?= croc_chip
 PROJ_NAME	?= croc
 NETLIST		?= $(realpath $(OR_DIR)/../yosys/out/$(PROJ_NAME)_yosys.v)
 
-SAVE	 	 ?= $(OR_DIR)/save
-REPORTS	 	 ?= $(OR_DIR)/reports
-OR_OUT  	 ?= $(OR_DIR)/out
+SAVE	 	 ?= $(OR_DIR)/$(VARIANT)save
+REPORTS	 	 ?= $(OR_DIR)/$(VARIANT)reports
+OR_OUT  	 ?= $(OR_DIR)/$(VARIANT)out
 OR_OUT_FILES  = $(OR_OUT)/$(PROJ_NAME).def $(OR_OUT)/$(PROJ_NAME).v $(OR_OUT)/$(PROJ_NAME).sdc $(OR_OUT)/$(PROJ_NAME).odb
 
 backend: $(OR_OUT)/$(PROJ_NAME).def
@@ -39,6 +40,7 @@ $(OR_OUT_FILES): $(NETLIST) $(OR_DIR)/scripts/*.tcl $(OR_DIR)/src/*.tcl $(OR_DIR
 	TOP_DESIGN="$(TOP_DESIGN)" \
 	PROJ_NAME="$(PROJ_NAME)" \
 	SAVE="$(SAVE)" \
+	OR_OUT="$(OR_OUT)" \
 	REPORTS="$(REPORTS)" \
 	PDK="$(CROC_ROOT)/ihp13/pdk" \
 	QT_QPA_PLATFORM=$$(if [ -z "$$DISPLAY" ]; then echo "offscreen"; else echo "$$QT_QPA_PLATFORM"; fi) \

@@ -67,6 +67,9 @@ vsim/compile_rtl.tcl: Bender.lock Bender.yml
 vsim/compile_netlist.tcl: Bender.lock Bender.yml
 	$(BENDER) script vsim -t ihp13 -t vsim -t simulation -t verilator -t netlist_yosys -DSYNTHESIS -DSIMULATION > $@
 
+vsim/compile_post_pnr_netlist.tcl: Bender.lock Bender.yml
+	$(BENDER) script vsim -t ihp13 -t vsim -t simulation -t verilator -t netlist_openroad -DSYNTHESIS -DSIMULATION > $@
+
 ## Simulate RTL using Questasim/Modelsim/vsim
 vsim: vsim/compile_rtl.tcl $(SW_HEX)
 	rm -rf vsim/work
@@ -77,8 +80,13 @@ vsim: vsim/compile_rtl.tcl $(SW_HEX)
 vsim-yosys: vsim/compile_netlist.tcl $(SW_HEX) yosys/out/croc_chip_yosys_debug.v
 	rm -rf vsim/work
 	cd vsim; $(VSIM) -c -do "source compile_netlist.tcl; source compile_tech.tcl; exit"
-	cd vsim; $(VSIM) -gui tb_croc_soc $(VSIM_ARGS)
+	cd vsim; $(VSIM) +binary="$(realpath $(SW_HEX))" -gui tb_croc_soc $(VSIM_ARGS)
 
+## Simulate post-pnr netlist using Questasim/Modelsim/vsim
+vsim-openroad: vsim/compile_post_pnr_netlist.tcl $(SW_HEX) openroad/out/croc.v
+	rm -rf vsim/work
+	cd vsim; $(VSIM) -c -do "source compile_post_pnr_netlist.tcl; source compile_tech.tcl; source compile_tech_chip.tcl; exit"
+	cd vsim; $(VSIM) +binary="$(realpath $(SW_HEX))" -gui tb_croc_soc $(VSIM_ARGS)
 
 # Verilator
 VERILATOR_ARGS  = --binary -j 0 -Wno-fatal
