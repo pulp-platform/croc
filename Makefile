@@ -83,7 +83,7 @@ vsim-yosys: vsim/compile_netlist.tcl $(SW_HEX) yosys/out/croc_chip_yosys_debug.v
 	cd vsim; $(VSIM) +binary="$(realpath $(SW_HEX))" -gui tb_croc_soc $(VSIM_ARGS)
 
 ## Simulate post-pnr netlist using Questasim/Modelsim/vsim
-vsim-openroad: vsim/compile_post_pnr_netlist.tcl $(SW_HEX) openroad/out/croc.v
+vsim-openroad: vsim/compile_post_pnr_netlist.tcl $(SW_HEX) openroad/out_final/croc.v
 	rm -rf vsim/work
 	cd vsim; $(VSIM) -c -do "source compile_post_pnr_netlist.tcl; source compile_tech.tcl; source compile_tech_chip.tcl; exit"
 	cd vsim; $(VSIM) +binary="$(realpath $(SW_HEX))" -gui tb_croc_soc $(VSIM_ARGS)
