@@ -62,7 +62,7 @@ sources:
   # netlist for post simulation
   - target: netlist_openroad
     files:
-      - openroad/out/croc.v
+      - openroad/out_final/croc.v
 
   - target: any(simulation, verilator)
     files:
