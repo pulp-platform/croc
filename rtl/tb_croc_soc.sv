@@ -6,6 +6,7 @@
 // - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
 `define TRACE_WAVE
+`timescale 1ns / 1ps
 
 module tb_croc_soc #(
     parameter time         ClkPeriod     = 12.5ns,
@@ -546,7 +547,7 @@ module tb_croc_soc #(
 
         $display("@%t | [VCD] Start dump", $time);
         $dumpfile("croc.vcd");
-        $dumpvars(1, i_croc_soc);
+        $dumpvars(0, i_croc_soc);
 
         // keep dumping for duration = 1015729 - 957177 = 58552 ns
         #58552;
