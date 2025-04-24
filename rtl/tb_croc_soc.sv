@@ -11,8 +11,8 @@ module tb_croc_soc #(
     parameter time         ClkPeriod     = 12.5ns,
     parameter time         ClkPeriodJtag = 20ns,
     parameter time         ClkPeriodRef  = 50ns,
-    parameter time         TAppl         = 0.2*ClkPeriod,
-    parameter time         TTest         = 0.8*ClkPeriod,
+    parameter time         TAppl         = 0.2*ClkPeriodJtag,
+    parameter time         TTest         = 0.8*ClkPeriodJtag,
     parameter int unsigned RstCycles     = 1,
     // UART
     parameter int unsigned  UartBaudRate      = 115200,
@@ -542,14 +542,14 @@ module tb_croc_soc #(
 `ifdef TRACE_WAVE
     initial begin
         // wait until VCD dump start time
-        #2825550;
+        #957177;
 
         $display("@%t | [VCD] Start dump", $time);
         $dumpfile("croc.vcd");
         $dumpvars(1, i_croc_soc);
 
-        // keep dumping for duration = 3050650 - 2825550 = 225100 ns
-        #225100;
+        // keep dumping for duration = 1015729 - 957177 = 58552 ns
+        #58552;
 
         $display("@%t | [VCD] Stop dump", $time);
         $dumpoff;
