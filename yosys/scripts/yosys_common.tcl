@@ -13,7 +13,6 @@
 set variables {
     sv_flist    { SV_FLIST    "../croc.flist" }
     top_design  { TOP_DESIGN  "croc_chip"     }
-    period_ps   { PERIOD_PS   10000           }
     out_dir     { OUT         out             }
     tmp_dir     { TMP         tmp             }
     rep_dir     { REPORTS     reports         }
@@ -48,6 +47,7 @@ proc processAbcScript {abc_script} {
     set src_dir [file join [file dirname [info script]] ../src]
     set abc_out_path $tmp_dir/[file tail $abc_script]
 
+    # substitute {STRING} placeholders with their value
     set raw [read -nonewline [open $abc_script r]]
     set abc_script_recaig [string map -nocase [list "{REC_AIG}" [subst "$src_dir/lazy_man_synth_library.aig"]] $raw]
     set abc_out [open $abc_out_path w]
