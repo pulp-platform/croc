@@ -74,7 +74,7 @@ vendor_package:
   #################################
   - name: common_cells
     target_dir: rtl/common_cells
-    upstream: { git: "https://github.com/pulp-platform/common_cells.git", rev: "c27bce39ebb2e6bae52f60960814a2afca7bd4cb" } # v1.37.0
+    upstream: { git: "https://github.com/pulp-platform/common_cells.git", rev: "9afda9abb565971649c2aa0985639c096f351171" } # v1.38.0
     patch_dir: "rtl/patches/common_cells"
     exclude_from_upstream:
       - "src/deprecated"

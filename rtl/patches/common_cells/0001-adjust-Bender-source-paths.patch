@@ -1,6 +1,6 @@
-From 7d5da0d5176680ac6181c0af3a4db8be707ca4b4 Mon Sep 17 00:00:00 2001
+From 75a75826ae9701bc5bcfce7399a80f435786c7c8 Mon Sep 17 00:00:00 2001
 From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
-Date: Wed, 21 Aug 2024 14:01:26 +0200
+Date: Tue, 6 May 2025 17:16:23 +0200
 Subject: [PATCH] adjust Bender source paths
 
 ---
@@ -8,7 +8,7 @@ Subject: [PATCH] adjust Bender source paths
  1 file changed, 79 insertions(+), 144 deletions(-)
 
 diff --git a/Bender.yml b/Bender.yml
-index f5a5a21..208fc3b 100644
+index df66670..208fc3b 100644
 --- a/Bender.yml
 +++ b/Bender.yml
 @@ -23,157 +23,92 @@ sources:
@@ -183,7 +183,7 @@ index f5a5a21..208fc3b 100644
        # Level 4
 -      - src/mem_to_banks.sv
 -
--  - target: simulation
+-  - target: all(simulation, not(verilator))
 -    files:
 -      - src/deprecated/sram.sv
 -
@@ -249,5 +249,5 @@ index f5a5a21..208fc3b 100644
 -  - src/edge_propagator_rx.sv
 +      - mem_to_banks.sv
 -- 
-2.25.1
+2.39.3
 

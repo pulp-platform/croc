@@ -9,7 +9,6 @@
 // specific language governing permissions and limitations under the License.
 
 // Up/down counter with variable delta
-`include "common_cells/registers.svh"
 
 module delta_counter #(
     parameter int unsigned WIDTH = 4,
@@ -29,7 +28,16 @@ module delta_counter #(
     logic [WIDTH:0] counter_q, counter_d;
     if (STICKY_OVERFLOW) begin : gen_sticky_overflow
         logic overflow_d, overflow_q;
-        `FF(overflow_q, overflow_d, '0, clk_i, rst_ni)
+
+        always_ff @(posedge clk_i or negedge rst_ni)
+        begin
+            if(!rst_ni) begin
+                overflow_q <= 1'b0;
+            end else begin
+                overflow_q <= overflow_d;
+            end
+        end
+
         always_comb begin
             overflow_d = overflow_q;
             if (clear_i || load_i) begin
