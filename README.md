@@ -90,12 +90,18 @@ Cell/Module placement                      |  Routing
 
 ## Requirements
 We are using the excellent docker container maintained by Harald Pretl. If you get stuck with installing the tools, we urge you to check the [Tool Repository](https://github.com/iic-jku/IIC-OSIC-TOOLS).  
-The current supported version is 2024.11, no other version is tested or officially supported.
+The current supported version is 2025.03, no other version is officially supported.
 
 ### ETHZ systems
 An environment setup for bash is provided.
 ```sh
 source ethz.env
+```
+
+Additionally you may prefer to just enter a shell in the pre-installed osic-tools container using:
+```sh
+oseda bash
+# older version eg: oseda -2025.03 bash
 ```
 
 ### Other systems
