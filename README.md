@@ -93,7 +93,16 @@ We are using the excellent docker container maintained by Harald Pretl. If you g
 The current supported version is 2025.03, no other version is officially supported.
 
 ### ETHZ systems
-An environment setup for bash is provided.
+ETHZ Design Center maintains an internal version of the IHP PDK, with integrations into all tools we have access to. For this reason if you work on the ETH systems it is recommended to use the `icdesign` tool (cockpit) instead of the liked Github repo.  
+You can directly create a cockpit directory inside the croc directory:
+```sh
+# Make sure you are in <somedir>/croc
+# the checked-out repository
+icdesign ihp13 -nogui
+```
+The setup is guided by the `.cockpitrc` configuration file. If you need different macros or another version of the standard cells you can change it accordingly.
+
+An environment setup for bash is provided to get easy access to the tools:
 ```sh
 source ethz.env
 ```
