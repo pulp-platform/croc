@@ -108,7 +108,7 @@ vendor_package:
   #############################
   - name: obi
     target_dir: rtl/obi
-    upstream: { git: "https://github.com/pulp-platform/obi.git", rev: "c2141a653c755461ff44f61d12aeb5d99fc8e760" } # v0.1.3
+    upstream: { git: "https://github.com/pulp-platform/obi.git", rev: "ad1d48f025be540344960ea83b4bff39876f9b36" } # newest as of writing (0.1.6+)
     patch_dir: "rtl/patches/obi"
     exclude_from_upstream:
       - "src/test"
