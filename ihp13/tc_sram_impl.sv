@@ -28,8 +28,7 @@ endmodule
   .A_BIST_MEN   (  1'b0 ), \
   .A_BIST_WEN   (  1'b0 ), \
   .A_BIST_REN   (  1'b0 ), \
-  .A_BIST_EN    (  1'b0 ), \
-  .A_DLY        (  1'b0 )
+  .A_BIST_EN    (  1'b0 )
 
 `define IHP13_TC_SRAM_256x64_TIEOFF \
   .A_BIST_CLK   (  1'b0 ), \
@@ -39,8 +38,7 @@ endmodule
   .A_BIST_MEN   (  1'b0 ), \
   .A_BIST_WEN   (  1'b0 ), \
   .A_BIST_REN   (  1'b0 ), \
-  .A_BIST_EN    (  1'b0 ), \
-  .A_DLY        (  1'b0 )
+  .A_BIST_EN    (  1'b0 )
 
 `define IHP13_TC_SRAM_512x64_TIEOFF \
   .A_BIST_CLK   (  1'b0 ), \
@@ -50,8 +48,7 @@ endmodule
   .A_BIST_MEN   (  1'b0 ), \
   .A_BIST_WEN   (  1'b0 ), \
   .A_BIST_REN   (  1'b0 ), \
-  .A_BIST_EN    (  1'b0 ), \
-  .A_DLY        (  1'b0 )
+  .A_BIST_EN    (  1'b0 )
 
 `define IHP13_TC_SRAM_1024x64_TIEOFF \
   .A_BIST_CLK   (  1'b0 ), \
@@ -61,8 +58,7 @@ endmodule
   .A_BIST_MEN   (  1'b0 ), \
   .A_BIST_WEN   (  1'b0 ), \
   .A_BIST_REN   (  1'b0 ), \
-  .A_BIST_EN    (  1'b0 ), \
-  .A_DLY        (  1'b0 )
+  .A_BIST_EN    (  1'b0 )
 
 `define IHP13_TC_SRAM_2048x64_TIEOFF \
   .A_BIST_CLK   (  1'b0 ), \
@@ -72,10 +68,9 @@ endmodule
   .A_BIST_MEN   (  1'b0 ), \
   .A_BIST_WEN   (  1'b0 ), \
   .A_BIST_REN   (  1'b0 ), \
-  .A_BIST_EN    (  1'b0 ), \
-  .A_DLY        (  1'b0 )
+  .A_BIST_EN    (  1'b0 )
 
-module tc_sram #(
+module tc_sram_impl #(
   parameter int unsigned NumWords     = 32'd1024,
   parameter int unsigned DataWidth    = 32'd128,
   parameter int unsigned ByteWidth    = 32'd8,
@@ -84,6 +79,9 @@ module tc_sram #(
   parameter              SimInit      = "none",
   parameter bit          PrintSimCfg  = 1'b0,
   parameter              ImplKey      = "none",
+  parameter type         impl_in_t    = logic,
+  parameter type         impl_out_t   = logic,
+  parameter impl_out_t   ImplOutSim   = 'X,
   // DEPENDENT PARAMETERS, DO NOT OVERWRITE!
   parameter int unsigned AddrWidth = (NumWords > 32'd1) ? $clog2(NumWords) : 32'd1,
   parameter int unsigned BeWidth   = (DataWidth + ByteWidth - 32'd1) / ByteWidth,
@@ -93,11 +91,16 @@ module tc_sram #(
 ) (
   input  logic                 clk_i,
   input  logic                 rst_ni,
+
+  input  impl_in_t             impl_i,
+  output impl_out_t            impl_o,
+
   input  logic  [NumPorts-1:0] req_i,
   input  logic  [NumPorts-1:0] we_i,
   input  addr_t [NumPorts-1:0] addr_i,
   input  data_t [NumPorts-1:0] wdata_i,
   input  be_t   [NumPorts-1:0] be_i,
+
   output data_t [NumPorts-1:0] rdata_o
 );
 
@@ -112,6 +115,9 @@ module tc_sram #(
       end
   end
 
+  // We drive a static value for `impl_o` in behavioral simulation.
+  assign impl_o = ImplOutSim;
+
   // Generate desired cuts
   if (NumWords == 64 && DataWidth == 64 && P1L1) begin: gen_64x64xBx1
     logic [63:0] wdata64, rdata64, bm64;
@@ -123,6 +129,7 @@ module tc_sram #(
 
     RM_IHPSG13_1P_64x64_c2_bm_bist i_cut (
       .A_CLK   ( clk_i    ),
+      .A_DLY   ( impl_i  ),
       .A_ADDR  ( addr_i [0][5:0] ),
       .A_BM    ( bm64     ),
       .A_MEN   ( req_i    ),
@@ -142,6 +149,7 @@ module tc_sram #(
 
     RM_IHPSG13_1P_256x64_c2_bm_bist i_cut (
       .A_CLK   ( clk_i    ),
+      .A_DLY   ( impl_i  ),
       .A_ADDR  ( addr_i [0][7:0] ),
       .A_BM    ( bm64     ),
       .A_MEN   ( req_i    ),
@@ -161,6 +169,7 @@ module tc_sram #(
 
     RM_IHPSG13_1P_512x64_c2_bm_bist i_cut (
       .A_CLK   ( clk_i    ),
+      .A_DLY   ( impl_i  ),
       .A_ADDR  ( addr_i [0][8:0] ),
       .A_BM    ( bm64     ),
       .A_MEN   ( req_i    ),
@@ -180,6 +189,7 @@ module tc_sram #(
 
     RM_IHPSG13_1P_1024x64_c2_bm_bist i_cut (
        .A_CLK   ( clk_i    ),
+       .A_DLY   ( impl_i  ),
        .A_ADDR  ( addr_i [0][9:0] ),
        .A_BM    ( bm64     ),
        .A_MEN   ( req_i    ),
@@ -199,6 +209,7 @@ module tc_sram #(
 
     RM_IHPSG13_1P_2048x64_c2_bm_bist i_cut (
        .A_CLK   ( clk_i    ),
+       .A_DLY   ( impl_i   ),
        .A_ADDR  ( addr_i [0][10:0] ),
        .A_BM    ( bm64     ),
        .A_MEN   ( req_i    ),
@@ -239,6 +250,7 @@ module tc_sram #(
 
     RM_IHPSG13_1P_256x64_c2_bm_bist i_cut (
      .A_CLK   ( clk_i   ),
+     .A_DLY   ( impl_i  ),
      .A_ADDR  ( addr_i [0][8:1] ),
      .A_BM    ( bm64    ),
      .A_MEN   ( req_i   ),
@@ -280,6 +292,7 @@ module tc_sram #(
 
     RM_IHPSG13_1P_512x64_c2_bm_bist i_cut (
      .A_CLK   ( clk_i   ),
+     .A_DLY   ( impl_i  ),
      .A_ADDR  ( addr_i [0][9:1] ),
      .A_BM    ( bm64    ),
      .A_MEN   ( req_i   ),
@@ -320,6 +333,7 @@ module tc_sram #(
 
     RM_IHPSG13_1P_1024x64_c2_bm_bist i_cut (
      .A_CLK   ( clk_i   ),
+     .A_DLY   ( impl_i  ),
      .A_ADDR  ( addr_i [0][10:1] ),
      .A_BM    ( bm64    ),
      .A_MEN   ( req_i   ),
@@ -339,6 +353,7 @@ module tc_sram #(
 
     RM_IHPSG13_1P_2048x64_c2_bm_bist i_cut (
        .A_CLK   ( clk_i    ),
+       .A_DLY   ( impl_i   ),
        .A_ADDR  ( addr_i [0][10:0] ),
        .A_BM    ( bm64     ),
        .A_MEN   ( req_i    ),

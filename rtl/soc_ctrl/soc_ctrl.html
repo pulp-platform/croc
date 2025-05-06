@@ -1,64 +1,93 @@
-<!DOCTYPE html>
-<html>
-<head>
-<link rel=stylesheet href=reg_html.css>
-</head>
-<table class="regdef" id="Reg_bootaddr">
- <tr>
-  <th class="regdef" colspan=5>
-   <div>soc_ctrl.bootaddr @ 0x0</div>
-   <div><p>Core Boot Address</p></div>
-   <div>Reset default = 0x1a000000, mask 0xffffffff</div>
-  </th>
- </tr>
-<tr><td colspan=5><table class="regpic"><tr><td class="bitnum">31</td><td class="bitnum">30</td><td class="bitnum">29</td><td class="bitnum">28</td><td class="bitnum">27</td><td class="bitnum">26</td><td class="bitnum">25</td><td class="bitnum">24</td><td class="bitnum">23</td><td class="bitnum">22</td><td class="bitnum">21</td><td class="bitnum">20</td><td class="bitnum">19</td><td class="bitnum">18</td><td class="bitnum">17</td><td class="bitnum">16</td></tr><tr><td class="fname" colspan=16>bootaddr...</td>
-</tr>
-<tr><td class="bitnum">15</td><td class="bitnum">14</td><td class="bitnum">13</td><td class="bitnum">12</td><td class="bitnum">11</td><td class="bitnum">10</td><td class="bitnum">9</td><td class="bitnum">8</td><td class="bitnum">7</td><td class="bitnum">6</td><td class="bitnum">5</td><td class="bitnum">4</td><td class="bitnum">3</td><td class="bitnum">2</td><td class="bitnum">1</td><td class="bitnum">0</td></tr><tr><td class="fname" colspan=16>...bootaddr</td>
-</tr></table></td></tr>
-<tr><th width=5%>Bits</th><th width=5%>Type</th><th width=5%>Reset</th><th>Name</th><th>Description</th></tr><tr><td class="regbits">31:0</td><td class="regperm">rw</td><td class="regrv">0x1a000000</td><td class="regfn">bootaddr</td><td class="regde"><p>Boot Address</p></td></table>
-<br>
-<table class="regdef" id="Reg_fetchen">
- <tr>
-  <th class="regdef" colspan=5>
-   <div>soc_ctrl.fetchen @ 0x4</div>
-   <div><p>Core Fetch Enable</p></div>
-   <div>Reset default = 0x0, mask 0x1</div>
-  </th>
- </tr>
-<tr><td colspan=5><table class="regpic"><tr><td class="bitnum">31</td><td class="bitnum">30</td><td class="bitnum">29</td><td class="bitnum">28</td><td class="bitnum">27</td><td class="bitnum">26</td><td class="bitnum">25</td><td class="bitnum">24</td><td class="bitnum">23</td><td class="bitnum">22</td><td class="bitnum">21</td><td class="bitnum">20</td><td class="bitnum">19</td><td class="bitnum">18</td><td class="bitnum">17</td><td class="bitnum">16</td></tr><tr><td class="unused" colspan=16>&nbsp;</td>
-</tr>
-<tr><td class="bitnum">15</td><td class="bitnum">14</td><td class="bitnum">13</td><td class="bitnum">12</td><td class="bitnum">11</td><td class="bitnum">10</td><td class="bitnum">9</td><td class="bitnum">8</td><td class="bitnum">7</td><td class="bitnum">6</td><td class="bitnum">5</td><td class="bitnum">4</td><td class="bitnum">3</td><td class="bitnum">2</td><td class="bitnum">1</td><td class="bitnum">0</td></tr><tr><td class="unused" colspan=15>&nbsp;</td>
-<td class="fname" colspan=1 style="font-size:42.857142857142854%">fetchen</td>
-</tr></table></td></tr>
-<tr><th width=5%>Bits</th><th width=5%>Type</th><th width=5%>Reset</th><th>Name</th><th>Description</th></tr><tr><td class="regbits">0</td><td class="regperm">rw</td><td class="regrv">0x0</td><td class="regfn">fetchen</td><td class="regde"><p>Fetch Enable</p></td></table>
-<br>
-<table class="regdef" id="Reg_corestatus">
- <tr>
-  <th class="regdef" colspan=5>
-   <div>soc_ctrl.corestatus @ 0x8</div>
-   <div><p>Core Return Status (return value, EOC)</p></div>
-   <div>Reset default = 0x0, mask 0xffffffff</div>
-  </th>
- </tr>
-<tr><td colspan=5><table class="regpic"><tr><td class="bitnum">31</td><td class="bitnum">30</td><td class="bitnum">29</td><td class="bitnum">28</td><td class="bitnum">27</td><td class="bitnum">26</td><td class="bitnum">25</td><td class="bitnum">24</td><td class="bitnum">23</td><td class="bitnum">22</td><td class="bitnum">21</td><td class="bitnum">20</td><td class="bitnum">19</td><td class="bitnum">18</td><td class="bitnum">17</td><td class="bitnum">16</td></tr><tr><td class="fname" colspan=16>core_status...</td>
-</tr>
-<tr><td class="bitnum">15</td><td class="bitnum">14</td><td class="bitnum">13</td><td class="bitnum">12</td><td class="bitnum">11</td><td class="bitnum">10</td><td class="bitnum">9</td><td class="bitnum">8</td><td class="bitnum">7</td><td class="bitnum">6</td><td class="bitnum">5</td><td class="bitnum">4</td><td class="bitnum">3</td><td class="bitnum">2</td><td class="bitnum">1</td><td class="bitnum">0</td></tr><tr><td class="fname" colspan=16>...core_status</td>
-</tr></table></td></tr>
-<tr><th width=5%>Bits</th><th width=5%>Type</th><th width=5%>Reset</th><th>Name</th><th>Description</th></tr><tr><td class="regbits">31:0</td><td class="regperm">rw</td><td class="regrv">0x0</td><td class="regfn">core_status</td><td class="regde"><p>Core Return Status (EOC(bit[31]) and status(bit[30:0]))</p></td></table>
-<br>
-<table class="regdef" id="Reg_bootmode">
- <tr>
-  <th class="regdef" colspan=5>
-   <div>soc_ctrl.bootmode @ 0xc</div>
-   <div><p>Core Boot Mode</p></div>
-   <div>Reset default = 0x0, mask 0x1</div>
-  </th>
- </tr>
-<tr><td colspan=5><table class="regpic"><tr><td class="bitnum">31</td><td class="bitnum">30</td><td class="bitnum">29</td><td class="bitnum">28</td><td class="bitnum">27</td><td class="bitnum">26</td><td class="bitnum">25</td><td class="bitnum">24</td><td class="bitnum">23</td><td class="bitnum">22</td><td class="bitnum">21</td><td class="bitnum">20</td><td class="bitnum">19</td><td class="bitnum">18</td><td class="bitnum">17</td><td class="bitnum">16</td></tr><tr><td class="unused" colspan=16>&nbsp;</td>
-</tr>
-<tr><td class="bitnum">15</td><td class="bitnum">14</td><td class="bitnum">13</td><td class="bitnum">12</td><td class="bitnum">11</td><td class="bitnum">10</td><td class="bitnum">9</td><td class="bitnum">8</td><td class="bitnum">7</td><td class="bitnum">6</td><td class="bitnum">5</td><td class="bitnum">4</td><td class="bitnum">3</td><td class="bitnum">2</td><td class="bitnum">1</td><td class="bitnum">0</td></tr><tr><td class="unused" colspan=14>&nbsp;</td>
-<td class="fname" colspan=2 style="font-size:75.0%">bootmode</td>
-</tr></table></td></tr>
-<tr><th width=5%>Bits</th><th width=5%>Type</th><th width=5%>Reset</th><th>Name</th><th>Description</th></tr><tr><td class="regbits">1:0</td><td class="regperm">rw</td><td class="regrv">0x0</td><td class="regfn">bootmode</td><td class="regde"><p>Boot Mode</p></td></table>
-<br>
-</html>
+## Summary
+
+| Name                                 | Offset   |   Length | Description                            |
+|:-------------------------------------|:---------|---------:|:---------------------------------------|
+| soc_ctrl.[`bootaddr`](#bootaddr)     | 0x0      |        4 | Core Boot Address                      |
+| soc_ctrl.[`fetchen`](#fetchen)       | 0x4      |        4 | Core Fetch Enable                      |
+| soc_ctrl.[`corestatus`](#corestatus) | 0x8      |        4 | Core Return Status (return value, EOC) |
+| soc_ctrl.[`bootmode`](#bootmode)     | 0xc      |        4 | Core Boot Mode                         |
+| soc_ctrl.[`sram_dly`](#sram_dly)     | 0x10     |        4 | SRAM A_DLY value                       |
+
+## bootaddr
+Core Boot Address
+- Offset: `0x0`
+- Reset default: `0x10000000`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "bootaddr", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |   Reset    | Name     | Description   |
+|:------:|:------:|:----------:|:---------|:--------------|
+|  31:0  |   rw   | 0x10000000 | bootaddr | Boot Address  |
+
+## fetchen
+Core Fetch Enable
+- Offset: `0x4`
+- Reset default: `0x0`
+- Reset mask: `0x1`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "fetchen", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}
+```
+
+|  Bits  |  Type  |  Reset  | Name    | Description   |
+|:------:|:------:|:-------:|:--------|:--------------|
+|  31:1  |        |         |         | Reserved      |
+|   0    |   rw   |   0x0   | fetchen | Fetch Enable  |
+
+## corestatus
+Core Return Status (return value, EOC)
+- Offset: `0x8`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "core_status", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name        | Description                                             |
+|:------:|:------:|:-------:|:------------|:--------------------------------------------------------|
+|  31:0  |   rw   |   0x0   | core_status | Core Return Status (EOC(bit[31]) and status(bit[30:0])) |
+
+## bootmode
+Core Boot Mode
+- Offset: `0xc`
+- Reset default: `0x0`
+- Reset mask: `0x1`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "bootmode", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 100}}
+```
+
+|  Bits  |  Type  |  Reset  | Name     | Description   |
+|:------:|:------:|:-------:|:---------|:--------------|
+|  31:1  |        |         |          | Reserved      |
+|   0    |   rw   |   0x0   | bootmode | Boot Mode     |
+
+## sram_dly
+SRAM A_DLY value
+- Offset: `0x10`
+- Reset default: `0x1`
+- Reset mask: `0x1`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "sram_dly", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 100}}
+```
+
+|  Bits  |  Type  |  Reset  | Name     | Description                                                       |
+|:------:|:------:|:-------:|:---------|:------------------------------------------------------------------|
+|  31:1  |        |         |          | Reserved                                                          |
+|   0    |   rw   |   0x1   | sram_dly | Controls the A_DLY pin of the SRAMs (configured internal timings) |
+

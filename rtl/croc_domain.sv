@@ -46,6 +46,7 @@ module croc_domain import croc_pkg::*; #(
   // -----------------
   // Control Signals
   // -----------------
+  logic sram_impl; // soc_ctrl -> SRAM config signals
   logic debug_req;
   logic fetch_enable;
   logic [31:0] boot_addr;
@@ -368,7 +369,7 @@ module croc_domain import croc_pkg::*; #(
 
     assign bank_word_addr = bank_byte_addr[SbrObiCfg.AddrWidth-1:2];
 
-    tc_sram #(
+    tc_sram_impl #(
       .NumWords  ( SramBankNumWords ),
       .DataWidth ( 32 ),
       .NumPorts  (  1 ),
@@ -376,6 +377,9 @@ module croc_domain import croc_pkg::*; #(
     ) i_sram (
       .clk_i,
       .rst_ni,
+
+      .impl_i  ( sram_impl      ),
+      .impl_o  ( ), // not connected
 
       .req_i   ( bank_req       ),
       .we_i    ( bank_we        ),
@@ -497,8 +501,9 @@ module croc_domain import croc_pkg::*; #(
 
   soc_ctrl_reg_pkg::soc_ctrl_reg2hw_t soc_ctrl_reg2hw;
   soc_ctrl_reg_pkg::soc_ctrl_hw2reg_t soc_ctrl_hw2reg;
-  assign fetch_enable = soc_ctrl_reg2hw.fetchen.q | fetch_en_i;
-  assign boot_addr = soc_ctrl_reg2hw.bootaddr.q;
+  assign fetch_enable    = soc_ctrl_reg2hw.fetchen.q | fetch_en_i;
+  assign boot_addr       = soc_ctrl_reg2hw.bootaddr.q;
+  assign sram_impl       = soc_ctrl_reg2hw.sram_dly;
   assign soc_ctrl_hw2reg = '0;
 
   soc_ctrl_reg_top #(
