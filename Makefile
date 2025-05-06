@@ -25,10 +25,17 @@ default: help
 ################
 # Dependencies #
 ################
+# Download RCX file used for parasitic extraction from ORFS (configuration got ok by IHP)
+IHP_RCX_URL  := "https://raw.githubusercontent.com/The-OpenROAD-Project/OpenROAD-flow-scripts/7747f88f70daaeb63f43ce36e71829707b7e3fa7/flow/platforms/ihp-sg13g2/IHP_rcx_patterns.rules"
+IHP_RCX_FILE := $(PROJ_DIR)/openroad/IHP_rcx_patterns.rules
+
 ## Checkout/update dependencies using Bender
-checkout:
+checkout: $(IHP_RCX_FILE)
 	$(BENDER) checkout
 	git submodule update --init --recursive
+
+$(IHP_RCX_FILE): 
+	curl -L -o $@ $(IHP_RCX_URL)
 
 ## Reset dependencies (without updating Bender.lock)
 clean-deps:
