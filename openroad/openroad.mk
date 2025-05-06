@@ -29,7 +29,7 @@ backend: $(OR_OUT)/$(PROJ_NAME).def
 openroad: $(OR_OUT)/$(PROJ_NAME).def
 
 ## Place & Route flow using OpenROAD
-$(OR_OUT_FILES): $(NETLIST) $(OR_DIR)/scripts/*.tcl $(OR_DIR)/src/*.tcl $(OR_DIR)/src/*.sdc
+$(OR_OUT_FILES): $(NETLIST) $(OR_DIR)/scripts/*.tcl $(OR_DIR)/src/*.tcl $(OR_DIR)/src/*.sdc $(OR_DIR)/IHP_rcx_patterns.rules
 	mkdir -p $(SAVE)
 	mkdir -p $(REPORTS)
 	mkdir -p $(OR_OUT)

@@ -272,7 +272,7 @@ utl::report "Perform buffer insertion..."
 repair_design -verbose
 utl::report "Repair setup and hold violations..."
 repair_timing -skip_pin_swap -setup -verbose -repair_tns 100
-repair_timing -skip_pin_swap -hold -hold_margin 0.05 -verbose -repair_tns 100
+repair_timing -skip_pin_swap -hold -hold_margin 0.1 -verbose -repair_tns 100
 
 utl::report "GRT incremental..."
 # Run to get modified net by DPL
@@ -334,8 +334,12 @@ filler_placement $stdfill
 global_connect
 
 save_checkpoint ${log_id_str}_${proj_name}.final
-report_metrics "${log_id_str}_${proj_name}.final"
 report_image "${log_id_str}_${proj_name}.final" true true false true
+define_process_corner -ext_model_index 0 X
+extract_parasitics -ext_model_file IHP_rcx_patterns.rules
+write_spef out/${proj_name}.spef
+read_spef  out/${proj_name}.spef; # readback parasitics for OpenSTA
+report_metrics "${log_id_str}_${proj_name}.final"
 
 utl::report "Write output"
 write_def                      out/${proj_name}.def
