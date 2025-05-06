@@ -10,6 +10,10 @@ Croc was sucesfully taped out in Nov 2024. The chip is called [MLEM](http://asic
 MLEM was designed and prepared for tapeout by ETHZ students as a bachelor project. The exact code and scripts used for the tapeout can be seen in the frozen [mlem-tapeout](https://github.com/pulp-platform/croc/tree/mlem-tapeout) branch.
 
 
+**IMPORTANT: Update to 1.1 recommended.**  
+Release 1.1 and newer includes a fix for the SRAMs where the `A_DLY` pin was tied low instead of high. The pin controls internal timings and the old version may create violations for some SRAMs.  
+
+
 ## Architecture
 
 ![Croc block diagram](doc/croc_arch.svg)
