@@ -46,7 +46,7 @@ jobs:
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
           run-id: ${{ steps.get-run-id.outputs.run-id }}
-          path: klayout/croc_chip.gds
+          path: klayout
 
       - name: Checkout ArtistIC repository
         uses: actions/checkout@v4
