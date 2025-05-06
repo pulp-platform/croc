@@ -10,7 +10,7 @@
 module soc_ctrl_reg_top #(
   parameter type reg_req_t = logic,
   parameter type reg_rsp_t = logic,
-  parameter int AW = 4,
+  parameter int AW = 5,
   parameter int unsigned BootAddrDefault = 32'h0
 ) (
   input logic clk_i,
@@ -81,6 +81,9 @@ module soc_ctrl_reg_top #(
   logic bootmode_qs;
   logic bootmode_wd;
   logic bootmode_we;
+  logic sram_dly_qs;
+  logic sram_dly_wd;
+  logic sram_dly_we;
 
   // Register instances
   // R[bootaddr]: V(False)
@@ -191,15 +194,43 @@ module soc_ctrl_reg_top #(
   );
 
 
+  // R[sram_dly]: V(False)
+
+  prim_subreg #(
+    .DW      (1),
+    .SWACCESS("RW"),
+    .RESVAL  (1'h1)
+  ) u_sram_dly (
+    .clk_i   (clk_i    ),
+    .rst_ni  (rst_ni  ),
+
+    // from register interface
+    .we     (sram_dly_we),
+    .wd     (sram_dly_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0  ),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.sram_dly.q ),
+
+    // to register interface (read)
+    .qs     (sram_dly_qs)
+  );
 
 
-  logic [3:0] addr_hit;
+
+
+  logic [4:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[0] = (reg_addr == SOC_CTRL_BOOTADDR_OFFSET);
     addr_hit[1] = (reg_addr == SOC_CTRL_FETCHEN_OFFSET);
     addr_hit[2] = (reg_addr == SOC_CTRL_CORESTATUS_OFFSET);
     addr_hit[3] = (reg_addr == SOC_CTRL_BOOTMODE_OFFSET);
+    addr_hit[4] = (reg_addr == SOC_CTRL_SRAM_DLY_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -210,7 +241,8 @@ module soc_ctrl_reg_top #(
               ((addr_hit[0] & (|(SOC_CTRL_PERMIT[0] & ~reg_be))) |
                (addr_hit[1] & (|(SOC_CTRL_PERMIT[1] & ~reg_be))) |
                (addr_hit[2] & (|(SOC_CTRL_PERMIT[2] & ~reg_be))) |
-               (addr_hit[3] & (|(SOC_CTRL_PERMIT[3] & ~reg_be)))));
+               (addr_hit[3] & (|(SOC_CTRL_PERMIT[3] & ~reg_be))) |
+               (addr_hit[4] & (|(SOC_CTRL_PERMIT[4] & ~reg_be)))));
   end
 
   assign bootaddr_we = addr_hit[0] & reg_we & !reg_error;
@@ -224,6 +256,9 @@ module soc_ctrl_reg_top #(
 
   assign bootmode_we = addr_hit[3] & reg_we & !reg_error;
   assign bootmode_wd = reg_wdata[0];
+
+  assign sram_dly_we = addr_hit[4] & reg_we & !reg_error;
+  assign sram_dly_wd = reg_wdata[0];
 
   // Read data return
   always_comb begin
@@ -243,6 +278,10 @@ module soc_ctrl_reg_top #(
 
       addr_hit[3]: begin
         reg_rdata_next[0] = bootmode_qs;
+      end
+
+      addr_hit[4]: begin
+        reg_rdata_next[0] = sram_dly_qs;
       end
 
       default: begin
@@ -267,7 +306,7 @@ endmodule
 
 module soc_ctrl_reg_top_intf
 #(
-  parameter int AW = 4,
+  parameter int AW = 5,
   localparam int DW = 32
 ) (
   input logic clk_i,

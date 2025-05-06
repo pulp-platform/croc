@@ -7,7 +7,7 @@
 package soc_ctrl_reg_pkg;
 
   // Address widths within the block
-  parameter int BlockAw = 4;
+  parameter int BlockAw = 5;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -30,6 +30,10 @@ package soc_ctrl_reg_pkg;
   } soc_ctrl_reg2hw_bootmode_reg_t;
 
   typedef struct packed {
+    logic        q;
+  } soc_ctrl_reg2hw_sram_dly_reg_t;
+
+  typedef struct packed {
     logic        d;
     logic        de;
   } soc_ctrl_hw2reg_fetchen_reg_t;
@@ -44,35 +48,39 @@ package soc_ctrl_reg_pkg;
     soc_ctrl_reg2hw_bootaddr_reg_t bootaddr; // [66:35]
     soc_ctrl_reg2hw_fetchen_reg_t fetchen; // [34:34]
     soc_ctrl_reg2hw_corestatus_reg_t corestatus; // [33:2]
-    soc_ctrl_reg2hw_bootmode_reg_t bootmode; // [1:0]
+    soc_ctrl_reg2hw_bootmode_reg_t bootmode; // [1:1]
+    soc_ctrl_reg2hw_sram_dly_reg_t sram_dly; // [0:0]
   } soc_ctrl_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    soc_ctrl_hw2reg_fetchen_reg_t fetchen; // [4:3]
-    soc_ctrl_hw2reg_bootmode_reg_t bootmode; // [2:0]
+    soc_ctrl_hw2reg_fetchen_reg_t fetchen; // [3:2]
+    soc_ctrl_hw2reg_bootmode_reg_t bootmode; // [1:0]
   } soc_ctrl_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] SOC_CTRL_BOOTADDR_OFFSET = 4'h 0;
-  parameter logic [BlockAw-1:0] SOC_CTRL_FETCHEN_OFFSET = 4'h 4;
-  parameter logic [BlockAw-1:0] SOC_CTRL_CORESTATUS_OFFSET = 4'h 8;
-  parameter logic [BlockAw-1:0] SOC_CTRL_BOOTMODE_OFFSET = 4'h c;
+  parameter logic [BlockAw-1:0] SOC_CTRL_BOOTADDR_OFFSET = 5'h 0;
+  parameter logic [BlockAw-1:0] SOC_CTRL_FETCHEN_OFFSET = 5'h 4;
+  parameter logic [BlockAw-1:0] SOC_CTRL_CORESTATUS_OFFSET = 5'h 8;
+  parameter logic [BlockAw-1:0] SOC_CTRL_BOOTMODE_OFFSET = 5'h c;
+  parameter logic [BlockAw-1:0] SOC_CTRL_SRAM_DLY_OFFSET = 5'h 10;
 
   // Register index
   typedef enum int {
     SOC_CTRL_BOOTADDR,
     SOC_CTRL_FETCHEN,
     SOC_CTRL_CORESTATUS,
-    SOC_CTRL_BOOTMODE
+    SOC_CTRL_BOOTMODE,
+    SOC_CTRL_SRAM_DLY
   } soc_ctrl_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] SOC_CTRL_PERMIT [4] = '{
+  parameter logic [3:0] SOC_CTRL_PERMIT [5] = '{
     4'b 1111, // index[0] SOC_CTRL_BOOTADDR
     4'b 0001, // index[1] SOC_CTRL_FETCHEN
     4'b 1111, // index[2] SOC_CTRL_CORESTATUS
-    4'b 0001  // index[3] SOC_CTRL_BOOTMODE
+    4'b 0001, // index[3] SOC_CTRL_BOOTMODE
+    4'b 0001  // index[4] SOC_CTRL_SRAM_DLY
   };
 
 endpackage

@@ -26,7 +26,7 @@ sources:
   - target: ihp13
     files:
       - ihp13/tc_clk.sv
-      - ihp13/tc_sram.sv
+      - ihp13/tc_sram_impl.sv
 
   - rtl/croc_pkg.sv
   - rtl/user_pkg.sv

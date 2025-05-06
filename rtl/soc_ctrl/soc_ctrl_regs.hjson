@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: SHL-0.51
 
 {
-  name: "safety_soc_ctrl",
+  name: "soc_ctrl",
   clock_primary: "clk_i",
   reset_primary: "rst_ni",
   bus_interfaces: [
@@ -50,7 +50,7 @@
           resval: 0
         }
       ]
-    }
+    },
     { name: "bootmode",
       desc: "Core Boot Mode",
       swaccess: "rw",
@@ -62,7 +62,19 @@
           resval: 0x0
         }
       ]
-
     },
+    { name: "sram_dly",
+      desc: "SRAM A_DLY value",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          name: "sram_dly",
+          desc: "Controls the A_DLY pin of the SRAMs (configured internal timings)",
+          resval: 0x1
+        }
+      ]
+    }
+
   ],
 }

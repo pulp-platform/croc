@@ -44,7 +44,7 @@ yosys setattr -set keep_hierarchy 1 "t:timer_unit$*"
 yosys setattr -set keep_hierarchy 1 "t:reg_uart_wrap$*"
 yosys setattr -set keep_hierarchy 1 "t:soc_ctrl_reg_top$*"
 yosys setattr -set keep_hierarchy 1 "t:tc_clk*$*"
-yosys setattr -set keep_hierarchy 1 "t:tc_sram$*"
+yosys setattr -set keep_hierarchy 1 "t:tc_sram_impl$*"
 yosys setattr -set keep_hierarchy 1 "t:cdc_*$*"
 yosys setattr -set keep_hierarchy 1 "t:sync$*"
 
