@@ -17,8 +17,6 @@ YOSYS_REPORTS	:= $(YOSYS_DIR)/reports
 
 # top level to be synthesized
 TOP_DESIGN		?= croc_chip
-# target period in picoseconds
-PERIOD_PS		?= 10000
 
 # file containing include dirs, defines and paths to all source files
 SV_FLIST    	:= $(realpath $(YOSYS_DIR)/..)/croc.flist
@@ -38,7 +36,6 @@ $(NETLIST) $(NETLIST_DEBUG):  $(SV_FLIST)
 	cd $(YOSYS_DIR) && \
 	SV_FLIST="$(SV_FLIST)" \
 	TOP_DESIGN="$(TOP_DESIGN)" \
-	PERIOD_PS="$(PERIOD_PS)" \
 	TMP="$(YOSYS_TMP)" \
 	OUT="$(YOSYS_OUT)" \
 	REPORTS="$(YOSYS_REPORTS)" \
