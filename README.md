@@ -6,7 +6,7 @@ As it is oriented towards education, it forgoes some configurability to increase
 
 Croc is developed as part of the PULP project, a joint effort between ETH Zurich and the University of Bologna.
 
-Croc was sucesfully taped out in Nov 2024. The chip is called [MLEM](http://asic.ee.ethz.ch/2024/MLEM.html), named after the sound Yoshi makes when eating a tasty fruit.
+Croc was successfully taped out in Nov 2024. The chip is called [MLEM](http://asic.ee.ethz.ch/2024/MLEM.html), named after the sound Yoshi makes when eating a tasty fruit.
 MLEM was designed and prepared for tapeout by ETHZ students as a bachelor project. The exact code and scripts used for the tapeout can be seen in the frozen [mlem-tapeout](https://github.com/pulp-platform/croc/tree/mlem-tapeout) branch.
 
 
