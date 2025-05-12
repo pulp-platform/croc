@@ -123,8 +123,6 @@ void obi_timer_sleep(uint32_t cycles) {
     set_global_irq_enable(1);
     wfi();
 
-    if (!timer_irq_enabled)
-        set_interrupt_enable(0, IRQ_OBI_TIMER);
-    if (!global_irq_enabled)
-        set_global_irq_enable(0);
+    if (!timer_irq_enabled) set_interrupt_enable(0, IRQ_OBI_TIMER);
+    if (!global_irq_enabled) set_global_irq_enable(0);
 }

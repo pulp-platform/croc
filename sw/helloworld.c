@@ -45,9 +45,9 @@ int main() {
     uart_loopback_enable();
     printf("internal msg\n");
     clint_sleep_ms(1);
-    for(uint8_t idx = 0; idx<15; idx++) {
+    for (uint8_t idx = 0; idx < 15; idx++) {
         receive_buff[idx] = uart_read();
-        if(receive_buff[idx] == '\n') {
+        if (receive_buff[idx] == '\n') {
             break;
         }
     }
@@ -59,21 +59,21 @@ int main() {
 
     // toggling some GPIOs
     gpio_set_direction(0xFFFF, 0x000F); // lowest four as outputs
-    gpio_write(0x0A);  // ready output pattern
-    gpio_enable(0xFF); // enable lowest eight
+    gpio_write(0x0A);                   // ready output pattern
+    gpio_enable(0xFF);                  // enable lowest eight
     // wait a few cycles to give GPIO signal time to propagate
-    asm volatile ("nop; nop; nop; nop; nop;");
+    asm volatile("nop; nop; nop; nop; nop;");
     printf("GPIO (expect 0xA0): 0x%x\n", gpio_read());
 
     gpio_toggle(0x0F); // toggle lower 8 GPIOs
-    asm volatile ("nop; nop; nop; nop; nop;");
+    asm volatile("nop; nop; nop; nop; nop;");
     printf("GPIO (expect 0x50): 0x%x\n", gpio_read());
     uart_write_flush();
 
     // doing some compute
     uint32_t start = get_mcycle();
-    uint32_t res   = isqrt(1234567890UL);
-    uint32_t end   = get_mcycle();
+    uint32_t res = isqrt(1234567890UL);
+    uint32_t end = get_mcycle();
     printf("Result: 0x%x, Cycles: 0x%x\n", res, end - start);
     uart_write_flush();
 

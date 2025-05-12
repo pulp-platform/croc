@@ -10,7 +10,7 @@
 
 uint64_t clint_get_mtime() {
     uint64_t mtime;
-    mtime  = ((uint64_t)*reg32(CLINT_BASE_ADDR, CLINT_MTIME_HIGH_REG_OFFSET)) << 32;
+    mtime = ((uint64_t)*reg32(CLINT_BASE_ADDR, CLINT_MTIME_HIGH_REG_OFFSET)) << 32;
     mtime |= ((uint64_t)*reg32(CLINT_BASE_ADDR, CLINT_MTIME_LOW_REG_OFFSET));
     return mtime;
 }
@@ -18,9 +18,9 @@ uint64_t clint_get_mtime() {
 void clint_set_mtimecmp(uint64_t value) {
     // Avoid spurious interrupts by writing the high register first
     uint32_t value_high = (uint32_t)(value >> 32);
-    uint32_t value_low  = (uint32_t)(value);
+    uint32_t value_low = (uint32_t)(value);
     *reg32(CLINT_BASE_ADDR, CLINT_MTIMECMP_HIGH0_REG_OFFSET) = value_high;
-    *reg32(CLINT_BASE_ADDR, CLINT_MTIMECMP_LOW0_REG_OFFSET)  = value_low;
+    *reg32(CLINT_BASE_ADDR, CLINT_MTIMECMP_LOW0_REG_OFFSET) = value_low;
 }
 
 void clint_sleep_ticks(uint32_t ticks) {
@@ -38,14 +38,12 @@ void clint_sleep_ticks(uint32_t ticks) {
     // Wait for interrupt
     wfi();
 
-    if (!timer_irq_enabled)
-        set_interrupt_enable(0, IRQ_TIMER);
-    if (!global_irq_enabled)
-        set_global_irq_enable(0);
+    if (!timer_irq_enabled) set_interrupt_enable(0, IRQ_TIMER);
+    if (!global_irq_enabled) set_global_irq_enable(0);
 }
 
 void clint_sleep_ms(uint32_t ms) {
     // RTC frequency: 32.768 kHz
     // 1ms <-> 32.768 ticks ~= 33 ticks
-    clint_sleep_ticks(33*ms);
+    clint_sleep_ticks(33 * ms);
 }
