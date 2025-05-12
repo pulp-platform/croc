@@ -4,7 +4,7 @@
 // Copyright 2024 ETH Zurich and University of Bologna
 
 // Licensing information found in source file:
-// 
+//
 // SPDX-License-Identifier: SHL-0.51
 
 #ifndef _SOC_CTRL_REG_DEFS_
@@ -31,10 +31,10 @@ extern "C" {
 #define SOC_CTRL_BOOTMODE_BOOTMODE_MASK 0x3
 #define SOC_CTRL_BOOTMODE_BOOTMODE_OFFSET 0
 #define SOC_CTRL_BOOTMODE_BOOTMODE_FIELD \
-  ((bitfield_field32_t) { .mask = SOC_CTRL_BOOTMODE_BOOTMODE_MASK, .index = SOC_CTRL_BOOTMODE_BOOTMODE_OFFSET })
+    ((bitfield_field32_t){.mask = SOC_CTRL_BOOTMODE_BOOTMODE_MASK, .index = SOC_CTRL_BOOTMODE_BOOTMODE_OFFSET})
 
 #ifdef __cplusplus
-}  // extern "C"
+} // extern "C"
 #endif
-#endif  // _SOC_CTRL_REG_DEFS_
-// End generated register defines for safety_soc_ctrl
+#endif // _SOC_CTRL_REG_DEFS_
+       // End generated register defines for safety_soc_ctrl
