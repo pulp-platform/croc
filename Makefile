@@ -33,7 +33,7 @@ checkout: $(IHP_RCX_FILE)
 	$(BENDER) checkout
 	git submodule update --init --recursive
 
-$(IHP_RCX_FILE): 
+$(IHP_RCX_FILE):
 	curl -L -o $@ $(IHP_RCX_URL)
 
 ## Reset dependencies (without updating Bender.lock)
@@ -155,13 +155,26 @@ help: Makefile
 
 .PHONY: help
 
+###########
+# Format  #
+###########
+CLANG_FORMAT_EXECUTABLE ?= clang-format
+
+## Automatically format the code using clang-format and black
+format:
+	@echo -e "\033[1m-> Formatting Python Code...\033[0m"
+	@black */*.py
+	@echo -e "\033[1m-> Formatting C Code...\033[0m"
+	@python scripts/run_clang_format.py -ir sw/ --clang-format-executable=$(CLANG_FORMAT_EXECUTABLE)
+
+.PHONY: format
 
 ###########
 # Cleanup #
 ###########
 
 ## Delete generated files and directories
-clean: 
+clean:
 	rm -f $(SV_FLIST)
 	rm -f klayout/croc_chip.gds
 	rm -rf verilator/obj_dir/

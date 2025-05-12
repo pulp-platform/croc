@@ -13,13 +13,13 @@ int timer_count = 0;
 // printing through UART inside interrupt service
 // routines is not recommended. Only use for debug
 // or testing.
-void croc_interrupt_handler (uint32_t cause) {
+void croc_interrupt_handler(uint32_t cause) {
     if (cause == IRQ_OBI_TIMER) {
         obi_timer_clear_expired();
         timer_count += 1;
-        #ifdef PRINT_TIMER_IRQ
+#ifdef PRINT_TIMER_IRQ
         printf("Timer\n");
-        #endif
+#endif
     }
 }
 
@@ -36,7 +36,7 @@ int main() {
     set_interrupt_enable(1, IRQ_OBI_TIMER);
     set_global_irq_enable(1);
 
-    while(timer_count < 10) wfi();
+    while (timer_count < 10) wfi();
 
     // disable the timer
     obi_timer_set_enable(0);

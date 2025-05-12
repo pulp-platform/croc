@@ -8,8 +8,7 @@
 #include "util.h"
 #include "config.h"
 
-const char hex_symbols[16] = {'0', '1', '2', '3', '4', '5', '6', '7', 
-                              '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+const char hex_symbols[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
 /// @brief format number as hexadecimal digits
 /// @return number of characters written to buffer
@@ -30,7 +29,7 @@ uint8_t format_hex32(char *buffer, uint32_t num) {
 void printf(char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
-    char buffer[12];  // holds string while assembling
+    char buffer[12]; // holds string while assembling
     uint8_t idx;
 
     while (*fmt) {
