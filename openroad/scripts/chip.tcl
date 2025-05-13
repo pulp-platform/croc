@@ -276,7 +276,7 @@ repair_timing -skip_pin_swap -hold -hold_margin 0.1 -verbose -repair_tns 100
 
 utl::report "GRT incremental..."
 # Run to get modified net by DPL
-global_route -start_incremental
+global_route -start_incremental -allow_congestion
 # Running DPL to fix overlapped instances
 detailed_placement
 # Route only the modified net by DPL
