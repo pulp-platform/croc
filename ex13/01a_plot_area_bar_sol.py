@@ -76,6 +76,9 @@ if __name__ == "__main__":
     #
     # - The x-axis should represent the component names.
     # - The y-axis should represent the area values.
+    # - Set a reasonable title for the plot.
+    # - Set a reasonable x-axis label.
+    # - Set a reasonable y-axis label.
     # --------------------------------------------------------------------------
 
     # Set the figure size
@@ -116,7 +119,7 @@ if __name__ == "__main__":
     #  STUDENT TASK 1a.3: Remap the names of the components
     # --------------------------------------------------------------------------
     # Remap the names of the components for better readability.
-    # Remember to move the plot commands to the correct position in the code.
+    # Remember to move the remapping code before the `plt.bar(...)` command.
     #
     #  HINT: Use the `names` list to remap the names of the components.
     # --------------------------------------------------------------------------
