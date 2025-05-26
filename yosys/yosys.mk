@@ -19,7 +19,7 @@ YOSYS_REPORTS	:= $(YOSYS_DIR)/reports
 TOP_DESIGN		?= croc_chip
 
 # file containing include dirs, defines and paths to all source files
-SV_FLIST    	:= $(realpath $(YOSYS_DIR)/..)/croc.flist
+SV_FLIST := $(shell awk '$$0 != "/foss/designs/rtl/cve2/vlsiffra/sg13g2_stdcell.v"' $(realpath $(YOSYS_DIR)/..)/croc.flist > /tmp/filtered.flist && echo /tmp/filtered.flist)
 
 # path to the resulting netlists (debug preserves multibit signals)
 NETLIST			:= $(YOSYS_OUT)/$(TOP_DESIGN)_yosys.v
