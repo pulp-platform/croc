@@ -1,0 +1,39 @@
+  violation type: Metal Spacing
+    srcs: net:net3909 net:net3163 
+    bbox = ( 428.05, 632.84 ) - ( 428.255, 633.04 ) on Layer Metal2
+  violation type: Metal Spacing
+    srcs: net:net3913 net:net3165 
+    bbox = ( 459.25, 632.84 ) - ( 459.44, 633.04 ) on Layer Metal2
+  violation type: Metal Spacing
+    srcs: net:net3913 net:net3142 
+    bbox = ( 456.37, 632.84 ) - ( 456.56, 633.04 ) on Layer Metal2
+  violation type: Metal Spacing
+    srcs: net:net3908 net:net3163 
+    bbox = ( 418.945, 637.04 ) - ( 419.105, 637.24 ) on Layer Metal2
+  violation type: Metal Spacing
+    srcs: net:net3909 net:net3140 
+    bbox = ( 426.61, 640.56 ) - ( 426.785, 640.6 ) on Layer Metal2
+  violation type: Metal Spacing
+    srcs: net:net3909 net:net3140 
+    bbox = ( 426.61, 640.6 ) - ( 426.785, 640.61 ) on Layer Metal2
+  violation type: Short
+    srcs: net:net3909 net:net3163 
+    bbox = ( 423.89, 640.56 ) - ( 423.94, 640.6 ) on Layer Metal2
+  violation type: Metal Spacing
+    srcs: net:net3909 
+    bbox = ( 418.145, 640.81 ) - ( 418.435, 640.82 ) on Layer Metal2
+  violation type: Metal Spacing
+    srcs: net:net3909 net:net3163 
+    bbox = ( 417.94, 640.56 ) - ( 418.145, 640.6 ) on Layer Metal2
+  violation type: Metal Spacing
+    srcs: net:net3909 net:net3163 
+    bbox = ( 417.985, 640.56 ) - ( 418.145, 640.6 ) on Layer Metal2
+  violation type: Metal Spacing
+    srcs: net:i_croc_soc/i_croc/i_core_wrap/i_ibex.cs_registers_i/mhpmcounter_1881_ net:i_croc_soc/i_croc/i_core_wrap/i_ibex.cs_registers_i/mhpmcounter_1884_ 
+    bbox = ( 1005, 561.44 ) - ( 1005.02, 561.465 ) on Layer Metal2
+  violation type: Metal Spacing
+    srcs: net:i_croc_soc/i_croc/i_core_wrap/i_ibex.cs_registers_i/mhpmcounter_1882_ net:i_croc_soc/i_croc/i_core_wrap/i_ibex.cs_registers_i/mhpmcounter_1884_ 
+    bbox = ( 1005.5, 561.265 ) - ( 1005.71, 561.465 ) on Layer Metal2
+  violation type: Short
+    srcs: net:i_croc_soc/i_croc/i_dm_top.i_dm_top/_2707_ net:VSS 
+    bbox = ( 722.835, 1054.52 ) - ( 723.035, 1054.72 ) on Layer Metal2

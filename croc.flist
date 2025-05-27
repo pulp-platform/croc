@@ -164,6 +164,7 @@
 /foss/designs/rtl/soc_ctrl/soc_ctrl_reg_pkg.sv
 /foss/designs/rtl/gpio/gpio_reg_pkg.sv
 /foss/designs/rtl/cve2/vlsiffra/adder_33.sv
+/foss/designs/rtl/cve2/vlsiffra/mult17.v
 /foss/designs/rtl/cve2/vlsiffra/sg13g2_stdcell.v
 /foss/designs/rtl/core_wrap.sv
 /foss/designs/rtl/soc_ctrl/soc_ctrl_reg_top.sv

@@ -1,0 +1,408 @@
+Warning: There are 4 output ports missing set_output_delay.
+  unused0_o
+  unused1_o
+  unused2_o
+  unused3_o
+Warning: There are 318 unconstrained endpoints.
+  unused0_o
+  unused1_o
+  unused2_o
+  unused3_o
+  i_croc_soc/i_croc/all_periph_obi_rsp_121__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_132__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_133__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_134__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_135__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_136__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_137__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_138__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_139__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_140__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_141__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_142__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_143__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_144__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_145__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_146__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_147__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_148__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_149__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_150__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_151__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_152__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_153__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_154__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_155__reg/D
+  i_croc_soc/i_croc/all_periph_obi_rsp_82__reg/D
+  i_croc_soc/i_croc/all_sbr_obi_rsp_121__reg/D
+  i_croc_soc/i_croc/all_sbr_obi_rsp_82__reg/D
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_ADDR[0]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_ADDR[1]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_ADDR[2]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_ADDR[3]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_ADDR[4]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_ADDR[5]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_ADDR[6]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_ADDR[7]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[0]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[10]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[11]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[12]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[13]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[14]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[15]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[16]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[17]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[18]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[19]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[1]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[20]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[21]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[22]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[23]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[24]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[25]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[26]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[27]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[28]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[29]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[2]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[30]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[31]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[32]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[33]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[34]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[35]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[36]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[37]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[38]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[39]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[3]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[40]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[41]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[42]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[43]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[44]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[45]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[46]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[47]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[48]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[49]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[4]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[50]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[51]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[52]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[53]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[54]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[55]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[56]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[57]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[58]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[59]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[5]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[60]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[61]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[62]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[63]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[6]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[7]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[8]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[9]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[0]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[10]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[11]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[12]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[13]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[14]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[15]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[16]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[17]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[18]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[19]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[1]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[20]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[21]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[22]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[23]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[24]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[25]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[26]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[27]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[28]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[29]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[2]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[30]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[31]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[32]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[33]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[34]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[35]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[36]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[37]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[38]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[39]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[3]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[40]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[41]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[42]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[43]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[44]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[45]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[46]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[47]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[48]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[49]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[4]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[50]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[51]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[52]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[53]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[54]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[55]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[56]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[57]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[58]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[59]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[5]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[60]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[61]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[62]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[63]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[6]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[7]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[8]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[9]
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_MEN
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_REN
+  i_croc_soc/i_croc/gen_sram_bank[0].i_sram/gen_512x32xBx1.i_cut/A_BIST_WEN
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_ADDR[0]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_ADDR[1]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_ADDR[2]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_ADDR[3]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_ADDR[4]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_ADDR[5]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_ADDR[6]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_ADDR[7]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[0]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[10]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[11]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[12]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[13]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[14]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[15]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[16]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[17]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[18]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[19]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[1]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[20]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[21]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[22]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[23]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[24]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[25]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[26]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[27]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[28]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[29]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[2]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[30]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[31]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[32]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[33]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[34]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[35]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[36]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[37]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[38]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[39]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[3]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[40]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[41]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[42]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[43]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[44]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[45]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[46]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[47]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[48]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[49]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[4]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[50]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[51]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[52]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[53]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[54]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[55]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[56]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[57]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[58]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[59]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[5]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[60]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[61]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[62]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[63]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[6]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[7]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[8]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_BM[9]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[0]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[10]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[11]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[12]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[13]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[14]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[15]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[16]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[17]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[18]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[19]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[1]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[20]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[21]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[22]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[23]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[24]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[25]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[26]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[27]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[28]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[29]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[2]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[30]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[31]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[32]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[33]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[34]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[35]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[36]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[37]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[38]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[39]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[3]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[40]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[41]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[42]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[43]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[44]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[45]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[46]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[47]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[48]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[49]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[4]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[50]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[51]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[52]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[53]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[54]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[55]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[56]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[57]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[58]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[59]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[5]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[60]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[61]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[62]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[63]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[6]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[7]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[8]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_DIN[9]
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_MEN
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_REN
+  i_croc_soc/i_croc/gen_sram_bank[1].i_sram/gen_512x32xBx1.i_cut/A_BIST_WEN
+  i_croc_soc/i_croc/i_gpio/i_reg_file.id_q_reg/D
+  i_croc_soc/i_croc/i_timer/r_id_o[0]_reg/D
+  i_croc_soc/i_croc/i_uart/i_apb_uart.UART_IS_CTS.iD_0__reg/D
+  i_croc_soc/i_croc/i_uart/i_apb_uart.UART_IS_DCD.iD_0__reg/D
+  i_croc_soc/i_croc/i_uart/i_apb_uart.UART_IS_DSR.iD_0__reg/D
+  i_croc_soc/i_croc/i_uart/i_apb_uart.UART_IS_RI.iD_0__reg/D
+  i_croc_soc/i_croc/i_uart_translate.r_opc_o_reg/D
+  i_croc_soc/i_rstgen.i_rstgen_bypass.synch_regs_q_0__reg/D
+max_delay/setup group asynchronous
+
+                                     Required  Actual
+Endpoint                               Delay   Delay   Slack
+------------------------------------------------------------
+i_croc_soc/i_croc/all_periph_obi_rsp_100__reg/RESET_B (sg13g2_dfrbp_1)    0.62   64.58  -63.97 (VIOLATED)
+
+max_delay/setup group path delay
+
+                                     Required  Actual
+Endpoint                               Delay   Delay   Slack
+------------------------------------------------------------
+i_croc_soc/i_croc/i_dm_top.i_dm_top/i_dm_csrs.progbuf_o_101__reg/D (sg13g2_dfrbp_1)    4.28    1.68    2.60 (MET)
+
+max_delay/setup group clk_jtg
+
+                                     Required  Actual
+Endpoint                               Delay   Delay   Slack
+------------------------------------------------------------
+jtag_tdo_o (output)                    14.90   13.58    1.32 (MET)
+
+max_delay/setup group clk_sys
+
+                                     Required  Actual
+Endpoint                               Delay   Delay   Slack
+------------------------------------------------------------
+i_croc_soc/i_croc/i_core_wrap/i_ibex.crash_dump_o_95__reg/D (sg13g2_dfrbp_1)   12.30    9.95    2.35 (MET)
+
+max_delay/setup group asynchronous
+
+                                     Required  Actual
+Endpoint                               Delay   Delay   Slack
+------------------------------------------------------------
+i_croc_soc/i_croc/all_periph_obi_rsp_100__reg/RESET_B (sg13g2_dfrbp_1)    0.62   64.58  -63.97 (VIOLATED)
+
+max_delay/setup group path delay
+
+                                     Required  Actual
+Endpoint                               Delay   Delay   Slack
+------------------------------------------------------------
+i_croc_soc/i_croc/i_dm_top.i_dm_top/i_dm_csrs.progbuf_o_101__reg/D (sg13g2_dfrbp_1)    4.28    1.68    2.60 (MET)
+
+max_delay/setup group clk_jtg
+
+                                     Required  Actual
+Endpoint                               Delay   Delay   Slack
+------------------------------------------------------------
+jtag_tdo_o (output)                    14.90   13.58    1.32 (MET)
+
+max_delay/setup group clk_sys
+
+                                     Required  Actual
+Endpoint                               Delay   Delay   Slack
+------------------------------------------------------------
+i_croc_soc/i_croc/i_core_wrap/i_ibex.crash_dump_o_95__reg/D (sg13g2_dfrbp_1)   12.30    9.95    2.35 (MET)
+
+max_delay/setup group asynchronous
+
+                                     Required  Actual
+Endpoint                               Delay   Delay   Slack
+------------------------------------------------------------
+i_croc_soc/i_croc/all_periph_obi_rsp_100__reg/RESET_B (sg13g2_dfrbp_1)    0.62   64.58  -63.97 (VIOLATED)
+
+max_delay/setup group path delay
+
+                                     Required  Actual
+Endpoint                               Delay   Delay   Slack
+------------------------------------------------------------
+i_croc_soc/i_croc/i_dm_top.i_dm_top/i_dm_csrs.progbuf_o_101__reg/D (sg13g2_dfrbp_1)    4.28    1.68    2.60 (MET)
+
+max_delay/setup group clk_jtg
+
+                                     Required  Actual
+Endpoint                               Delay   Delay   Slack
+------------------------------------------------------------
+jtag_tdo_o (output)                    14.90   13.58    1.32 (MET)
+
+max_delay/setup group clk_sys
+
+                                     Required  Actual
+Endpoint                               Delay   Delay   Slack
+------------------------------------------------------------
+i_croc_soc/i_croc/i_core_wrap/i_ibex.crash_dump_o_95__reg/D (sg13g2_dfrbp_1)   12.30    9.95    2.35 (MET)
+

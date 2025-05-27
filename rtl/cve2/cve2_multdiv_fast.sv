@@ -149,9 +149,24 @@ module cve2_multdiv_fast #(
     logic               mult3_sign_a, mult3_sign_b;
     logic [33:0]        summand1, summand2, summand3;
 
-    assign mult1_res = $signed({mult1_sign_a, mult1_op_a}) * $signed({mult1_sign_b, mult1_op_b});
-    assign mult2_res = $signed({mult2_sign_a, mult2_op_a}) * $signed({mult2_sign_b, mult2_op_b});
-    assign mult3_res = $signed({mult3_sign_a, mult3_op_a}) * $signed({mult3_sign_b, mult3_op_b});
+    // assign mult1_res = $signed({mult1_sign_a, mult1_op_a}) * $signed({mult1_sign_b, mult1_op_b});
+    // assign mult2_res = $signed({mult2_sign_a, mult2_op_a}) * $signed({mult2_sign_b, mult2_op_b});
+    // assign mult3_res = $signed({mult3_sign_a, mult3_op_a}) * $signed({mult3_sign_b, mult3_op_b});
+    multiplier mult1_inst (
+      .a({mult1_sign_a, mult1_op_a}),
+      .b({mult1_sign_b, mult1_op_b}),
+      .o(mult1_res)
+    );
+    multiplier mult2_inst (
+      .a({mult2_sign_a, mult2_op_a}),
+      .b({mult2_sign_b, mult2_op_b}),
+      .o(mult2_res)
+    );
+    multiplier mult3_inst (
+      .a({mult3_sign_a, mult3_op_a}),
+      .b({mult3_sign_b, mult3_op_b}),
+      .o(mult3_res)
+    );
 
     assign mac_res_signed = $signed(summand1) + $signed(summand2) + $signed(summand3);
 

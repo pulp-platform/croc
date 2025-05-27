@@ -102,7 +102,7 @@ module cve2_alu #(
   end
 
   // actual adder
-  // assign adder_result_ext_o = $unsigned(adder_in_a) + $unsigned(adder_in_b);
+  //  assign adder_result_ext_o = $unsigned(adder_in_a) + $unsigned(adder_in_b);
   adder adder_inst (
     .a(adder_in_a),
     .b(adder_in_b),

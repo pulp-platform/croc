@@ -1,0 +1,48 @@
+violation type: Horizontal congestion
+	srcs: net:soc_gpio_i_12_ 
+	congestion information: capacity:0 usage:1 overflow:1
+	bbox = ( 1576.8, 424.8 ) - ( 1584, 432) on Layer -
+violation type: Horizontal congestion
+	srcs: net:soc_gpio_i_13_ 
+	congestion information: capacity:0 usage:1 overflow:1
+	bbox = ( 1576.8, 511.2 ) - ( 1584, 518.4) on Layer -
+violation type: Horizontal congestion
+	srcs: net:soc_gpio_i_14_ 
+	congestion information: capacity:0 usage:1 overflow:1
+	bbox = ( 1576.8, 597.6 ) - ( 1584, 604.8) on Layer -
+violation type: Horizontal congestion
+	srcs: net:soc_gpio_i_15_ 
+	congestion information: capacity:0 usage:1 overflow:1
+	bbox = ( 1576.8, 684 ) - ( 1584, 691.2) on Layer -
+violation type: Horizontal congestion
+	srcs: net:soc_gpio_i_16_ 
+	congestion information: capacity:0 usage:1 overflow:1
+	bbox = ( 1576.8, 763.2 ) - ( 1584, 770.4) on Layer -
+violation type: Horizontal congestion
+	srcs: net:soc_gpio_i_17_ 
+	congestion information: capacity:0 usage:1 overflow:1
+	bbox = ( 1576.8, 849.6 ) - ( 1584, 856.8) on Layer -
+violation type: Horizontal congestion
+	srcs: net:soc_gpio_i_18_ 
+	congestion information: capacity:0 usage:1 overflow:1
+	bbox = ( 1576.8, 936 ) - ( 1584, 943.2) on Layer -
+violation type: Horizontal congestion
+	srcs: net:soc_gpio_i_19_ 
+	congestion information: capacity:0 usage:1 overflow:1
+	bbox = ( 1576.8, 1022.4 ) - ( 1584, 1029.6) on Layer -
+violation type: Horizontal congestion
+	srcs: net:soc_gpio_i_20_ 
+	congestion information: capacity:0 usage:1 overflow:1
+	bbox = ( 1576.8, 1108.8 ) - ( 1584, 1116) on Layer -
+violation type: Horizontal congestion
+	srcs: net:soc_gpio_i_21_ 
+	congestion information: capacity:0 usage:1 overflow:1
+	bbox = ( 1576.8, 1188 ) - ( 1584, 1195.2) on Layer -
+violation type: Horizontal congestion
+	srcs: net:soc_gpio_i_22_ 
+	congestion information: capacity:0 usage:1 overflow:1
+	bbox = ( 1576.8, 1274.4 ) - ( 1584, 1281.6) on Layer -
+violation type: Horizontal congestion
+	srcs: net:soc_gpio_i_23_ 
+	congestion information: capacity:0 usage:1 overflow:1
+	bbox = ( 1576.8, 1360.8 ) - ( 1584, 1368) on Layer -

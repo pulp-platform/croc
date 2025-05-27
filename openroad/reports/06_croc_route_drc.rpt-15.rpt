@@ -1,0 +1,21 @@
+  violation type: Metal Spacing
+    srcs: net:i_croc_soc/i_croc/i_core_wrap/i_ibex.cs_registers_i/mhpmcounter_1882_ net:i_croc_soc/i_croc/i_core_wrap/i_ibex.cs_registers_i/mhpmcounter_1884_ 
+    bbox = ( 1005.5, 561.44 ) - ( 1005.71, 561.625 ) on Layer Metal2
+  violation type: Metal Spacing
+    srcs: net:net3909 net:net3163 
+    bbox = ( 423.745, 640.6 ) - ( 423.935, 640.61 ) on Layer Metal2
+  violation type: Metal Spacing
+    srcs: net:net3909 net:net3163 
+    bbox = ( 423.745, 640.495 ) - ( 423.935, 640.6 ) on Layer Metal2
+  violation type: Metal Spacing
+    srcs: net:net3909 net:net3140 
+    bbox = ( 430.99, 633 ) - ( 431.195, 633.04 ) on Layer Metal2
+  violation type: Metal Spacing
+    srcs: net:net3909 net:net3140 
+    bbox = ( 430.99, 633 ) - ( 431.105, 633.04 ) on Layer Metal2
+  violation type: Metal Spacing
+    srcs: net:net3913 net:net3164 
+    bbox = ( 430.91, 644.6 ) - ( 431.105, 644.8 ) on Layer Metal2
+  violation type: Short
+    srcs: net:i_croc_soc/i_croc/i_dm_top.i_dm_top/_2707_ net:VSS 
+    bbox = ( 722.835, 1054.52 ) - ( 723.035, 1054.72 ) on Layer Metal2
