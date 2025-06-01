@@ -48,8 +48,8 @@ report_checks -format end -no_line_splits                >> ${report_dir}/${log_
 report_checks -format end -no_line_splits                >> ${report_dir}/${log_id_str}_${proj_name}_checks.rpt
 
 # Size of the chip
-set chipW            1760.0
-set chipH            1760.0
+set chipW  [expr 2235 - 2*(39+70)];
+set chipH  [expr 2235 - 2*(39+70)];
 
 # thickness of annular ring for pads (length of a pad)
 set padRing           180.0
