@@ -37,14 +37,17 @@ void printf(const char *fmt, ...) {
         if (*fmt == '%') {
             fmt++;
             if (*fmt == 'x') { // hex
-                idx = format_hex32(buffer, va_arg(args, unsigned int));
-                // print from buffer
-                for (int j = idx - 1; j >= 0; j--) {
-                    putchar(buffer[j]);
-                }
+              idx = format_hex32(buffer, va_arg(args, unsigned int));
+              // print from buffer
+              for (int j = idx - 1; j >= 0; j--) {
+                putchar(buffer[j]);
+              }
+            } else if (*fmt == 'c') { // char
+              char chr = (char)va_arg(args, int);
+              putchar(chr);
             }
         } else {
-            putchar(*fmt);
+          putchar(*fmt);
         }
         fmt++;
     }

@@ -22,3 +22,6 @@
 #define UART_BYTE_ALIGN 4
 #define UART_FREQ       TB_FREQUENCY
 #define UART_BAUD       TB_BAUDRATE
+
+#define USER_ROM_BASE_ADDR 0x20000000
+
