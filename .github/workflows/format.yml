@@ -1,0 +1,35 @@
+# Copyright (c) 2022 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Author:  Jannis Schönleber <janniss@iis.ee.ethz.ch>
+
+name: lint-format
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  lint-python:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check Python with black
+      uses: rickstaa/action-black@v1
+      with:
+        black_args: ". --check"
+
+  lint-cxx:
+    runs-on: ubuntu-latest
+    steps:
+    -
+      name: Checkout
+      uses: actions/checkout@v4
+    -
+      name: Run Clang-format
+      uses: DoozyX/clang-format-lint-action@v0.18.2
+      with:
+        extensions: 'c,h,cpp'
+        clangFormatVersion: 17

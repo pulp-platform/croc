@@ -23,3 +23,6 @@ jobs:
         exclude_paths: |
           deps
           include/version.h
+          ihp13
+          klayout/def2gds.sh
+          klayout/def2stream.py
