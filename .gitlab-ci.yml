@@ -1,0 +1,33 @@
+# Copyright (c) 2025 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Author: Paul Scheffler <paulsc@iis.ee.ethz.ch>
+
+# We initialize the nonfree repo, then spawn a sub-pipeline from it
+
+variables:
+  NONFREE_REMOTE: git@iis-git.ee.ethz.ch:pulp-restricted/croc-nonfree.git
+  NONFREE_COMMIT: paulsc/fpga   # TODO: replace with final commit
+
+stages:
+  - nonfree
+
+init:
+  stage: nonfree
+  script:
+    - git clone ${NONFREE_REMOTE} nonfree
+    - cd nonfree && git checkout ${NONFREE_COMMIT}
+  artifacts:
+    paths: [ nonfree ]
+
+subpipe:
+  stage: nonfree
+  needs: [ init ]
+  trigger:
+    include:
+      - artifact: nonfree/ci.yml
+        job: init
+    strategy: depend
+  variables:
+    PARENT_PIPELINE_ID: $CI_PIPELINE_ID

@@ -88,3 +88,5 @@
 #/openroad/src
 #yosys
 /yosys/out
+# internal CI checkout of croc-nonfree
+/nonfree
