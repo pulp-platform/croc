@@ -22,9 +22,9 @@ SECTIONS
   .text._start 0x10000000 : { *(.text._start) } >SRAM
   .text : { *(.text) *(.text.*) } >SRAM
   .misc : { *(.sdata) *(.*) } >SRAM
-  
-  __global_pointer$ = ADDR(.misc)  + SIZEOF(.misc) / 2; 
-  __stack_pointer$  = ORIGIN(SRAM) + LENGTH(SRAM);
-
-  status  = 0x03000008;
 }
+
+/* Global absolute symbols */
+PROVIDE(__global_pointer$ = ADDR(.misc) + SIZEOF(.misc)/2);
+PROVIDE(__stack_pointer$ = ORIGIN(SRAM) + LENGTH(SRAM));
+PROVIDE(status = 0x03000008);

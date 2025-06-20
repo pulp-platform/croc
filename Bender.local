@@ -4,7 +4,7 @@ overrides:
   common_cells: { path: "rtl/common_cells" }
   apb: { path: "rtl/apb" }
   register_interface: { path: "rtl/register_interface" }
-  apb_uart: { path: "rtl/apb_uart" }
+  obi_peripherals: { path: "rtl/obi_uart" }
   ibex: { path: "rtl/ibex" }
   obi: { path: "rtl/obi" }
   riscv-dbg: { path: "rtl/riscv-dbg" }
