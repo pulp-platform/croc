@@ -6,14 +6,6 @@ packages:
       Path: rtl/apb
     dependencies:
     - common_cells
-  apb_uart:
-    revision: null
-    version: null
-    source:
-      Path: rtl/apb_uart
-    dependencies:
-    - apb
-    - register_interface
   common_cells:
     revision: null
     version: null
@@ -42,6 +34,14 @@ packages:
     dependencies:
     - common_cells
     - common_verification
+  obi_peripherals:
+    revision: null
+    version: null
+    source:
+      Path: rtl/obi_uart
+    dependencies:
+    - common_cells
+    - obi
   register_interface:
     revision: null
     version: null
