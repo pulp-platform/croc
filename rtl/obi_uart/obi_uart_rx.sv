@@ -202,7 +202,8 @@ module obi_uart_rx import obi_uart_pkg::*; #()
     //--------------------------------------------------------------------------------------------
     // Defaults
     //--------------------------------------------------------------------------------------------
-    break_interrupt = 1'b0;
+    // Character is all zeros, parity and stop indicate break, current line is still 0 -> break
+    break_interrupt = (rsr_q == '0) & break_q & (~filtered_rxd_q);
 
     //--FIFO Combinational------------------------------------------------------------------------
     fifo_clear    = 1'b1; // Reset
@@ -215,7 +216,9 @@ module obi_uart_rx import obi_uart_pkg::*; #()
 
     timeout_count_d = timeout_count_q;
     timeout_o         = 1'b0; // timeout_o
-    timeout_level = '0;
+    // timeout_level = (character_length * 4) +1
+    character_length = (6'd02 +word_len_bits +reg_read_i.lcr.par_en +reg_read_i.lcr.stop_bits);
+    timeout_level = (character_length << 2) + 6'd01;
 
     fifo_error_index_d = fifo_error_index_q; // FIFO Error
 
@@ -320,7 +323,7 @@ module obi_uart_rx import obi_uart_pkg::*; #()
           2'b11: parity_err_d = filtered_rxd_q;                  // Forced 0
           default: parity_err_d = 1'b0;
         endcase
-        break_d    = break_q | filtered_rxd_q;
+        break_d    = ~filtered_rxd_q;
         par_finish = 1'b1;
       end
     end
@@ -331,7 +334,7 @@ module obi_uart_rx import obi_uart_pkg::*; #()
     if (state_q == RXSTOP) begin
       framing_err_d = 1'b0;
       if (timing_bit_center_edge) begin
-        break_d     = break_q | filtered_rxd_q;
+        break_d     = ~filtered_rxd_q & (break_q | ~reg_read_i.lcr.par_en);
         write_init  = 1'b1;
         stop_finish = 1'b1;
         if (!filtered_rxd_q) begin
@@ -428,7 +431,7 @@ module obi_uart_rx import obi_uart_pkg::*; #()
         rhr_full_d                       = 1'b1;
 
         // If Fifo Enabled, always set LSR bits with the Data on top of the FIFO
-        reg_write_o.break_irq = fifo_data_o[8];
+        reg_write_o.break_irq    = fifo_data_o[8];
         reg_write_o.frame_err    = fifo_data_o[9];
         reg_write_o.par_err      = fifo_data_o[10];
         reg_write_o.break_valid  = 1'b1;
@@ -457,9 +460,8 @@ module obi_uart_rx import obi_uart_pkg::*; #()
         reg_write_o.dr_valid     = 1'b1;
         reg_write_o.par_err      = parity_err_q;
         reg_write_o.frame_err    = framing_err_q;
-        break_interrupt          = & (~{break_q, rsr_q}); // All character bits 0 ?
-        reg_write_o.break_irq = break_interrupt;
-        reg_write_o.break_irq = 1'b1;
+        reg_write_o.break_irq    = break_interrupt;
+        reg_write_o.break_irq    = 1'b1;
         reg_write_o.break_valid  = 1'b1;
         reg_write_o.par_valid    = 1'b1;
         reg_write_o.frame_valid  = 1'b1;
@@ -505,7 +507,6 @@ module obi_uart_rx import obi_uart_pkg::*; #()
           reg_write_o.overrun_valid = 1'b1;
         end else begin
           fifo_push       = 1'b1;
-          break_interrupt = & (~{break_q, rsr_q}); // Interrupt if all character bits are 0s
           fifo_data_i     = {parity_err_q, framing_err_q, break_interrupt, rsr_q}; // 11 Bits
 
           if (parity_err_q | framing_err_q | break_interrupt) begin
@@ -518,10 +519,6 @@ module obi_uart_rx import obi_uart_pkg::*; #()
       //------------------------------------------------------------------------------------------
       // FIFO timeout
       //------------------------------------------------------------------------------------------
-      // timeout_level = (character_length * 4) +1
-      character_length = (6'd02 +word_len_bits +reg_read_i.lcr.par_en +reg_read_i.lcr.stop_bits);
-      timeout_level = (character_length << 2) + 6'd01;
-
       if (reg_read_i.obi_read_rhr | write_init) begin
         timeout_count_d = '0;
       end else if (~fifo_empty | rhr_full_q) begin
@@ -567,6 +564,6 @@ module obi_uart_rx import obi_uart_pkg::*; #()
   `FF(framing_err_q, framing_err_d, '0, clk_i, rst_ni)
 
   //--Break-Interrupt-----------------------------------------------------------------------------
-  `FF(break_q, break_d, '1, clk_i, rst_ni)
+  `FF(break_q, break_d, '0, clk_i, rst_ni)
 
 endmodule
