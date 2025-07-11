@@ -1,6 +1,6 @@
 [cockpit]
   # Do not change this section
-  config = 2025-1
+  config = 2025-2
 
   # Still Work in Progress
 
@@ -24,6 +24,7 @@
   #                   ixc013g2_iocell_rev1.2.0
   #                   ixc013g2_iocell_rev1.2.1
   #                   open_io_v0.1
+  #                   open_io_v0.2
   #   bondpad       : bondpad_70x70_v0
   #
   #   STD cell      : ixc013g2ng_stdcell_rev0.0.4
@@ -51,7 +52,7 @@
 
   libs    = SG13G2_1.3.1 \
             open_stdcell_v3.2 \
-            open_io_v0.1 \ 
+            open_io_v0.2 \ 
             open_sram_v2.1
 
 
@@ -59,7 +60,12 @@
   # macro datasheets are available under:
   #   /usr/pack/ihp-sg13-kgf/open_ihp_sg13g2/IHP-Open-PDK-main_v2.0/sg13g2_sram
   
-  macros  = RM_IHPSG13_1P_256x64_c2_bm_bist
+  macros  = RM_IHPSG13_1P_1024x64_c2_bm_bist \
+            RM_IHPSG13_1P_2048x64_c2_bm_bist \
+            RM_IHPSG13_1P_256x48_c2_bm_bist \
+            RM_IHPSG13_1P_256x64_c2_bm_bist \
+            RM_IHPSG13_1P_512x64_c2_bm_bist \
+            RM_IHPSG13_1P_64x64_c2_bm_bist
             
   
 [version]
@@ -81,7 +87,7 @@
   innovus   =  innovus-21
   dfii      =  ic-6
   calibre   =  calibre-2021.3
-  oseda     =  oseda -2025.01
+  oseda     =  oseda -2025.07
 
 [command]
   # Startup commands available through the GUI buttons.
@@ -99,8 +105,8 @@
   innovus                      =  xterm -g 136x40 -T innovus-21.13 -e "cds_innovus-21.13.000 innovus"
   calibre                      =  xterm -g 120x40 -T calibredrv-2021.3 -e "./start_calibre 2021.3"
   dfii                         =  ./start_dfii
-  yosys                        =  xterm -g 120x40 -T yosys -e "oseda -2025.01 yosys"
-  openroad                     =  xterm -g 120x40 -T openroad -e "oseda -2025.01 openroad -gui"
-  klayout                      =  xterm -g 120x40 -T klayout -e "setenv KLAYOUT_HOME ./.klayout; oseda -2025.01 klayout -e"
+  yosys                        =  xterm -g 120x40 -T yosys -e "oseda -2025.07 yosys -C"
+  openroad                     =  xterm -g 120x40 -T openroad -e "oseda -2025.07 openroad -gui"
+  klayout                      =  xterm -g 120x40 -T klayout -e "setenv KLAYOUT_HOME ./.klayout; oseda -2025.07 klayout -e"
   dz:llama                     = llama
 
