@@ -87,7 +87,7 @@
   innovus   =  innovus-21
   dfii      =  ic-6
   calibre   =  calibre-2021.3
-  oseda     =  oseda -2025.01
+  oseda     =  oseda -2025.07
 
 [command]
   # Startup commands available through the GUI buttons.
@@ -105,8 +105,8 @@
   innovus                      =  xterm -g 136x40 -T innovus-21.13 -e "cds_innovus-21.13.000 innovus"
   calibre                      =  xterm -g 120x40 -T calibredrv-2021.3 -e "./start_calibre 2021.3"
   dfii                         =  ./start_dfii
-  yosys                        =  xterm -g 120x40 -T yosys -e "oseda -2025.01 yosys -C"
-  openroad                     =  xterm -g 120x40 -T openroad -e "oseda -2025.01 openroad -gui"
-  klayout                      =  xterm -g 120x40 -T klayout -e "setenv KLAYOUT_HOME ./.klayout; oseda -2025.01 klayout -e"
+  yosys                        =  xterm -g 120x40 -T yosys -e "oseda -2025.07 yosys -C"
+  openroad                     =  xterm -g 120x40 -T openroad -e "oseda -2025.07 openroad -gui"
+  klayout                      =  xterm -g 120x40 -T klayout -e "setenv KLAYOUT_HOME ./.klayout; oseda -2025.07 klayout -e"
   dz:llama                     = llama
 
