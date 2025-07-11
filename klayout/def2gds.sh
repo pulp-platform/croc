@@ -11,14 +11,23 @@ cd $klayout_dir
 ################
 ### project  ###
 ################
-topcell="croc_chip"
-defpath="$root_dir/openroad/out/croc.def"
+top_design=${TOP_DESIGN:-"croc_chip"}
+def_path=${DEF_PATH:-"$root_dir/openroad/out/croc.def"}
 
 
 ################
 ## technology ##
 ################
-if [[ -f "$root_dir/cockpit.log" ]]; then
+tech="$root_dir/ihp13/pdk/ihp-sg13g2/libs.tech/klayout/tech/sg13g2.lyt"
+layer="$root_dir/ihp13/pdk/ihp-sg13g2/libs.tech/klayout/tech/sg13g2.lyp"
+
+# create klayout home dir and add pdk to path
+export KLAYOUT_HOME="$klayout_dir/.klayout"
+export KLAYOUT_PATH="$(realpath $root_dir/ihp13/pdk/ihp-sg13g2/libs.tech/klayout):$KLAYOUT_PATH"
+mkdir -p $KLAYOUT_HOME/tech
+
+
+if [[ -d "$root_dir/technology" ]]; then
     echo "Init tech from ETHZ DZ cockpit"
     pdk_dir=$(realpath "$root_dir/technology")
     pdk_cells_lef_dir="${pdk_dir}/lef"
@@ -52,13 +61,8 @@ gds="$(find "$pdk_cells_gds_dir" -name 'sg13g2_stdcell.gds' -exec realpath {} \;
      $(find "$pdk_io_gds_dir" -name 'sg13g2_io.gds' -exec realpath {} \;) \
      $(find "$bondpad_gds_dir" -name '*.gds' -exec realpath {} \;)"
 
-tech="$root_dir/ihp13/pdk/ihp-sg13g2/libs.tech/klayout/tech/sg13g2.lyt"
-layer="$root_dir/ihp13/pdk/ihp-sg13g2/libs.tech/klayout/tech/sg13g2.lyp"
 
-# create klayout home dir and add pdk to path
-export KLAYOUT_HOME="$klayout_dir/.klayout"
-export KLAYOUT_PATH="$(realpath $root_dir/ihp13/pdk/ihp-sg13g2/libs.tech/klayout):$KLAYOUT_PATH"
-mkdir -p $KLAYOUT_HOME/tech
+ln -sfr $klayout_dir/sg13g2.map $KLAYOUT_HOME/tech/sg13g2.map
 
 # all <lef-files> entries for the tech file
 lef_files=""
@@ -68,15 +72,15 @@ done
 
 # replace the placeholder tag with the real lef files
 sed "/<lef-files><\/lef-files>/c $lef_files" "$tech" > $KLAYOUT_HOME/tech/sg13g2.lyt
-ln -sfr $klayout_dir/sg13g2.map $KLAYOUT_HOME/tech/sg13g2.map
 
 echo "$gds" > $KLAYOUT_HOME/tech/tech_gds.f
 
+
 klayout_cmd="$KLAYOUT -zz \
-          -rd design_name=\"$topcell\" \
-          -rd in_def=\"$defpath\" \
+          -rd design_name=\"$top_design\" \
+          -rd in_def=\"$def_path\" \
           -rd gds_flist=\"$KLAYOUT_HOME/tech/tech_gds.f\" \
-          -rd out_file=\"${topcell}.gds\" \
+          -rd out_file=\"${top_design}.gds\" \
           -rd tech_file=\"$KLAYOUT_HOME/tech/sg13g2.lyt\" \
           -rd layer_map=\"$KLAYOUT_HOME/tech/sg13g2.map\" \
           -rm def2stream.py"

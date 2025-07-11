@@ -9,7 +9,7 @@
 
 # Initialize the PDK
 
-if {[file exists "../cockpit.log"]} {
+if {[file exists "../technology"]} {
 	utl::report "Init tech from ETHZ DZ cockpit"
 	set pdk_dir "../technology"
 	set pdk_cells_lib ${pdk_dir}/lib
