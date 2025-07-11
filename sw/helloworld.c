@@ -31,12 +31,30 @@ uint32_t isqrt(uint32_t n) {
     return res;
 }
 
+char receive_buff[16] = {0};
+
 int main() {
     uart_init(); // setup the uart peripheral
 
     // simple printf support (only prints text and hex numbers)
     printf("Hello World!\n");
     // wait until uart has finished sending
+    uart_write_flush();
+
+    // uart loopback
+    uart_loopback_enable();
+    printf("internal msg\n");
+    sleep_ms(1);
+    for(uint8_t idx = 0; idx<15; idx++) {
+        receive_buff[idx] = uart_read();
+        if(receive_buff[idx] == '\n') {
+            break;
+        }
+    }
+    uart_loopback_disable();
+
+    printf("Loopback received: ");
+    printf(receive_buff);
     uart_write_flush();
 
     // toggling some GPIOs

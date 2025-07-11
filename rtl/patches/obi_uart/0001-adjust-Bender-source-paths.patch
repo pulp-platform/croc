@@ -1,0 +1,36 @@
+From e765f951952915890d475fcd703090d9bbc5ed29 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Fri, 20 Jun 2025 13:04:20 +0200
+Subject: [PATCH] adjust Bender source paths
+
+---
+ Bender.yml | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/Bender.yml b/Bender.yml
+index 516ea3d..e49903d 100644
+--- a/Bender.yml
++++ b/Bender.yml
+@@ -14,11 +14,11 @@ dependencies:
+ 
+ sources:
+   # obi_uart
+-  - hw/obi_uart/obi_uart_pkg.sv
+-  - hw/obi_uart/obi_uart_baudgen.sv
+-  - hw/obi_uart/obi_uart_interrupts.sv
+-  - hw/obi_uart/obi_uart_modem.sv
+-  - hw/obi_uart/obi_uart_rx.sv
+-  - hw/obi_uart/obi_uart_tx.sv
+-  - hw/obi_uart/obi_uart_register.sv
+-  - hw/obi_uart/obi_uart.sv
++  - obi_uart_pkg.sv
++  - obi_uart_baudgen.sv
++  - obi_uart_interrupts.sv
++  - obi_uart_modem.sv
++  - obi_uart_rx.sv
++  - obi_uart_tx.sv
++  - obi_uart_register.sv
++  - obi_uart.sv
+-- 
+2.49.0
+

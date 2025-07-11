@@ -16,8 +16,8 @@ dependencies:
   register_interface:   { git: "https://github.com/pulp-platform/register_interface.git",   version: 0.4.1  }
   apb:                  { git: "https://github.com/pulp-platform/apb.git",                  version: 0.2.4  }
   timer_unit:           { git: "https://github.com/pulp-platform/timer_unit.git",           version: 1.0.3  }
-  obi:                  { git: "https://github.com/pulp-platform/obi.git",                  version: 0.1.3  }
-  apb_uart:             { git: "https://github.com/pulp-platform/apb_uart.git",             version: 0.2.1  }
+  obi:                  { git: "https://github.com/pulp-platform/obi.git",                  version: 0.1.7  }
+  obi_peripherals:      { git: "https://github.com/pulp-platform/obi_peripherals.git",      rev: 21ee04d    } # UART
   cve2:                 { path: "rtl/cve2" } # a vendor package (no Bender.yml), see below 
 
 
@@ -166,15 +166,13 @@ vendor_package:
       - { from: 'Bender.yml',         to: 'Bender.yml',     patch_dir: '' }
       - { from: 'doc/timer_unit.pdf', to: 'timer_unit.pdf', patch_dir: 'doc/' }
 
-  - name: apb_uart
-    target_dir: rtl/apb_uart
-    upstream: { git: "https://github.com/pulp-platform/apb_uart.git", rev: "6c7dde3d749ac8274377745c105da8c8b8cd27c6"  } # v0.2.1
-    patch_dir: "rtl/patches/apb_uart"
-    exclude_from_upstream:
-      - "src/vhdl_orig"
+  - name: obi_peripherals
+    target_dir: rtl/obi_uart
+    upstream: { git: "https://github.com/pulp-platform/obi_peripherals.git", rev: "21ee04d267025f6ea3d2faa462272287ddcb9bbb"  } # newest
+    patch_dir: "rtl/patches/obi_uart"
     mapping:
-      - { from: 'src/',        to: '',            patch_dir: 'src/' }
-      - { from: 'Bender.yml',  to: 'Bender.yml',  patch_dir: '' }
+      - { from: 'hw/obi_uart/', to: '',            patch_dir: 'hw/' }
+      - { from: 'Bender.yml',   to: 'Bender.yml',  patch_dir: '' }
 
 
   #########
