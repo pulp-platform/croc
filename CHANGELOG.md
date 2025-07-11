@@ -7,6 +7,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project loosely follows to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## 1.2.0 - 2025-07-11
+
+### Added
+
+- hw: replace apb_uart with new obi_uart
+- test: add UART loopback mode in helloworld.c
+
+### Changed
+
+- tools: update to version 2025.07.pre1
+- pdk: update cockpitrc (ETHZ internal use)
+- tools: change verilator tracing from vcd to fst
+- openroad: allow congestion in incremental global route
+
+### Fixed
+
+- openroad: fix min-area violations caused by extract_parasitics
+- sw: fix 'relocation truncated to fit' linker error
+- ci: fix pip install for ubuntu-latest in CI
+
+
 ## 1.1.0 - 2025-05-07
 
 ### Added
@@ -41,6 +62,7 @@ and this project loosely follows to [Semantic Versioning](https://semver.org/spe
 -test: fix uninitialized memory
 - verilator: speedup compile and synthesis
 - bender: fix cve2 vendor dependency
+
 
 ## 1.0.0 - 2024-12-05
 
