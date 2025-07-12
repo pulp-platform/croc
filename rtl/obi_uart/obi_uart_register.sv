@@ -48,7 +48,7 @@ module obi_uart_register import obi_uart_pkg::*; #(
     obi_rsp_o.r.rdata = rsp_data;
     obi_rsp_o.r.rid   = id_q;
     obi_rsp_o.r.err   = err;
-    obi_rsp_o.gnt     = obi_req_i.req;
+    obi_rsp_o.gnt     = '1; // always ready for request
     obi_rsp_o.rvalid  = valid_q;
   end
 

@@ -1101,7 +1101,7 @@ module croc_domain import croc_pkg::*; #(
       .rdata_o ( bank_rdata )
     );
 
-    assign bank_gnt = 1'b1;
+    assign bank_gnt = 1'b1; // always ready for request
 `endif // (!(RELOBI) && ECC_MEM)
   end
 
