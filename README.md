@@ -193,6 +193,11 @@ If you have Questasim/Modelsim, you can also run:
 cd vsim && ./run_vsim.sh --build --run ../sw/bin/helloworld.hex
 ```
 
+If you have VCS, you can also run:
+```sh
+cd vcs && ./run_vcs.sh --build --run ../sw/bin/helloworld.hex
+```
+
 All `run_` scripts have a `--help` you can use to orient yourself.
 
 ### Building on Croc
