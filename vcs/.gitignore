@@ -1,0 +1,11 @@
+AN.DB
+work.lib++
+tb_croc_soc.sim*
+vc_hdrs.h
+csrc
+compile_rtl.sh
+ucli.key
+croc.fst
+compile.log
+novas*
+transcript.log
