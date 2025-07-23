@@ -6,7 +6,7 @@ csrc
 ucli.key
 croc.fst
 compile_rtl.sh
-compile_netlist.sh
+compile_netlist*
 compile.log
 novas*
 transcript.log
