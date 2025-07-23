@@ -175,6 +175,10 @@ If you have Questasim/Modelsim, you can also run:
 make vsim
 ```
 
+If you have VCS, you can also run:
+```sh
+make vcs
+```
 
 The most important make targets are documented, you can list them with:
 ```sh
