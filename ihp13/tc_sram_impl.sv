@@ -301,14 +301,14 @@ module tc_sram_impl #(
         bm64_0[8*i+7]    = bm[0][32+i] & (addr_i[0][2:0] == 3'b111);
 
         casex (sel_q_0)
-          3'b000: rdata_o[0][32+i] = rdata64_0[4*i];
-          3'b001: rdata_o[0][32+i] = rdata64_0[4*i+1];
-          3'b010: rdata_o[0][32+i] = rdata64_0[4*i+2];
-          3'b011: rdata_o[0][32+i] = rdata64_0[4*i+3];
-          3'b100: rdata_o[0][32+i] = rdata64_0[4*i+4];
-          3'b101: rdata_o[0][32+i] = rdata64_0[4*i+5];
-          3'b110: rdata_o[0][32+i] = rdata64_0[4*i+6];
-          3'b111: rdata_o[0][32+i] = rdata64_0[4*i+7];
+          3'b000: rdata_o[0][32+i] = rdata64_0[8*i];
+          3'b001: rdata_o[0][32+i] = rdata64_0[8*i+1];
+          3'b010: rdata_o[0][32+i] = rdata64_0[8*i+2];
+          3'b011: rdata_o[0][32+i] = rdata64_0[8*i+3];
+          3'b100: rdata_o[0][32+i] = rdata64_0[8*i+4];
+          3'b101: rdata_o[0][32+i] = rdata64_0[8*i+5];
+          3'b110: rdata_o[0][32+i] = rdata64_0[8*i+6];
+          3'b111: rdata_o[0][32+i] = rdata64_0[8*i+7];
           default: rdata_o[0][32+i] = '0;
         endcase
       end
