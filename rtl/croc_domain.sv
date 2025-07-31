@@ -32,12 +32,22 @@ module croc_domain import croc_pkg::*; #(
   /// User OBI interface
   /// User as subordinate (from core to user module) 
   /// Address space 0x2000_0000 - 0x8000_0000
+`ifdef RELOBI
+  output sbr_relobi_req_t user_sbr_obi_req_o,
+  input  sbr_relobi_rsp_t user_sbr_obi_rsp_i,
+`else
   output sbr_obi_req_t user_sbr_obi_req_o,
   input  sbr_obi_rsp_t user_sbr_obi_rsp_i,
+`endif
 
   /// User as manager (from user module to SRAM/peripherals)
+`ifdef RELOBI
+  input  mgr_relobi_req_t user_mgr_obi_req_i,
+  output mgr_relobi_rsp_t user_mgr_obi_rsp_o,
+`else
   input  mgr_obi_req_t user_mgr_obi_req_i,
   output mgr_obi_rsp_t user_mgr_obi_rsp_o,
+`endif
 
   input  logic [NumExternalIrqs-1:0] interrupts_i,
   output logic core_busy_o
@@ -70,6 +80,10 @@ module croc_domain import croc_pkg::*; #(
   // ----------------------------
 
   // Core instr bus
+`ifdef RELOBI
+  mgr_relobi_req_t core_instr_obi_req;
+  mgr_relobi_rsp_t core_instr_obi_rsp;
+`else
   mgr_obi_req_t core_instr_obi_req;
   mgr_obi_rsp_t core_instr_obi_rsp;
   assign core_instr_obi_req.a.aid = '0;
@@ -77,12 +91,18 @@ module croc_domain import croc_pkg::*; #(
   assign core_instr_obi_req.a.be = '1;
   assign core_instr_obi_req.a.wdata = '0;
   assign core_instr_obi_req.a.a_optional = '0;
+`endif
 
   // Core data bus
+`ifdef RELOBI
+  mgr_relobi_req_t core_data_obi_req;
+  mgr_relobi_rsp_t core_data_obi_rsp;
+`else
   mgr_obi_req_t core_data_obi_req;
   mgr_obi_rsp_t core_data_obi_rsp;
   assign core_data_obi_req.a.aid = '0;
   assign core_data_obi_req.a.a_optional = '0;
+`endif
 
   // dbg req bus
   mgr_obi_req_t dbg_req_obi_req;
@@ -94,28 +114,61 @@ module croc_domain import croc_pkg::*; #(
   // Subordinate buses out of crossbar
   // ----------------------------------
   // Main xbar subordinate buses, must align with addr map indices!
+`ifdef RELOBI
+  sbr_relobi_req_t [NumXbarSbr-1:0] all_sbr_obi_req;
+  sbr_relobi_rsp_t [NumXbarSbr-1:0] all_sbr_obi_rsp;
+`else
   sbr_obi_req_t [NumXbarSbr-1:0] all_sbr_obi_req;
   sbr_obi_rsp_t [NumXbarSbr-1:0] all_sbr_obi_rsp;
+`endif
 
   // user bus defined in module port
 
   // mem bank buses
+`ifdef RELOBI
+  sbr_relobi_req_t [NumSramBanks-1:0] xbar_mem_bank_obi_req;
+  sbr_relobi_rsp_t [NumSramBanks-1:0] xbar_mem_bank_obi_rsp;
+`else
   sbr_obi_req_t [NumSramBanks-1:0] xbar_mem_bank_obi_req;
   sbr_obi_rsp_t [NumSramBanks-1:0] xbar_mem_bank_obi_rsp;
+`endif
 
   // periph bus
   sbr_obi_req_t xbar_periph_obi_req;
   sbr_obi_rsp_t xbar_periph_obi_rsp;
 
   // error (connected to bus error slave)
+`ifdef RELOBI
+  sbr_relobi_req_t xbar_error_obi_req;
+  sbr_relobi_rsp_t xbar_error_obi_rsp;
+`else
   sbr_obi_req_t xbar_error_obi_req;
   sbr_obi_rsp_t xbar_error_obi_rsp;
+`endif
 
   assign xbar_error_obi_req          = all_sbr_obi_req[XbarError];
   assign all_sbr_obi_rsp[XbarError]  = xbar_error_obi_rsp;
 
+`ifdef RELOBI
+  relobi_decoder #(
+    .Cfg (SbrObiCfg),
+    .relobi_req_t (sbr_relobi_req_t),
+    .relobi_rsp_t (sbr_relobi_rsp_t),
+    .obi_req_t (sbr_obi_req_t),
+    .obi_rsp_t (sbr_obi_rsp_t),
+    .a_optional_t (logic),
+    .r_optional_t (logic)
+  ) i_periph_decoder (
+    .rel_req_i ( all_sbr_obi_req[XbarPeriph] ),
+    .rel_rsp_o ( all_sbr_obi_rsp[XbarPeriph] ),
+    .req_o ( xbar_periph_obi_req ),
+    .rsp_i ( xbar_periph_obi_rsp ),
+    .fault_o ()
+  );
+`else
   assign xbar_periph_obi_req         = all_sbr_obi_req[XbarPeriph];
   assign all_sbr_obi_rsp[XbarPeriph] = xbar_periph_obi_rsp;
+`endif
 
   for (genvar i = 0; i < NumSramBanks; i++) begin : gen_xbar_sbr_connect
     assign xbar_mem_bank_obi_req[i]     = all_sbr_obi_req[XbarBank0+i];
@@ -187,6 +240,12 @@ module croc_domain import croc_pkg::*; #(
 
     .boot_addr_i      ( boot_addr   ),
 
+`ifdef RELOBI
+    .rel_instr_req_o  ( core_instr_obi_req ),
+    .rel_instr_rsp_i  ( core_instr_obi_rsp ),
+    .rel_data_req_o   ( core_data_obi_req  ),
+    .rel_data_rsp_i   ( core_data_obi_rsp  ),
+`else
     .instr_req_o      ( core_instr_obi_req.req     ),
     .instr_gnt_i      ( core_instr_obi_rsp.gnt     ),
     .instr_rvalid_i   ( core_instr_obi_rsp.rvalid  ),
@@ -203,6 +262,7 @@ module croc_domain import croc_pkg::*; #(
     .data_wdata_o     ( core_data_obi_req.a.wdata  ),
     .data_rdata_i     ( core_data_obi_rsp.r.rdata  ),
     .data_err_i       ( core_data_obi_rsp.r.err    ),
+`endif
 
     .debug_req_i      ( debug_req    ),
     .fetch_enable_i   ( fetch_enable ),
@@ -304,6 +364,65 @@ module croc_domain import croc_pkg::*; #(
   // Main Interconnect
   // -----------------
 
+`ifdef RELOBI
+  mgr_relobi_req_t dbg_req_relobi_req;
+  mgr_relobi_rsp_t dbg_req_relobi_rsp;
+
+  relobi_encoder #(
+    .Cfg (MgrObiCfg),
+    .relobi_req_t (mgr_relobi_req_t),
+    .relobi_rsp_t (mgr_relobi_rsp_t),
+    .obi_req_t (mgr_obi_req_t),
+    .obi_rsp_t (mgr_obi_rsp_t),
+    .a_optional_t (logic),
+    .r_optional_t (logic)
+  ) i_dbg_req_encoder (
+    .req_i (dbg_req_obi_req),
+    .rsp_o (dbg_req_obi_rsp),
+    .rel_req_o (dbg_req_relobi_req),
+    .rel_rsp_i (dbg_req_relobi_rsp),
+    .fault_o ()
+  );
+
+  relobi_xbar #(
+    .SbrPortObiCfg      ( MgrObiCfg        ),
+    .MgrPortObiCfg      ( SbrObiCfg        ),
+    .sbr_port_obi_req_t ( mgr_relobi_req_t    ),
+    .sbr_port_a_chan_t  ( mgr_relobi_a_chan_t ),
+    .sbr_port_obi_rsp_t ( mgr_relobi_rsp_t    ),
+    .sbr_port_r_chan_t  ( mgr_relobi_r_chan_t ),
+    .mgr_port_obi_req_t ( sbr_relobi_req_t    ),
+    .mgr_port_a_chan_t  ( sbr_relobi_a_chan_t ),
+    .mgr_port_obi_rsp_t ( sbr_relobi_rsp_t    ),
+    .mgr_port_r_chan_t  ( sbr_relobi_r_chan_t ),
+    .a_optional_t ( logic ),
+    .r_optional_t ( logic ),
+    .NumSbrPorts        ( NumXbarManagers  ),
+    .NumMgrPorts        ( NumXbarSbr       ),
+    .NumMaxTrans        ( 2                ),
+    .NumAddrRules       ( NumXbarSbrRules  ),
+    .addr_map_rule_t    ( addr_map_rule_t  ),
+    .UseIdForRouting    ( 1'b0             ),
+    .Connectivity       ( '1               ),
+    .TmrMap             ( 1'b1 ),
+    .DecodeAbort        ( 1'b1 )
+  ) i_main_xbar (
+    .clk_i,
+    .rst_ni,
+    .testmode_i,
+
+    .sbr_ports_req_i  ( {core_instr_obi_req, core_data_obi_req, dbg_req_relobi_req, user_mgr_obi_req_i } ), // from managers towards subordinates
+    .sbr_ports_rsp_o  ( {core_instr_obi_rsp, core_data_obi_rsp, dbg_req_relobi_rsp, user_mgr_obi_rsp_o } ),
+    .mgr_ports_req_o  ( all_sbr_obi_req ), // connections to subordinates
+    .mgr_ports_rsp_i  ( all_sbr_obi_rsp ),
+
+    .addr_map_i       ( {3{croc_addr_map}} ),
+    .en_default_idx_i ( {3{4'b1111}}    ),
+    .default_idx_i    ( '0              ),
+
+    .fault_o ()
+  );
+`else
   obi_xbar #(
     .SbrPortObiCfg      ( MgrObiCfg        ),
     .MgrPortObiCfg      ( SbrObiCfg        ),
@@ -334,6 +453,7 @@ module croc_domain import croc_pkg::*; #(
     .en_default_idx_i ( 4'b1111          ),
     .default_idx_i    ( '0              )
   );
+`endif
 
   // -----------------
   // Memories
@@ -343,13 +463,25 @@ module croc_domain import croc_pkg::*; #(
     logic bank_req, bank_we, bank_gnt, bank_single_err;
     logic [SbrObiCfg.AddrWidth-1:0] bank_byte_addr;
     logic [SramBankAddrWidth-1:0] bank_word_addr;
+`ifdef RELOBI
+    logic [SbrObiCfg.DataWidth+hsiao_ecc_pkg::min_ecc(SbrObiCfg.DataWidth)-1:0] bank_wdata, bank_rdata;
+`else
     logic [SbrObiCfg.DataWidth-1:0] bank_wdata, bank_rdata;
     logic [SbrObiCfg.DataWidth/8-1:0] bank_be;
+`endif
 
+`ifdef RELOBI
+    relobi_sram_shim #(
+      .relobi_req_t ( sbr_relobi_req_t ),
+      .relobi_rsp_t ( sbr_relobi_rsp_t ),
+      .a_optional_t ( logic ),
+      .r_optional_t ( logic ),
+`else
     obi_sram_shim #(
-      .ObiCfg    ( SbrObiCfg     ),
       .obi_req_t ( sbr_obi_req_t ),
-      .obi_rsp_t ( sbr_obi_rsp_t )
+      .obi_rsp_t ( sbr_obi_rsp_t ),
+`endif
+      .ObiCfg    ( SbrObiCfg     )
     ) i_sram_shim (
       .clk_i,
       .rst_ni,
@@ -361,17 +493,27 @@ module croc_domain import croc_pkg::*; #(
       .we_o    ( bank_we        ),
       .addr_o  ( bank_byte_addr ),
       .wdata_o ( bank_wdata     ),
+`ifndef RELOBI
       .be_o    ( bank_be        ),
+`endif
 
       .gnt_i   ( bank_gnt   ),
       .rdata_i ( bank_rdata )
+`ifdef RELOBI
+      ,.fault_o ()
+`endif
     );
 
     assign bank_word_addr = bank_byte_addr[SbrObiCfg.AddrWidth-1:2];
 
     tc_sram_impl #(
       .NumWords  ( SramBankNumWords ),
+`ifdef RELOBI
+      .DataWidth ( 39 ),
+      .SimInit ( "random" ),
+`else
       .DataWidth ( 32 ),
+`endif
       .NumPorts  (  1 ),
       .Latency   (  1 )
     ) i_sram (
@@ -386,7 +528,11 @@ module croc_domain import croc_pkg::*; #(
       .addr_i  ( bank_word_addr ),
 
       .wdata_i ( bank_wdata ),
+`ifdef RELOBI
+      .be_i    ( '1 ), // always write all data bits, no byte enables
+`else
       .be_i    ( bank_be    ),
+`endif
       .rdata_o ( bank_rdata )
     );
 
@@ -395,10 +541,18 @@ module croc_domain import croc_pkg::*; #(
 
 
   // Xbar space error subordinate
+`ifdef RELOBI
+  relobi_err_sbr #(
+    .obi_req_t   ( sbr_relobi_req_t ),
+    .obi_rsp_t   ( sbr_relobi_rsp_t ),
+    .a_optional_t ( logic ),
+    .r_optional_t ( logic ),
+`else
   obi_err_sbr #(
-    .ObiCfg      ( SbrObiCfg     ),
     .obi_req_t   ( sbr_obi_req_t ),
     .obi_rsp_t   ( sbr_obi_rsp_t ),
+`endif
+    .ObiCfg      ( SbrObiCfg     ),
     .NumMaxTrans ( 1             ),
     .RspData     ( 32'hBADCAB1E  )
   ) i_xbar_err (
@@ -407,6 +561,10 @@ module croc_domain import croc_pkg::*; #(
     .testmode_i,
     .obi_req_i  ( xbar_error_obi_req ),
     .obi_rsp_o  ( xbar_error_obi_rsp )
+
+`ifdef RELOBI
+    ,.fault_o ()
+`endif
   );
 
 

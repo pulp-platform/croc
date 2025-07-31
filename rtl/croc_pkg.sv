@@ -173,11 +173,28 @@ package croc_pkg;
     logic [    MgrObiCfg.IdWidth-1:0] aid;
     logic                             a_optional; // dummy signal; not used
   } mgr_obi_a_chan_t;
+`ifdef RELOBI
+  typedef struct packed {
+    logic [MgrObiCfg.AddrWidth+hsiao_ecc_pkg::min_ecc(MgrObiCfg.AddrWidth)-1:0] addr;
+    logic we;
+    logic [MgrObiCfg.DataWidth/8-1:0] be;
+    logic [MgrObiCfg.DataWidth+hsiao_ecc_pkg::min_ecc(MgrObiCfg.DataWidth)-1:0] wdata;
+    logic [MgrObiCfg.IdWidth-1:0] aid;
+    logic a_optional; // dummy signal;
+    logic [hsiao_ecc_pkg::min_ecc(1+MgrObiCfg.DataWidth/8+MgrObiCfg.IdWidth+1)-1:0] other_ecc;
+  } mgr_relobi_a_chan_t;
+`endif
   /// OBI Manager <-> Xbar request
   typedef struct packed {
     mgr_obi_a_chan_t a;
     logic            req;
   } mgr_obi_req_t;
+`ifdef RELOBI
+  typedef struct packed {
+    mgr_relobi_a_chan_t a;
+    logic [2:0]         req;
+  } mgr_relobi_req_t;
+`endif
   /// OBI Manager <-> Xbar response channel
   typedef struct packed {
     logic [MgrObiCfg.DataWidth-1:0] rdata;
@@ -185,12 +202,28 @@ package croc_pkg;
     logic                           err;
     logic                           r_optional; // dummy signal; not used
   } mgr_obi_r_chan_t;
+`ifdef RELOBI
+  typedef struct packed {
+    logic [MgrObiCfg.DataWidth+hsiao_ecc_pkg::min_ecc(MgrObiCfg.DataWidth)-1:0] rdata;
+    logic [MgrObiCfg.IdWidth-1:0] rid;
+    logic err;
+    logic r_optional; // dummy signal;
+    logic [hsiao_ecc_pkg::min_ecc(MgrObiCfg.IdWidth+1+1)-1:0] other_ecc;
+  } mgr_relobi_r_chan_t;
+`endif
   /// OBI Manager <-> Xbar response
   typedef struct packed {
     mgr_obi_r_chan_t r;
     logic            gnt;
     logic            rvalid;
   } mgr_obi_rsp_t;
+`ifdef RELOBI
+  typedef struct packed {
+    mgr_relobi_r_chan_t r;
+    logic [2:0]         gnt;
+    logic [2:0]         rvalid;
+  } mgr_relobi_rsp_t;
+`endif
 
   /// OBI subordinate configuration (from the interconnect to a subordinate device)
   localparam obi_pkg::obi_cfg_t SbrObiCfg = '{
@@ -212,11 +245,28 @@ package croc_pkg;
     logic [    SbrObiCfg.IdWidth-1:0] aid;
     logic                             a_optional; // dummy signal; not used
   } sbr_obi_a_chan_t;
+`ifdef RELOBI
+  typedef struct packed {
+    logic [SbrObiCfg.AddrWidth+hsiao_ecc_pkg::min_ecc(SbrObiCfg.AddrWidth)-1:0] addr;
+    logic we;
+    logic [SbrObiCfg.DataWidth/8-1:0] be;
+    logic [SbrObiCfg.DataWidth+hsiao_ecc_pkg::min_ecc(SbrObiCfg.DataWidth)-1:0] wdata;
+    logic [SbrObiCfg.IdWidth-1:0] aid;
+    logic a_optional; // dummy signal;
+    logic [hsiao_ecc_pkg::min_ecc(1+SbrObiCfg.DataWidth/8+SbrObiCfg.IdWidth+1)-1:0] other_ecc;
+  } sbr_relobi_a_chan_t;
+`endif
   /// OBI Xbar <-> Subordinate request
   typedef struct packed {
     sbr_obi_a_chan_t a;
     logic            req;
   } sbr_obi_req_t;
+`ifdef RELOBI
+  typedef struct packed {
+    sbr_relobi_a_chan_t a;
+    logic [2:0]         req;
+  } sbr_relobi_req_t;
+`endif
   /// OBI Xbar <-> Subordinate response channel
   typedef struct packed {
     logic [SbrObiCfg.DataWidth-1:0] rdata;
@@ -224,12 +274,28 @@ package croc_pkg;
     logic                           err;
     logic                           r_optional; // dummy signal; not used
   } sbr_obi_r_chan_t;
+`ifdef RELOBI
+  typedef struct packed {
+    logic [SbrObiCfg.DataWidth+hsiao_ecc_pkg::min_ecc(SbrObiCfg.DataWidth)-1:0] rdata;
+    logic [SbrObiCfg.IdWidth-1:0] rid;
+    logic err;
+    logic r_optional; // dummy signal;
+    logic [hsiao_ecc_pkg::min_ecc(SbrObiCfg.IdWidth+1+1)-1:0] other_ecc;
+  } sbr_relobi_r_chan_t;
+`endif
   /// OBI Xbar <-> Subordinate response
   typedef struct packed {
     sbr_obi_r_chan_t r;
     logic            gnt;
     logic            rvalid;
   } sbr_obi_rsp_t;
+`ifdef RELOBI
+  typedef struct packed {
+    sbr_relobi_r_chan_t r;
+    logic [2:0]         gnt;
+    logic [2:0]         rvalid;
+  } sbr_relobi_rsp_t;
+`endif
 
   // Register interface (regbus) request
   typedef struct packed {

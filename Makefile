@@ -114,7 +114,7 @@ verilator: verilator/obj_dir/Vtb_croc_soc
 VCS_SCRIPT_ARGS = -assert svaext +v2k -kdb -override_timescale=1ns/10ps -debug_access+all
 VCS_COMPILE_ARGS = -kdb -lca -sverilog -full64 -j8 -l compile.log +vcs+fsdbon -debug_access+all +lint=TFIPC-L +lint=PCWM +warn=noCWUC +warn=noUII-L -override_timescale=1ns/10ps
 vcs/compile_rtl.sh: Bender.lock Bender.yml
-	$(BENDER) script vcs -t rtl -t vcs -t simulation -t verilator -DSYNTHESIS -DSIMULATION --vlog-arg="$(VCS_SCRIPT_ARGS)" --vlogan-bin="$(VLOGAN)" > $@
+	$(BENDER) script vcs -t rtl -t vcs -t simulation -t verilatorn -t relOBI -DSYNTHESIS -DSIMULATION -DRELOBI --vlog-arg="$(VCS_SCRIPT_ARGS)" --vlogan-bin="$(VLOGAN)" > $@
 	chmod +x $@
 
 vcs/compile_netlist_yosys.sh: Bender.lock Bender.yml
@@ -163,7 +163,7 @@ SV_DEFINES     ?= VERILATOR SYNTHESIS COMMON_CELLS_ASSERTS_OFF
 
 ## Generate croc.flist used to read design in yosys
 yosys-flist: Bender.lock Bender.yml rtl/*/Bender.yml
-	$(BENDER) script flist-plus $(foreach t,$(BENDER_TARGETS),-t $(t)) $(foreach d,$(SV_DEFINES),-D $(d)=1) > $(PROJ_DIR)/croc.flist
+	$(BENDER) script flist-plus -D RELOBI -t relobi $(foreach t,$(BENDER_TARGETS),-t $(t)) $(foreach d,$(SV_DEFINES),-D $(d)=1) > $(PROJ_DIR)/croc.flist
 
 include yosys/yosys.mk
 include openroad/openroad.mk

@@ -50,12 +50,22 @@ module croc_soc import croc_pkg::*; #(
     );
 
 // Connection between Croc_domain and User_domain: User Sbr, Croc Mgr
+`ifdef RELOBI
+sbr_relobi_req_t user_sbr_obi_req;
+sbr_relobi_rsp_t user_sbr_obi_rsp;
+`else
 sbr_obi_req_t user_sbr_obi_req;
 sbr_obi_rsp_t user_sbr_obi_rsp;
+`endif
 
 // Connection between Croc_domain and User_domain: Croc Sbr, User Mgr
+`ifdef RELOBI
+mgr_relobi_req_t user_mgr_obi_req;
+mgr_relobi_rsp_t user_mgr_obi_rsp;
+`else
 mgr_obi_req_t user_mgr_obi_req;
 mgr_obi_rsp_t user_mgr_obi_rsp;
+`endif
 
 logic [NumExternalIrqs-1:0] interrupts;
 logic [GpioCount-1:0] gpio_in_sync;

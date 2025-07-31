@@ -1,24 +1,33 @@
 packages:
   apb:
-    revision: null
-    version: null
+    revision: 77ddf073f194d44b9119949d2421be59789e69ae
+    version: 0.2.4
     source:
-      Path: rtl/apb
+      Git: https://github.com/pulp-platform/apb.git
     dependencies:
     - common_cells
-  common_cells:
-    revision: null
-    version: null
+  axi:
+    revision: 78831b6feba265d5ee2683bbf42b4150f8a35c43
+    version: 0.39.8
     source:
-      Path: rtl/common_cells
+      Git: https://github.com/pulp-platform/axi.git
+    dependencies:
+    - common_cells
+    - common_verification
+    - tech_cells_generic
+  common_cells:
+    revision: 9afda9abb565971649c2aa0985639c096f351171
+    version: 1.38.0
+    source:
+      Git: https://github.com/pulp-platform/common_cells.git
     dependencies:
     - common_verification
     - tech_cells_generic
   common_verification:
-    revision: null
-    version: null
+    revision: fb1885f48ea46164a10568aeff51884389f67ae3
+    version: 0.2.5
     source:
-      Path: rtl/common_verification
+      Git: https://github.com/pulp-platform/common_verification.git
     dependencies: []
   cve2:
     revision: null
@@ -27,48 +36,60 @@ packages:
       Path: rtl/cve2
     dependencies: []
   obi:
-    revision: null
+    revision: 949657a9c63230f141c23afc7797bd533396001d
     version: null
     source:
-      Path: rtl/obi
+      Git: https://github.com/pulp-platform/obi.git
     dependencies:
     - common_cells
     - common_verification
+    - redundancy_cells
   obi_peripherals:
-    revision: null
+    revision: 21ee04d267025f6ea3d2faa462272287ddcb9bbb
     version: null
     source:
-      Path: rtl/obi_uart
+      Git: https://github.com/pulp-platform/obi_peripherals.git
     dependencies:
     - common_cells
     - obi
-  register_interface:
-    revision: null
+  redundancy_cells:
+    revision: 69468c8f8503d603bbcd6971607c7896104b8519
     version: null
     source:
-      Path: rtl/register_interface
+      Git: https://github.com/pulp-platform/redundancy_cells.git
+    dependencies:
+    - common_cells
+    - common_verification
+    - register_interface
+    - tech_cells_generic
+  register_interface:
+    revision: 5daa85d164cf6b54ad061ea1e4c6f3624556e467
+    version: 0.4.5
+    source:
+      Git: https://github.com/pulp-platform/register_interface.git
     dependencies:
     - apb
+    - axi
     - common_cells
     - common_verification
   riscv-dbg:
-    revision: null
+    revision: 8ef87abf81cab39ad7b52435aa2a3357678fa1d6
     version: null
     source:
-      Path: rtl/riscv-dbg
+      Git: https://github.com/pulp-platform/riscv-dbg.git
     dependencies:
     - common_cells
     - tech_cells_generic
   tech_cells_generic:
-    revision: null
-    version: null
+    revision: 7968dd6e6180df2c644636bc6d2908a49f2190cf
+    version: 0.2.13
     source:
-      Path: rtl/tech_cells_generic
+      Git: https://github.com/pulp-platform/tech_cells_generic.git
     dependencies:
     - common_verification
   timer_unit:
-    revision: null
-    version: null
+    revision: 4c69615c89db9397a9747d6f6d6a36727854f0bc
+    version: 1.0.3
     source:
-      Path: rtl/timer_unit
+      Git: https://github.com/pulp-platform/timer_unit.git
     dependencies: []
