@@ -134,6 +134,10 @@ module croc_domain import croc_pkg::*; #(
 `endif
 
   // periph bus
+`ifdef RELOBI
+  sbr_relobi_req_t xbar_periph_cut_obi_req;
+  sbr_relobi_rsp_t xbar_periph_cut_obi_rsp;
+`endif
   sbr_obi_req_t xbar_periph_obi_req;
   sbr_obi_rsp_t xbar_periph_obi_rsp;
 
@@ -150,6 +154,24 @@ module croc_domain import croc_pkg::*; #(
   assign all_sbr_obi_rsp[XbarError]  = xbar_error_obi_rsp;
 
 `ifdef RELOBI
+  relobi_cut #(
+    .ObiCfg ( SbrObiCfg ),
+    .obi_req_t ( sbr_relobi_req_t ),
+    .obi_rsp_t ( sbr_relobi_rsp_t ),
+    .obi_a_chan_t ( sbr_relobi_a_chan_t ),
+    .obi_r_chan_t ( sbr_relobi_r_chan_t ),
+    .a_optional_t ( logic ),
+    .r_optional_t ( logic )
+  ) i_periph_cut (
+    .clk_i ( clk_i ),
+    .rst_ni ( rst_ni ),
+    .sbr_port_req_i ( all_sbr_obi_req[XbarPeriph] ),
+    .sbr_port_rsp_o ( all_sbr_obi_rsp[XbarPeriph] ),
+    .mgr_port_req_o ( xbar_periph_cut_obi_req ),
+    .mgr_port_rsp_i ( xbar_periph_cut_obi_rsp ),
+    .fault_o ()
+  );
+
   relobi_decoder #(
     .Cfg (SbrObiCfg),
     .relobi_req_t (sbr_relobi_req_t),
@@ -159,15 +181,27 @@ module croc_domain import croc_pkg::*; #(
     .a_optional_t (logic),
     .r_optional_t (logic)
   ) i_periph_decoder (
-    .rel_req_i ( all_sbr_obi_req[XbarPeriph] ),
-    .rel_rsp_o ( all_sbr_obi_rsp[XbarPeriph] ),
+    .rel_req_i ( xbar_periph_cut_obi_req ),
+    .rel_rsp_o ( xbar_periph_cut_obi_rsp ),
     .req_o ( xbar_periph_obi_req ),
     .rsp_i ( xbar_periph_obi_rsp ),
     .fault_o ()
   );
 `else
-  assign xbar_periph_obi_req         = all_sbr_obi_req[XbarPeriph];
-  assign all_sbr_obi_rsp[XbarPeriph] = xbar_periph_obi_rsp;
+  obi_cut #(
+    .ObiCfg ( SbrObiCfg ),
+    .obi_a_chan_t ( sbr_obi_a_chan_t ),
+    .obi_r_chan_t ( sbr_obi_r_chan_t ),
+    .obi_req_t ( sbr_obi_req_t ),
+    .obi_rsp_t ( sbr_obi_rsp_t )
+  ) i_periph_cut (
+    .clk_i ( clk_i ),
+    .rst_ni ( rst_ni ),
+    .sbr_port_req_i ( all_sbr_obi_req[XbarPeriph] ),
+    .sbr_port_rsp_o ( all_sbr_obi_rsp[XbarPeriph] ),
+    .mgr_port_req_o ( xbar_periph_obi_req ),
+    .mgr_port_rsp_i ( xbar_periph_obi_rsp )
+  );
 `endif
 
   for (genvar i = 0; i < NumSramBanks; i++) begin : gen_xbar_sbr_connect
