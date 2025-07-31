@@ -43,6 +43,8 @@ set tpg2Width     6; # arbitrary number
 set tpg2Pitch   204; # multiple of pad-pitch
 set tpg2Spacing  60; # big enough to skip over a pad
 set tpg2Offset   97; # offset from leftX of core
+set tpg2NumberOfStraps [expr int(($chipW - (2 * ($coreMargin + $tpg2Offset))) / $tpg2Pitch)]; # number of straps on top metal 2
+# set tpg2NumberOfStraps 10; # number of straps on top metal 2
 
 # Macro Power Rings -> M3 and M2
 ## Spacing must be larger than pitch of M2/M3
@@ -85,8 +87,13 @@ proc sram_power { name macro } {
         set stripe_dist [expr $stripe_dist/2]
     }
 
-    add_pdn_stripe -grid ${name}_grid -layer {TopMetal1} -width $mpgWidth -spacing $mpgSpacing \
-                   -pitch $stripe_dist -offset $mpgOffset -extend_to_core_ring -starts_with POWER -snap_to_grid
+    if {$stripe_dist < 20} {
+        add_pdn_stripe -grid ${name}_grid -layer {TopMetal1} -width $mpgWidth -spacing $mpgSpacing \
+                       -pitch 100 -offset $mpgOffset -extend_to_core_ring -starts_with POWER -snap_to_grid
+    } else {
+        add_pdn_stripe -grid ${name}_grid -layer {TopMetal1} -width $mpgWidth -spacing $mpgSpacing \
+                       -pitch $stripe_dist -offset $mpgOffset -extend_to_core_ring -starts_with POWER -snap_to_grid
+    }
 
     # Connection of Macro Power Ring to standard-cell rails
     add_pdn_connect -grid ${name}_grid -layers {Metal3 Metal1}
@@ -119,12 +126,13 @@ add_pdn_stripe -grid {core_grid} -layer {Metal1} -width {0.44} -offset {0} \
 
 
 sram_power "sram_256x64"  "RM_IHPSG13_1P_256x64_c2_bm_bist"
+sram_power "sram_64x64"   "RM_IHPSG13_1P_64x64_c2_bm_bist"
 
 # Top power grid
 # Top 2 Stripe
 add_pdn_stripe -grid {core_grid} -layer {TopMetal2} -width $tpg2Width \
                -pitch $tpg2Pitch -spacing $tpg2Spacing -offset $tpg2Offset \
-               -extend_to_core_ring -snap_to_grid -number_of_straps 7
+               -extend_to_core_ring -snap_to_grid -number_of_straps $tpg2NumberOfStraps
 
 # "The add_pdn_connect command is used to define which layers in the power grid are to be connected together.
 #  During power grid generation, vias will be added for overlapping power nets and overlapping ground nets."

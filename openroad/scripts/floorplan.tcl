@@ -39,6 +39,9 @@ source src/padring.tcl
 set RamMaster256x64   [[ord::get_db] findMaster "RM_IHPSG13_1P_256x64_c2_bm_bist"]
 set RamSize256x64_W   [ord::dbu_to_microns [$RamMaster256x64 getWidth]]
 set RamSize256x64_H   [ord::dbu_to_microns [$RamMaster256x64 getHeight]]
+set RamMaster64x64    [[ord::get_db] findMaster "RM_IHPSG13_1P_64x64_c2_bm_bist"]
+set RamSize64x64_W    [ord::dbu_to_microns [$RamMaster64x64 getWidth]]
+set RamSize64x64_H    [ord::dbu_to_microns [$RamMaster64x64 getHeight]]
 
 
 ##########################################################################
@@ -89,11 +92,13 @@ utl::report "Place Macros"
 set X [expr $floor_midpointX - $RamSize256x64_W/2]
 set Y [expr $floor_topY - $RamSize256x64_H]
 placeInstance $bank0_sram0 $X $Y R0
+placeInstance $bank0_sram1 $X [expr $Y - $RamSize64x64_H - 15] R0
 
 # Bank1
 set X [expr $X]
-set Y [expr $Y - $RamSize256x64_H - 15]
+set Y [expr $Y - $RamSize256x64_H - 15 - $RamSize64x64_H - 15]
 placeInstance $bank1_sram0 $X $Y R0
+placeInstance $bank1_sram1 $X [expr $Y - $RamSize64x64_H - 15] R0
 
 
 cut_rows -halo_width_x 2 -halo_width_y 1
