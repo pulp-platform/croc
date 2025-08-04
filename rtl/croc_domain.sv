@@ -689,7 +689,9 @@ module croc_domain import croc_pkg::*; #(
     default: '0
   };
 
-  soc_ctrl_reg_top i_soc_ctrl (
+  soc_ctrl_reg_top #(
+    .BootAddrDefault ( SramBaseAddr )
+  ) i_soc_ctrl (
     .clk ( clk_i ),
     .arst_n ( rst_ni ),
 
