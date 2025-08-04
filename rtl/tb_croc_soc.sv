@@ -44,11 +44,11 @@ module tb_croc_soc #(
 
     // Register addresses
     localparam bit [31:0] BootAddrAddr   = croc_pkg::SocCtrlAddrOffset
-                                           + soc_ctrl_reg_pkg::SOC_CTRL_BOOTADDR_OFFSET;
+                                           + soc_ctrl_addrmap_pkg::SOC_CTRL_BOOTADDR_REG_OFFSET;
     localparam bit [31:0] FetchEnAddr    = croc_pkg::SocCtrlAddrOffset
-                                           + soc_ctrl_reg_pkg::SOC_CTRL_FETCHEN_OFFSET;
+                                           + soc_ctrl_addrmap_pkg::SOC_CTRL_FETCHEN_REG_OFFSET;
     localparam bit [31:0] CoreStatusAddr = croc_pkg::SocCtrlAddrOffset
-                                           + soc_ctrl_reg_pkg::SOC_CTRL_CORESTATUS_OFFSET;
+                                           + soc_ctrl_addrmap_pkg::SOC_CTRL_CORESTATUS_REG_OFFSET;
 
     /////////////////////////////
     //  Command Line Arguments //

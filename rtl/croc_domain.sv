@@ -659,57 +659,53 @@ module croc_domain import croc_pkg::*; #(
   );
 
   // SoC Control
-  reg_req_t soc_ctrl_reg_req;
-  reg_rsp_t soc_ctrl_reg_rsp;
+  apb_req_t soc_ctrl_apb_req;
+  apb_resp_t soc_ctrl_apb_rsp;
 
-  periph_to_reg #(
-    .AW    ( SbrObiCfg.AddrWidth  ),
-    .DW    ( SbrObiCfg.DataWidth  ),
-    .BW    ( 8                    ),
-    .IW    ( SbrObiCfg.IdWidth    ),
-    .req_t ( reg_req_t            ),
-    .rsp_t ( reg_rsp_t            )
+  obi_to_apb #(
+    .ObiCfg    ( SbrObiCfg     ),
+    .obi_req_t ( sbr_obi_req_t ),
+    .obi_rsp_t ( sbr_obi_rsp_t ),
+    .apb_req_t ( apb_req_t     ),
+    .apb_rsp_t ( apb_resp_t    )
   ) i_soc_ctrl_translate (
     .clk_i,
     .rst_ni,
 
-    .req_i     ( soc_ctrl_obi_req.req     ),
-    .add_i     ( soc_ctrl_obi_req.a.addr  ),
-    .wen_i     ( ~soc_ctrl_obi_req.a.we   ),
-    .wdata_i   ( soc_ctrl_obi_req.a.wdata ),
-    .be_i      ( soc_ctrl_obi_req.a.be    ),
-    .id_i      ( soc_ctrl_obi_req.a.aid   ),
+    .obi_req_i     ( soc_ctrl_obi_req     ),
+    .obi_rsp_o     ( soc_ctrl_obi_rsp     ),
 
-    .gnt_o     ( soc_ctrl_obi_rsp.gnt     ),
-    .r_rdata_o ( soc_ctrl_obi_rsp.r.rdata ),
-    .r_opc_o   ( soc_ctrl_obi_rsp.r.err   ),
-    .r_id_o    ( soc_ctrl_obi_rsp.r.rid   ),
-    .r_valid_o ( soc_ctrl_obi_rsp.rvalid  ),
+    .apb_req_o     ( soc_ctrl_apb_req     ),
+    .apb_rsp_i     ( soc_ctrl_apb_rsp     )
+  );
 
-    .reg_req_o ( soc_ctrl_reg_req ),
-    .reg_rsp_i ( soc_ctrl_reg_rsp )
-  );  
-  assign soc_ctrl_obi_rsp.r.r_optional = '0;
+  soc_ctrl_reg_pkg::soc_ctrl__in_t hwif_in;
+  soc_ctrl_reg_pkg::soc_ctrl__out_t hwif_out;
 
-  soc_ctrl_reg_pkg::soc_ctrl_reg2hw_t soc_ctrl_reg2hw;
-  soc_ctrl_reg_pkg::soc_ctrl_hw2reg_t soc_ctrl_hw2reg;
-  assign fetch_enable    = soc_ctrl_reg2hw.fetchen.q | fetch_en_i;
-  assign boot_addr       = soc_ctrl_reg2hw.bootaddr.q;
-  assign sram_impl       = soc_ctrl_reg2hw.sram_dly;
-  assign soc_ctrl_hw2reg = '0;
+  assign fetch_enable = hwif_out.fetchen.fetchen.value | fetch_en_i;
+  assign boot_addr    = hwif_out.bootaddr.bootaddr.value;
+  assign sram_impl    = hwif_out.sram_dly.sram_dly.value;
+  assign hwif_in      = '{
+    default: '0
+  };
 
-  soc_ctrl_reg_top #(
-    .reg_req_t       ( reg_req_t    ),
-    .reg_rsp_t       ( reg_rsp_t    ),
-    .BootAddrDefault ( SramBaseAddr )
-  ) i_soc_ctrl (
-    .clk_i,
-    .rst_ni,
-    .reg_req_i ( soc_ctrl_reg_req ),
-    .reg_rsp_o ( soc_ctrl_reg_rsp ),
-    .reg2hw    ( soc_ctrl_reg2hw  ),
-    .hw2reg    ( soc_ctrl_hw2reg  ),
-    .devmode_i ( 1'b0             )
+  soc_ctrl_reg_top i_soc_ctrl (
+    .clk ( clk_i ),
+    .arst_n ( rst_ni ),
+
+    .s_apb_psel ( soc_ctrl_apb_req.psel ),
+    .s_apb_penable ( soc_ctrl_apb_req.penable ),
+    .s_apb_pwrite ( soc_ctrl_apb_req.pwrite ),
+    .s_apb_pprot ( soc_ctrl_apb_req.pprot ),
+    .s_apb_paddr ( soc_ctrl_apb_req.paddr[soc_ctrl_reg_pkg::SOC_CTRL_REG_TOP_MIN_ADDR_WIDTH-1:0] ),
+    .s_apb_pwdata ( soc_ctrl_apb_req.pwdata ),
+    .s_apb_pstrb ( soc_ctrl_apb_req.pstrb ),
+    .s_apb_pready ( soc_ctrl_apb_rsp.pready ),
+    .s_apb_prdata ( soc_ctrl_apb_rsp.prdata ),
+    .s_apb_pslverr ( soc_ctrl_apb_rsp.pslverr ),
+
+    .hwif_in (hwif_in),
+    .hwif_out (hwif_out)
   );
 
   // UART

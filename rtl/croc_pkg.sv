@@ -7,6 +7,7 @@
 
 `include "register_interface/typedef.svh"
 `include "obi/typedef.svh"
+`include "apb/typedef.svh"
 
 package croc_pkg;
 
@@ -313,6 +314,21 @@ package croc_pkg;
       logic        ready;
   } reg_rsp_t;
 
+  typedef struct packed {
+    logic [31:0]    paddr;
+    apb_pkg::prot_t pprot;
+    logic           psel;
+    logic           penable;
+    logic           pwrite;
+    logic [31:0]    pwdata;
+    logic [3:0]     pstrb;
+  } apb_req_t;
+  typedef struct packed {
+    logic        pready;
+    logic [31:0] prdata;
+    logic        pslverr;
+    } apb_resp_t;
+
   /* This is how we would usually define interconnects using the typedef.svh macros
    *
    * `OBI_TYPEDEF_A_CHAN_T(mgr_obi_a_chan_t, MgrObiCfg.AddrWidth, MgrObiCfg.DataWidth, MgrObiCfg.IdWidth, logic [0:0])
@@ -329,6 +345,9 @@ package croc_pkg;
    * 
    * // Register Interface configured as 32 bit data, 32 bit address width (4 byte enable bits)
    * `REG_BUS_TYPEDEF_ALL(reg, logic[31:0], logic[31:0], logic[3:0]); 
+   * 
+   * // APB
+   * `APB_TYPEDEF_ALL(apb_req_t, logic[31:0], logic[31:0], logic[3:0]);
    */
 
 
