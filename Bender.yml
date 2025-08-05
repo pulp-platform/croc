@@ -32,6 +32,7 @@ sources:
   - rtl/croc_pkg.sv
   - rtl/user_pkg.sv
   - rtl/soc_ctrl/soc_ctrl_reg_pkg.sv
+  - rtl/soc_ctrl/soc_ctrl_tmr_part_reg_pkg.sv
   - rtl/soc_ctrl/soc_ctrl_reg_addr_pkg.sv
   - rtl/gpio/gpio_reg_pkg.sv
   # add your design files containing anything but modules (packages) here
@@ -42,6 +43,8 @@ sources:
       # Level 1
       - rtl/core_wrap.sv
       - rtl/soc_ctrl/soc_ctrl_reg_top.sv
+      - rtl/soc_ctrl/soc_ctrl_tmr_part_reg_top.sv
+      - rtl/soc_ctrl/soc_ctrl_tmr_wrap.sv
       - rtl/gpio/gpio_reg_top.sv
       - rtl/gpio/gpio.sv
       # Level 2

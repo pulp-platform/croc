@@ -1,0 +1,73 @@
+// Copyright 2025 ETH Zurich and University of Bologna
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+
+addrmap soc_ctrl {
+//   signal {signalwidth=32;} boot_addr_reset;
+
+  reg bootaddr {
+    name = "bootaddr";
+    desc = "Core Boot Address";
+    field {
+        name = "bootaddr";
+        desc = "Boot Address";
+        sw = rw;
+        hw = rw;
+    } bootaddr[31:0] = 0x10000000;
+  };
+
+  reg fetchen {
+    name = "fetchen";
+    desc = "Core Fetch Enable";
+    field {
+        name = "fetchen";
+        desc = "Fetch Enable";
+        sw = rw;
+        hw = rw;
+        // we = true;
+    } fetchen[0:0] = 0x0;
+  };
+
+  reg corestatus {
+    name = "corestatus";
+    desc = "Core Return Status (return value, EOC)";
+    field {
+        name = "corestatus";
+        desc = "Core Return Status (EOC(bit[31]) and status(bit[30:0]))";
+        sw = rw;
+        hw = rw;
+    } corestatus[31:0] = 0x0;
+  };
+
+  reg bootmode {
+    name = "bootmode";
+    desc = "Core Boot Mode";
+    field {
+        name = "bootmode";
+        desc = "Boot Mode";
+        sw = rw;
+        hw = rw;
+        // we = true;
+    } bootmode[0:0] = 0x0;
+  };
+
+  reg sram_dly {
+    name = "sram_dly";
+    desc = "SRAM A_DLY value";
+    field {
+        name = "sram_dly";
+        desc = "Controls the A_DLY pin of the SRAMs (configured internal timings)";
+        sw = rw;
+        hw = rw;
+    } sram_dly[0:0] = 0x1;
+  };
+
+  bootaddr bootaddr;
+  fetchen fetchen;
+  corestatus corestatus;
+  bootmode bootmode;
+  sram_dly sram_dly;
+
+//   bootaddr.bootaddr->reset = boot_addr_reset;
+
+};

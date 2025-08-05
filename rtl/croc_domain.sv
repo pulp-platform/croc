@@ -135,11 +135,12 @@ module croc_domain import croc_pkg::*; #(
 
   // periph bus
 `ifdef RELOBI
-  sbr_relobi_req_t xbar_periph_cut_obi_req;
-  sbr_relobi_rsp_t xbar_periph_cut_obi_rsp;
-`endif
+  sbr_relobi_req_t xbar_periph_obi_req;
+  sbr_relobi_rsp_t xbar_periph_obi_rsp;
+`else
   sbr_obi_req_t xbar_periph_obi_req;
   sbr_obi_rsp_t xbar_periph_obi_rsp;
+`endif
 
   // error (connected to bus error slave)
 `ifdef RELOBI
@@ -167,24 +168,8 @@ module croc_domain import croc_pkg::*; #(
     .rst_ni ( rst_ni ),
     .sbr_port_req_i ( all_sbr_obi_req[XbarPeriph] ),
     .sbr_port_rsp_o ( all_sbr_obi_rsp[XbarPeriph] ),
-    .mgr_port_req_o ( xbar_periph_cut_obi_req ),
-    .mgr_port_rsp_i ( xbar_periph_cut_obi_rsp ),
-    .fault_o ()
-  );
-
-  relobi_decoder #(
-    .Cfg (SbrObiCfg),
-    .relobi_req_t (sbr_relobi_req_t),
-    .relobi_rsp_t (sbr_relobi_rsp_t),
-    .obi_req_t (sbr_obi_req_t),
-    .obi_rsp_t (sbr_obi_rsp_t),
-    .a_optional_t (logic),
-    .r_optional_t (logic)
-  ) i_periph_decoder (
-    .rel_req_i ( xbar_periph_cut_obi_req ),
-    .rel_rsp_o ( xbar_periph_cut_obi_rsp ),
-    .req_o ( xbar_periph_obi_req ),
-    .rsp_i ( xbar_periph_obi_rsp ),
+    .mgr_port_req_o ( xbar_periph_obi_req ),
+    .mgr_port_rsp_i ( xbar_periph_obi_rsp ),
     .fault_o ()
   );
 `else
@@ -217,20 +202,35 @@ module croc_domain import croc_pkg::*; #(
   // Peripheral buses
   // -----------------
   // array of subordinate buses from peripheral demultiplexer
+`ifdef RELOBI
+  sbr_relobi_req_t [NumPeriphs-1:0] all_periph_obi_req;
+  sbr_relobi_rsp_t [NumPeriphs-1:0] all_periph_obi_rsp;
+`else
   sbr_obi_req_t [NumPeriphs-1:0] all_periph_obi_req;
   sbr_obi_rsp_t [NumPeriphs-1:0] all_periph_obi_rsp;
+`endif
 
   // Error bus
+`ifdef RELOBI
+  sbr_relobi_req_t error_obi_req;
+  sbr_relobi_rsp_t error_obi_rsp;
+`else
   sbr_obi_req_t error_obi_req;
   sbr_obi_rsp_t error_obi_rsp;
+`endif
 
   // Debug mem bus
   sbr_obi_req_t dbg_mem_obi_req;
   sbr_obi_rsp_t dbg_mem_obi_rsp;
 
   // SoC control bus
+`ifdef RELOBI
+  sbr_relobi_req_t soc_ctrl_obi_req;
+  sbr_relobi_rsp_t soc_ctrl_obi_rsp;
+`else
   sbr_obi_req_t soc_ctrl_obi_req;
   sbr_obi_rsp_t soc_ctrl_obi_rsp;
+`endif
 
   // UART periph bus
   sbr_obi_req_t uart_obi_req;
@@ -247,17 +247,79 @@ module croc_domain import croc_pkg::*; #(
   // Fanout to individual peripherals
   assign error_obi_req                     = all_periph_obi_req[PeriphError];
   assign all_periph_obi_rsp[PeriphError]   = error_obi_rsp;
-  assign dbg_mem_obi_req                   = all_periph_obi_req[PeriphDebug];
-  assign all_periph_obi_rsp[PeriphDebug]   = dbg_mem_obi_rsp;
   assign soc_ctrl_obi_req                  = all_periph_obi_req[PeriphSocCtrl];
   assign all_periph_obi_rsp[PeriphSocCtrl] = soc_ctrl_obi_rsp;
+`ifdef RELOBI
+  relobi_decoder #(
+    .Cfg (SbrObiCfg),
+    .relobi_req_t (sbr_relobi_req_t),
+    .relobi_rsp_t (sbr_relobi_rsp_t),
+    .obi_req_t (sbr_obi_req_t),
+    .obi_rsp_t (sbr_obi_rsp_t),
+    .a_optional_t (logic),
+    .r_optional_t (logic)
+  ) i_dbg_mem_decoder (
+    .rel_req_i ( all_periph_obi_req[PeriphDebug] ),
+    .rel_rsp_o ( all_periph_obi_rsp[PeriphDebug] ),
+    .req_o ( dbg_mem_obi_req ),
+    .rsp_i ( dbg_mem_obi_rsp ),
+    .fault_o ()
+  );
+  relobi_decoder #(
+    .Cfg (SbrObiCfg),
+    .relobi_req_t (sbr_relobi_req_t),
+    .relobi_rsp_t (sbr_relobi_rsp_t),
+    .obi_req_t (sbr_obi_req_t),
+    .obi_rsp_t (sbr_obi_rsp_t),
+    .a_optional_t (logic),
+    .r_optional_t (logic)
+  ) i_uart_decoder (
+    .rel_req_i ( all_periph_obi_req[PeriphUart] ),
+    .rel_rsp_o ( all_periph_obi_rsp[PeriphUart] ),
+    .req_o ( uart_obi_req ),
+    .rsp_i ( uart_obi_rsp ),
+    .fault_o ()
+  );
+  relobi_decoder #(
+    .Cfg (SbrObiCfg),
+    .relobi_req_t (sbr_relobi_req_t),
+    .relobi_rsp_t (sbr_relobi_rsp_t),
+    .obi_req_t (sbr_obi_req_t),
+    .obi_rsp_t (sbr_obi_rsp_t),
+    .a_optional_t (logic),
+    .r_optional_t (logic)
+  ) i_gpio_decoder (
+    .rel_req_i ( all_periph_obi_req[PeriphGpio] ),
+    .rel_rsp_o ( all_periph_obi_rsp[PeriphGpio] ),
+    .req_o ( gpio_obi_req ),
+    .rsp_i ( gpio_obi_rsp ),
+    .fault_o ()
+  );
+  relobi_decoder #(
+    .Cfg (SbrObiCfg),
+    .relobi_req_t (sbr_relobi_req_t),
+    .relobi_rsp_t (sbr_relobi_rsp_t),
+    .obi_req_t (sbr_obi_req_t),
+    .obi_rsp_t (sbr_obi_rsp_t),
+    .a_optional_t (logic),
+    .r_optional_t (logic)
+  ) i_timer_decoder (
+    .rel_req_i ( all_periph_obi_req[PeriphTimer] ),
+    .rel_rsp_o ( all_periph_obi_rsp[PeriphTimer] ),
+    .req_o ( timer_obi_req ),
+    .rsp_i ( timer_obi_rsp ),
+    .fault_o ()
+  );
+`else
+  assign dbg_mem_obi_req                   = all_periph_obi_req[PeriphDebug];
+  assign all_periph_obi_rsp[PeriphDebug]   = dbg_mem_obi_rsp;
   assign uart_obi_req                      = all_periph_obi_req[PeriphUart];
   assign all_periph_obi_rsp[PeriphUart]    = uart_obi_rsp;
   assign gpio_obi_req                      = all_periph_obi_req[PeriphGpio];
   assign all_periph_obi_rsp[PeriphGpio]    = gpio_obi_rsp;
   assign timer_obi_req                     = all_periph_obi_req[PeriphTimer];
   assign all_periph_obi_rsp[PeriphTimer]   = timer_obi_rsp;
-
+`endif
 
   // -----------------
   // Core
@@ -616,7 +678,7 @@ module croc_domain import croc_pkg::*; #(
     .rule_t    ( addr_map_rule_t                ),
     .Napot     ( 1'b0                           )
   ) i_addr_decode_periphs (
-    .addr_i           ( xbar_periph_obi_req.a.addr  ),
+    .addr_i           ( xbar_periph_obi_req.a.addr[31:0]  ),
     .addr_map_i       ( periph_addr_map             ),
     .idx_o            ( periph_idx                  ),
     .dec_valid_o      (),
@@ -625,29 +687,53 @@ module croc_domain import croc_pkg::*; #(
     .default_idx_i    ( '0 )
   );
 
+`ifdef RELOBI
+  relobi_demux #(
+    .obi_req_t   ( sbr_relobi_req_t ),
+    .obi_rsp_t   ( sbr_relobi_rsp_t ),
+    .obi_r_chan_t ( sbr_relobi_r_chan_t ),
+    .obi_r_optional_t ( logic ),
+    .TmrSelect ( 1'b1 ),
+`else
   obi_demux #(
-    .ObiCfg      ( SbrObiCfg     ),
     .obi_req_t   ( sbr_obi_req_t ),
     .obi_rsp_t   ( sbr_obi_rsp_t ),
+`endif
+    .ObiCfg      ( SbrObiCfg     ),
     .NumMgrPorts ( NumPeriphs    ),
     .NumMaxTrans ( 2             )
   ) i_obi_demux (
     .clk_i,
     .rst_ni,
 
+`ifdef RELOBI
+    .sbr_port_select_i ( {3{periph_idx}}           ),
+`else
     .sbr_port_select_i ( periph_idx           ),
+`endif
     .sbr_port_req_i    ( xbar_periph_obi_req  ),
     .sbr_port_rsp_o    ( xbar_periph_obi_rsp  ),
 
     .mgr_ports_req_o   ( all_periph_obi_req ),
     .mgr_ports_rsp_i   ( all_periph_obi_rsp )
+`ifdef RELOBI
+    ,.fault_o          ()
+`endif
   );
 
   // Peripheral space error subordinate
+`ifdef RELOBI
+  relobi_err_sbr #(
+    .obi_req_t   ( sbr_relobi_req_t ),
+    .obi_rsp_t   ( sbr_relobi_rsp_t ),
+    .a_optional_t ( logic ),
+    .r_optional_t ( logic ),
+`else
   obi_err_sbr #(
-    .ObiCfg      ( SbrObiCfg     ),
     .obi_req_t   ( sbr_obi_req_t ),
     .obi_rsp_t   ( sbr_obi_rsp_t ),
+`endif
+    .ObiCfg      ( SbrObiCfg     ),
     .NumMaxTrans ( 1             ),
     .RspData     ( 32'hBADCAB1E  )
   ) i_periph_err (
@@ -656,9 +742,66 @@ module croc_domain import croc_pkg::*; #(
     .testmode_i,
     .obi_req_i  ( error_obi_req ),
     .obi_rsp_o  ( error_obi_rsp )
+`ifdef RELOBI
+    ,.fault_o ()
+`endif
   );
 
   // SoC Control
+`ifdef RELOBI
+  soc_ctrl_reg_pkg::soc_ctrl__in_t   hwif_in[3];
+  soc_ctrl_reg_pkg::soc_ctrl__out_t  hwif_out[3];
+
+  soc_ctrl_tmr_wrap #(
+    .BootAddrDefault ( SramBaseAddr ),
+    .ObiCfg    ( SbrObiCfg     ),
+    .relobi_req_t ( sbr_relobi_req_t ),
+    .relobi_rsp_t ( sbr_relobi_rsp_t ),
+    .relobi_r_chan_t ( sbr_relobi_r_chan_t ),
+    .r_optional_t ( logic ),
+    .obi_req_t ( sbr_obi_req_t ),
+    .obi_rsp_t ( sbr_obi_rsp_t ),
+    .apb_req_t ( apb_req_t ),
+    .apb_resp_t ( apb_resp_t )
+  ) i_soc_ctrl (
+    .clk_i,
+    .rst_ni,
+
+    .relobi_req_i  ( soc_ctrl_obi_req ),
+    .relobi_rsp_o  ( soc_ctrl_obi_rsp ),
+
+    .hwif_in         ( hwif_in ),
+    .hwif_out        ( hwif_out )
+  );
+
+  TMR_voter_fail i_fetchen_vote (
+    .a_i ( hwif_out[0].fetchen.fetchen.value | fetch_en_i ),
+    .b_i ( hwif_out[1].fetchen.fetchen.value | fetch_en_i ),
+    .c_i ( hwif_out[2].fetchen.fetchen.value | fetch_en_i ),
+    .majority_o ( fetch_enable ),
+    .fault_detected_o ()
+  );
+  bitwise_TMR_voter_fail #(
+    .DataWidth ( 32 )
+  ) i_bootaddr_vote (
+    .a_i ( hwif_out[0].bootaddr.bootaddr.value ),
+    .b_i ( hwif_out[1].bootaddr.bootaddr.value ),
+    .c_i ( hwif_out[2].bootaddr.bootaddr.value ),
+    .majority_o ( boot_addr ),
+    .fault_detected_o ()
+  );
+  TMR_voter_fail i_sram_impl_vote (
+    .a_i ( hwif_out[0].sram_dly.sram_dly.value ),
+    .b_i ( hwif_out[1].sram_dly.sram_dly.value ),
+    .c_i ( hwif_out[2].sram_dly.sram_dly.value ),
+    .majority_o ( sram_impl ),
+    .fault_detected_o ()
+  );
+
+  assign hwif_in[0] = '{default: '0};
+  assign hwif_in[1] = '{default: '0};
+  assign hwif_in[2] = '{default: '0};
+`else
   apb_req_t soc_ctrl_apb_req;
   apb_resp_t soc_ctrl_apb_rsp;
 
@@ -682,13 +825,6 @@ module croc_domain import croc_pkg::*; #(
   soc_ctrl_reg_pkg::soc_ctrl__in_t hwif_in;
   soc_ctrl_reg_pkg::soc_ctrl__out_t hwif_out;
 
-  assign fetch_enable = hwif_out.fetchen.fetchen.value | fetch_en_i;
-  assign boot_addr    = hwif_out.bootaddr.bootaddr.value;
-  assign sram_impl    = hwif_out.sram_dly.sram_dly.value;
-  assign hwif_in      = '{
-    default: '0
-  };
-
   soc_ctrl_reg_top #(
     .BootAddrDefault ( SramBaseAddr )
   ) i_soc_ctrl (
@@ -709,6 +845,14 @@ module croc_domain import croc_pkg::*; #(
     .hwif_in (hwif_in),
     .hwif_out (hwif_out)
   );
+
+  assign fetch_enable = hwif_out.fetchen.fetchen.value | fetch_en_i;
+  assign boot_addr    = hwif_out.bootaddr.bootaddr.value;
+  assign sram_impl    = hwif_out.sram_dly.sram_dly.value;
+  assign hwif_in      = '{
+    default: '0
+  };
+`endif
 
   // UART
   obi_uart #(
