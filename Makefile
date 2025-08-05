@@ -52,11 +52,16 @@ clean-deps:
 ##################
 ## Generate SoC CTRL registers
 registers: rtl/soc_ctrl/soc_ctrl_reg_top.sv rtl/soc_ctrl/soc_ctrl_reg_pkg.sv rtl/soc_ctrl/soc_ctrl_reg_addr_pkg.sv
+registers: rtl/soc_ctrl/soc_ctrl_tmr_part_reg_top.sv rtl/soc_ctrl/soc_ctrl_tmr_part_reg_pkg.sv
 
 rtl/soc_ctrl/soc_ctrl_reg_top.sv rtl/soc_ctrl/soc_ctrl_reg_pkg.sv rtl/soc_ctrl/soc_ctrl_reg_addr_pkg.sv: rtl/soc_ctrl/soc_ctrl.rdl
 	$(PEAKRDL) regblock $< -o rtl/soc_ctrl --cpuif apb4-flat --default-reset arst_n --module-name soc_ctrl_reg_top --package-name soc_ctrl_reg_pkg
 	$(PEAKRDL) raw-header $< -o rtl/soc_ctrl/soc_ctrl_reg_addr_pkg.sv --format svpkg
 	git apply rtl/soc_ctrl/boot_addr.patch
+
+rtl/soc_ctrl/soc_ctrl_tmr_part_reg_top.sv rtl/soc_ctrl/soc_ctrl_tmr_part_reg_pkg.sv: rtl/soc_ctrl/soc_ctrl_tmr_part.rdl
+	$(PEAKRDL) regblock $< -o rtl/soc_ctrl --cpuif apb4-flat --default-reset arst_n --module-name soc_ctrl_tmr_part_reg_top --package-name soc_ctrl_tmr_part_reg_pkg
+	git apply rtl/soc_ctrl/boot_addr_tmr_part.patch
 
 ############
 # Software #
@@ -125,7 +130,7 @@ verilator: verilator/obj_dir/Vtb_croc_soc
 VCS_SCRIPT_ARGS = -assert svaext +v2k -kdb -override_timescale=1ns/10ps -debug_access+all
 VCS_COMPILE_ARGS = -kdb -lca -sverilog -full64 -j8 -l compile.log +vcs+fsdbon -debug_access+all +lint=TFIPC-L +lint=PCWM +warn=noCWUC +warn=noUII-L -override_timescale=1ns/10ps
 vcs/compile_rtl.sh: Bender.lock Bender.yml
-	$(BENDER) script vcs -t rtl -t vcs -t simulation -t verilatorn -t relOBI -DSYNTHESIS -DSIMULATION -DRELOBI --vlog-arg="$(VCS_SCRIPT_ARGS)" --vlogan-bin="$(VLOGAN)" > $@
+	$(BENDER) script vcs -t rtl -t vcs -t simulation -t verilator -t relOBI -DSYNTHESIS -DSIMULATION -DRELOBI -t relcore --vlog-arg="$(VCS_SCRIPT_ARGS)" --vlogan-bin="$(VLOGAN)" > $@
 	chmod +x $@
 
 vcs/compile_netlist_yosys.sh: Bender.lock Bender.yml
