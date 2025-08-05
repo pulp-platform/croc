@@ -41,7 +41,12 @@ sources:
   - target: not(any(netlist_yosys, netlist_openroad))
     files:
       # Level 1
-      - rtl/core_wrap.sv
+      - target: relcore
+        files: 
+          - rtl/core_wrap_tcls.sv
+      - target: not(relcore)
+        files:
+          - rtl/core_wrap.sv
       - rtl/soc_ctrl/soc_ctrl_reg_top.sv
       - rtl/soc_ctrl/soc_ctrl_tmr_part_reg_top.sv
       - rtl/soc_ctrl/soc_ctrl_tmr_wrap.sv
