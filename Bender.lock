@@ -36,7 +36,7 @@ packages:
       Path: rtl/cve2
     dependencies: []
   obi:
-    revision: 949657a9c63230f141c23afc7797bd533396001d
+    revision: 558594f7e92ff03f071f84836c08c75d166978f0
     version: null
     source:
       Git: https://github.com/pulp-platform/obi.git
@@ -53,7 +53,7 @@ packages:
     - common_cells
     - obi
   redundancy_cells:
-    revision: 69468c8f8503d603bbcd6971607c7896104b8519
+    revision: 3c7c57e80fe2f65812db092182ce68ee810943df
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git

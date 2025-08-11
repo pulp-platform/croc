@@ -51,8 +51,10 @@ report_checks -format end -no_line_splits                >> ${report_dir}/${log_
 # Size of the chip
 # set chipW            1760.0
 # set chipH            1760.0
-set chipW            2500.0
-set chipH            2500.0
+# set chipW            2500.0
+# set chipH            2500.0
+set chipW            2200.0
+set chipH            2200.0
 
 
 # thickness of annular ring for pads (length of a pad)

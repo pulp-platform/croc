@@ -181,8 +181,6 @@ module core_wrap import croc_pkg::*; #() (
     .InterleaveGrps (1'b1),
     .RapidRecovery (1'b0),
     .SeparateData (1'b1),
-    .SeparateAxiBus (1'b0),
-    .AxiHasAce (1'b0),
     .NumBusVoters (1),
     .RfAddrWidth (6),
     .SysDataWidth (32),
@@ -194,7 +192,6 @@ module core_wrap import croc_pkg::*; #() (
     `else
     .bus_outputs_t (bus_outputs_t),
     `endif
-    .axi_req_t (logic),
     .reg_req_t (reg_req_t),
     .reg_rsp_t (reg_rsp_t),
     .rapid_recovery_t (logic)
@@ -204,7 +201,7 @@ module core_wrap import croc_pkg::*; #() (
 
     .reg_request_i ('0), // TODO
     .reg_response_o (),  // TODO
-    
+
     .tmr_failure_o (),
     .tmr_error_o (),
     .tmr_resynch_req_o (),
@@ -212,7 +209,6 @@ module core_wrap import croc_pkg::*; #() (
     .tmr_cores_synch_i ('0),
 
     .dmr_failure_o (),
-    .dmr_error_o (),
     .dmr_resynch_req_o (),
     .dmr_sw_synch_req_o (),
     .dmr_cores_synch_i ('0),
@@ -229,7 +225,6 @@ module core_wrap import croc_pkg::*; #() (
     `else
     .sys_bus_outputs_o (sys_bus_outputs),
     `endif
-    .sys_axi_outputs_o (),
     .sys_fetch_en_i (fetch_enable_i),
     .enable_bus_vote_i (enable_bus_vote),
 
@@ -238,11 +233,10 @@ module core_wrap import croc_pkg::*; #() (
     .core_inputs_o (core_input_connect),
     .core_nominal_outputs_i (core_nominal_outputs),
     `ifdef RELOBI
-    .core_bus_outputs_i (core_data_a_chan),
+    .core_bus_outputs_i (core_data_a_chan)
     `else
-    .core_bus_outputs_i (core_bus_outputs),
+    .core_bus_outputs_i (core_bus_outputs)
     `endif
-    .core_axi_outputs_i ()
   );
 
   for (genvar i = 0; i < 3; i++) begin : gen_cores
