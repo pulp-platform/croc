@@ -16,8 +16,8 @@ dependencies:
   register_interface:   { git: "https://github.com/pulp-platform/register_interface.git",   version: 0.4.1  }
   apb:                  { git: "https://github.com/pulp-platform/apb.git",                  version: 0.2.4  }
   timer_unit:           { git: "https://github.com/pulp-platform/timer_unit.git",           version: 1.0.3  }
-  obi_peripherals:      { git: "https://github.com/pulp-platform/obi_peripherals.git",      rev: 21ee04d    } # UART
   obi:                  { git: "https://github.com/pulp-platform/obi.git",                  rev: 558594f7e92ff03f071f84836c08c75d166978f0 }
+  obi_peripherals:      { git: "https://github.com/pulp-platform/obi_peripherals.git",      rev: bb07b2f69124e9481235a699098ee0857def20b3    } # UART
   cve2:                 { path: "rtl/cve2" } # a vendor package (no Bender.yml), see below 
   redundancy_cells: { git: "https://github.com/pulp-platform/redundancy_cells.git", rev: 3c7c57e80fe2f65812db092182ce68ee810943df }
 

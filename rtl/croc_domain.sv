@@ -855,18 +855,37 @@ module croc_domain import croc_pkg::*; #(
 `endif
 
   // UART
+`ifdef TARGET_UART_TMRG
+  obi_uartTMR #(
+`else
   obi_uart #(
+`endif
     .ObiCfg    ( SbrObiCfg     ),
     .obi_req_t ( sbr_obi_req_t ),
     .obi_rsp_t ( sbr_obi_rsp_t )
   ) i_uart (
     .clk_i,
     .rst_ni,
-   
+
+`ifdef TARGET_UART_TMRG
+    .obi_req_iA ( uart_obi_req ),
+    .obi_req_iB ( uart_obi_req ),
+    .obi_req_iC ( uart_obi_req ),
+    .obi_rsp_oA ( uart_obi_rsp ),
+    .obi_rsp_oB (  ),
+    .obi_rsp_oC (  ),
+    .irq_oA     ( uart_irq     ),
+    .irq_oB     (     ),
+    .irq_oC     (     ),
+    .irq_noA    ( ),
+    .irq_noB    ( ),
+    .irq_noC    ( ),
+`else
     .obi_req_i ( uart_obi_req ),
     .obi_rsp_o ( uart_obi_rsp ),
-    .irq_o     ( uart_irq     ), 
-    .irq_no    ( ), 
+    .irq_o     ( uart_irq     ),
+    .irq_no    ( ),
+`endif
 
     .rxd_i     ( uart_rx_i ),
     .txd_o     ( uart_tx_o ),
@@ -876,10 +895,16 @@ module croc_domain import croc_pkg::*; #(
     .dsr_ni    ( 1'b1 ),
     .ri_ni     ( 1'b1 ),
     .cd_ni     ( 1'b1 ),
-    .rts_no    ( ), 
+    .rts_no    ( ),
     .dtr_no    ( ),
     .out1_no   ( ),
     .out2_no   ( )
+`ifdef TARGET_UART_TMRG
+    ,.tmrError (),
+    .tmrErrorA (),
+    .tmrErrorB (),
+    .tmrErrorC ()
+`endif
 );
 
   // GPIO

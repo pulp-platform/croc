@@ -48,6 +48,8 @@ yosys setattr -set keep_hierarchy 1 "t:tc_sram_impl$*"
 yosys setattr -set keep_hierarchy 1 "t:cdc_*$*"
 yosys setattr -set keep_hierarchy 1 "t:sync$*"
 yosys setattr -set keep_hierarchy 1 "t:*$*tmr_part"
+yosys setattr -set keep_hierarchy 1 "t:majorityVoter$*"
+yosys setattr -set keep_hierarchy 1 "t:fanout$*"
 
 
 # blackbox modules (applies the *blackbox* attribute)
