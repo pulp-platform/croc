@@ -192,15 +192,16 @@ module core_wrap import croc_pkg::*; #() (
     `else
     .bus_outputs_t (bus_outputs_t),
     `endif
-    .reg_req_t (reg_req_t),
-    .reg_rsp_t (reg_rsp_t),
-    .rapid_recovery_t (logic)
+    .apb_req_t (apb_req_t),
+    .apb_resp_t (apb_resp_t),
+    .rapid_recovery_t (logic),
+    .TmrInternals (1'b1)
   ) i_hmr_unit (
     .clk_i (clk_i),
     .rst_ni (rst_ni),
 
-    .reg_request_i ('0), // TODO
-    .reg_response_o (),  // TODO
+    .apb_req_i ('0), // TODO
+    .apb_resp_o (),  // TODO
 
     .tmr_failure_o (),
     .tmr_error_o (),
