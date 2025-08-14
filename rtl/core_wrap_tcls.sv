@@ -16,6 +16,9 @@ module core_wrap import croc_pkg::*; #() (
 
   input  logic [31:0] boot_addr_i, // TODO triplicate
 
+  input apb_req_t [2:0] apb_req_i,
+  output apb_resp_t [2:0] apb_resp_o,
+
   // Instruction memory interface
 `ifdef RELOBI
   output mgr_relobi_req_t rel_instr_req_o,
@@ -200,8 +203,8 @@ module core_wrap import croc_pkg::*; #() (
     .clk_i (clk_i),
     .rst_ni (rst_ni),
 
-    .apb_req_i ('0), // TODO
-    .apb_resp_o (),  // TODO
+    .apb_req_i (apb_req_i),
+    .apb_resp_o (apb_resp_o),
 
     .tmr_failure_o (),
     .tmr_error_o (),
@@ -214,6 +217,8 @@ module core_wrap import croc_pkg::*; #() (
     .dmr_sw_synch_req_o (),
     .dmr_cores_synch_i ('0),
     .redundancy_enable_o (),
+
+    .ctrl_fault_o (),
 
     .rapid_recovery_o (),
     .core_backup_i ('0),
