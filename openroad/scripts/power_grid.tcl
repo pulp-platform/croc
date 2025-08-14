@@ -42,8 +42,10 @@ set pgcrOffset [expr ($PowRingSpace - $pgcrSpacing - 2 * $pgcrWidth) / 2]
 set tpg2Width     6; # arbitrary number
 set tpg2Pitch   204; # multiple of pad-pitch
 set tpg2Spacing  60; # big enough to skip over a pad
-set tpg2Offset   97; # offset from leftX of core
-set tpg2NumberOfStraps [expr int(($chipW - (2 * ($coreMargin + $tpg2Offset))) / $tpg2Pitch)]; # number of straps on top metal 2
+# set tpg2Offset   97; # offset from leftX of core
+set tpg2NumberOfStraps [expr int(($chipW - (2 * $coreMargin)) / $tpg2Pitch)]; # number of straps on top metal 2
+set tpg2Offset [expr int(($chipW - (($tpg2NumberOfStraps - 1) * $tpg2Pitch)) / 2 - $coreMargin - $tpg2Width - $tpg2Spacing/2)]; # offset from leftX of core
+# set tpg2Offset 135;
 # set tpg2NumberOfStraps 10; # number of straps on top metal 2
 
 # Macro Power Rings -> M3 and M2
