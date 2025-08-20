@@ -89,8 +89,8 @@ packages:
     dependencies:
     - common_verification
   timer_unit:
-    revision: 4c69615c89db9397a9747d6f6d6a36727854f0bc
-    version: 1.0.3
+    revision: 8e2cde815393de1d21891cc614ebee3ae90a2e05
+    version: null
     source:
       Git: https://github.com/pulp-platform/timer_unit.git
     dependencies: []

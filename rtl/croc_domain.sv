@@ -246,8 +246,13 @@ module croc_domain import croc_pkg::*; #(
   sbr_obi_rsp_t gpio_obi_rsp;
 
   // Timer periph bus
+`ifdef TARGET_TIMER_UNIT_TMRG
+  sbr_obi_req_t [2:0] timer_obi_req;
+  sbr_obi_rsp_t [2:0] timer_obi_rsp;
+`else // TARGET_TIMER_UNIT_TMRG
   sbr_obi_req_t timer_obi_req;
   sbr_obi_rsp_t timer_obi_rsp;
+`endif // TARGET_TIMER_UNIT_TMRG
 
   // HMR control bus
 `ifdef TARGET_RELCORE
@@ -341,6 +346,38 @@ module croc_domain import croc_pkg::*; #(
     .rsp_i ( gpio_obi_rsp ),
     .fault_o ()
   );
+`ifdef TARGET_TIMER_UNIT_TMRG
+  sbr_relobi_rsp_t timer_relobi_rsp [2:0];
+  relobi_tmr_r #(
+    .ObiCfg       ( SbrObiCfg ),
+    .obi_r_chan_t ( sbr_relobi_r_chan_t ),
+    .r_optional_t ( logic )
+  ) i_timer_tmr (
+    .three_r_i ( {timer_relobi_rsp[2].r, timer_relobi_rsp[1].r, timer_relobi_rsp[0].r} ),
+    .voted_r_o ( all_periph_obi_rsp[PeriphTimer].r ),
+    .fault_o   (  )
+  );
+  for (genvar i = 0; i < 3; i++) begin :gen_timer_obi_triple
+    assign all_periph_obi_rsp[PeriphTimer].gnt[i] = timer_relobi_rsp[i].gnt[0];
+    assign all_periph_obi_rsp[PeriphTimer].rvalid[i] = timer_relobi_rsp[i].rvalid[0];
+
+    relobi_decoder #(
+      .Cfg (SbrObiCfg),
+      .relobi_req_t (sbr_relobi_req_t),
+      .relobi_rsp_t (sbr_relobi_rsp_t),
+      .obi_req_t (sbr_obi_req_t),
+      .obi_rsp_t (sbr_obi_rsp_t),
+      .a_optional_t (logic),
+      .r_optional_t (logic)
+    ) i_timer_decoder_tmr_part (
+      .rel_req_i ( all_periph_obi_req[PeriphTimer] ),
+      .rel_rsp_o ( timer_relobi_rsp[i] ),
+      .req_o ( timer_obi_req[i] ),
+      .rsp_i ( timer_obi_rsp[i] ),
+      .fault_o ()
+    );
+  end
+`else // TARGET_TIMER_UNIT_TMRG
   relobi_decoder #(
     .Cfg (SbrObiCfg),
     .relobi_req_t (sbr_relobi_req_t),
@@ -356,6 +393,7 @@ module croc_domain import croc_pkg::*; #(
     .rsp_i ( timer_obi_rsp ),
     .fault_o ()
   );
+`endif // TARGET_TIMER_UNIT_TMRG
 `ifdef TARGET_RELCORE
   sbr_relobi_rsp_t hmr_ctrl_relobi_rsp [2:0];
   relobi_tmr_r #(
@@ -1074,6 +1112,73 @@ module croc_domain import croc_pkg::*; #(
   );
 
   // Timer
+`ifdef TARGET_TIMER_UNIT_TMRG
+  timer_unitTMR #(
+    .ID_WIDTH   ( SbrObiCfg.IdWidth )
+  ) i_timer (
+    .clk_i,
+    .rst_ni,
+    .ref_clk_i,
+
+    .req_iA      ( timer_obi_req[0].req     ),
+    .req_iB      ( timer_obi_req[1].req     ),
+    .req_iC      ( timer_obi_req[2].req     ),
+    .addr_iA     ( timer_obi_req[0].a.addr    ),
+    .addr_iB     ( timer_obi_req[1].a.addr    ),
+    .addr_iC     ( timer_obi_req[2].a.addr    ),
+    .wen_iA      ( ~timer_obi_req[0].a.we     ),
+    .wen_iB      ( ~timer_obi_req[1].a.we     ),
+    .wen_iC      ( ~timer_obi_req[2].a.we     ),
+    .wdata_iA    ( timer_obi_req[0].a.wdata   ),
+    .wdata_iB    ( timer_obi_req[1].a.wdata   ),
+    .wdata_iC    ( timer_obi_req[2].a.wdata   ),
+    .be_iA       ( timer_obi_req[0].a.be      ),
+    .be_iB       ( timer_obi_req[1].a.be      ),
+    .be_iC       ( timer_obi_req[2].a.be      ),
+    .id_iA       ( timer_obi_req[0].a.aid      ),
+    .id_iB       ( timer_obi_req[1].a.aid      ),
+    .id_iC       ( timer_obi_req[2].a.aid      ),
+    .gnt_oA      ( timer_obi_rsp[0].gnt     ),
+    .gnt_oB      ( timer_obi_rsp[1].gnt     ),
+    .gnt_oC      ( timer_obi_rsp[2].gnt     ),
+    .r_valid_oA  ( timer_obi_rsp[0].rvalid  ),
+    .r_valid_oB  ( timer_obi_rsp[1].rvalid  ),
+    .r_valid_oC  ( timer_obi_rsp[2].rvalid  ),
+    .r_opc_oA    (  ),
+    .r_opc_oB    (  ),
+    .r_opc_oC    (  ),
+    .r_id_oA     ( timer_obi_rsp[0].r.rid     ),
+    .r_id_oB     ( timer_obi_rsp[1].r.rid     ),
+    .r_id_oC     ( timer_obi_rsp[2].r.rid     ),
+    .r_rdata_oA  ( timer_obi_rsp[0].r.rdata  ),
+    .r_rdata_oB  ( timer_obi_rsp[1].r.rdata  ),
+    .r_rdata_oC  ( timer_obi_rsp[2].r.rdata  ),
+    .event_lo_iA  ( '0 ),
+    .event_lo_iB  ( '0 ),
+    .event_lo_iC  ( '0 ),
+    .event_hi_iA  ( '0 ),
+    .event_hi_iB  ( '0 ),
+    .event_hi_iC  ( '0 ),
+    .irq_lo_oA   ( timer0_irq0           ),
+    .irq_lo_oB   (            ),
+    .irq_lo_oC   (                      ),
+    .irq_hi_oA   ( timer0_irq1           ),
+    .irq_hi_oB   (            ),
+    .irq_hi_oC   (                      ),
+    .busy_oA     (                       ),
+    .busy_oB     (                       ),
+    .busy_oC     (                       ),
+    .tmrErrorA  ( ),
+    .tmrErrorB  ( ),
+    .tmrErrorC  ( )
+  );
+  assign timer_obi_rsp[0].r.err        = 1'b0;
+  assign timer_obi_rsp[0].r.r_optional = 1'b0;
+  assign timer_obi_rsp[1].r.err        = 1'b0;
+  assign timer_obi_rsp[1].r.r_optional = 1'b0;
+  assign timer_obi_rsp[2].r.err        = 1'b0;
+  assign timer_obi_rsp[2].r.r_optional = 1'b0;
+`else
   timer_unit #(
     .ID_WIDTH   ( SbrObiCfg.IdWidth )
   ) i_timer (
@@ -1101,5 +1206,6 @@ module croc_domain import croc_pkg::*; #(
   );
   assign timer_obi_rsp.r.err        = 1'b0;
   assign timer_obi_rsp.r.r_optional = 1'b0;
+`endif // TARGET_TIMER_UNIT_TMRG
 
 endmodule

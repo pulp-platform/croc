@@ -15,7 +15,7 @@ dependencies:
   tech_cells_generic:   { git: "https://github.com/pulp-platform/tech_cells_generic.git",   version: 0.2.13 }
   register_interface:   { git: "https://github.com/pulp-platform/register_interface.git",   version: 0.4.1  }
   apb:                  { git: "https://github.com/pulp-platform/apb.git",                  version: 0.2.4  }
-  timer_unit:           { git: "https://github.com/pulp-platform/timer_unit.git",           version: 1.0.3  }
+  timer_unit:           { git: "https://github.com/pulp-platform/timer_unit.git",           rev: 8e2cde815393de1d21891cc614ebee3ae90a2e05  }
   obi:                  { git: "https://github.com/pulp-platform/obi.git",                  rev: 558594f7e92ff03f071f84836c08c75d166978f0 }
   obi_peripherals:      { git: "https://github.com/pulp-platform/obi_peripherals.git",      rev: bb07b2f69124e9481235a699098ee0857def20b3    } # UART
   cve2:                 { path: "rtl/cve2" } # a vendor package (no Bender.yml), see below 
@@ -42,7 +42,7 @@ sources:
     files:
       # Level 1
       - target: relcore
-        files: 
+        files:
           - rtl/core_wrap_tcls.sv
       - target: not(relcore)
         files:
