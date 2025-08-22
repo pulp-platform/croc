@@ -7,8 +7,6 @@
 // - Luisa Wüthrich <lwuethri@student.ethz.ch>
 // - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
-`include "common_cells/registers.svh"
-
 module gpio_reg_top import gpio_reg_pkg::*; #(
     /// The OBI configuration for all ports.
     parameter obi_pkg::obi_cfg_t ObiCfg = obi_pkg::ObiDefaultConfig,
@@ -36,37 +34,48 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
     /// Signals from logic to registers; one per GPIO
     input  gpio_hw2reg_t [GpioCount-1:0]  hw2reg
 );
+// tmrg default triplicate
+// tmrg do_not_triplicate clk_i
+// tmrg do_not_triplicate rst_ni
+// tmrg tmr_error true
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   // Obi Preparations //
   ////////////////////////////////////////////////////////////////////////////////////////////////////
 
   // Signals for the OBI response
-  logic                           valid_d, valid_q;         // delayed to the response phase
-  logic                           we_d, we_q;               // delayed to the response phase
-  logic                           req_d, req_q;             // delayed to the response phase
+  logic                           valid_d, valid_q, valid_qVoted;         // delayed to the response phase
+  logic                           we_d, we_q, we_qVoted;               // delayed to the response phase
+  logic                           req_d, req_q, req_qVoted;             // delayed to the response phase
   logic [AddressWidth-1:0]        write_addr;               // in request phase (word addr)
-  logic [AddressWidth-1:0]        read_addr_d, read_addr_q; // delayed to the response phase (word addr)
-  logic [ObiCfg.IdWidth-1:0]      id_d, id_q;               // delayed to the response phase
+  logic [AddressWidth-1:0]        read_addr_d, read_addr_q, read_addr_qVoted; // delayed to the response phase (word addr)
+  logic [ObiCfg.IdWidth-1:0]      id_d, id_q, id_qVoted;               // delayed to the response phase
   logic                           obi_err;
-  logic                           w_err_d, w_err_q;         // delay write error to response phase
+  logic                           w_err_d, w_err_q, w_err_qVoted;         // delay write error to response phase
   // signals used in read/write for register
   logic [ObiCfg.DataWidth-1:0]    obi_rdata, obi_wdata;
   logic                           obi_read_request, obi_write_request;
+
+  assign valid_qVoted     = valid_q;
+  assign we_qVoted        = we_q;
+  assign req_qVoted       = req_q;
+  assign read_addr_qVoted = read_addr_q;
+  assign id_qVoted        = id_q;
+  assign w_err_qVoted     = w_err_q;
 
   // OBI rsp Assignment
   always_comb begin
     obi_rsp_o              = '0;
     obi_rsp_o.r.rdata      = obi_rdata;
-    obi_rsp_o.r.rid        = id_q;
+    obi_rsp_o.r.rid        = id_qVoted;
     obi_rsp_o.r.err        = obi_err;
     obi_rsp_o.gnt          = obi_req_i.req;
-    obi_rsp_o.rvalid       = valid_q;
+    obi_rsp_o.rvalid       = valid_qVoted;
   end
 
   // internally used signals
   assign obi_wdata         = obi_req_i.a.wdata;
-  assign obi_read_request  = req_q & ~we_q;                  // in response phase (one cycle later)
+  assign obi_read_request  = req_qVoted & ~we_qVoted;                  // in response phase (one cycle later)
   assign obi_write_request = obi_req_i.req & obi_req_i.a.we; // in request phase (same cycle)
 
   // id, valid and address handling
@@ -78,12 +87,23 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
   assign req_d         = obi_req_i.req;
 
     // FF for the obi rsp signals (id, valid, address, we and req)
-    `FF(id_q, id_d, '0, clk_i, rst_ni)
-    `FF(valid_q, valid_d, '0, clk_i, rst_ni)
-    `FF(read_addr_q, read_addr_d, '0, clk_i, rst_ni)
-    `FF(req_q, req_d, '0, clk_i, rst_ni)
-    `FF(we_q, we_d, '0, clk_i, rst_ni)
-    `FF(w_err_q, w_err_d, '0, clk_i, rst_ni)
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        id_q        <= '0;
+        valid_q     <= '0;
+        read_addr_q <= '0;
+        req_q       <= '0;
+        we_q        <= '0;
+        w_err_q     <= '0;
+      end else begin
+        id_q        <= id_d;
+        valid_q     <= valid_d;
+        read_addr_q <= read_addr_d;
+        req_q       <= req_d;
+        we_q        <= we_d;
+        w_err_q     <= w_err_d;
+      end
+    end
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
   // Registers //
@@ -102,9 +122,16 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
   } gpio_reg_fields_t;
 
   // register signals
-  gpio_reg_fields_t reg_d, reg_q;
-  `FF(reg_q, reg_d, '0, clk_i, rst_ni)
-  
+  gpio_reg_fields_t reg_d, reg_q, reg_qVoted;
+  assign reg_qVoted = reg_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      reg_q <= '0;
+    end else begin
+      reg_q <= reg_d;
+    end
+  end
+
   gpio_reg_fields_t new_reg; // new value of regs if there is no OBI transaction
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -115,20 +142,20 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
 
   // bit enable/strobe; defines which bits are written to by wdata of the OBI request
   logic [ObiCfg.DataWidth-1:0] bit_mask;
-  for (genvar i = 0; unsigned'(i) < ObiCfg.DataWidth/8; ++i ) begin : gen_write_mask
+  for (genvar i = 0; unsigned'(i) < ObiCfg.DataWidth/8; i++ ) begin : gen_write_mask
     assign bit_mask[8*i +: 8] = {8{obi_req_i.a.be[i]}};
   end
 
   // output data from internal register
   always_comb begin
     for(int unsigned idx=0; idx < GpioCount; idx++) begin
-      reg2hw[idx].dir         = reg_q.dir[idx];
-      reg2hw[idx].en          = reg_q.en[idx];
-      reg2hw[idx].out         = reg_q.out[idx];
+      reg2hw[idx].dir         = reg_qVoted.dir[idx];
+      reg2hw[idx].en          = reg_qVoted.en[idx];
+      reg2hw[idx].out         = reg_qVoted.out[idx];
       reg2hw[idx].toggle      = toggle_out[idx];
-      reg2hw[idx].intrpt_en   = reg_q.intrpt_en[idx];
-      reg2hw[idx].intrpt      = reg_q.intrpt[idx];
-      reg2hw[idx].intrpt_edge = reg_q.intrpt_edge[idx];
+      reg2hw[idx].intrpt_en   = reg_qVoted.intrpt_en[idx];
+      reg2hw[idx].intrpt      = reg_qVoted.intrpt[idx];
+      reg2hw[idx].intrpt_edge = reg_qVoted.intrpt_edge[idx];
     end
   end
 
@@ -136,9 +163,9 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
   always_comb begin
     // defaults
     obi_rdata  = 32'h0;   // default value for read
-    obi_err    = w_err_q;
+    obi_err    = w_err_qVoted;
     w_err_d    = 1'b0;
-    new_reg    = reg_q;   // registers stay the same
+    new_reg    = reg_qVoted;   // registers stay the same
     new_intrpt = '0;
     toggle_out = '0;
 
@@ -148,10 +175,10 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
       new_reg.toggle[idx] = '0;                  // toggle clears itself 
 
       // update OUT from hw2reg if set to valid
-      new_reg.out[idx]    = hw2reg[idx].out_valid ? hw2reg[idx].out : reg_q.out[idx];
+      new_reg.out[idx]    = hw2reg[idx].out_valid ? hw2reg[idx].out : reg_qVoted.out[idx];
       // update interrupt status if it is valid
       new_reg.intrpt[idx] = hw2reg[idx].intrpt_valid ? hw2reg[idx].intrpt
-                                                     : reg_q.intrpt[idx];
+                                                     : reg_qVoted.intrpt[idx];
       // keep track of new interrupts for clear-on-read
       new_intrpt[idx]     = hw2reg[idx].intrpt_valid & hw2reg[idx].intrpt;
     end
@@ -202,21 +229,21 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
     //---------------------------------------------------------------------------------
     if (obi_read_request) begin
       obi_err = 1'b0;
-      case ({read_addr_q, 2'b00})
+      case ({read_addr_qVoted, 2'b00})
         GPIO_DIR_OFFSET: begin
-          obi_rdata = reg_q.dir;
+          obi_rdata = reg_qVoted.dir;
         end
 
         GPIO_EN_OFFSET: begin
-          obi_rdata = reg_q.en;
+          obi_rdata = reg_qVoted.en;
         end
 
         GPIO_IN_OFFSET: begin
-          obi_rdata = reg_q.in;
+          obi_rdata = reg_qVoted.in;
         end
 
         GPIO_OUT_OFFSET: begin
-          obi_rdata = reg_q.out;
+          obi_rdata = reg_qVoted.out;
         end
 
         GPIO_TOGGLE_OFFSET: begin
@@ -224,17 +251,17 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
         end
 
         GPIO_INTRPT_EN_OFFSET: begin
-          obi_rdata = reg_q.intrpt_en;
+          obi_rdata = reg_qVoted.intrpt_en;
         end
 
         GPIO_INTRPT_STATUS_OFFSET: begin
-          obi_rdata = reg_q.intrpt;
+          obi_rdata = reg_qVoted.intrpt;
           // clear read interrupts, immediately set new interrupts
           reg_d.intrpt = new_intrpt;
         end
 
         GPIO_INTRPT_EDGE_OFFSET: begin
-          obi_rdata = reg_q.intrpt_edge;
+          obi_rdata = reg_qVoted.intrpt_edge;
         end
 
         default: begin

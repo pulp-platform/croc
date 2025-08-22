@@ -1,0 +1,32 @@
+diff --git a/rtl/gpio/gpio.sv b/rtl/gpio/gpio.sv
+index dce5a29..111264e 100644
+--- a/rtl/gpio/gpio.sv
++++ b/rtl/gpio/gpio.sv
+@@ -11,9 +11,9 @@ module gpio #(
+     /// The OBI configuration for all ports.
+     parameter obi_pkg::obi_cfg_t ObiCfg = obi_pkg::ObiDefaultConfig,
+     /// OBI request type
+-    parameter type obi_req_t         = logic,
++    // parameter type obi_req_t         = logic,
+     /// OBI response type
+-    parameter type obi_rsp_t         = logic,
++    // parameter type obi_rsp_t         = logic,
+     /// Number of synchronization stages for GPIO inputs.
+     parameter int  NrSyncStages      = 2,
+     /// The number of GPIOs
+diff --git a/rtl/gpio/gpio_reg_top.sv b/rtl/gpio/gpio_reg_top.sv
+index 4fb66db..d7cb3b1 100644
+--- a/rtl/gpio/gpio_reg_top.sv
++++ b/rtl/gpio/gpio_reg_top.sv
+@@ -11,9 +11,9 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
+     /// The OBI configuration for all ports.
+     parameter obi_pkg::obi_cfg_t ObiCfg = obi_pkg::ObiDefaultConfig,
+     /// OBI request type
+-    parameter type obi_req_t = logic,
++    // parameter type obi_req_t = logic,
+     /// OBI response type
+-    parameter type obi_rsp_t = logic,
++    // parameter type obi_rsp_t = logic,
+
+     parameter int unsigned GpioCount = 16
+ ) (

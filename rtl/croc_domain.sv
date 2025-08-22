@@ -242,8 +242,13 @@ module croc_domain import croc_pkg::*; #(
 `endif
 
   // GPIO periph bus
+`ifdef TARGET_GPIO_TMRG
+  sbr_obi_req_t [2:0] gpio_obi_req;
+  sbr_obi_rsp_t [2:0] gpio_obi_rsp;
+`else // TARGET_GPIO_TMRG
   sbr_obi_req_t gpio_obi_req;
   sbr_obi_rsp_t gpio_obi_rsp;
+`endif // TARGET_GPIO_TMRG
 
   // Timer periph bus
 `ifdef TARGET_TIMER_UNIT_TMRG
@@ -331,6 +336,38 @@ module croc_domain import croc_pkg::*; #(
     .fault_o ()
   );
 `endif // TARGET_UART_TMRG
+`ifdef TARGET_GPIO_TMRG
+  sbr_relobi_rsp_t gpio_relobi_rsp [2:0];
+  relobi_tmr_r #(
+    .ObiCfg       ( SbrObiCfg ),
+    .obi_r_chan_t ( sbr_relobi_r_chan_t ),
+    .r_optional_t ( logic )
+  ) i_gpio_tmr (
+    .three_r_i ( {gpio_relobi_rsp[2].r, gpio_relobi_rsp[1].r, gpio_relobi_rsp[0].r} ),
+    .voted_r_o ( all_periph_obi_rsp[PeriphGpio].r ),
+    .fault_o   (  )
+  );
+  for (genvar i = 0; i < 3; i++) begin : gen_gpio_obi_triple
+    assign all_periph_obi_rsp[PeriphGpio].gnt[i] = gpio_relobi_rsp[i].gnt[0];
+    assign all_periph_obi_rsp[PeriphGpio].rvalid[i] = gpio_relobi_rsp[i].rvalid[0];
+
+    relobi_decoder #(
+      .Cfg (SbrObiCfg),
+      .relobi_req_t (sbr_relobi_req_t),
+      .relobi_rsp_t (sbr_relobi_rsp_t),
+      .obi_req_t (sbr_obi_req_t),
+      .obi_rsp_t (sbr_obi_rsp_t),
+      .a_optional_t (logic),
+      .r_optional_t (logic)
+    ) i_gpio_decoder_tmr_part (
+      .rel_req_i ( all_periph_obi_req[PeriphGpio] ),
+      .rel_rsp_o ( gpio_relobi_rsp[i] ),
+      .req_o ( gpio_obi_req[i] ),
+      .rsp_i ( gpio_obi_rsp[i] ),
+      .fault_o ()
+    );
+  end
+`else // TARGET_GPIO_TMRG
   relobi_decoder #(
     .Cfg (SbrObiCfg),
     .relobi_req_t (sbr_relobi_req_t),
@@ -346,6 +383,7 @@ module croc_domain import croc_pkg::*; #(
     .rsp_i ( gpio_obi_rsp ),
     .fault_o ()
   );
+`endif // TARGET_GPIO_TMRG
 `ifdef TARGET_TIMER_UNIT_TMRG
   sbr_relobi_rsp_t timer_relobi_rsp [2:0];
   relobi_tmr_r #(
@@ -1094,7 +1132,11 @@ module croc_domain import croc_pkg::*; #(
 );
 
   // GPIO
+`ifdef TARGET_GPIO_TMRG
+  gpioTMR #(
+`else
   gpio #(
+`endif
     .ObiCfg    ( SbrObiCfg     ),
     .obi_req_t ( sbr_obi_req_t ),
     .obi_rsp_t ( sbr_obi_rsp_t ),
@@ -1102,13 +1144,32 @@ module croc_domain import croc_pkg::*; #(
   ) i_gpio (
     .clk_i,
     .rst_ni,
-    .gpio_i,                     
-    .gpio_o,                   
-    .gpio_out_en_o,          
+    .gpio_i,
+    .gpio_o,
+    .gpio_out_en_o,
+`ifdef TARGET_GPIO_TMRG
+    .gpio_in_sync_oA (),
+    .gpio_in_sync_oB (),
+    .gpio_in_sync_oC (),
+    .interrupt_oA    ( gpio_irq     ),
+    .interrupt_oB    (             ),
+    .interrupt_oC    (             ),
+    .obi_req_iA      ( gpio_obi_req[0] ),
+    .obi_req_iB      ( gpio_obi_req[1] ),
+    .obi_req_iC      ( gpio_obi_req[2] ),
+    .obi_rsp_oA      ( gpio_obi_rsp[0] ),
+    .obi_rsp_oB      ( gpio_obi_rsp[1] ),
+    .obi_rsp_oC      ( gpio_obi_rsp[2] ),
+    .tmrError  (),
+    .tmrErrorA  (),
+    .tmrErrorB (),
+    .tmrErrorC ()
+`else
     .gpio_in_sync_o,       
     .interrupt_o    ( gpio_irq     ),
     .obi_req_i      ( gpio_obi_req ),
     .obi_rsp_o      ( gpio_obi_rsp )
+`endif
   );
 
   // Timer

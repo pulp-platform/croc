@@ -7,8 +7,6 @@
 // - Luisa Wüthrich <lwuethri@student.ethz.ch>
 // - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
-`include "common_cells/registers.svh"
-
 module gpio #(
     /// The OBI configuration for all ports.
     parameter obi_pkg::obi_cfg_t ObiCfg = obi_pkg::ObiDefaultConfig,
@@ -46,6 +44,13 @@ module gpio #(
     /// Control interface back into interconnect (response).
     output obi_rsp_t             obi_rsp_o
 );
+// tmrg default triplicate
+// tmrg do_not_triplicate clk_i
+// tmrg do_not_triplicate rst_ni
+// tmrg do_not_triplicate gpio_i
+// tmrg do_not_triplicate gpio_o
+// tmrg do_not_triplicate gpio_out_en_o
+// tmrg tmr_error true
 
   import gpio_reg_pkg::*;
 
@@ -72,12 +77,12 @@ module gpio #(
     .obi_rsp_t(obi_rsp_t),
     .GpioCount(GpioCount)
   ) i_reg_file (
-    .clk_i,
-    .rst_ni,
-    .obi_req_i,
-    .obi_rsp_o,
-    .reg2hw(reg2hw),
-    .hw2reg(hw2reg)
+    .clk_i (clk_i),
+    .rst_ni (rst_ni),
+    .obi_req_i (obi_req_i),
+    .obi_rsp_o (obi_rsp_o),
+    .reg2hw (reg2hw),
+    .hw2reg (hw2reg)
   );
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -87,6 +92,11 @@ module gpio #(
   // Assign synchronized gpio inputs to external port
   assign gpio_in_sync_o = gpio_in_sync;
 
+
+  logic [GpioCount-1:0]         serial_d, serial_q, serial_qVoted;
+  logic [GpioCount-1:0] is_input;
+  logic [GpioCount-1:0] is_output;
+  assign serial_qVoted = serial_q;
   // Instantiate logic for individual gpios in blocks of DATA_WIDTH
   for (genvar idx = 0; idx < GpioCount; idx++) begin : gen_gpios
         //-----------------------------------------------------------------------------------------------
@@ -94,42 +104,46 @@ module gpio #(
         //-----------------------------------------------------------------------------------------------
         logic          f_edge;
         logic          r_edge;
-        logic          serial_d, serial_q;
+
 
         sync #(
             .STAGES (NrSyncStages)
         ) i_sync (
-            .clk_i,
-            .rst_ni,
-            .serial_i(gpio_i[idx]),
-            .serial_o (serial_d)
+            .clk_i (clk_i),
+            .rst_ni (rst_ni),
+            .serial_i (gpio_i[idx]),
+            .serial_o (serial_d[idx])
         );
 
-        `FF(serial_q, serial_d, '0, clk_i, rst_ni)
+        always_ff @(posedge clk_i or negedge rst_ni) begin
+            if (!rst_ni) begin
+                serial_q[idx] <= '0;
+            end else begin
+                serial_q[idx] <= serial_d[idx];
+            end
+        end
 
-        assign f_edge = (~serial_d) & serial_q;
-        assign r_edge = serial_d & (~serial_q);
+        assign f_edge = (~serial_d[idx]) & serial_qVoted[idx];
+        assign r_edge = serial_d[idx] & (~serial_qVoted[idx]);
         assign gpio_edge[idx] = reg2hw[idx].intrpt_edge ? r_edge : f_edge;
-        assign gpio_in_sync[idx] =  serial_q;
+        assign gpio_in_sync[idx] =  serial_qVoted[idx];
 
 
         //-----------------------------------------------------------------------------------------------
         // Interface Internal GPIO Logic & IOCell
         //-----------------------------------------------------------------------------------------------
-        logic is_input;
-        logic is_output;
 
-        assign is_input = reg2hw[idx].en & ~reg2hw[idx].dir;
-        assign is_output = reg2hw[idx].en & reg2hw[idx].dir;
+        assign is_input[idx] = reg2hw[idx].en & ~reg2hw[idx].dir;
+        assign is_output[idx] = reg2hw[idx].en & reg2hw[idx].dir;
 
         // Assign GPIO_IN register
-        assign hw2reg[idx].sync_in = gpio_in_sync[idx] & is_input;
+        assign hw2reg[idx].sync_in = gpio_in_sync[idx] & is_input[idx];
 
         // Control output with GPIO_OUT register
-        assign gpio_o[idx] = reg2hw[idx].out & is_output;
+        assign gpio_o[idx] = reg2hw[idx].out & is_output[idx];
 
         // Control gpio_out_en_o depending on GPIO_DIR register value
-        assign gpio_out_en_o[idx] = is_output;
+        assign gpio_out_en_o[idx] = is_output[idx];
 
 
         //-----------------------------------------------------------------------------------------------
@@ -140,7 +154,7 @@ module gpio #(
             hw2reg[idx].out       = '0;
             hw2reg[idx].out_valid = '0;
 
-            if (is_output & reg2hw[idx].toggle) begin
+            if (is_output[idx] & reg2hw[idx].toggle) begin
                 hw2reg[idx].out       = ~reg2hw[idx].out;
                 hw2reg[idx].out_valid = 1'b1;
             end
@@ -152,7 +166,7 @@ module gpio #(
         //-----------------------------------------------------------------------------------------------
 
         // Mask Detected Edges with Interrupt Enable and GPIO Enable
-        assign gpio_intrpt[idx] = gpio_edge[idx] & reg2hw[idx].intrpt_en & is_input;
+        assign gpio_intrpt[idx] = gpio_edge[idx] & reg2hw[idx].intrpt_en & is_input[idx];
 
         assign hw2reg[idx].intrpt       = gpio_intrpt[idx];
         assign hw2reg[idx].intrpt_valid = gpio_intrpt[idx];

@@ -52,6 +52,11 @@ sources:
       - rtl/soc_ctrl/soc_ctrl_tmr_wrap.sv
       - rtl/gpio/gpio_reg_top.sv
       - rtl/gpio/gpio.sv
+      - target: gpio_tmrg
+        files:
+          - rtl/gpio/tmrg_files/syncTMR.sv
+          - rtl/gpio/tmrg_files/gpio_reg_topTMR.sv
+          - rtl/gpio/tmrg_files/gpioTMR.sv
       # Level 2
       - rtl/croc_domain.sv
       - rtl/user_domain.sv

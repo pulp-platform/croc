@@ -1,0 +1,26 @@
+diff --git a/rtl/gpio/tmrg_files/gpioTMR.sv b/rtl/gpio/tmrg_files/gpioTMR.sv
+index 58a5d4b..926b2c0 100644
+--- a/rtl/gpio/tmrg_files/gpioTMR.sv
++++ b/rtl/gpio/tmrg_files/gpioTMR.sv
+@@ -23,6 +23,8 @@
+ 
+ module gpioTMR #(
+   parameter obi_pkg::obi_cfg_t ObiCfg = obi_pkg::ObiDefaultConfig,
++  parameter type obi_req_t         = logic,
++  parameter type obi_rsp_t         = logic,
+   parameter int NrSyncStages = 2,
+   parameter int unsigned GpioCount = 16
+ ) (
+diff --git a/rtl/gpio/tmrg_files/gpio_reg_topTMR.sv b/rtl/gpio/tmrg_files/gpio_reg_topTMR.sv
+index baada8c..b6b62d2 100644
+--- a/rtl/gpio/tmrg_files/gpio_reg_topTMR.sv
++++ b/rtl/gpio/tmrg_files/gpio_reg_topTMR.sv
+@@ -23,6 +23,8 @@
+ 
+ module gpio_reg_topTMR import gpio_reg_pkg::*; #(
+   parameter obi_pkg::obi_cfg_t ObiCfg = obi_pkg::ObiDefaultConfig,
++  parameter type obi_req_t         = logic,
++  parameter type obi_rsp_t         = logic,
+   parameter int unsigned GpioCount = 16
+ ) (
+   input logic clk_i,
