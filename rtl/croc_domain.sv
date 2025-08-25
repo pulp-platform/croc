@@ -58,10 +58,37 @@ module croc_domain import croc_pkg::*; #(
   // -----------------
   logic sram_impl; // soc_ctrl -> SRAM config signals
   logic debug_req;
+  `ifdef TMR_IRQ
+  logic [2:0] fetch_enable;
+  logic [2:0][31:0] boot_addr;
+  `else // TMR_IRQ
   logic fetch_enable;
   logic [31:0] boot_addr;
+  `endif // TMR_IRQ
 
   // interrupts (irqs)
+`ifdef TMR_IRQ
+  logic [2:0] uart_irq;
+  logic [2:0] gpio_irq;
+  logic [2:0] timer0_irq0;
+  logic [2:0] timer0_irq1;
+  logic [2:0][15:0] interrupts;
+  always_comb begin
+    interrupts = '0;
+    interrupts[0][0] = timer0_irq1[0];
+    interrupts[1][0] = timer0_irq1[1];
+    interrupts[2][0] = timer0_irq1[2];
+    interrupts[0][1] = uart_irq[0];
+    interrupts[1][1] = uart_irq[1];
+    interrupts[2][1] = uart_irq[2];
+    interrupts[0][2] = gpio_irq[0];
+    interrupts[1][2] = gpio_irq[1];
+    interrupts[2][2] = gpio_irq[2];
+    interrupts[0][3+:NumExternalIrqs] = interrupts_i;
+    interrupts[1][3+:NumExternalIrqs] = interrupts_i;
+    interrupts[2][3+:NumExternalIrqs] = interrupts_i;
+  end
+`else // TMR_IRQ
   logic uart_irq;
   logic gpio_irq;
   logic timer0_irq0;
@@ -74,6 +101,7 @@ module croc_domain import croc_pkg::*; #(
     interrupts[2] = gpio_irq;
     interrupts[3+:NumExternalIrqs] = interrupts_i;
   end
+`endif // TMR_IRQ
 
   // ----------------------------
   // Manager buses into crossbar
@@ -998,6 +1026,14 @@ module croc_domain import croc_pkg::*; #(
     .hwif_out        ( hwif_out )
   );
 
+`ifdef TMR_IRQ
+  assign fetch_enable[0] = hwif_out[0].fetchen.fetchen.value | fetch_en_i;
+  assign fetch_enable[1] = hwif_out[1].fetchen.fetchen.value | fetch_en_i;
+  assign fetch_enable[2] = hwif_out[2].fetchen.fetchen.value | fetch_en_i;
+  assign boot_addr[0]    = hwif_out[0].bootaddr.bootaddr.value;
+  assign boot_addr[1]    = hwif_out[1].bootaddr.bootaddr.value;
+  assign boot_addr[2]    = hwif_out[2].bootaddr.bootaddr.value;
+`else // TMR_IRQ
   TMR_voter_fail i_fetchen_vote (
     .a_i ( hwif_out[0].fetchen.fetchen.value | fetch_en_i ),
     .b_i ( hwif_out[1].fetchen.fetchen.value | fetch_en_i ),
@@ -1014,6 +1050,7 @@ module croc_domain import croc_pkg::*; #(
     .majority_o ( boot_addr ),
     .fault_detected_o ()
   );
+`endif // TMR_IRQ
   TMR_voter_fail i_sram_impl_vote (
     .a_i ( hwif_out[0].sram_dly.sram_dly.value ),
     .b_i ( hwif_out[1].sram_dly.sram_dly.value ),
@@ -1098,9 +1135,15 @@ module croc_domain import croc_pkg::*; #(
     .obi_rsp_oA ( uart_obi_rsp[0] ),
     .obi_rsp_oB ( uart_obi_rsp[1] ),
     .obi_rsp_oC ( uart_obi_rsp[2] ),
+`ifdef TMR_IRQ
+    .irq_oA     ( uart_irq[0]     ),
+    .irq_oB     ( uart_irq[1]     ),
+    .irq_oC     ( uart_irq[2]     ),
+`else // TMR_IRQ
     .irq_oA     ( uart_irq     ),
     .irq_oB     (     ),
     .irq_oC     (     ),
+`endif // TMR_IRQ
     .irq_noA    ( ),
     .irq_noB    ( ),
     .irq_noC    ( ),
@@ -1151,9 +1194,15 @@ module croc_domain import croc_pkg::*; #(
     .gpio_in_sync_oA (),
     .gpio_in_sync_oB (),
     .gpio_in_sync_oC (),
+`ifdef TMR_IRQ
+    .interrupt_oA   ( gpio_irq[0]     ),
+    .interrupt_oB   ( gpio_irq[1]     ),
+    .interrupt_oC   ( gpio_irq[2]     ),
+`else // TMR_IRQ
     .interrupt_oA    ( gpio_irq     ),
     .interrupt_oB    (             ),
     .interrupt_oC    (             ),
+`endif // TMR_IRQ
     .obi_req_iA      ( gpio_obi_req[0] ),
     .obi_req_iB      ( gpio_obi_req[1] ),
     .obi_req_iC      ( gpio_obi_req[2] ),
@@ -1220,12 +1269,21 @@ module croc_domain import croc_pkg::*; #(
     .event_hi_iA  ( '0 ),
     .event_hi_iB  ( '0 ),
     .event_hi_iC  ( '0 ),
+`ifdef TMR_IRQ
+    .irq_lo_oA     ( timer0_irq0[0]           ),
+    .irq_lo_oB     ( timer0_irq0[1]           ),
+    .irq_lo_oC     ( timer0_irq0[2]           ),
+    .irq_hi_oA     ( timer0_irq1[0]           ),
+    .irq_hi_oB     ( timer0_irq1[1]           ),
+    .irq_hi_oC     ( timer0_irq1[2]           ),
+`else // TMR_IRQ
     .irq_lo_oA   ( timer0_irq0           ),
     .irq_lo_oB   (            ),
     .irq_lo_oC   (                      ),
     .irq_hi_oA   ( timer0_irq1           ),
     .irq_hi_oB   (            ),
     .irq_hi_oC   (                      ),
+`endif // TMR_IRQ
     .busy_oA     (                       ),
     .busy_oB     (                       ),
     .busy_oC     (                       ),

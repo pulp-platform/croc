@@ -11,10 +11,17 @@ module core_wrap import croc_pkg::*; #() (
   input  logic ref_clk_i,
   input  logic test_enable_i,
 
-  input logic [15:0] irqs_i, // TODO triplicate
-  input logic timer0_irq_i,  // TODO triplicate
+`ifdef TMR_IRQ
+  input logic [2:0][15:0] irqs_i,
+  input logic [2:0]timer0_irq_i,
 
-  input  logic [31:0] boot_addr_i, // TODO triplicate
+  input  logic [2:0][31:0] boot_addr_i,
+`else // TMR_IRQ
+  input logic [15:0] irqs_i,
+  input logic timer0_irq_i,
+
+  input  logic [31:0] boot_addr_i,
+`endif // TMR_IRQ
 
   input apb_req_t [2:0] apb_req_i,
   output apb_resp_t [2:0] apb_resp_o,
@@ -52,13 +59,19 @@ module core_wrap import croc_pkg::*; #() (
   input  logic        debug_req_i, // TODO triplicate
 
   // CPU Control Signals
-  input  logic        fetch_enable_i, // TODO triplicate
+`ifdef TMR_IRQ
+  input  logic [2:0]  fetch_enable_i,
+`else // TMR_IRQ
+  input  logic        fetch_enable_i,
+`endif // TMR_IRQ
 
   output logic        core_busy_o
 );
 
   typedef struct packed {
+    `ifndef TMR_IRQ
     logic [31:0] boot_addr;
+    `endif // TMR_IRQ
 
     // Instruction memory interface
     `ifdef RELOBI
@@ -80,10 +93,12 @@ module core_wrap import croc_pkg::*; #() (
     logic        data_err;
     `endif
 
+`ifndef TMR_IRQ
     logic        timer_irq;
     logic [15:0] irqs;
-    logic        debug_req;
     logic        fetch_enable;
+`endif // TMR_IRQ
+    logic        debug_req;
   } all_inputs_t;
 
   typedef struct packed {
@@ -128,7 +143,9 @@ module core_wrap import croc_pkg::*; #() (
   `endif
 
   assign sys_input_connect[0] = '{
+    `ifndef TMR_IRQ
     boot_addr : boot_addr_i,
+    `endif // TMR_IRQ
     `ifdef RELOBI
     instr_rsp : rel_instr_rsp_i,
     `else
@@ -145,10 +162,12 @@ module core_wrap import croc_pkg::*; #() (
     data_rdata : data_rdata_i,
     data_err : data_err_i,
     `endif
+`ifndef TMR_IRQ
     timer_irq : timer0_irq_i,
     irqs : irqs_i,
-    debug_req : debug_req_i,
-    fetch_enable : fetch_enable_i
+    fetch_enable : fetch_enable_i,
+`endif // TMR_IRQ
+    debug_req : debug_req_i
   };
 
 `ifdef RELOBI
@@ -231,7 +250,11 @@ module core_wrap import croc_pkg::*; #() (
     `else
     .sys_bus_outputs_o (sys_bus_outputs),
     `endif
+    `ifdef TMR_IRQ
+    .sys_fetch_en_i (fetch_enable_i[0]),
+    `else // TMR_IRQ
     .sys_fetch_en_i (fetch_enable_i),
+    `endif // TMR_IRQ
     .enable_bus_vote_i (enable_bus_vote),
 
     .core_bootaddress_o (),
@@ -344,8 +367,12 @@ module core_wrap import croc_pkg::*; #() (
   `endif
 
     // lowest 8 bits are ignored internally
-    logic[31:0] ibex_boot_addr;
+    logic [31:0] ibex_boot_addr;
+    `ifdef TMR_IRQ
+    assign ibex_boot_addr = boot_addr_i[i] & 32'hFFFFFF00;
+    `else // TMR_IRQ
     assign ibex_boot_addr = core_input_connect[i].boot_addr & 32'hFFFFFF00;
+    `endif // TMR_IRQ
   // ifdef ordered according to priority
   `ifdef TRACE_EXECUTION
     cve2_core_tracing #(
@@ -392,9 +419,14 @@ module core_wrap import croc_pkg::*; #() (
 
       // Interrupts
       .irq_software_i     ( 1'b0         ),
-      .irq_timer_i        ( core_input_connect[i].timer_irq ),
       .irq_external_i     ( 1'b0         ),
+`ifdef TMR_IRQ
+      .irq_timer_i        ( timer0_irq_i[i] ),
+      .irq_fast_i         ( irqs_i[i]       ),
+`else // TMR_IRQ
+      .irq_timer_i        ( core_input_connect[i].timer_irq ),
       .irq_fast_i         ( core_input_connect[i].irqs       ),
+`endif // TMR_IRQ
       .irq_nm_i           ( 1'b0         ),
       .irq_pending_o      ( ),
 
@@ -402,7 +434,11 @@ module core_wrap import croc_pkg::*; #() (
       .crash_dump_o       ( ),
 
       .debug_req_i        ( core_input_connect[i].debug_req ),
+      `ifdef TMR_IRQ
+      .fetch_enable_i     ( fetch_enable_i[i] ),
+      `else // TMR_IRQ
       .fetch_enable_i     ( core_input_connect[i].fetch_enable ),
+      `endif // TMR_IRQ
       .core_busy_o        ( core_nominal_outputs[i].core_busy )
     );
   end
