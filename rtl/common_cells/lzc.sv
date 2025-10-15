@@ -41,9 +41,17 @@ module lzc #(
 
     localparam int unsigned NumLevels = $clog2(WIDTH);
 
+
+
   `ifndef COMMON_CELLS_ASSERTS_OFF
-    `ASSERT_INIT(width_0, WIDTH > 0, "input must be at least one bit wide")
+    `ifndef SYNTHESIS
+      `ASSERT_INIT(width_0, WIDTH > 0, "input must be at least one bit wide")
+    `else
+      `ASSERT_INIT(width_0, WIDTH > 0)
+    `endif
   `endif
+
+
 
     logic [WIDTH-1:0][NumLevels-1:0] index_lut;
     logic [2**NumLevels-1:0] sel_nodes;
@@ -99,8 +107,14 @@ module lzc #(
 
   end : gen_lzc
 
+
 `ifndef COMMON_CELLS_ASSERTS_OFF
-  `ASSERT_INIT(width_0, WIDTH >= 1, "The WIDTH must at least be one bit wide!")
+  `ifndef SYNTHESIS
+    `ASSERT_INIT(width_0, WIDTH >= 1, "The WIDTH must at least be one bit wide!")
+  `else
+    `ASSERT_INIT(width_0, WIDTH >= 1)
+  `endif
 `endif
+
 
 endmodule : lzc
