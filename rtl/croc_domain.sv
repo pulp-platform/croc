@@ -824,6 +824,8 @@ module croc_domain import croc_pkg::*; #(
       .relobi_rsp_t ( sbr_relobi_rsp_t ),
       .a_optional_t ( logic ),
       .r_optional_t ( logic ),
+      .EnableScrubber (1'b1),
+      .ScrubberMemWords ( SramBankNumWords ),
 `else
     obi_sram_shim #(
       .obi_req_t ( sbr_obi_req_t ),
@@ -839,7 +841,11 @@ module croc_domain import croc_pkg::*; #(
 
       .req_o   ( bank_req       ),
       .we_o    ( bank_we        ),
+`ifndef RELOBI
       .addr_o  ( bank_byte_addr ),
+`else
+      .addr_o  ( bank_word_addr ),
+`endif
       .wdata_o ( bank_wdata     ),
 `ifndef RELOBI
       .be_o    ( bank_be        ),
@@ -848,11 +854,16 @@ module croc_domain import croc_pkg::*; #(
       .gnt_i   ( bank_gnt   ),
       .rdata_i ( bank_rdata )
 `ifdef RELOBI
-      ,.fault_o ()
+      ,.scrub_trigger_i (1'b0),
+      .scrub_bit_corrected_o (),
+      .scrub_uncorrectable_o (),
+      .fault_o ()
 `endif
     );
 
+`ifndef RELOBI
     assign bank_word_addr = bank_byte_addr[SbrObiCfg.AddrWidth-1:2];
+`endif
 
     tc_sram_impl #(
       .NumWords  ( SramBankNumWords ),
