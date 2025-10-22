@@ -53,7 +53,7 @@ packages:
     - common_cells
     - obi
   redundancy_cells:
-    revision: 766e376b7ddb70e744740e703a371f7fe7cc3e74
+    revision: ecc607c75c29136c078426c5054b9030266b8ab5
     version: null
     source:
       Git: https://github.com/pulp-platform/redundancy_cells.git

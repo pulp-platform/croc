@@ -65,7 +65,9 @@ module core_wrap import croc_pkg::*; #() (
   input  logic        fetch_enable_i,
 `endif // TMR_IRQ
 
-  output logic        core_busy_o
+  output logic        core_busy_o,
+
+  output logic [1:0]  fault_o
 );
 
   typedef struct packed {
@@ -134,6 +136,16 @@ module core_wrap import croc_pkg::*; #() (
   nominal_outputs_t [2:0] core_nominal_outputs;
 
   logic enable_bus_vote;
+
+  logic [6:0][1:0] faults;
+  logic [1:0][6:0] faults_transposed;
+  for (genvar i = 0; i < 7; i++) begin : gen_faults_transpose
+    for (genvar j = 0; j < 2; j++) begin : gen_faults_transpose_inner
+      assign faults_transposed[j][i] = faults[i][j];
+    end
+  end
+  assign fault_o[0] = |faults_transposed[0];
+  assign fault_o[1] = |faults_transposed[1];
 
   `ifdef RELOBI
   mgr_relobi_a_chan_t [2:0] core_data_a_chan;
@@ -237,7 +249,7 @@ module core_wrap import croc_pkg::*; #() (
     .dmr_cores_synch_i ('0),
     .redundancy_enable_o (),
 
-    .ctrl_fault_o (),
+    .ctrl_fault_o (faults[0][0]),
 
     .rapid_recovery_o (),
     .core_backup_i ('0),
@@ -267,6 +279,7 @@ module core_wrap import croc_pkg::*; #() (
     .core_bus_outputs_i (core_bus_outputs)
     `endif
   );
+  assign faults[0][1] = 1'b0;
 
   for (genvar i = 0; i < 3; i++) begin : gen_cores
     logic        instr_req;
@@ -336,7 +349,7 @@ module core_wrap import croc_pkg::*; #() (
       .rsp_o (obi_instr_rsp),
       .rel_req_o (core_nominal_outputs[i].instr_req),
       .rel_rsp_i (core_input_connect[i].instr_rsp),
-      .fault_o ()
+      .fault_o (faults[2*i+1])
     );
     relobi_encoder #(
       .Cfg (MgrObiCfg),
@@ -351,7 +364,7 @@ module core_wrap import croc_pkg::*; #() (
       .rsp_o (obi_data_rsp),
       .rel_req_o (rel_data_req),
       .rel_rsp_i (core_input_connect[i].data_rsp),
-      .fault_o ()
+      .fault_o (faults[2*i+2])
     );
 
     assign core_data_a_chan[i] = rel_data_req.a;

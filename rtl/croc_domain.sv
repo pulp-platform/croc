@@ -54,6 +54,22 @@ module croc_domain import croc_pkg::*; #(
 );
 
   // -----------------
+  // Fault signals
+  // -----------------
+  logic [4:0][1:0] core_faults;
+  logic [18:0][1:0] relobi_faults;
+  logic [4:0] uart_faults;
+  logic [4:0] gpio_faults;
+  logic [3:0] timer_faults;
+  // TODO sram_ctrl
+  // TODO fault log unit
+
+`ifndef RELOBI
+  // Tie off relobi faults if not using relobi
+  assign relobi_faults = '0;
+`endif
+
+  // -----------------
   // Control Signals
   // -----------------
   logic sram_impl; // soc_ctrl -> SRAM config signals
@@ -198,7 +214,7 @@ module croc_domain import croc_pkg::*; #(
     .sbr_port_rsp_o ( all_sbr_obi_rsp[XbarPeriph] ),
     .mgr_port_req_o ( xbar_periph_obi_req ),
     .mgr_port_rsp_i ( xbar_periph_obi_rsp ),
-    .fault_o ()
+    .fault_o (relobi_faults[0])
   );
 `else
   obi_cut #(
@@ -314,7 +330,7 @@ module croc_domain import croc_pkg::*; #(
     .rel_rsp_o ( all_periph_obi_rsp[PeriphDebug] ),
     .req_o ( dbg_mem_obi_req ),
     .rsp_i ( dbg_mem_obi_rsp ),
-    .fault_o ()
+    .fault_o (relobi_faults[1])
   );
 `ifdef TARGET_UART_TMRG
   sbr_relobi_rsp_t uart_relobi_rsp [2:0];
@@ -322,10 +338,10 @@ module croc_domain import croc_pkg::*; #(
     .ObiCfg       ( SbrObiCfg ),
     .obi_r_chan_t ( sbr_relobi_r_chan_t ),
     .r_optional_t ( logic )
-  ) i_hmr_ctrl_tmr (
+  ) i_uart_tmr_r (
     .three_r_i ( {uart_relobi_rsp[2].r, uart_relobi_rsp[1].r, uart_relobi_rsp[0].r} ),
     .voted_r_o ( all_periph_obi_rsp[PeriphUart].r ),
-    .fault_o   (  )
+    .fault_o   ( uart_faults[0] )
   );
   for (genvar i = 0; i < 3; i++) begin : gen_uart_obi_triple
     assign all_periph_obi_rsp[PeriphUart].gnt[i] = uart_relobi_rsp[i].gnt[0];
@@ -344,7 +360,7 @@ module croc_domain import croc_pkg::*; #(
       .rel_rsp_o ( uart_relobi_rsp[i] ),
       .req_o ( uart_obi_req[i] ),
       .rsp_i ( uart_obi_rsp[i] ),
-      .fault_o ()
+      .fault_o ( relobi_faults[2+i])
     );
   end
 `else // TARGET_UART_TMRG
@@ -361,8 +377,10 @@ module croc_domain import croc_pkg::*; #(
     .rel_rsp_o ( all_periph_obi_rsp[PeriphUart] ),
     .req_o ( uart_obi_req ),
     .rsp_i ( uart_obi_rsp ),
-    .fault_o ()
+    .fault_o (relobi_faults[2])
   );
+  assign relobi_faults[4:3] = '0;
+  assign uart_faults[0] = '0;
 `endif // TARGET_UART_TMRG
 `ifdef TARGET_GPIO_TMRG
   sbr_relobi_rsp_t gpio_relobi_rsp [2:0];
@@ -373,7 +391,7 @@ module croc_domain import croc_pkg::*; #(
   ) i_gpio_tmr (
     .three_r_i ( {gpio_relobi_rsp[2].r, gpio_relobi_rsp[1].r, gpio_relobi_rsp[0].r} ),
     .voted_r_o ( all_periph_obi_rsp[PeriphGpio].r ),
-    .fault_o   (  )
+    .fault_o   ( gpio_faults[0] )
   );
   for (genvar i = 0; i < 3; i++) begin : gen_gpio_obi_triple
     assign all_periph_obi_rsp[PeriphGpio].gnt[i] = gpio_relobi_rsp[i].gnt[0];
@@ -392,7 +410,7 @@ module croc_domain import croc_pkg::*; #(
       .rel_rsp_o ( gpio_relobi_rsp[i] ),
       .req_o ( gpio_obi_req[i] ),
       .rsp_i ( gpio_obi_rsp[i] ),
-      .fault_o ()
+      .fault_o ( relobi_faults[5+i])
     );
   end
 `else // TARGET_GPIO_TMRG
@@ -409,8 +427,10 @@ module croc_domain import croc_pkg::*; #(
     .rel_rsp_o ( all_periph_obi_rsp[PeriphGpio] ),
     .req_o ( gpio_obi_req ),
     .rsp_i ( gpio_obi_rsp ),
-    .fault_o ()
+    .fault_o ( relobi_faults[5])
   );
+  assign relobi_faults[7:6] = '0;
+  assign gpio_faults[0] = '0;
 `endif // TARGET_GPIO_TMRG
 `ifdef TARGET_TIMER_UNIT_TMRG
   sbr_relobi_rsp_t timer_relobi_rsp [2:0];
@@ -421,7 +441,7 @@ module croc_domain import croc_pkg::*; #(
   ) i_timer_tmr (
     .three_r_i ( {timer_relobi_rsp[2].r, timer_relobi_rsp[1].r, timer_relobi_rsp[0].r} ),
     .voted_r_o ( all_periph_obi_rsp[PeriphTimer].r ),
-    .fault_o   (  )
+    .fault_o   ( timer_faults[0] )
   );
   for (genvar i = 0; i < 3; i++) begin :gen_timer_obi_triple
     assign all_periph_obi_rsp[PeriphTimer].gnt[i] = timer_relobi_rsp[i].gnt[0];
@@ -440,7 +460,7 @@ module croc_domain import croc_pkg::*; #(
       .rel_rsp_o ( timer_relobi_rsp[i] ),
       .req_o ( timer_obi_req[i] ),
       .rsp_i ( timer_obi_rsp[i] ),
-      .fault_o ()
+      .fault_o ( relobi_faults[8+i])
     );
   end
 `else // TARGET_TIMER_UNIT_TMRG
@@ -457,8 +477,10 @@ module croc_domain import croc_pkg::*; #(
     .rel_rsp_o ( all_periph_obi_rsp[PeriphTimer] ),
     .req_o ( timer_obi_req ),
     .rsp_i ( timer_obi_rsp ),
-    .fault_o ()
+    .fault_o ( relobi_faults[8])
   );
+  assign relobi_faults[10:9] = '0
+  assign timer_faults[0] = '0;
 `endif // TARGET_TIMER_UNIT_TMRG
 `ifdef TARGET_RELCORE
   sbr_relobi_rsp_t hmr_ctrl_relobi_rsp [2:0];
@@ -469,8 +491,9 @@ module croc_domain import croc_pkg::*; #(
   ) i_hmr_ctrl_tmr_obi_r (
     .three_r_i ( {hmr_ctrl_relobi_rsp[2].r, hmr_ctrl_relobi_rsp[1].r, hmr_ctrl_relobi_rsp[0].r} ),
     .voted_r_o ( all_periph_obi_rsp[PeriphHmrCtrl].r ),
-    .fault_o   (  )
+    .fault_o   ( core_faults[0][0] )
   );
+  assign core_faults[0][1] = 1'b0;
   for (genvar i = 0; i < 3; i++) begin : gen_hmr_ctrl_decoder_tmr_part
     assign all_periph_obi_rsp[PeriphHmrCtrl].gnt[i] = hmr_ctrl_relobi_rsp[i].gnt[0];
     assign all_periph_obi_rsp[PeriphHmrCtrl].rvalid[i] = hmr_ctrl_relobi_rsp[i].rvalid[0];
@@ -488,7 +511,7 @@ module croc_domain import croc_pkg::*; #(
       .rel_rsp_o ( hmr_ctrl_relobi_rsp[i] ),
       .req_o ( hmr_ctrl_obi_req[i] ),
       .rsp_i ( hmr_ctrl_obi_rsp[i] ),
-      .fault_o ()
+      .fault_o ( relobi_faults[11+i])
     );
     obi_to_apb #(
       .ObiCfg    ( SbrObiCfg     ),
@@ -519,10 +542,17 @@ module croc_domain import croc_pkg::*; #(
     .rst_ni ( rst_ni ),
     .testmode_i ( testmode_i ),
     .obi_req_i ( all_periph_obi_req[PeriphHmrCtrl] ),
-    .obi_rsp_o ( all_periph_obi_rsp[PeriphHmrCtrl] )
+    .obi_rsp_o ( all_periph_obi_rsp[PeriphHmrCtrl] ),
+    .fault_o ( relobi_faults[11] )
   );
+  assign relobi_faults[13:12] = '0;
+  assign core_faults[0] = '0;
 `endif // TARGET_RELCORE
 `else // RELOBI
+  assign core_faults[0]                  = '0;
+  assign uart_faults[0]                 = '0;
+  assign gpio_faults[0]                 = '0;
+  assign timer_faults[0]                = '0;
   assign dbg_mem_obi_req                   = all_periph_obi_req[PeriphDebug];
   assign all_periph_obi_rsp[PeriphDebug]   = dbg_mem_obi_rsp;
   assign uart_obi_req                      = all_periph_obi_req[PeriphUart];
@@ -610,6 +640,7 @@ module croc_domain import croc_pkg::*; #(
 `ifdef TARGET_RELCORE
     .apb_req_i        ( hmr_ctrl_apb_req ),
     .apb_resp_o       ( hmr_ctrl_apb_rsp ),
+    .fault_o          ( core_faults[1] ),
 `endif
 
     .debug_req_i      ( debug_req    ),
@@ -617,6 +648,10 @@ module croc_domain import croc_pkg::*; #(
 
     .core_busy_o     ( core_busy_o )
   );
+
+`ifndef TARGET_RELCORE
+  assign core_faults[1] = '0;
+`endif
 
   // -----------------
   // Debug Module
@@ -729,7 +764,7 @@ module croc_domain import croc_pkg::*; #(
     .rsp_o (dbg_req_obi_rsp),
     .rel_req_o (dbg_req_relobi_req),
     .rel_rsp_i (dbg_req_relobi_rsp),
-    .fault_o ()
+    .fault_o ( relobi_faults[14] )
   );
 
   relobi_xbar #(
@@ -768,7 +803,7 @@ module croc_domain import croc_pkg::*; #(
     .en_default_idx_i ( {3{4'b1111}}    ),
     .default_idx_i    ( '0              ),
 
-    .fault_o ()
+    .fault_o ( relobi_faults[15])
   );
 `else
   obi_xbar #(
@@ -922,7 +957,7 @@ module croc_domain import croc_pkg::*; #(
     .obi_rsp_o  ( xbar_error_obi_rsp )
 
 `ifdef RELOBI
-    ,.fault_o ()
+    ,.fault_o ( relobi_faults[16] )
 `endif
   );
 
@@ -980,7 +1015,7 @@ module croc_domain import croc_pkg::*; #(
     .mgr_ports_req_o   ( all_periph_obi_req ),
     .mgr_ports_rsp_i   ( all_periph_obi_rsp )
 `ifdef RELOBI
-    ,.fault_o          ()
+    ,.fault_o          ( relobi_faults[17] )
 `endif
   );
 
@@ -1006,7 +1041,7 @@ module croc_domain import croc_pkg::*; #(
     .obi_req_i  ( error_obi_req ),
     .obi_rsp_o  ( error_obi_rsp )
 `ifdef RELOBI
-    ,.fault_o ()
+    ,.fault_o ( relobi_faults[18] )
 `endif
   );
 
@@ -1044,14 +1079,16 @@ module croc_domain import croc_pkg::*; #(
   assign boot_addr[0]    = hwif_out[0].bootaddr.bootaddr.value;
   assign boot_addr[1]    = hwif_out[1].bootaddr.bootaddr.value;
   assign boot_addr[2]    = hwif_out[2].bootaddr.bootaddr.value;
+  assign core_faults[3:2] = '0; // not used in TMR_IRQ
 `else // TMR_IRQ
   TMR_voter_fail i_fetchen_vote (
     .a_i ( hwif_out[0].fetchen.fetchen.value | fetch_en_i ),
     .b_i ( hwif_out[1].fetchen.fetchen.value | fetch_en_i ),
     .c_i ( hwif_out[2].fetchen.fetchen.value | fetch_en_i ),
     .majority_o ( fetch_enable ),
-    .fault_detected_o ()
+    .fault_detected_o ( core_faults[2][0] )
   );
+  assign core_faults[2][1] = 1'b0;
   bitwise_TMR_voter_fail #(
     .DataWidth ( 32 )
   ) i_bootaddr_vote (
@@ -1059,16 +1096,18 @@ module croc_domain import croc_pkg::*; #(
     .b_i ( hwif_out[1].bootaddr.bootaddr.value ),
     .c_i ( hwif_out[2].bootaddr.bootaddr.value ),
     .majority_o ( boot_addr ),
-    .fault_detected_o ()
+    .fault_detected_o ( core_faults[3][0] )
   );
+  assign core_faults[3][1] = 1'b0
 `endif // TMR_IRQ
   TMR_voter_fail i_sram_impl_vote (
     .a_i ( hwif_out[0].sram_dly.sram_dly.value ),
     .b_i ( hwif_out[1].sram_dly.sram_dly.value ),
     .c_i ( hwif_out[2].sram_dly.sram_dly.value ),
     .majority_o ( sram_impl ),
-    .fault_detected_o ()
+    .fault_detected_o ( core_faults[4][0] )
   );
+  assign core_faults[4][1] = 1'b0;
 
   assign hwif_in[0] = '{default: '0};
   assign hwif_in[1] = '{default: '0};
@@ -1076,6 +1115,8 @@ module croc_domain import croc_pkg::*; #(
 `else
   apb_req_t soc_ctrl_apb_req;
   apb_resp_t soc_ctrl_apb_rsp;
+
+  assign core_faults[4:2] = '0;
 
   obi_to_apb #(
     .ObiCfg    ( SbrObiCfg     ),
@@ -1178,12 +1219,16 @@ module croc_domain import croc_pkg::*; #(
     .out1_no   ( ),
     .out2_no   ( )
 `ifdef TARGET_UART_TMRG
-    ,.tmrError (),
-    .tmrErrorA (),
-    .tmrErrorB (),
-    .tmrErrorC ()
+    ,.tmrError ( uart_faults[1] ),
+    .tmrErrorA ( uart_faults[2] ),
+    .tmrErrorB ( uart_faults[3] ),
+    .tmrErrorC ( uart_faults[4] )
 `endif
 );
+
+`ifndef TARGET_UART_TMRG
+  assign uart_faults[4:1] = '0;
+`endif
 
   // GPIO
 `ifdef TARGET_GPIO_TMRG
@@ -1220,10 +1265,10 @@ module croc_domain import croc_pkg::*; #(
     .obi_rsp_oA      ( gpio_obi_rsp[0] ),
     .obi_rsp_oB      ( gpio_obi_rsp[1] ),
     .obi_rsp_oC      ( gpio_obi_rsp[2] ),
-    .tmrError  (),
-    .tmrErrorA  (),
-    .tmrErrorB (),
-    .tmrErrorC ()
+    .tmrError        ( gpio_faults[1] ),
+    .tmrErrorA       ( gpio_faults[2] ),
+    .tmrErrorB       ( gpio_faults[3] ),
+    .tmrErrorC       ( gpio_faults[4] )
 `else
     .gpio_in_sync_o,       
     .interrupt_o    ( gpio_irq     ),
@@ -1231,6 +1276,10 @@ module croc_domain import croc_pkg::*; #(
     .obi_rsp_o      ( gpio_obi_rsp )
 `endif
   );
+
+`ifndef TARGET_GPIO_TMRG
+  assign gpio_faults[4:1] = '0;
+`endif
 
   // Timer
 `ifdef TARGET_TIMER_UNIT_TMRG
@@ -1298,9 +1347,9 @@ module croc_domain import croc_pkg::*; #(
     .busy_oA     (                       ),
     .busy_oB     (                       ),
     .busy_oC     (                       ),
-    .tmrErrorA  ( ),
-    .tmrErrorB  ( ),
-    .tmrErrorC  ( )
+    .tmrErrorA  ( timer_faults[1]       ),
+    .tmrErrorB  ( timer_faults[2]       ),
+    .tmrErrorC  ( timer_faults[3]       )
   );
   assign timer_obi_rsp[0].r.err        = 1'b0;
   assign timer_obi_rsp[0].r.r_optional = 1'b0;
@@ -1315,7 +1364,7 @@ module croc_domain import croc_pkg::*; #(
     .clk_i,
     .rst_ni,
     .ref_clk_i,
-    
+
     .req_i      ( timer_obi_req.req     ),
     .addr_i     ( timer_obi_req.a.addr  ),
     .wen_i      ( ~timer_obi_req.a.we   ),
@@ -1323,7 +1372,7 @@ module croc_domain import croc_pkg::*; #(
     .be_i       ( timer_obi_req.a.be    ),
     .id_i       ( timer_obi_req.a.aid   ),
     .gnt_o      ( timer_obi_rsp.gnt     ),
-    
+
     .r_valid_o  ( timer_obi_rsp.rvalid  ),
     .r_opc_o    ( ),
     .r_id_o     ( timer_obi_rsp.r.rid   ),
@@ -1336,6 +1385,7 @@ module croc_domain import croc_pkg::*; #(
   );
   assign timer_obi_rsp.r.err        = 1'b0;
   assign timer_obi_rsp.r.r_optional = 1'b0;
+  assign timer_faults[3:1] = '0;
 `endif // TARGET_TIMER_UNIT_TMRG
 
 endmodule
