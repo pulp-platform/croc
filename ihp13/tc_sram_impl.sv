@@ -356,7 +356,7 @@ module tc_sram_impl #(
      `IHP13_TC_SRAM_64x64_TIEOFF
     );
 
-end else if (NumWords == 2048 && DataWidth == 39 && P1L1) begin: gen_512x39xBx1
+end else if (NumWords == 2048 && DataWidth == 39 && P1L1) begin: gen_2048x39xBx1
     logic [63:0] wdata64, rdata64, bm64, wdata64_0, rdata64_0, bm64_0;
     logic sel_d, sel_q;
     logic [3:0] sel_d_0, sel_q_0;
