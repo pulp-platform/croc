@@ -35,6 +35,8 @@ SECTIONS
       *(.text)
       *(.text.*)
   } >SRAM
+
+  __sram_end = ALIGN(4);
 }
 
 /* Global absolute symbols */

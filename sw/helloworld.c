@@ -9,6 +9,7 @@
 #include "print.h"
 #include "timer.h"
 #include "gpio.h"
+#include "coremark.h"
 #include "util.h"
 
 /// @brief Example integer square root
@@ -36,26 +37,30 @@ char receive_buff[16] = {0};
 int main() {
     uart_init(); // setup the uart peripheral
 
+    *reg32(SOCCTRL_BASE_ADDR, 0x14 /*scrubber interval*/) = 1; // Enable scrubber
+
     // simple printf support (only prints text and hex numbers)
-    printf("Hello World!\n");
+    printf("Hi!\n");
     // wait until uart has finished sending
     uart_write_flush();
 
-    // uart loopback
-    uart_loopback_enable();
-    printf("internal msg\n");
-    sleep_ms(1);
-    for(uint8_t idx = 0; idx<15; idx++) {
-        receive_buff[idx] = uart_read();
-        if(receive_buff[idx] == '\n') {
-            break;
-        }
-    }
-    uart_loopback_disable();
+    sleep_ms(1); // timer test
 
-    printf("Loopback received: ");
-    printf(receive_buff);
-    uart_write_flush();
+    // // uart loopback
+    // uart_loopback_enable();
+    // printf("internal msg\n");
+    // sleep_ms(1);
+    // for(uint8_t idx = 0; idx<15; idx++) {
+    //     receive_buff[idx] = uart_read();
+    //     if(receive_buff[idx] == '\n') {
+    //         break;
+    //     }
+    // }
+    // uart_loopback_disable();
+
+    // printf("Loopback received: ");
+    // printf(receive_buff);
+    // uart_write_flush();
 
     // toggling some GPIOs
     gpio_set_direction(0xFFFF, 0x000F); // lowest four as outputs
@@ -63,24 +68,33 @@ int main() {
     gpio_enable(0xFF); // enable lowest eight
     // wait a few cycles to give GPIO signal time to propagate
     asm volatile ("nop; nop; nop; nop; nop;");
-    printf("GPIO (expect 0xA0): 0x%x\n", gpio_read());
+    // printf("GPIO (expect 0xA0): 0x%x\n", gpio_read());
+    uint8_t val = gpio_read();
+
 
     gpio_toggle(0x0F); // toggle lower 8 GPIOs
     asm volatile ("nop; nop; nop; nop; nop;");
-    printf("GPIO (expect 0x50): 0x%x\n", gpio_read());
+    // printf("GPIO (expect 0x50): 0x%x\n", gpio_read());
+    // uart_write_flush();
+    uint8_t val2 = gpio_read();
+    gpio_write(val); // restore original value
+
+    // // doing some compute
+    // uint32_t start = get_mcycle();
+    // uint32_t res   = isqrt(1234567890UL);
+    // uint32_t end   = get_mcycle();
+    // printf("Result: 0x%x, Cycles: 0x%x\n", res, end - start);
+    // uart_write_flush();
+
+    char *argv[1];
+    uint32_t coremark_errors = coremark_main(0, argv);
+    // printf("E:%x\n", coremark_errors);
     uart_write_flush();
 
-    // doing some compute
-    uint32_t start = get_mcycle();
-    uint32_t res   = isqrt(1234567890UL);
-    uint32_t end   = get_mcycle();
-    printf("Result: 0x%x, Cycles: 0x%x\n", res, end - start);
-    uart_write_flush();
-
-    // using the timer
-    printf("Tick\n");
-    sleep_ms(10);
-    printf("Tock\n");
-    uart_write_flush();
+    // // using the timer
+    // printf("Tick\n");
+    // sleep_ms(10);
+    // printf("Tock\n");
+    // uart_write_flush();
     return 1;
 }

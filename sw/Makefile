@@ -8,6 +8,7 @@
 
 SRCDIR  ?= lib/src
 INCDIR  ?= lib/inc
+COREMARKDIR ?= lib/coremark
 
 # Toolchain
 
@@ -24,8 +25,8 @@ RISCV_AR      ?= $(RISCV_PREFIX)ar
 RISCV_LD      ?= $(RISCV_PREFIX)ld
 RISCV_STRIP   ?= $(RISCV_PREFIX)strip
 
-RISCV_FLAGS    ?= -march=$(RISCV_MARCH) -mabi=$(RISCV_MABI) -mcmodel=medany -static -std=gnu99 -Os -nostdlib -fno-builtin -ffreestanding
-RISCV_CCFLAGS  ?= $(RISCV_FLAGS) -Iinclude -I$(INCDIR) -I$(CURDIR)
+RISCV_FLAGS    ?= -march=$(RISCV_MARCH) -mabi=$(RISCV_MABI) -mcmodel=medany -static -std=gnu99 -Os -nostdlib -fno-builtin -ffreestanding -flto -g
+RISCV_CCFLAGS  ?= $(RISCV_FLAGS) -Iinclude -I$(INCDIR) -I$(CURDIR) -I$(COREMARKDIR) -DFLAGS_STR -DITERATIONS=1
 RISCV_LDFLAGS  ?= -static -nostartfiles -lm -lgcc $(RISCV_FLAGS)
 
 # all
@@ -39,7 +40,9 @@ CRT0 	?= crt0.S
 LINK 	?= link.ld
 
 LIB_SOURCES := $(wildcard $(SRCDIR)/*.[cS])
+LIB_SOURCES += $(wildcard $(COREMARKDIR)/*.[cS])
 LIB_OBJS    := $(LIB_SOURCES:$(SRCDIR)/%=$(SRCDIR)/%.o)
+LIB_OBJS	:= $(LIB_OBJS:$(COREMARKDIR)/%=$(COREMARKDIR)/%.o)
 
 # Build all assembly and C files in the top level as seperate binaries
 TOP_SOURCES ?= $(filter-out $(CRT0), $(wildcard *.[cS]))
@@ -64,7 +67,7 @@ $(BINDIR)/%.elf: %.c.o $(CRT0).o $(LIB_OBJS) | $(BINDIR)
 	$(RISCV_CC) -o $@ $^ $(RISCV_LDFLAGS) -T$(LINK)
 
 $(BINDIR)/%.dump: $(BINDIR)/%.elf
-	$(RISCV_OBJDUMP) -D -s $< >$@
+	$(RISCV_OBJDUMP) -D -S $< >$@
 
 $(BINDIR)/%.hex: $(BINDIR)/%.elf
 	$(RISCV_OBJCOPY) -O verilog $< $@

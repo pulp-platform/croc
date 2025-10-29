@@ -9,6 +9,8 @@
 #pragma once
 
 #include <stdint.h>
+// #include <stdlib.h>
+#include <stddef.h>
 
 static inline volatile uint8_t *reg8(const unsigned int base, int offs) {
     return (volatile uint8_t *)(base + offs);
