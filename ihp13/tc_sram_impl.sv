@@ -356,6 +356,101 @@ module tc_sram_impl #(
      `IHP13_TC_SRAM_64x64_TIEOFF
     );
 
+end else if (NumWords == 2048 && DataWidth == 39 && P1L1) begin: gen_512x39xBx1
+    logic [63:0] wdata64, rdata64, bm64, wdata64_0, rdata64_0, bm64_0;
+    logic sel_d, sel_q;
+    logic [3:0] sel_d_0, sel_q_0;
+
+    // muxing neighboring bits instead of upper/lower 32bit reduces routing
+    always_comb begin : gen_bit_interleaving
+      for (int i = 0; i < 32; i++) begin
+          // duplicate each bit
+          wdata64[2*i]   = wdata_i[0][i]; // even bits (active if addr LSB is 0)
+          bm64[2*i]      = bm[0][i] & ~addr_i[0][0];
+          wdata64[2*i+1] = wdata_i[0][i]; // odd bits  (active if addr LSB is 1)
+          bm64[2*i+1]    = bm[0][i] & addr_i[0][0];
+
+          if(~sel_q) begin
+            rdata_o[0][i] = rdata64[2*i];   // even bits
+          end else begin
+            rdata_o[0][i] = rdata64[2*i+1]; // odd bitss
+          end
+      end
+      for (int i = 0; i < 7; i++) begin
+        // 8x each bit
+        wdata64_0[8*i]   = wdata_i[0][32+i]; // 0 bits (active if addr LSBs are 000)
+        bm64_0[8*i]      = bm[0][32+i] & (addr_i[0][2:0] == 3'b000);
+        wdata64_0[8*i+1] = wdata_i[0][32+i]; // 1 bits (active if addr LSBs are 001)
+        bm64_0[8*i+1]    = bm[0][32+i] & (addr_i[0][2:0] == 3'b001);
+        wdata64_0[8*i+2] = wdata_i[0][32+i]; // 2 bits (active if addr LSBs are 010)
+        bm64_0[8*i+2]    = bm[0][32+i] & (addr_i[0][2:0] == 3'b010);
+        wdata64_0[8*i+3] = wdata_i[0][32+i]; // 3 bits (active if addr LSBs are 011)
+        bm64_0[8*i+3]    = bm[0][32+i] & (addr_i[0][2:0] == 3'b011);
+        wdata64_0[8*i+4] = wdata_i[0][32+i]; // 4 bits (active if addr LSBs are 100)
+        bm64_0[8*i+4]    = bm[0][32+i] & (addr_i[0][2:0] == 3'b100);
+        wdata64_0[8*i+5] = wdata_i[0][32+i]; // 5 bits (active if addr LSBs are 101)
+        bm64_0[8*i+5]    = bm[0][32+i] & (addr_i[0][2:0] == 3'b101);
+        wdata64_0[8*i+6] = wdata_i[0][32+i]; // 6 bits (active if addr LSBs are 110)
+        bm64_0[8*i+6]    = bm[0][32+i] & (addr_i[0][2:0] == 3'b110);
+        wdata64_0[8*i+7] = wdata_i[0][32+i]; // 7 bits (active if addr LSBs are 111)
+        bm64_0[8*i+7]    = bm[0][32+i] & (addr_i[0][2:0] == 3'b111);
+
+        casex (sel_q_0)
+          3'b000: rdata_o[0][32+i] = rdata64_0[8*i];
+          3'b001: rdata_o[0][32+i] = rdata64_0[8*i+1];
+          3'b010: rdata_o[0][32+i] = rdata64_0[8*i+2];
+          3'b011: rdata_o[0][32+i] = rdata64_0[8*i+3];
+          3'b100: rdata_o[0][32+i] = rdata64_0[8*i+4];
+          3'b101: rdata_o[0][32+i] = rdata64_0[8*i+5];
+          3'b110: rdata_o[0][32+i] = rdata64_0[8*i+6];
+          3'b111: rdata_o[0][32+i] = rdata64_0[8*i+7];
+          default: rdata_o[0][32+i] = '0;
+        endcase
+      end
+      wdata64_0[63:56] = '0;
+      bm64_0[63:56]    = '0; // 8th bit is not used
+    end
+
+    // LSB needed for read in next cycle
+    assign sel_d = addr_i[0][0];
+    assign sel_d_0 = addr_i[0][2:0];
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin : proc_mem_sel_q
+      if(~rst_ni) begin
+        sel_q <= '0;
+        sel_q_0 <= '0;
+      end else if (req_i & ~we_i) begin
+        sel_q <= sel_d;
+        sel_q_0 <= sel_d_0;
+      end
+    end
+
+    RM_IHPSG13_1P_1024x64_c2_bm_bist i_cut (
+     .A_CLK   ( clk_i   ),
+     .A_DLY   ( impl_i  ),
+     .A_ADDR  ( addr_i [0][10:1] ),
+     .A_BM    ( bm64    ),
+     .A_MEN   ( req_i   ),
+     .A_WEN   ( we_i    ),
+     .A_REN   ( ~we_i   ),
+     .A_DIN   ( wdata64 ),
+     .A_DOUT  ( rdata64 ),
+     `IHP13_TC_SRAM_1024x64_TIEOFF
+    );
+
+    RM_IHPSG13_1P_256x64_c2_bm_bist i_cut_0 (
+     .A_CLK   ( clk_i   ),
+     .A_DLY   ( impl_i  ),
+     .A_ADDR  ( addr_i [0][10:3] ),
+     .A_BM    ( bm64_0  ),
+     .A_MEN   ( req_i   ),
+     .A_WEN   ( we_i    ),
+     .A_REN   ( ~we_i   ),
+     .A_DIN   ( wdata64_0 ),
+     .A_DOUT  ( rdata64_0 ),
+     `IHP13_TC_SRAM_256x64_TIEOFF
+    );
+
   end else if (NumWords == 1024 && DataWidth == 32 && P1L1) begin: gen_1024x32xBx1
     logic [63:0] wdata64, rdata64, bm64;
     logic sel_d, sel_q;
