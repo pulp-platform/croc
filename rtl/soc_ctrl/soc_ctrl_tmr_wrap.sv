@@ -74,6 +74,7 @@ module soc_ctrl_tmr_wrap #(
     assign hwif_out[i].corestatus.corestatus.value = hwif_out_tmr[i].corestatus.corestatus.value;
     assign hwif_out[i].bootmode.bootmode.value = hwif_out_tmr[i].bootmode.bootmode.value;
     assign hwif_out[i].sram_dly.sram_dly.value = hwif_out_tmr[i].sram_dly.sram_dly.value;
+    assign hwif_out[i].scrub_interval.scrub_interval.value = hwif_out_tmr[i].scrub_interval.scrub_interval.value;
 
     assign hwif_in_tmr[i].bootaddr.bootaddr.next     = hwif_out_tmr[i].bootaddr.bootaddr.value;
     assign hwif_in_tmr[i].fetchen.fetchen.next       = hwif_in[i].fetchen.fetchen.we ?
@@ -84,6 +85,7 @@ module soc_ctrl_tmr_wrap #(
                                                        hwif_in[i].bootmode.bootmode.next :
                                                        hwif_out_tmr[i].bootmode.bootmode.value;
     assign hwif_in_tmr[i].sram_dly.sram_dly.next     = hwif_out_tmr[i].sram_dly.sram_dly.value;
+    assign hwif_in_tmr[i].scrub_interval.scrub_interval.next = hwif_out_tmr[i].scrub_interval.scrub_interval.value;
   end
 
 endmodule
@@ -213,6 +215,15 @@ module soc_ctrl_tmr_part #(
     .b_i        (hwif_out_sync_i[0].sram_dly.sram_dly.value),
     .c_i        (hwif_out_sync_i[1].sram_dly.sram_dly.value),
     .majority_o (hwif_out.sram_dly.sram_dly.value),
+    .fault_detected_o()
+  );
+  bitwise_TMR_voter_fail #(
+    .DataWidth($bits(hwif_out.scrub_interval.scrub_interval.value))
+  ) hwif_out_scrub_interval_vote (
+    .a_i        (hwif_out_sync.scrub_interval.scrub_interval.value),
+    .b_i        (hwif_out_sync_i[0].scrub_interval.scrub_interval.value),
+    .c_i        (hwif_out_sync_i[1].scrub_interval.scrub_interval.value),
+    .majority_o (hwif_out.scrub_interval.scrub_interval.value),
     .fault_detected_o()
   );
 

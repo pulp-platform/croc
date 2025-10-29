@@ -53,6 +53,7 @@ clean-deps:
 ## Generate SoC CTRL registers
 registers: rtl/soc_ctrl/soc_ctrl_reg_top.sv rtl/soc_ctrl/soc_ctrl_reg_pkg.sv rtl/soc_ctrl/soc_ctrl_reg_addr_pkg.sv
 registers: rtl/soc_ctrl/soc_ctrl_tmr_part_reg_top.sv rtl/soc_ctrl/soc_ctrl_tmr_part_reg_pkg.sv
+registers: rtl/soc_ctrl/fault_monitor_reg_top.sv rtl/soc_ctrl/fault_monitor_reg_pkg.sv
 
 rtl/soc_ctrl/soc_ctrl_reg_top.sv rtl/soc_ctrl/soc_ctrl_reg_pkg.sv rtl/soc_ctrl/soc_ctrl_reg_addr_pkg.sv: rtl/soc_ctrl/soc_ctrl.rdl
 	$(PEAKRDL) regblock $< -o rtl/soc_ctrl --cpuif apb4-flat --default-reset arst_n --module-name soc_ctrl_reg_top --package-name soc_ctrl_reg_pkg
@@ -62,6 +63,10 @@ rtl/soc_ctrl/soc_ctrl_reg_top.sv rtl/soc_ctrl/soc_ctrl_reg_pkg.sv rtl/soc_ctrl/s
 rtl/soc_ctrl/soc_ctrl_tmr_part_reg_top.sv rtl/soc_ctrl/soc_ctrl_tmr_part_reg_pkg.sv: rtl/soc_ctrl/soc_ctrl_tmr_part.rdl
 	$(PEAKRDL) regblock $< -o rtl/soc_ctrl --cpuif apb4-flat --default-reset arst_n --module-name soc_ctrl_tmr_part_reg_top --package-name soc_ctrl_tmr_part_reg_pkg
 	git apply rtl/soc_ctrl/boot_addr_tmr_part.patch
+
+rtl/soc_ctrl/fault_monitor_reg_top.sv rtl/soc_ctrl/fault_monitor_reg_pkg.sv: rtl/soc_ctrl/fault_monitor.rdl
+	$(PEAKRDL) regblock $< -o rtl/soc_ctrl --cpuif obi-flat --default-reset arst_n --module-name fault_monitor_reg_top --package-name fault_monitor_reg_pkg
+# 	$(PEAKRDL) raw-header $< -o rtl/soc_ctrl/fault_monitor_reg_addr_pkg.sv --format svpkg
 
 ############
 # Software #

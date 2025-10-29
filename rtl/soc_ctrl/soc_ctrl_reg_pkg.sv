@@ -5,9 +5,7 @@ package soc_ctrl_reg_pkg;
 
     localparam SOC_CTRL_REG_TOP_DATA_WIDTH = 32;
     localparam SOC_CTRL_REG_TOP_MIN_ADDR_WIDTH = 5;
-    localparam SOC_CTRL_REG_TOP_SIZE = 'h14;
-
-    
+    localparam SOC_CTRL_REG_TOP_SIZE = 'h18;
 
     typedef struct {
         logic next;
@@ -73,10 +71,19 @@ package soc_ctrl_reg_pkg;
     } soc_ctrl__sram_dly__out_t;
 
     typedef struct {
+        logic [31:0] value;
+    } soc_ctrl__scrub_interval__scrub_interval__out_t;
+
+    typedef struct {
+        soc_ctrl__scrub_interval__scrub_interval__out_t scrub_interval;
+    } soc_ctrl__scrub_interval__out_t;
+
+    typedef struct {
         soc_ctrl__bootaddr__out_t bootaddr;
         soc_ctrl__fetchen__out_t fetchen;
         soc_ctrl__corestatus__out_t corestatus;
         soc_ctrl__bootmode__out_t bootmode;
         soc_ctrl__sram_dly__out_t sram_dly;
+        soc_ctrl__scrub_interval__out_t scrub_interval;
     } soc_ctrl__out_t;
 endpackage

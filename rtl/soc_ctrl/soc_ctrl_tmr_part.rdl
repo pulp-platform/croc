@@ -62,11 +62,23 @@ addrmap soc_ctrl {
     } sram_dly[0:0] = 0x1;
   };
 
+  reg scrub_interval {
+    name = "scrub_interval";
+    desc = "SRAM Scrubbing Interval";
+    field {
+        name = "scrub_interval";
+        desc = "Interval between two SRAM scrubbing operations (in number of cycles), zero to disable scrubbing";
+        sw = rw;
+        hw = rw;
+    } scrub_interval[31:0] = 0x0;
+  };
+
   bootaddr bootaddr;
   fetchen fetchen;
   corestatus corestatus;
   bootmode bootmode;
   sram_dly sram_dly;
+  scrub_interval scrub_interval;
 
 //   bootaddr.bootaddr->reset = boot_addr_reset;
 

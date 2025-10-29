@@ -1,0 +1,31 @@
+// Copyright 2025 ETH Zurich and University of Bologna
+// Solderpad Hardware License, Version 0.51, see LICENSE for details.
+// SPDX-License-Identifier: SHL-0.51
+
+addrmap fault_monitor #(
+    longint unsigned NumSramBanks = 2
+) {
+    reg fault_counter {
+        name = "fault_counter";
+        desc = "Error Counter";
+        field {
+            name = "fault_count";
+            desc = "Counts the number of faults detected";
+            sw = rw;
+            hw = na;
+            counter = 1;
+        } fault_count[31:0] = 0x0;
+    };
+
+    fault_counter relobi_correctable_fault;
+    fault_counter relobi_uncorrectable_fault;
+    fault_counter core_ctrl_correctable_fault;
+    fault_counter core_ctrl_uncorrectable_fault;
+    fault_counter uart_fault;
+    fault_counter gpio_fault;
+    fault_counter timer_fault;
+    fault_counter sram_scrub_correctable[NumSramBanks];
+    fault_counter sram_scrub_uncorrectable[NumSramBanks];
+    fault_counter sram_correctable_fault[NumSramBanks];
+    fault_counter sram_uncorrectable_fault[NumSramBanks];
+};

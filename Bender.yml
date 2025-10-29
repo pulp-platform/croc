@@ -34,6 +34,7 @@ sources:
   - rtl/soc_ctrl/soc_ctrl_reg_pkg.sv
   - rtl/soc_ctrl/soc_ctrl_tmr_part_reg_pkg.sv
   - rtl/soc_ctrl/soc_ctrl_reg_addr_pkg.sv
+  - rtl/soc_ctrl/fault_monitor_reg_pkg.sv
   - rtl/gpio/gpio_reg_pkg.sv
   # add your design files containing anything but modules (packages) here
 
@@ -50,6 +51,7 @@ sources:
       - rtl/soc_ctrl/soc_ctrl_reg_top.sv
       - rtl/soc_ctrl/soc_ctrl_tmr_part_reg_top.sv
       - rtl/soc_ctrl/soc_ctrl_tmr_wrap.sv
+      - rtl/soc_ctrl/fault_monitor_reg_top.sv
       - rtl/gpio/gpio_reg_top.sv
       - rtl/gpio/gpio.sv
       - target: gpio_tmrg

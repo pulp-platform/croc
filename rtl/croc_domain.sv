@@ -56,13 +56,23 @@ module croc_domain import croc_pkg::*; #(
   // -----------------
   // Fault signals
   // -----------------
-  logic [4:0][1:0] core_faults;
-  logic [18:0][1:0] relobi_faults;
+  fault_monitor_reg_pkg::fault_monitor__in_t fm_hwif_in;
+  logic [6:0][1:0] core_faults;
+  logic [1:0][6:0] core_faults_transpose;
+  logic [19:0][1:0] relobi_faults;
+  logic [1:0][19:0] relobi_faults_transpose;
   logic [4:0] uart_faults;
   logic [4:0] gpio_faults;
   logic [3:0] timer_faults;
-  // TODO sram_ctrl
-  // TODO fault log unit
+
+  for (genvar i = 0; i < 2; i++) begin : gen_faults_transpose
+    for (genvar j = 0; j < 7; j++) begin : gen_core_faults_transpose_inner
+      assign core_faults_transpose[i][j] = core_faults[j][i];
+    end
+    for (genvar j = 0; j < 19; j++) begin : gen_relobi_faults_transpose_inner
+      assign relobi_faults_transpose[i][j] = relobi_faults[j][i];
+    end
+  end
 
 `ifndef RELOBI
   // Tie off relobi faults if not using relobi
@@ -310,6 +320,9 @@ module croc_domain import croc_pkg::*; #(
   apb_req_t [2:0] hmr_ctrl_apb_req;
   apb_resp_t [2:0] hmr_ctrl_apb_rsp;
 `endif
+
+  sbr_obi_req_t fm_obi_req;
+  sbr_obi_rsp_t fm_obi_rsp;
 
   // Fanout to individual peripherals
   assign error_obi_req                     = all_periph_obi_req[PeriphError];
@@ -842,12 +855,49 @@ module croc_domain import croc_pkg::*; #(
   // Memories
   // -----------------
 
+  // TODO: ecc mem without relobi config!
+
+  logic [31:0] scrub_interval, counter_value;
+
+`ifdef RELOBI
+  bitwise_TMR_voter_fail #(
+    .DataWidth ( 32 )
+  ) i_scrub_interval_voter (
+    .a_i ( hwif_out[0].scrub_interval.scrub_interval.value ),
+    .b_i ( hwif_out[1].scrub_interval.scrub_interval.value ),
+    .c_i ( hwif_out[2].scrub_interval.scrub_interval.value ),
+    .majority_o ( scrub_interval ),
+    .fault_detected_o(core_faults[6][0])
+  );
+  assign core_faults[6][1] = '0;
+
+  counter #(
+    .WIDTH           ( 32   ),
+    .STICKY_OVERFLOW ( 1'b0 )
+  ) i_scrub_counter (
+    .clk_i,
+    .rst_ni,
+    .clear_i   ( scrub_interval == '0 ),
+    .en_i      ( scrub_interval != '0 ),
+    .load_i    ( counter_value == scrub_interval ),
+    .down_i    ( 1'b0 ),
+    .d_i       ( '0 ),
+    .q_o       ( counter_value ),
+    .overflow_o()
+  );
+`else
+  assign scrub_interval = hwif_out.scrub_interval.scrub_interval.value;
+  assign core_faults[6] = '0;
+  assign counter_value = '0;
+`endif
+
   for (genvar i = 0; i < NumSramBanks; i++) begin : gen_sram_bank
     logic bank_req, bank_we, bank_gnt, bank_single_err;
     logic [SbrObiCfg.AddrWidth-1:0] bank_byte_addr;
     logic [SramBankAddrWidth-1:0] bank_word_addr;
 `ifdef RELOBI
     logic [SbrObiCfg.DataWidth+hsiao_ecc_pkg::min_ecc(SbrObiCfg.DataWidth)-1:0] bank_wdata, bank_rdata;
+    logic [1:0] sram_fault;
 `else
     logic [SbrObiCfg.DataWidth-1:0] bank_wdata, bank_rdata;
     logic [SbrObiCfg.DataWidth/8-1:0] bank_be;
@@ -889,15 +939,21 @@ module croc_domain import croc_pkg::*; #(
       .gnt_i   ( bank_gnt   ),
       .rdata_i ( bank_rdata )
 `ifdef RELOBI
-      ,.scrub_trigger_i (1'b0),
-      .scrub_bit_corrected_o (),
-      .scrub_uncorrectable_o (),
-      .fault_o ()
+      ,.scrub_trigger_i (scrub_interval != '0 && counter_value == scrub_interval ),
+      .scrub_bit_corrected_o (fm_hwif_in.sram_scrub_correctable[i].fault_count.incr),
+      .scrub_uncorrectable_o (fm_hwif_in.sram_scrub_uncorrectable[i].fault_count.incr),
+      .fault_o ( sram_fault )
 `endif
     );
 
-`ifndef RELOBI
+`ifdef RELOBI
+    assign fm_hwif_in.sram_uncorrectable_fault[i].fault_count.incr = sram_fault[1];
+    assign fm_hwif_in.sram_correctable_fault[i].fault_count.incr = sram_fault[0];
+`else
     assign bank_word_addr = bank_byte_addr[SbrObiCfg.AddrWidth-1:2];
+    assign fm_hwif_in.sram_scrub_correctable[i].fault_count.incr = '0;
+    assign fm_hwif_in.sram_scrub_uncorrectable[i].fault_count.incr = '0;
+    assign fm_hwif_in.sram_fault[i].fault_count.incr = '0;
 `endif
 
     tc_sram_impl #(
@@ -1166,6 +1222,88 @@ module croc_domain import croc_pkg::*; #(
     default: '0
   };
 `endif
+
+  assign fm_hwif_in.relobi_correctable_fault.fault_count.incr = |relobi_faults_transpose[0];
+  assign fm_hwif_in.relobi_uncorrectable_fault.fault_count.incr = |relobi_faults_transpose[1];
+  assign fm_hwif_in.core_ctrl_correctable_fault.fault_count.incr  = |core_faults_transpose[0];
+  assign fm_hwif_in.core_ctrl_uncorrectable_fault.fault_count.incr  = |core_faults_transpose[1];
+  assign fm_hwif_in.uart_fault.fault_count.incr  = |uart_faults;
+  assign fm_hwif_in.gpio_fault.fault_count.incr  = |gpio_faults;
+  assign fm_hwif_in.timer_fault.fault_count.incr = |timer_faults;
+
+  logic fm_obi_rvalid;
+  logic [1:0] fm_obi_rvalid_extra;
+
+`ifdef RELOBI
+  sbr_relobi_rsp_t fm_obi_rsp_tmp;
+  always_comb begin
+    all_periph_obi_rsp[PeriphFaultMonitor] = fm_obi_rsp_tmp;
+    all_periph_obi_rsp[PeriphFaultMonitor].rvalid = {fm_obi_rvalid, fm_obi_rvalid_extra[0], fm_obi_rvalid_extra[1]};
+  end
+
+  relobi_decoder #(
+    .Cfg (SbrObiCfg),
+    .relobi_req_t (sbr_relobi_req_t),
+    .relobi_rsp_t (sbr_relobi_rsp_t),
+    .obi_req_t (sbr_obi_req_t),
+    .obi_rsp_t (sbr_obi_rsp_t),
+    .a_optional_t (logic),
+    .r_optional_t (logic)
+  ) i_fm_decode (
+    .rel_req_i ( all_periph_obi_req[PeriphFaultMonitor] ),
+    .rel_rsp_o ( fm_obi_rsp_tmp ),
+    .req_o ( fm_obi_req ),
+    .rsp_i ( fm_obi_rsp ),
+    .fault_o ( relobi_faults[19])
+  );
+`else
+  assign fm_obi_req = all_sbr_obi_req[PeriphFaultMonitor];
+  assign all_sbr_obi_rsp[PeriphFaultMonitor] = fm_obi_rsp
+`endif
+
+  // For tolerance, assuming rvalid high 1 cycle after req&gnt, ensuring response
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      fm_obi_rvalid_extra <= '0;
+    end else begin
+`ifdef RELOBI
+      fm_obi_rvalid_extra <= {(all_periph_obi_req[PeriphFaultMonitor].req[2] & all_periph_obi_rsp[PeriphFaultMonitor].gnt[2]),
+                             (all_periph_obi_req[PeriphFaultMonitor].req[1] & all_periph_obi_rsp[PeriphFaultMonitor].gnt[1])};
+`else
+      fm_obi_rvalid_extra <= {(fm_obi_req.req & fm_obi_rsp.gnt), (fm_obi_req.req & fm_obi_rsp.gnt)};
+`endif
+    end
+  end
+  TMR_voter_fail i_fm_rvalid_vote (
+    .a_i ( fm_obi_rvalid ),
+    .b_i ( fm_obi_rvalid_extra[0] ),
+    .c_i ( fm_obi_rvalid_extra[1] ),
+    .majority_o ( fm_obi_rsp.rvalid ),
+    .fault_detected_o (core_faults[5][0] )
+  );
+  assign core_faults[5][1] = 1'b0;
+
+  fault_monitor_reg_top #(
+    .ID_WIDTH ( SbrObiCfg.IdWidth )
+  ) i_fault_monitor (
+    .clk ( clk_i ),
+    .arst_n ( rst_ni ),
+
+    .obi_req    ( fm_obi_req.req ),
+    .obi_gnt    ( fm_obi_rsp.gnt ),
+    .obi_addr   ( fm_obi_req.a.addr[5:0] ),
+    .obi_we     ( fm_obi_req.a.we ),
+    .obi_be     ( fm_obi_req.a.be ),
+    .obi_wdata  ( fm_obi_req.a.wdata ),
+    .obi_aid    ( fm_obi_req.a.aid ),
+    .obi_rvalid ( fm_obi_rvalid ),
+    .obi_rready ( '1 ),
+    .obi_rdata  ( fm_obi_rsp.r.rdata ),
+    .obi_err    ( fm_obi_rsp.r.err ),
+    .obi_rid    ( fm_obi_rsp.r.rid ),
+
+    .hwif_in ( fm_hwif_in )
+  );
 
   // UART
 `ifdef TARGET_UART_TMRG

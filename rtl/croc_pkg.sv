@@ -127,7 +127,10 @@ package croc_pkg;
   localparam bit [31:0] HmrCtrlAddrOffset = 32'h0300_C000;
   localparam bit [31:0] HmrCtrlAddrRange  = 32'h0000_1000;
 
-  localparam int unsigned NumPeriphRules  = 6;
+  localparam bit [31:0] FaultMonitorAddrOffset = 32'h0300_D000;
+  localparam bit [31:0] FaultMonitorAddrRange  = 32'h0000_1000;
+
+  localparam int unsigned NumPeriphRules  = 7;
   localparam int unsigned NumPeriphs      = NumPeriphRules + 1; // additional OBI error
 
   // Enum for bus indices
@@ -138,7 +141,8 @@ package croc_pkg;
     PeriphUart     = 3,
     PeriphGpio     = 4,
     PeriphTimer    = 5,
-    PeriphHmrCtrl  = 6
+    PeriphHmrCtrl  = 6,
+    PeriphFaultMonitor = 7
   } periph_outputs_e;
 
   localparam addr_map_rule_t [NumPeriphRules-1:0] periph_addr_map = '{                                       // 0: OBI Error (default)
@@ -147,7 +151,8 @@ package croc_pkg;
     '{ idx: PeriphUart,     start_addr: UartAddrOffset,     end_addr: UartAddrOffset    + UartAddrRange},    // 3: UART
     '{ idx: PeriphGpio,     start_addr: GpioAddrOffset,     end_addr: GpioAddrOffset    + GpioAddrRange},    // 4: GPIO
     '{ idx: PeriphTimer,    start_addr: TimerAddrOffset,    end_addr: TimerAddrOffset   + TimerAddrRange},   // 5: Timer
-    '{ idx: PeriphHmrCtrl,  start_addr: HmrCtrlAddrOffset,  end_addr: HmrCtrlAddrOffset + HmrCtrlAddrRange}  // 6: HMR Control
+    '{ idx: PeriphHmrCtrl,  start_addr: HmrCtrlAddrOffset,  end_addr: HmrCtrlAddrOffset + HmrCtrlAddrRange}, // 6: HMR Control
+    '{ idx: PeriphFaultMonitor, start_addr: FaultMonitorAddrOffset, end_addr: FaultMonitorAddrOffset + FaultMonitorAddrRange} // 7: Fault Monitor
   };
 
   // OBI is configured as 32 bit data, 32 bit address width

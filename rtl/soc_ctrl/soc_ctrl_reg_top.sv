@@ -94,6 +94,7 @@ module soc_ctrl_reg_top #(
         logic corestatus;
         logic bootmode;
         logic sram_dly;
+        logic scrub_interval;
     } decoded_reg_strb_t;
     decoded_reg_strb_t decoded_reg_strb;
     logic decoded_req;
@@ -107,6 +108,7 @@ module soc_ctrl_reg_top #(
         decoded_reg_strb.corestatus = cpuif_req_masked & (cpuif_addr == 5'h8);
         decoded_reg_strb.bootmode = cpuif_req_masked & (cpuif_addr == 5'hc);
         decoded_reg_strb.sram_dly = cpuif_req_masked & (cpuif_addr == 5'h10);
+        decoded_reg_strb.scrub_interval = cpuif_req_masked & (cpuif_addr == 5'h14);
     end
 
     // Pass down signals to next stage
@@ -149,6 +151,12 @@ module soc_ctrl_reg_top #(
                 logic load_next;
             } sram_dly;
         } sram_dly;
+        struct {
+            struct {
+                logic [31:0] next;
+                logic load_next;
+            } scrub_interval;
+        } scrub_interval;
     } field_combo_t;
     field_combo_t field_combo;
 
@@ -178,6 +186,11 @@ module soc_ctrl_reg_top #(
                 logic value;
             } sram_dly;
         } sram_dly;
+        struct {
+            struct {
+                logic [31:0] value;
+            } scrub_interval;
+        } scrub_interval;
     } field_storage_t;
     field_storage_t field_storage;
 
@@ -302,6 +315,29 @@ module soc_ctrl_reg_top #(
         end
     end
     assign hwif_out.sram_dly.sram_dly.value = field_storage.sram_dly.sram_dly.value;
+    // Field: soc_ctrl.scrub_interval.scrub_interval
+    always_comb begin
+        automatic logic [31:0] next_c;
+        automatic logic load_next_c;
+        next_c = field_storage.scrub_interval.scrub_interval.value;
+        load_next_c = '0;
+        if(decoded_reg_strb.scrub_interval && decoded_req_is_wr) begin // SW write
+            next_c = (field_storage.scrub_interval.scrub_interval.value & ~decoded_wr_biten[31:0]) | (decoded_wr_data[31:0] & decoded_wr_biten[31:0]);
+            load_next_c = '1;
+        end
+        field_combo.scrub_interval.scrub_interval.next = next_c;
+        field_combo.scrub_interval.scrub_interval.load_next = load_next_c;
+    end
+    always_ff @(posedge clk or negedge arst_n) begin
+        if(~arst_n) begin
+            field_storage.scrub_interval.scrub_interval.value <= 32'h0;
+        end else begin
+            if(field_combo.scrub_interval.scrub_interval.load_next) begin
+                field_storage.scrub_interval.scrub_interval.value <= field_combo.scrub_interval.scrub_interval.next;
+            end
+        end
+    end
+    assign hwif_out.scrub_interval.scrub_interval.value = field_storage.scrub_interval.scrub_interval.value;
 
     //--------------------------------------------------------------------------
     // Write response
@@ -319,7 +355,7 @@ module soc_ctrl_reg_top #(
     logic [31:0] readback_data;
 
     // Assign readback values to a flattened array
-    logic [31:0] readback_array[5];
+    logic [31:0] readback_array[6];
     assign readback_array[0][31:0] = (decoded_reg_strb.bootaddr && !decoded_req_is_wr) ? field_storage.bootaddr.bootaddr.value : '0;
     assign readback_array[1][0:0] = (decoded_reg_strb.fetchen && !decoded_req_is_wr) ? field_storage.fetchen.fetchen.value : '0;
     assign readback_array[1][31:1] = '0;
@@ -328,6 +364,7 @@ module soc_ctrl_reg_top #(
     assign readback_array[3][31:1] = '0;
     assign readback_array[4][0:0] = (decoded_reg_strb.sram_dly && !decoded_req_is_wr) ? field_storage.sram_dly.sram_dly.value : '0;
     assign readback_array[4][31:1] = '0;
+    assign readback_array[5][31:0] = (decoded_reg_strb.scrub_interval && !decoded_req_is_wr) ? field_storage.scrub_interval.scrub_interval.value : '0;
 
     // Reduce the array
     always_comb begin
@@ -335,7 +372,7 @@ module soc_ctrl_reg_top #(
         readback_done = decoded_req & ~decoded_req_is_wr;
         readback_err = '0;
         readback_data_var = '0;
-        for(int i=0; i<5; i++) readback_data_var |= readback_array[i];
+        for(int i=0; i<6; i++) readback_data_var |= readback_array[i];
         readback_data = readback_data_var;
     end
 
