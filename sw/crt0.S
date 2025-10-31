@@ -39,8 +39,28 @@ _start:
   addi   t0, t0, 4
   j      1b
 2:
-  # clear fault registers from setup
+  # clear fault registers from setup (15 regs)
   li     t0, 0x0300D000
+  sw     zero, 0(t0)
+  addi   t0, t0, 4
+  sw     zero, 0(t0)
+  addi   t0, t0, 4
+  sw     zero, 0(t0)
+  addi   t0, t0, 4
+  sw     zero, 0(t0)
+  addi   t0, t0, 4
+  sw     zero, 0(t0)
+  addi   t0, t0, 4
+  sw     zero, 0(t0)
+  addi   t0, t0, 4
+  sw     zero, 0(t0)
+  addi   t0, t0, 4
+  sw     zero, 0(t0)
+  addi   t0, t0, 4
+  sw     zero, 0(t0)
+  addi   t0, t0, 4
+  sw     zero, 0(t0)
+  addi   t0, t0, 4
   sw     zero, 0(t0)
   addi   t0, t0, 4
   sw     zero, 0(t0)

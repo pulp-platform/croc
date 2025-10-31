@@ -801,7 +801,7 @@ module croc_domain import croc_pkg::*; #(
     .UseIdForRouting    ( 1'b0             ),
     .Connectivity       ( '1               ),
     .TmrMap             ( 1'b1 ),
-    .DecodeAbort        ( 1'b1 )
+    .DecodeAbort        ( 1'b0 )
   ) i_main_xbar (
     .clk_i,
     .rst_ni,
@@ -898,6 +898,8 @@ module croc_domain import croc_pkg::*; #(
 `ifdef RELOBI
     logic [SbrObiCfg.DataWidth+hsiao_ecc_pkg::min_ecc(SbrObiCfg.DataWidth)-1:0] bank_wdata, bank_rdata;
     logic [1:0] sram_fault;
+    logic scrub_corr;
+    logic scrub_uncorr;
 `else
     logic [SbrObiCfg.DataWidth-1:0] bank_wdata, bank_rdata;
     logic [SbrObiCfg.DataWidth/8-1:0] bank_be;
@@ -940,8 +942,8 @@ module croc_domain import croc_pkg::*; #(
       .rdata_i ( bank_rdata )
 `ifdef RELOBI
       ,.scrub_trigger_i (scrub_interval != '0 && counter_value == scrub_interval ),
-      .scrub_bit_corrected_o (fm_hwif_in.sram_scrub_correctable[i].fault_count.incr),
-      .scrub_uncorrectable_o (fm_hwif_in.sram_scrub_uncorrectable[i].fault_count.incr),
+      .scrub_bit_corrected_o (scrub_corr),
+      .scrub_uncorrectable_o (scrub_uncorr),
       .fault_o ( sram_fault )
 `endif
     );
@@ -949,6 +951,8 @@ module croc_domain import croc_pkg::*; #(
 `ifdef RELOBI
     assign fm_hwif_in.sram_uncorrectable_fault[i].fault_count.incr = sram_fault[1];
     assign fm_hwif_in.sram_correctable_fault[i].fault_count.incr = sram_fault[0];
+    assign fm_hwif_in.sram_scrub_correctable[i].fault_count.incr = scrub_corr;
+    assign fm_hwif_in.sram_scrub_uncorrectable[i].fault_count.incr = scrub_uncorr;
 `else
     assign bank_word_addr = bank_byte_addr[SbrObiCfg.AddrWidth-1:2];
     assign fm_hwif_in.sram_scrub_correctable[i].fault_count.incr = '0;
