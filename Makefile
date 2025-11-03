@@ -13,6 +13,8 @@ YOSYS     ?= yosys
 OPENROAD  ?= openroad
 KLAYOUT   ?= klayout
 VSIM      ?= vsim
+VLOGAN    ?= vlogan
+VCS	      ?= vcs
 REGGEN    ?= $(PYTHON3) $(shell $(BENDER) path register_interface)/vendor/lowrisc_opentitan/util/regtool.py
 
 # Directories
@@ -108,7 +110,46 @@ verilator/obj_dir/Vtb_croc_soc: verilator/croc.f $(SW_HEX)
 verilator: verilator/obj_dir/Vtb_croc_soc
 	cd verilator; obj_dir/Vtb_croc_soc +binary="$(realpath $(SW_HEX))"
 
-.PHONY: verilator vsim vsim-yosys
+# VCS
+VCS_SCRIPT_ARGS = -assert svaext +v2k -kdb -override_timescale=1ns/10ps -debug_access+all
+VCS_COMPILE_ARGS = -kdb -lca -sverilog -full64 -j8 -l compile.log +vcs+fsdbon -debug_access+all +lint=TFIPC-L +lint=PCWM +warn=noCWUC +warn=noUII-L -override_timescale=1ns/10ps
+vcs/compile_rtl.sh: Bender.lock Bender.yml
+	$(BENDER) script vcs -t rtl -t vcs -t simulation -t verilator -DSYNTHESIS -DSIMULATION --vlog-arg="$(VCS_SCRIPT_ARGS)" --vlogan-bin="$(VLOGAN)" > $@
+	chmod +x $@
+
+vcs/compile_netlist_yosys.sh: Bender.lock Bender.yml
+	$(BENDER) script vcs -t ihp13 -t vcs -t simulation -t verilator -t netlist_yosys -DSYNTHESIS -DSIMULATION --vlog-arg="$(VCS_SCRIPT_ARGS)" --vlogan-bin="$(VLOGAN)" > $@
+	cat vcs/compile_tech.sh >> $@
+	chmod +x $@
+
+vcs/compile_netlist_openroad.sh: Bender.lock Bender.yml
+	$(BENDER) script vcs -t ihp13 -t vcs -t simulation -t verilator -t netlist_openroad -DSYNTHESIS -DSIMULATION --vlog-arg="$(VCS_SCRIPT_ARGS)" --vlogan-bin="$(VLOGAN)" > $@
+	cat vcs/compile_tech.sh >> $@
+	chmod +x $@
+
+vcs/tb_croc_soc.sim: vcs/compile_rtl.sh
+	cd vcs; ./compile_rtl.sh
+	cd vcs; $(VCS) $(VCS_COMPILE_ARGS) -o tb_croc_soc.sim tb_croc_soc
+
+vcs/tb_croc_soc_yosys.sim: vcs/compile_netlist_yosys.sh yosys/out/croc_chip_yosys_debug.v
+	cd vcs; ./compile_netlist_yosys.sh
+	cd vcs; $(VCS) $(VCS_COMPILE_ARGS) -o tb_croc_soc_yosys.sim tb_croc_soc
+
+vcs/tb_croc_soc_openroad.sim: vcs/compile_netlist_openroad.sh openroad/out/croc.v
+	cd vcs; ./compile_netlist_openroad.sh
+	cd vcs; $(VCS) $(VCS_COMPILE_ARGS) -o tb_croc_soc_openroad.sim tb_croc_soc
+
+## Simulate RTL using VCS
+vcs: vcs/tb_croc_soc.sim $(SW_HEX)
+	cd vcs; ./tb_croc_soc.sim +fsdb+all=on +binary="$(realpath $(SW_HEX))" -l transcript.log
+
+vcs-yosys: vcs/tb_croc_soc_yosys.sim $(SW_HEX)
+	cd vcs; ./tb_croc_soc_yosys.sim +fsdb+all=on +binary="$(realpath $(SW_HEX))" -l transcript.log
+
+vcs-openroad: vcs/tb_croc_soc_openroad.sim $(SW_HEX)
+	cd vcs; ./tb_croc_soc_openroad.sim +fsdb+all=on +binary="$(realpath $(SW_HEX))" -l transcript.log
+
+.PHONY: verilator vsim vsim-yosys vcs vcs-yosys vcs-openroad
 
 
 ####################
