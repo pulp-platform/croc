@@ -492,7 +492,7 @@ module croc_domain import croc_pkg::*; #(
     .rsp_i ( timer_obi_rsp ),
     .fault_o ( relobi_faults[8])
   );
-  assign relobi_faults[10:9] = '0
+  assign relobi_faults[10:9] = '0;
   assign timer_faults[0] = '0;
 `endif // TARGET_TIMER_UNIT_TMRG
 `ifdef TARGET_RELCORE
@@ -1185,7 +1185,7 @@ module croc_domain import croc_pkg::*; #(
     .majority_o ( boot_addr ),
     .fault_detected_o ( core_faults[3][0] )
   );
-  assign core_faults[3][1] = 1'b0
+  assign core_faults[3][1] = 1'b0;
 `endif // TMR_IRQ
   TMR_voter_fail i_sram_impl_vote (
     .a_i ( hwif_out[0].sram_dly.sram_dly.value ),

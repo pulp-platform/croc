@@ -80,7 +80,7 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   //-----------------------------------------------------------------------------------------------
 
 `ifdef RELOBI
-  logic [2:0][cf_math_pkg::idx_width(NumPeriphs)-1:0] periph_idx;
+  logic [2:0][cf_math_pkg::idx_width(NumDemuxSbr)-1:0] user_idx;
 
   for (genvar i = 0; i < 3; i++) begin : gen_periph_addr_decode_tmr_part
     logic [SbrObiCfg.AddrWidth-1:0] addr_decoded;
