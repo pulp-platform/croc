@@ -870,7 +870,12 @@ module croc_domain import croc_pkg::*; #(
     .fault_detected_o(core_faults[6][0])
   );
   assign core_faults[6][1] = '0;
+`else
+  assign scrub_interval = hwif_out.scrub_interval.scrub_interval.value;
+  assign core_faults[6] = '0;
+`endif
 
+`ifdef RELOBI
   counter #(
     .WIDTH           ( 32   ),
     .STICKY_OVERFLOW ( 1'b0 )
@@ -885,10 +890,21 @@ module croc_domain import croc_pkg::*; #(
     .q_o       ( counter_value ),
     .overflow_o()
   );
-`else
-  assign scrub_interval = hwif_out.scrub_interval.scrub_interval.value;
-  assign core_faults[6] = '0;
-  assign counter_value = '0;
+`elsif ECC_MEM
+  counter #(
+    .WIDTH           ( 32   ),
+    .STICKY_OVERFLOW ( 1'b0 )
+  ) i_scrub_counter (
+    .clk_i,
+    .rst_ni,
+    .clear_i   ( scrub_interval == '0 ),
+    .en_i      ( scrub_interval != '0 ),
+    .load_i    ( counter_value == scrub_interval ),
+    .down_i    ( 1'b0 ),
+    .d_i       ( '0 ),
+    .q_o       ( counter_value ),
+    .overflow_o()
+  );
 `endif
 
   for (genvar i = 0; i < NumSramBanks; i++) begin : gen_sram_bank
@@ -903,9 +919,11 @@ module croc_domain import croc_pkg::*; #(
 `else
     logic [SbrObiCfg.DataWidth-1:0] bank_wdata, bank_rdata;
     logic [SbrObiCfg.DataWidth/8-1:0] bank_be;
+`ifndef ECC_MEM
     assign sram_fault = '0;
     assign scrub_corr = 1'b0;
     assign scrub_uncorr = 1'b0;
+`endif
 `endif
 
 `ifdef RELOBI
@@ -959,6 +977,38 @@ module croc_domain import croc_pkg::*; #(
     assign bank_word_addr = bank_byte_addr[SbrObiCfg.AddrWidth-1:2];
 `endif
 
+`ifdef ECC_MEM
+`ifndef RELOBI
+`define ECC_MEM_NO_RELOBI
+`endif
+`endif
+
+`ifdef ECC_MEM_NO_RELOBI
+    ecc_sram #(
+      .NumWords ( SramBankNumWords ),
+      .UnprotectedWidth ( 32 ),
+      .ProtectedWidth   ( 39 ),
+      .InputECC ( 0 ),
+      .NumRMWCuts ( 0 )
+    ) i_sram (
+      .clk_i,
+      .rst_ni,
+
+      .scrub_trigger_i ( scrub_interval != '0 && counter_value == scrub_interval ),
+      .scrubber_fix_o (scrub_corr),
+      .scrub_uncorrectable_o (scrub_uncorr),
+
+      .wdata_i ( bank_wdata ),
+      .addr_i  ( bank_word_addr ),
+      .req_i  ( bank_req       ),
+      .we_i   ( bank_we        ),
+      .be_i   ( bank_be    ),
+      .rdata_o ( bank_rdata ),
+      .gnt_o   ( bank_gnt       ),
+      .single_error_o ( sram_fault[0]  ),
+      .multi_error_o ( sram_fault[1]  )
+    );
+`else
     tc_sram_impl #(
       .NumWords  ( SramBankNumWords ),
 `ifdef RELOBI
@@ -990,6 +1040,7 @@ module croc_domain import croc_pkg::*; #(
     );
 
     assign bank_gnt = 1'b1;
+`endif // (!(RELOBI) && ECC_MEM)
   end
 
 
