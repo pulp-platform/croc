@@ -12,7 +12,7 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   input  logic      ref_clk_i,
   input  logic      rst_ni,
   input  logic      testmode_i,
-  
+
 `ifdef RELOBI
   input  sbr_relobi_req_t user_sbr_obi_req_i, // User Sbr (req_o), Croc Mgr (rsp_i)
   output sbr_relobi_rsp_t user_sbr_obi_rsp_o,
@@ -33,7 +33,7 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   output logic [NumExternalIrqs-1:0] interrupts_o // interrupts to core
 );
 
-  assign interrupts_o = '0;  
+  assign interrupts_o = '0;
 
 
   //////////////////////
@@ -51,7 +51,7 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   // ----------------------------------------------------------------------------------------------
   // User Subordinate Buses
   // ----------------------------------------------------------------------------------------------
-  
+
   // collection of signals from the demultiplexer
 `ifdef RELOBI
   sbr_relobi_req_t [NumDemuxSbr-1:0] all_user_sbr_obi_req;
@@ -79,12 +79,43 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   // Demultiplex to User Subordinates according to address map
   //-----------------------------------------------------------------------------------------------
 
+`ifdef RELOBI
+  logic [2:0][cf_math_pkg::idx_width(NumPeriphs)-1:0] periph_idx;
+
+  for (genvar i = 0; i < 3; i++) begin : gen_periph_addr_decode_tmr_part
+    logic [SbrObiCfg.AddrWidth-1:0] addr_decoded;
+    hsiao_ecc_dec #(
+      .DataWidth ( SbrObiCfg.AddrWidth )
+    ) i_addr_dec_tmr_part (
+      .in        ( user_sbr_obi_req_i.a.addr ),
+      .out       ( addr_decoded      ),
+      .syndrome_o(),
+      .err_o     ()
+    );
+
+    addr_decode #(
+      .NoIndices ( NumDemuxSbr                    ),
+      .NoRules   ( NumDemuxSbrRules               ),
+      .addr_t    ( logic[SbrObiCfg.AddrWidth-1:0] ),
+      .rule_t    ( addr_map_rule_t                ),
+      .Napot     ( 1'b0                           )
+    ) i_addr_decode_periphs_tmr_part (
+      .addr_i           ( addr_decoded  ),
+      .addr_map_i       ( user_addr_map             ),
+      .idx_o            ( user_idx[i]               ),
+      .dec_valid_o      (),
+      .dec_error_o      (),
+      .en_default_idx_i ( 1'b1 ),
+      .default_idx_i    ( '0 )
+    );
+  end
+`else
   logic [cf_math_pkg::idx_width(NumDemuxSbr)-1:0] user_idx;
 
   addr_decode #(
     .NoIndices ( NumDemuxSbr                    ),
     .NoRules   ( NumDemuxSbrRules               ),
-    .addr_t    ( logic[SbrObiCfg.DataWidth-1:0] ),
+    .addr_t    ( logic[SbrObiCfg.AddrWidth-1:0] ),
     .rule_t    ( addr_map_rule_t                ),
     .Napot     ( 1'b0                           )
   ) i_addr_decode_periphs (
@@ -96,6 +127,7 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
     .en_default_idx_i ( 1'b1 ),
     .default_idx_i    ( '0   )
   );
+`endif
 
 `ifdef RELOBI
   relobi_demux #(
@@ -116,11 +148,7 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
     .clk_i,
     .rst_ni,
 
-`ifdef RELOBI
-    .sbr_port_select_i ( {3{user_idx}}             ),
-`else
     .sbr_port_select_i ( user_idx                  ),
-`endif
     .sbr_port_req_i    ( user_sbr_obi_req_i   ),
     .sbr_port_rsp_o    ( user_sbr_obi_rsp_o   ),
 

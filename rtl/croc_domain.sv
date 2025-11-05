@@ -59,8 +59,8 @@ module croc_domain import croc_pkg::*; #(
   fault_monitor_reg_pkg::fault_monitor__in_t fm_hwif_in;
   logic [6:0][1:0] core_faults;
   logic [1:0][6:0] core_faults_transpose;
-  logic [19:0][1:0] relobi_faults;
-  logic [1:0][19:0] relobi_faults_transpose;
+  logic [22:0][1:0] relobi_faults;
+  logic [1:0][22:0] relobi_faults_transpose;
   logic [4:0] uart_faults;
   logic [4:0] gpio_faults;
   logic [3:0] timer_faults;
@@ -69,7 +69,7 @@ module croc_domain import croc_pkg::*; #(
     for (genvar j = 0; j < 7; j++) begin : gen_core_faults_transpose_inner
       assign core_faults_transpose[i][j] = core_faults[j][i];
     end
-    for (genvar j = 0; j < 19; j++) begin : gen_relobi_faults_transpose_inner
+    for (genvar j = 0; j < 22; j++) begin : gen_relobi_faults_transpose_inner
       assign relobi_faults_transpose[i][j] = relobi_faults[j][i];
     end
   end
@@ -1026,13 +1026,44 @@ module croc_domain import croc_pkg::*; #(
   // Peripherals
   // -----------------
 
+`ifdef RELOBI
+  logic [2:0][cf_math_pkg::idx_width(NumPeriphs)-1:0] periph_idx;
+
+  for (genvar i = 0; i < 3; i++) begin : gen_periph_addr_decode_tmr_part
+    logic [SbrObiCfg.AddrWidth-1:0] addr_decoded;
+    hsiao_ecc_dec #(
+      .DataWidth ( SbrObiCfg.AddrWidth )
+    ) i_addr_dec_tmr_part (
+      .in        ( xbar_periph_obi_req.a.addr ),
+      .out       ( addr_decoded      ),
+      .syndrome_o(),
+      .err_o     (relobi_faults[20+i])
+    );
+
+    addr_decode #(
+      .NoIndices ( NumPeriphs                     ),
+      .NoRules   ( NumPeriphRules                 ),
+      .addr_t    ( logic[SbrObiCfg.AddrWidth-1:0] ),
+      .rule_t    ( addr_map_rule_t                ),
+      .Napot     ( 1'b0                           )
+    ) i_addr_decode_periphs_tmr_part (
+      .addr_i           ( addr_decoded  ),
+      .addr_map_i       ( periph_addr_map             ),
+      .idx_o            ( periph_idx[i]               ),
+      .dec_valid_o      (),
+      .dec_error_o      (),
+      .en_default_idx_i ( 1'b1 ),
+      .default_idx_i    ( '0 )
+    );
+  end
+`else
   // demultiplex to peripherals according to address map
   logic [cf_math_pkg::idx_width(NumPeriphs)-1:0] periph_idx;
 
   addr_decode #(
     .NoIndices ( NumPeriphs                     ),
     .NoRules   ( NumPeriphRules                 ),
-    .addr_t    ( logic[SbrObiCfg.DataWidth-1:0] ),
+    .addr_t    ( logic[SbrObiCfg.AddrWidth-1:0] ),
     .rule_t    ( addr_map_rule_t                ),
     .Napot     ( 1'b0                           )
   ) i_addr_decode_periphs (
@@ -1044,6 +1075,7 @@ module croc_domain import croc_pkg::*; #(
     .en_default_idx_i ( 1'b1 ),
     .default_idx_i    ( '0 )
   );
+`endif
 
 `ifdef RELOBI
   relobi_demux #(
@@ -1064,11 +1096,7 @@ module croc_domain import croc_pkg::*; #(
     .clk_i,
     .rst_ni,
 
-`ifdef RELOBI
-    .sbr_port_select_i ( {3{periph_idx}}           ),
-`else
     .sbr_port_select_i ( periph_idx           ),
-`endif
     .sbr_port_req_i    ( xbar_periph_obi_req  ),
     .sbr_port_rsp_o    ( xbar_periph_obi_rsp  ),
 

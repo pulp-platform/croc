@@ -31,6 +31,42 @@ module croc_soc import croc_pkg::*; #(
 
   logic synced_rst_n, synced_fetch_en;
 
+`ifdef TMR_IRQ
+  logic [2:0] synced_rst_n_tmr, synced_fetch_en_tmr;
+  for (genvar i = 0; i < 3; i++) begin : gen_sync_tmr_part
+    rstgen i_rstgen_tmr_part (
+      .clk_i,
+      .rst_ni,
+      .test_mode_i ( testmode_i ),
+      .rst_no      ( synced_rst_n_tmr[i] ),
+      .init_no ( )
+    );
+
+    sync #(
+      .STAGES     (    2 ),
+      .ResetValue ( 1'b0 )
+    ) i_ext_intr_sync_tmr_part (
+      .clk_i,
+      .rst_ni   ( synced_rst_n    ),
+      .serial_i ( fetch_en_i      ),
+      .serial_o ( synced_fetch_en_tmr[i] )
+    );
+  end
+  TMR_voter_fail i_rstgen_vote (
+    .a_i ( synced_rst_n_tmr[0] ),
+    .b_i ( synced_rst_n_tmr[1] ),
+    .c_i ( synced_rst_n_tmr[2] ),
+    .majority_o ( synced_rst_n ),
+    .fault_detected_o (  )
+  );
+  TMR_voter_fail i_fetch_en_vote (
+    .a_i ( synced_fetch_en_tmr[0] ),
+    .b_i ( synced_fetch_en_tmr[1] ),
+    .c_i ( synced_fetch_en_tmr[2] ),
+    .majority_o ( synced_fetch_en ),
+    .fault_detected_o (  )
+  );
+`else
   rstgen i_rstgen (
     .clk_i,
     .rst_ni,
@@ -48,6 +84,7 @@ module croc_soc import croc_pkg::*; #(
       .serial_i ( fetch_en_i      ),
       .serial_o ( synced_fetch_en )
     );
+`endif
 
 // Connection between Croc_domain and User_domain: User Sbr, Croc Mgr
 `ifdef RELOBI
@@ -71,7 +108,7 @@ logic [NumExternalIrqs-1:0] interrupts;
 logic [GpioCount-1:0] gpio_in_sync;
 
 croc_domain #(
-  .GpioCount( GpioCount ) 
+  .GpioCount( GpioCount )
 ) i_croc (
   .clk_i,
   .rst_ni ( synced_rst_n ),
@@ -88,8 +125,8 @@ croc_domain #(
   .uart_rx_i,
   .uart_tx_o,
 
-  .gpio_i,             
-  .gpio_o,            
+  .gpio_i,
+  .gpio_o,
   .gpio_out_en_o,
 
   .gpio_in_sync_o ( gpio_in_sync ),
@@ -105,7 +142,7 @@ croc_domain #(
 );
 
 user_domain #(
-  .GpioCount( GpioCount ) 
+  .GpioCount( GpioCount )
 ) i_user (
   .clk_i,
   .rst_ni ( synced_rst_n ),

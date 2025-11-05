@@ -7,6 +7,63 @@
 
 `define TRACE_WAVE
 
+module croc_dut_wrapper #(
+    parameter time         TTest     = 1ns,
+    parameter int unsigned GpioCount = 32
+) (
+    input logic clk,
+    input logic rst_n,
+    input logic ref_clk,
+    input logic fetch_en_i,
+    output logic status_o,
+
+    input  logic        jtag_tck_i,
+    input  logic        jtag_tdi_i,
+    output logic        jtag_tdo_o,
+    input  logic        jtag_tms_i,
+    input  logic        jtag_trst_ni,
+
+    input  logic        uart_rx_i,
+    output logic        uart_tx_o,
+
+    input  logic [31:0] gpio_i,
+    output logic [31:0] gpio_o,
+    output logic [31:0] gpio_out_en_o
+);
+    `ifdef TARGET_NETLIST_YOSYS
+        \croc_soc$croc_chip.i_croc_soc i_croc_soc (
+    `else
+        croc_soc #(
+            .GpioCount ( GpioCount  )
+        ) i_croc_soc (
+    `endif
+        .clk_i         ( clk        ),
+        .rst_ni        ( rst_n      ),
+        .ref_clk_i     ( ref_clk    ),
+        .testmode_i    ( 1'b0       ),
+        .fetch_en_i    ( fetch_en_i ),
+        .status_o      ( status_o   ),
+
+        .jtag_tck_i    ( jtag_tck_i   ),
+        .jtag_tdi_i    ( jtag_tdi_i   ),
+        .jtag_tdo_o    ( jtag_tdo_o   ),
+        .jtag_tms_i    ( jtag_tms_i   ),
+        .jtag_trst_ni  ( jtag_trst_ni ),
+
+        .uart_rx_i     ( uart_rx_i ),
+        .uart_tx_o     ( uart_tx_o ),
+
+        .gpio_i        ( gpio_i        ),
+        .gpio_o        ( gpio_o        ),
+        .gpio_out_en_o ( gpio_out_en_o )
+    );
+
+`ifdef VC_Z01X
+    `include "strobe.sv"
+`endif
+
+endmodule
+
 module tb_croc_soc #(
     parameter time         ClkPeriod     = 50ns,
     parameter time         ClkPeriodJtag = 50ns,
@@ -38,8 +95,8 @@ module tb_croc_soc #(
 
     localparam int unsigned GpioCount = 32;
 
-    logic [GpioCount-1:0] gpio_i;             
-    logic [GpioCount-1:0] gpio_o;            
+    logic [GpioCount-1:0] gpio_i;
+    logic [GpioCount-1:0] gpio_o;
     logic [GpioCount-1:0] gpio_out_en_o;
 
     // Register addresses
@@ -242,7 +299,7 @@ module tb_croc_soc #(
             if ($fgets(line, file) == 0) begin
                 break; // End of file
             end
-            
+
             // '@' indicates address
             if (line[0] == "@") begin
                 status = $sscanf(line, "@%h", addr);
@@ -295,7 +352,6 @@ module tb_croc_soc #(
             jtag_dbg.read_dmi_exp_backoff(dm::SBData0, exit_code);
         end while (exit_code == 0);
         $display("@%t | [JTAG] Simulation finished: return code 0x%0h", $time, exit_code);
-        $finish();
     endtask
 
 
@@ -367,23 +423,23 @@ module tb_croc_soc #(
     initial begin
         static byte_bt uart_read_buf[$];
         byte_bt bite;
-        
+
         @(posedge fetch_en_i);
         uart_read_buf.delete();
         forever begin
             uart_read_byte(bite);
-            
+
             if (bite == "\n" || uart_read_buf.size() > 80) begin
                  if (uart_read_buf.size() > 0) begin
-                    automatic string uart_str = "";               
+                    automatic string uart_str = "";
                     foreach (uart_read_buf[i]) begin
                         uart_str = {uart_str, string'(uart_read_buf[i])};
                     end
-                    
+
                     $display("@%t | [UART] %s", $time, uart_str);
                     uart_read_buf.push_back(bite);
                     $display("@%t | [UART] raw: %p", $time, uart_read_buf);
-  
+
                 end else begin
                     $display("@%t | [UART] ???", $time);
                 end
@@ -400,17 +456,14 @@ module tb_croc_soc #(
     ////////////
     //  DUT   //
     ////////////
-    `ifdef TARGET_NETLIST_YOSYS
-        \croc_soc$croc_chip.i_croc_soc i_croc_soc (
-    `else
-        croc_soc #(
-            .GpioCount ( GpioCount  )
-        ) i_croc_soc (
-    `endif
-        .clk_i         ( clk        ),
-        .rst_ni        ( rst_n      ),
-        .ref_clk_i     ( ref_clk    ),
-        .testmode_i    ( 1'b0       ),
+
+    croc_dut_wrapper #(
+        .TTest     ( TTest     ),
+        .GpioCount ( GpioCount  )
+    ) i_dut_wrapper (
+        .clk           ( clk        ),
+        .rst_n         ( rst_n      ),
+        .ref_clk       ( ref_clk    ),
         .fetch_en_i    ( fetch_en_i ),
         .status_o      ( status_o   ),
 
@@ -423,9 +476,10 @@ module tb_croc_soc #(
         .uart_rx_i     ( uart_rx_i ),
         .uart_tx_o     ( uart_tx_o ),
 
-        .gpio_i        ( gpio_i        ),             
-        .gpio_o        ( gpio_o        ),            
+        .gpio_i        ( gpio_i        ),
+        .gpio_o        ( gpio_o        ),
         .gpio_out_en_o ( gpio_out_en_o )
+
     );
 
     assign gpio_i[ 3:0]          = '0;
@@ -444,7 +498,7 @@ module tb_croc_soc #(
         // configure FST (waveform) dump
         `ifdef TRACE_WAVE
         $dumpfile("croc.fst");
-        $dumpvars(1,i_croc_soc);
+        $dumpvars(1,i_dut_wrapper.i_croc_soc);
         `endif
 
         fetch_en_i = 1'b0;
