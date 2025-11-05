@@ -28,9 +28,9 @@ module croc_domain import croc_pkg::*; #(
   output logic [GpioCount-1:0] gpio_out_en_o, // Output enable signal; 0 -> input, 1 -> output
 
   output logic [GpioCount-1:0] gpio_in_sync_o, // synchronized GPIO inputs
-  
+
   /// User OBI interface
-  /// User as subordinate (from core to user module) 
+  /// User as subordinate (from core to user module)
   /// Address space 0x2000_0000 - 0x8000_0000
 `ifdef RELOBI
   output sbr_relobi_req_t user_sbr_obi_req_o,
@@ -895,14 +895,17 @@ module croc_domain import croc_pkg::*; #(
     logic bank_req, bank_we, bank_gnt, bank_single_err;
     logic [SbrObiCfg.AddrWidth-1:0] bank_byte_addr;
     logic [SramBankAddrWidth-1:0] bank_word_addr;
-`ifdef RELOBI
-    logic [SbrObiCfg.DataWidth+hsiao_ecc_pkg::min_ecc(SbrObiCfg.DataWidth)-1:0] bank_wdata, bank_rdata;
     logic [1:0] sram_fault;
     logic scrub_corr;
     logic scrub_uncorr;
+`ifdef RELOBI
+    logic [SbrObiCfg.DataWidth+hsiao_ecc_pkg::min_ecc(SbrObiCfg.DataWidth)-1:0] bank_wdata, bank_rdata;
 `else
     logic [SbrObiCfg.DataWidth-1:0] bank_wdata, bank_rdata;
     logic [SbrObiCfg.DataWidth/8-1:0] bank_be;
+    assign sram_fault = '0;
+    assign scrub_corr = 1'b0;
+    assign scrub_uncorr = 1'b0;
 `endif
 
 `ifdef RELOBI
@@ -948,16 +951,12 @@ module croc_domain import croc_pkg::*; #(
 `endif
     );
 
-`ifdef RELOBI
     assign fm_hwif_in.sram_uncorrectable_fault[i].fault_count.incr = sram_fault[1];
     assign fm_hwif_in.sram_correctable_fault[i].fault_count.incr = sram_fault[0];
     assign fm_hwif_in.sram_scrub_correctable[i].fault_count.incr = scrub_corr;
     assign fm_hwif_in.sram_scrub_uncorrectable[i].fault_count.incr = scrub_uncorr;
-`else
+`ifndef RELOBI
     assign bank_word_addr = bank_byte_addr[SbrObiCfg.AddrWidth-1:2];
-    assign fm_hwif_in.sram_scrub_correctable[i].fault_count.incr = '0;
-    assign fm_hwif_in.sram_scrub_uncorrectable[i].fault_count.incr = '0;
-    assign fm_hwif_in.sram_fault[i].fault_count.incr = '0;
 `endif
 
     tc_sram_impl #(
@@ -1289,8 +1288,8 @@ module croc_domain import croc_pkg::*; #(
     .fault_o ( relobi_faults[19])
   );
 `else
-  assign fm_obi_req = all_sbr_obi_req[PeriphFaultMonitor];
-  assign all_sbr_obi_rsp[PeriphFaultMonitor] = fm_obi_rsp
+  assign fm_obi_req = all_periph_obi_req[PeriphFaultMonitor];
+  assign all_periph_obi_rsp[PeriphFaultMonitor] = fm_obi_rsp;
 `endif
 
   // For tolerance, assuming rvalid high 1 cycle after req&gnt, ensuring response
@@ -1306,6 +1305,7 @@ module croc_domain import croc_pkg::*; #(
 `endif
     end
   end
+`ifdef TMR_IRQ
   TMR_voter_fail i_fm_rvalid_vote (
     .a_i ( fm_obi_rvalid ),
     .b_i ( fm_obi_rvalid_extra[0] ),
@@ -1314,6 +1314,10 @@ module croc_domain import croc_pkg::*; #(
     .fault_detected_o (core_faults[5][0] )
   );
   assign core_faults[5][1] = 1'b0;
+`else // TMR_IRQ
+  assign fm_obi_rsp.rvalid = fm_obi_rvalid;
+  assign core_faults[5] = '0;
+`endif // TMR_IRQ
 
   fault_monitor_reg_top #(
     .ID_WIDTH ( SbrObiCfg.IdWidth )

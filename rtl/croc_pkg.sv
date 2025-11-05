@@ -70,7 +70,7 @@ package croc_pkg;
   localparam bit [31:0]   UserAddrRange     = 32'h6000_0000;
 
   localparam int unsigned NumCrocDomainSubordinates = 2 + NumSramBanks; // Peripherals + Memory + User Domain
-  
+
   localparam int unsigned NumXbarManagers = 4; // Debug module, Core Instr, Core Data, User Domain
   localparam int unsigned NumXbarSbrRules = NumCrocDomainSubordinates; // number of address rules in the decoder
   localparam int unsigned NumXbarSbr      = NumXbarSbrRules + 1; // additional OBI error, used for signal arrays
