@@ -76,5 +76,7 @@ _start:
   call main
 _eoc:
   la      t0, status
+  li      t1, 0x80000000 # Use bit 31 to indicate end of simulation
+  or      a0, a0, t1     # Use bit 31 to indicate end of simulation
   sw      a0, 0(t0)
   wfi

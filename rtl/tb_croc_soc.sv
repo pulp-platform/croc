@@ -350,8 +350,8 @@ module tb_croc_soc #(
             jtag_write(dm::SBAddress0, CoreStatusAddr);
             jtag_dbg.wait_idle(20);
             jtag_dbg.read_dmi_exp_backoff(dm::SBData0, exit_code);
-        end while (exit_code == 0);
-        $display("@%t | [JTAG] Simulation finished: return code 0x%0h", $time, exit_code);
+        end while (exit_code[31] == '0);
+        $display("@%t | [JTAG] Simulation finished: return code 0x%0h", $time, exit_code[30:0]);
     endtask
 
 
@@ -526,6 +526,9 @@ module tb_croc_soc #(
         // wait for non-zero return value (written into core status register)
         $display("@%t | [CORE] Wait for end of code...", $time);
         jtag_wait_for_eoc(tb_data);
+
+        // wait for scrub to go through entire memory
+        repeat(2*croc_pkg::SramBankNumWords) @(posedge clk);
 
         // finish simulation
         repeat(50) @(posedge clk);

@@ -96,5 +96,5 @@ int main() {
     // sleep_ms(10);
     // printf("Tock\n");
     // uart_write_flush();
-    return 1;
+    return coremark_errors;
 }
