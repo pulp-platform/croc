@@ -23,8 +23,13 @@ module core_wrap import croc_pkg::*; #() (
   input  logic [31:0] boot_addr_i,
 `endif // TMR_IRQ
 
+`ifdef TMR_IRQ
   input apb_req_t [2:0] apb_req_i,
   output apb_resp_t [2:0] apb_resp_o,
+`else // TMR_IRQ
+  input apb_req_t apb_req_i,
+  output apb_resp_t apb_resp_o,
+`endif // TMR_IRQ
 
   // Instruction memory interface
 `ifdef RELOBI
@@ -193,7 +198,6 @@ module core_wrap import croc_pkg::*; #() (
   assign core_busy_o = sys_nominal_outputs[0].core_busy;
 
 `ifndef RELOBI
-  assign data_req_o = sys_bus_outputs[0].data_req;
   assign data_we_o = sys_bus_outputs[0].data_we;
   assign data_be_o = sys_bus_outputs[0].data_be;
   assign data_addr_o = sys_bus_outputs[0].data_addr;
@@ -229,7 +233,11 @@ module core_wrap import croc_pkg::*; #() (
     .apb_req_t (apb_req_t),
     .apb_resp_t (apb_resp_t),
     .rapid_recovery_t (logic),
+`ifdef TMR_IRQ
     .TmrInternals (1'b1)
+`else
+    .TmrInternals (1'b0)
+`endif
   ) i_hmr_unit (
     .clk_i (clk_i),
     .rst_ni (rst_ni),

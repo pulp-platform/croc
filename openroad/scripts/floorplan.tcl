@@ -94,14 +94,29 @@ utl::report "Place Macros"
 # Bank0
 set X [expr $floor_midpointX - $RamSize1024x64_W - 20]
 set Y [expr $floor_topY - $RamSize1024x64_H]
-placeInstance $bank0_sram0 $X $Y R0
-placeInstance $bank0_sram1 $X [expr $Y - $RamSize256x64_H - 15] R0
+set X2 [expr $floor_midpointX + 20]
+
+set block [ord::get_db_block]
+
+if {[$block findInst $bank0_sram] == "NULL"} {
+  if {[$block findInst $bank0_sram0_ecc] == "NULL"} {
+    placeInstance $bank0_sram0 $X $Y R0
+    placeInstance $bank0_sram1 $X [expr $Y - $RamSize256x64_H - 15] R0
+    placeInstance $bank1_sram0 $X2 $Y R0
+    placeInstance $bank1_sram1 $X2 [expr $Y - $RamSize256x64_H - 15] R0
+  } else {
+    placeInstance $bank0_sram0_ecc $X $Y R0
+    placeInstance $bank0_sram1_ecc $X [expr $Y - $RamSize256x64_H - 15] R0
+    placeInstance $bank1_sram0_ecc $X2 $Y R0
+    placeInstance $bank1_sram1_ecc $X2 [expr $Y - $RamSize256x64_H - 15] R0
+  }
+} else {
+  placeInstance $bank0_sram $X $Y R0
+  placeInstance $bank1_sram $X2 $Y R0
+}
 
 # Bank1
-set X [expr $floor_midpointX + 20]
 # set Y [expr $Y - $RamSize256x64_H - 30 - $RamSize64x64_H - 30]
-placeInstance $bank1_sram0 $X $Y R0
-placeInstance $bank1_sram1 $X [expr $Y - $RamSize256x64_H - 15] R0
 
 
 cut_rows -halo_width_x 2 -halo_width_y 1

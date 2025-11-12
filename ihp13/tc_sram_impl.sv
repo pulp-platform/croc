@@ -19,6 +19,58 @@ module tc_sram_blackbox #(
 ) ();
 endmodule
 
+module tc_sram #(
+  parameter int unsigned NumWords     = 32'd1024,
+  parameter int unsigned DataWidth    = 32'd128,
+  parameter int unsigned ByteWidth    = 32'd8,
+  parameter int unsigned NumPorts     = 32'd2,
+  parameter int unsigned Latency      = 32'd1,
+  parameter              SimInit      = "none",
+  parameter bit          PrintSimCfg  = 1'b0,
+  parameter              ImplKey      = "none",
+  // DEPENDENT PARAMETERS, DO NOT OVERWRITE!
+  parameter int unsigned AddrWidth = (NumWords > 32'd1) ? $clog2(NumWords) : 32'd1,
+  parameter int unsigned BeWidth   = (DataWidth + ByteWidth - 32'd1) / ByteWidth, // ceil_div
+  parameter type         addr_t    = logic [AddrWidth-1:0],
+  parameter type         data_t    = logic [DataWidth-1:0],
+  parameter type         be_t      = logic [BeWidth-1:0]
+) (
+  input  logic                 clk_i,      // Clock
+  input  logic                 rst_ni,     // Asynchronous reset active low
+  // input ports
+  input  logic  [NumPorts-1:0] req_i,      // request
+  input  logic  [NumPorts-1:0] we_i,       // write enable
+  input  addr_t [NumPorts-1:0] addr_i,     // request address
+  input  data_t [NumPorts-1:0] wdata_i,    // write data
+  input  be_t   [NumPorts-1:0] be_i,       // write byte enable
+  // output ports
+  output data_t [NumPorts-1:0] rdata_o     // read data
+);
+
+  tc_sram_impl #(
+    .NumWords     (NumWords),
+    .DataWidth    (DataWidth),
+    .ByteWidth    (ByteWidth),
+    .NumPorts     (NumPorts),
+    .Latency      (Latency),
+    .SimInit      (SimInit),
+    .PrintSimCfg  (PrintSimCfg),
+    .ImplKey      (ImplKey)
+  ) i_sram (
+    .clk_i       ( clk_i    ),
+    .rst_ni      ( rst_ni   ),
+    .impl_i      ( 1'b0     ),
+    .impl_o      (          ),
+    .req_i       ( req_i    ),
+    .we_i        ( we_i     ),
+    .addr_i      ( addr_i   ),
+    .wdata_i     ( wdata_i  ),
+    .be_i        ( be_i     ),
+    .rdata_o     ( rdata_o  )
+  );
+
+endmodule
+
 // one tie-off per macro to avoid port size mismatch warnings
 `define IHP13_TC_SRAM_64x64_TIEOFF \
   .A_BIST_CLK   (  1'b0 ), \
@@ -359,7 +411,7 @@ module tc_sram_impl #(
 end else if (NumWords == 2048 && DataWidth == 39 && P1L1) begin: gen_2048x39xBx1
     logic [63:0] wdata64, rdata64, bm64, wdata64_0, rdata64_0, bm64_0;
     logic sel_d, sel_q;
-    logic [3:0] sel_d_0, sel_q_0;
+    logic [2:0] sel_d_0, sel_q_0;
 
     // muxing neighboring bits instead of upper/lower 32bit reduces routing
     always_comb begin : gen_bit_interleaving

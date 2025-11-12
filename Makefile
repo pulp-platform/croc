@@ -25,6 +25,12 @@ PROJ_DIR  := $(realpath $(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
 
 default: help
 
+REL_ARGS :=
+REL_ARGS += -DECC_MEM # ecc memory
+REL_ARGS += -t relcore # cores
+REL_ARGS += -t relOBI -DRELOBI # interconnect
+REL_ARGS += -t uart_tmrg -t timer_unit_tmrg -t gpio_tmrg -DTMR_IRQ # peripherals
+
 ################
 # Dependencies #
 ################
@@ -122,7 +128,7 @@ VERILATOR_ARGS += --x-assign fast --x-initial fast
 VERILATOR_CFLAGS += -O3 -march=native -mtune=native
 
 verilator/croc.f: Bender.lock Bender.yml
-	$(BENDER) script verilator -t rtl -t verilator -DSYNTHESIS -DVERILATOR > $@
+	$(BENDER) script verilator -t rtl -t verilator -DSYNTHESIS -DVERILATOR $(REL_ARGS) > $@
 
 verilator/obj_dir/Vtb_croc_soc: verilator/croc.f $(SW_HEX)
 	cd verilator; $(VERILATOR) $(VERILATOR_ARGS) -O3 --top tb_croc_soc -f croc.f
@@ -135,7 +141,7 @@ verilator: verilator/obj_dir/Vtb_croc_soc
 VCS_SCRIPT_ARGS = -assert svaext +v2k -kdb -override_timescale=1ns/10ps -debug_access+all
 VCS_COMPILE_ARGS = -kdb -lca -sverilog -full64 -j8 -l compile.log +vcs+fsdbon -debug_access+all +lint=TFIPC-L +lint=PCWM +warn=noCWUC +warn=noUII-L -override_timescale=1ns/10ps
 vcs/compile_rtl.sh: Bender.lock Bender.yml
-	$(BENDER) script vcs -t rtl -t vcs -t simulation -t verilator -t relOBI -t uart_tmrg -t timer_unit_tmrg -t gpio_tmrg -DTMR_IRQ -DSYNTHESIS -DSIMULATION -DRELOBI -t relcore --vlog-arg="$(VCS_SCRIPT_ARGS)" --vlogan-bin="$(VLOGAN)" > $@
+	$(BENDER) script vcs -t rtl -t vcs -t simulation -t verilator -DSYNTHESIS -DSIMULATION $(REL_ARGS) --vlog-arg="$(VCS_SCRIPT_ARGS)" --vlogan-bin="$(VLOGAN)" > $@
 	chmod +x $@
 
 vcs/compile_netlist_yosys.sh: Bender.lock Bender.yml
@@ -187,7 +193,7 @@ SV_DEFINES     ?= VERILATOR SYNTHESIS COMMON_CELLS_ASSERTS_OFF
 
 ## Generate croc.flist used to read design in yosys
 yosys-flist: Bender.lock Bender.yml rtl/*/Bender.yml
-	$(BENDER) script flist-plus --relative-path -D RELOBI -t relobi -t relcore -t uart_tmrg -t timer_unit_tmrg -t gpio_tmrg -DTMR_IRQ $(foreach t,$(BENDER_TARGETS),-t $(t)) $(foreach d,$(SV_DEFINES),-D $(d)=1) > $(PROJ_DIR)/croc.flist
+	$(BENDER) script flist-plus --relative-path $(REL_ARGS) $(foreach t,$(BENDER_TARGETS),-t $(t)) $(foreach d,$(SV_DEFINES),-D $(d)=1) > $(PROJ_DIR)/croc.flist
 
 include yosys/yosys.mk
 include openroad/openroad.mk

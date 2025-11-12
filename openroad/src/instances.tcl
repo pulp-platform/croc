@@ -23,17 +23,23 @@ set USER            i_croc_soc/i_user
 set IBEX            $CROC/i_core_wrap.i_ibex
 set SRAM            $CROC/gen_sram_bank
 set JTAG            $CROC/i_dmi_jtag
-set SRAM_512x32     gen_512x32xBx1.i_cut
-set SRAM_512x39_a     gen_512x39xBx1.i_cut
-set SRAM_512x39_b     gen_512x39xBx1.i_cut_0
+set SRAM_2048x32     gen_2048x32xBx1.i_cut
+set SRAM_2048x39_a     gen_2048x39xBx1.i_cut
+set SRAM_2048x39_b     gen_2048x39xBx1.i_cut_0
 
 # memory banks
-set sram {\[0\].i_sram/}
-set bank0_sram0 $SRAM$sram$SRAM_512x39_a
-set bank0_sram1 $SRAM$sram$SRAM_512x39_b
-set sram {\[1\].i_sram/}
-set bank1_sram0 $SRAM$sram$SRAM_512x39_a
-set bank1_sram1 $SRAM$sram$SRAM_512x39_b
+set sram {\[0\].i_sram}
+set bank0_sram0 $SRAM${sram}/$SRAM_2048x39_a
+set bank0_sram1 $SRAM${sram}/$SRAM_2048x39_b
+set bank0_sram $SRAM${sram}/$SRAM_2048x32
+set bank0_sram0_ecc $SRAM${sram}.i_bank.i_sram/$SRAM_2048x39_a
+set bank0_sram1_ecc $SRAM${sram}.i_bank.i_sram/$SRAM_2048x39_b
+set sram {\[1\].i_sram}
+set bank1_sram0 $SRAM${sram}/$SRAM_2048x39_a
+set bank1_sram1 $SRAM${sram}/$SRAM_2048x39_b
+set bank1_sram $SRAM${sram}/$SRAM_2048x32
+set bank1_sram0_ecc $SRAM${sram}.i_bank.i_sram/$SRAM_2048x39_a
+set bank1_sram1_ecc $SRAM${sram}.i_bank.i_sram/$SRAM_2048x39_b
 
 set JTAG_ASYNC_REQ [get_nets $JTAG/i_dmi_cdc.i_cdc_req/*async_*]
 set JTAG_ASYNC_RSP [get_nets $JTAG/i_dmi_cdc.i_cdc_resp/*async_*]

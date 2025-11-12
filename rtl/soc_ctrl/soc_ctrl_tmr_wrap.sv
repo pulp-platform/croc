@@ -17,11 +17,20 @@ module soc_ctrl_tmr_wrap #(
   output relobi_rsp_t relobi_rsp_o,
 
   input soc_ctrl_reg_pkg::soc_ctrl__in_t  hwif_in[3],
-  output soc_ctrl_reg_pkg::soc_ctrl__out_t hwif_out[3]
+  output soc_ctrl_reg_pkg::soc_ctrl__out_t hwif_out[3],
+
+  output logic [1:0] relobi_fault_o,
+  output logic tmr_fault_o
 );
 
   relobi_rsp_t [2:0] relobi_rsp;
   relobi_r_chan_t [2:0] relobi_r;
+
+  logic [2:0][1:0] relobi_faults;
+  logic [3:0] tmr_faults;
+  assign relobi_fault_o[0] = relobi_faults[0][0] | relobi_faults[1][0] | relobi_faults[2][0];
+  assign relobi_fault_o[1] = relobi_faults[0][1] | relobi_faults[1][1] | relobi_faults[2][1];
+  assign tmr_fault_o = |tmr_faults;
 
   soc_ctrl_tmr_part_reg_pkg::soc_ctrl__in_t  hwif_in_tmr[3];
   soc_ctrl_tmr_part_reg_pkg::soc_ctrl__out_t hwif_out_tmr[3];
@@ -33,7 +42,7 @@ module soc_ctrl_tmr_wrap #(
   ) i_relobi_tmr_r (
     .three_r_i (relobi_r),
     .voted_r_o (relobi_rsp_o.r),
-    .fault_o ()
+    .fault_o (tmr_faults[3])
   );
 
   soc_ctrl_tmr_part_reg_pkg::soc_ctrl__out_t hwif_out_sync[3];
@@ -62,7 +71,10 @@ module soc_ctrl_tmr_wrap #(
       .hwif_out(hwif_out_tmr[i]),
 
       .hwif_out_sync(hwif_out_sync[i]),
-      .hwif_out_sync_i(alt_hwif_out_sync[i])
+      .hwif_out_sync_i(alt_hwif_out_sync[i]),
+
+      .relobi_fault_o (relobi_faults[i]),
+      .tmr_fault_o (tmr_faults[i])
     );
 
     assign relobi_r[i] = relobi_rsp[i].r;
@@ -111,12 +123,18 @@ module soc_ctrl_tmr_part #(
   output soc_ctrl_tmr_part_reg_pkg::soc_ctrl__out_t hwif_out,
 
   output soc_ctrl_tmr_part_reg_pkg::soc_ctrl__out_t hwif_out_sync,
-  input soc_ctrl_tmr_part_reg_pkg::soc_ctrl__out_t  hwif_out_sync_i[2]
+  input soc_ctrl_tmr_part_reg_pkg::soc_ctrl__out_t  hwif_out_sync_i[2],
+
+  output logic [1:0] relobi_fault_o,
+  output logic tmr_fault_o
 );
   obi_req_t soc_ctrl_obi_req;
   obi_rsp_t soc_ctrl_obi_rsp;
   apb_req_t soc_ctrl_apb_req;
   apb_resp_t soc_ctrl_apb_rsp;
+
+  logic [5:0] faults;
+  assign tmr_fault_o = |faults;
 
   relobi_decoder #(
     .Cfg (ObiCfg),
@@ -131,7 +149,7 @@ module soc_ctrl_tmr_part #(
     .rel_rsp_o ( relobi_rsp_o ),
     .req_o ( soc_ctrl_obi_req ),
     .rsp_i ( soc_ctrl_obi_rsp ),
-    .fault_o ()
+    .fault_o (relobi_fault_o)
   );
 
   obi_to_apb #(
@@ -179,7 +197,7 @@ module soc_ctrl_tmr_part #(
     .b_i        (hwif_out_sync_i[0].bootaddr.bootaddr.value),
     .c_i        (hwif_out_sync_i[1].bootaddr.bootaddr.value),
     .majority_o (hwif_out.bootaddr.bootaddr.value),
-    .fault_detected_o()
+    .fault_detected_o(faults[0])
   );
   bitwise_TMR_voter_fail #(
     .DataWidth($bits(hwif_out.fetchen.fetchen.value))
@@ -188,7 +206,7 @@ module soc_ctrl_tmr_part #(
     .b_i        (hwif_out_sync_i[0].fetchen.fetchen.value),
     .c_i        (hwif_out_sync_i[1].fetchen.fetchen.value),
     .majority_o (hwif_out.fetchen.fetchen.value),
-    .fault_detected_o()
+    .fault_detected_o(faults[1])
   );
   bitwise_TMR_voter_fail #(
     .DataWidth($bits(hwif_out.corestatus.corestatus.value))
@@ -197,7 +215,7 @@ module soc_ctrl_tmr_part #(
     .b_i        (hwif_out_sync_i[0].corestatus.corestatus.value),
     .c_i        (hwif_out_sync_i[1].corestatus.corestatus.value),
     .majority_o (hwif_out.corestatus.corestatus.value),
-    .fault_detected_o()
+    .fault_detected_o(faults[2])
   );
   bitwise_TMR_voter_fail #(
     .DataWidth($bits(hwif_out.bootmode.bootmode.value))
@@ -206,7 +224,7 @@ module soc_ctrl_tmr_part #(
     .b_i        (hwif_out_sync_i[0].bootmode.bootmode.value),
     .c_i        (hwif_out_sync_i[1].bootmode.bootmode.value),
     .majority_o (hwif_out.bootmode.bootmode.value),
-    .fault_detected_o()
+    .fault_detected_o(faults[3])
   );
   bitwise_TMR_voter_fail #(
     .DataWidth($bits(hwif_out.sram_dly.sram_dly.value))
@@ -215,7 +233,7 @@ module soc_ctrl_tmr_part #(
     .b_i        (hwif_out_sync_i[0].sram_dly.sram_dly.value),
     .c_i        (hwif_out_sync_i[1].sram_dly.sram_dly.value),
     .majority_o (hwif_out.sram_dly.sram_dly.value),
-    .fault_detected_o()
+    .fault_detected_o(faults[4])
   );
   bitwise_TMR_voter_fail #(
     .DataWidth($bits(hwif_out.scrub_interval.scrub_interval.value))
@@ -224,7 +242,7 @@ module soc_ctrl_tmr_part #(
     .b_i        (hwif_out_sync_i[0].scrub_interval.scrub_interval.value),
     .c_i        (hwif_out_sync_i[1].scrub_interval.scrub_interval.value),
     .majority_o (hwif_out.scrub_interval.scrub_interval.value),
-    .fault_detected_o()
+    .fault_detected_o(faults[5])
   );
 
 endmodule
