@@ -959,9 +959,9 @@ module croc_domain import croc_pkg::*; #(
     logic bank_req, bank_we, bank_gnt, bank_single_err;
     logic [SbrObiCfg.AddrWidth-1:0] bank_byte_addr;
     logic [SramBankAddrWidth-1:0] bank_word_addr;
-    logic [1:0] sram_fault;
-    logic scrub_corr;
-    logic scrub_uncorr;
+    logic [1:0] sram_fault, sram_fault_q;
+    logic scrub_corr, scrub_corr_q;
+    logic scrub_uncorr, scrub_uncorr_q;
 `ifdef RELOBI
     logic [SbrObiCfg.DataWidth+hsiao_ecc_pkg::min_ecc(SbrObiCfg.DataWidth)-1:0] bank_wdata, bank_rdata;
 `else
@@ -1017,10 +1017,22 @@ module croc_domain import croc_pkg::*; #(
 `endif
     );
 
-    assign fm_hwif_in.sram_uncorrectable_fault[i].fault_count.incr = sram_fault[1];
-    assign fm_hwif_in.sram_correctable_fault[i].fault_count.incr = sram_fault[0];
-    assign fm_hwif_in.sram_scrub_correctable[i].fault_count.incr = scrub_corr;
-    assign fm_hwif_in.sram_scrub_uncorrectable[i].fault_count.incr = scrub_uncorr;
+    assign fm_hwif_in.sram_uncorrectable_fault[i].fault_count.incr = sram_fault_q[1];
+    assign fm_hwif_in.sram_correctable_fault[i].fault_count.incr = sram_fault_q[0];
+    assign fm_hwif_in.sram_scrub_correctable[i].fault_count.incr = scrub_corr_q;
+    assign fm_hwif_in.sram_scrub_uncorrectable[i].fault_count.incr = scrub_uncorr_q;
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        sram_fault_q   <= '0;
+        scrub_corr_q   <= 1'b0;
+        scrub_uncorr_q <= 1'b0;
+      end else begin
+        sram_fault_q   <= sram_fault;
+        scrub_corr_q   <= scrub_corr;
+        scrub_uncorr_q <= scrub_uncorr;
+      end
+    end
 `ifndef RELOBI
     assign bank_word_addr = bank_byte_addr[SbrObiCfg.AddrWidth-1:2];
 `endif
