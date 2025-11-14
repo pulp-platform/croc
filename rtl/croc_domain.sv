@@ -57,26 +57,28 @@ module croc_domain import croc_pkg::*; #(
   // Fault signals
   // -----------------
   fault_monitor_reg_pkg::fault_monitor__in_t fm_hwif_in;
-  logic [6:0][1:0] core_faults;
+  logic [6:0][1:0] core_faults, core_faults_q;
   logic [1:0][6:0] core_faults_transpose;
   logic [24:0][1:0] relobi_faults, relobi_faults_q;
   logic [1:0][24:0] relobi_faults_transpose;
-  logic [4:0] uart_faults;
-  logic [4:0] gpio_faults;
-  logic [3:0] timer_faults;
+  logic [4:0] uart_faults, uart_faults_q;
+  logic [4:0] gpio_faults, gpio_faults_q;
+  logic [3:0] timer_faults, timer_faults_q;
 
   // pipeline relobi fault signals
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       relobi_faults_q <= '0;
+      core_faults_q <= '0;
     end else begin
       relobi_faults_q <= relobi_faults;
+      core_faults_q <= core_faults;
     end
   end
 
   for (genvar i = 0; i < 2; i++) begin : gen_faults_transpose
     for (genvar j = 0; j < 7; j++) begin : gen_core_faults_transpose_inner
-      assign core_faults_transpose[i][j] = core_faults[j][i];
+      assign core_faults_transpose[i][j] = core_faults_q[j][i];
     end
     for (genvar j = 0; j < 25; j++) begin : gen_relobi_faults_transpose_inner
       assign relobi_faults_transpose[i][j] = relobi_faults_q[j][i];
@@ -1379,9 +1381,9 @@ module croc_domain import croc_pkg::*; #(
   assign fm_hwif_in.relobi_uncorrectable_fault.fault_count.incr = |relobi_faults_transpose[1];
   assign fm_hwif_in.core_ctrl_correctable_fault.fault_count.incr  = |core_faults_transpose[0];
   assign fm_hwif_in.core_ctrl_uncorrectable_fault.fault_count.incr  = |core_faults_transpose[1];
-  assign fm_hwif_in.uart_fault.fault_count.incr  = |uart_faults;
-  assign fm_hwif_in.gpio_fault.fault_count.incr  = |gpio_faults;
-  assign fm_hwif_in.timer_fault.fault_count.incr = |timer_faults;
+  assign fm_hwif_in.uart_fault.fault_count.incr  = |uart_faults_q;
+  assign fm_hwif_in.gpio_fault.fault_count.incr  = |gpio_faults_q;
+  assign fm_hwif_in.timer_fault.fault_count.incr = |timer_faults_q;
 
   logic fm_obi_rvalid;
   logic [1:0] fm_obi_rvalid_extra;
