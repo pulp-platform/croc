@@ -1,5 +1,4 @@
 obj_dir
-croc*.f
 *.vcd
 *.fst
 *.fst.hier
