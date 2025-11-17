@@ -4,3 +4,5 @@ vsim.wlf
 modelsim.ini
 *.vcd
 *.fst
+*.log
+*.rpt

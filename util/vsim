@@ -1,0 +1,162 @@
+#!/bin/bash
+
+# Adjust paths regardless of where the script is called from
+SCRIPT_NAME=$(basename $0)
+SCRIPT_DIR=$(dirname $(realpath $0))
+ROOT_DIR=$(realpath ${SCRIPT_DIR}/..)
+VSIM_DIR="${ROOT_DIR}/vsim"
+
+# Set variables
+VSIM=${VSIM:-vsim}
+
+# Set up logging
+if [ -t 1 ]; then
+  RED=$'\033[31m'
+  YELLOW=$'\033[33m'
+  BOLD=$'\033[1m'
+  RESET=$'\033[0m'
+else
+  RED=""
+  YELLOW=""
+  BOLD=""
+  RESET=""
+fi
+
+usage () {
+    cat <<EOF
+Usage: ${BOLD}${SCRIPT_NAME} <command> [args...]${RESET}
+
+Commands:
+  ${BOLD}compile     ${RESET} : Compile Croc RTL and testbench with QuestaSim
+  ${BOLD}compile-net ${RESET} : Compile Croc netlist and testbench with QuestaSim
+  ${BOLD}run <binary>${RESET} : Run <binary> simulation with QuestaSim
+  ${BOLD}cleanup     ${RESET} : Remove generated files and QuestaSim work library
+  ${BOLD}help        ${RESET} : Show this help message
+EOF
+}
+
+error () {
+    printf '%b\n' "${RED}${BOLD}ERROR:${RESET} $*" >&2
+}
+
+fatal_error () {
+    error $*
+    usage
+    exit 1
+}
+
+warning () {
+    printf '%b\n' "${YELLOW}${BOLD}WARNING:${RESET} $*" >&2
+}
+
+# Gather all errors and warnings in a single report file
+vsim_compile_report () {
+    LOG_FILE="$1"
+    REPORT_FILE="$2"
+    if [ ! -f ${LOG_FILE} ]; then
+        warning "no compile log found; skipping report"
+        return
+    fi
+	echo "--- QuestaSim compilation report ---"  > ${REPORT_FILE}
+	echo "Errors:"                              >> ${REPORT_FILE}
+	grep "Error:" ${LOG_FILE}                   >> ${REPORT_FILE}
+    echo ""                                     >> ${REPORT_FILE}
+	echo "Warnings:"                            >> ${REPORT_FILE}
+	grep "Warning:" ${LOG_FILE}                 >> ${REPORT_FILE}
+}
+
+# Show short summary from QuestaSim compilation log
+vsim_compile_report_print_summary () {
+    REPORT_FILE="$1"
+    NUM_ERRORS=$(cat ${REPORT_FILE} | grep Error: | wc -l)
+    NUM_WARNINGS=$(cat ${REPORT_FILE} | grep Warning: | wc -l)
+    echo "#######################################################"
+    echo "############### Compilation report ####################"
+    echo "#######################################################"
+    echo " Errors   : ${NUM_ERRORS}"
+    echo " Warnings : ${NUM_WARNINGS}"
+    echo "See '${REPORT_FILE}' for a complete list of errors and warnings"
+    echo "#######################################################"
+}
+
+# Compile testbench and design for RTL simulation
+vsim_compile () {
+    if [ ! -f ${VSIM_DIR}/compile_rtl.tcl ]; then
+        fatal_error "missing RTL compile script 'compile_rtl.tcl'"
+    fi
+    cd ${VSIM_DIR}
+    ${VSIM} -c -do "set ROOT ${ROOT_DIR}; source compile_rtl.tcl; exit" | tee compile_rtl.log
+    vsim_compile_report compile_rtl.log compile_rtl.rpt
+    vsim_compile_report_print_summary compile_rtl.rpt
+}
+
+# Compile testbench and design for post-synthesis simulation
+vsim_compile_net () {
+    if [ ! -f ${VSIM_DIR}/compile_netlist.tcl ]; then
+        fatal_error "missing netlist compile script 'compile_netlist.tcl'"
+    fi
+    if [ ! -f ${VSIM_DIR}/compile_tech.tcl ]; then
+        fatal_error "missing technology compile script 'compile_net.tcl'"
+    fi
+    cd ${VSIM_DIR}
+    ${VSIM} -c -do "source compile_netlist.tcl; source compile_tech.tcl; exit"
+}
+
+# Run simulation with QuestaSim
+vsim_run () {
+    BINARY="$1"
+    USE_GUI="$2"
+    cd ${VSIM_DIR}
+    if [ "${USE_GUI}" = "1" ]; then
+        ${VSIM} +binary="${BINARY}" -gui tb_croc_soc -t 1ns -voptargs=+acc -suppress vsim-3009 -suppress vsim-8683 -suppress vsim-8386
+    else
+        ${VSIM} +binary="${BINARY}" -c tb_croc_soc -t 1ns -voptargs=+acc -suppress vsim-3009 -suppress vsim-8683 -suppress vsim-8386 -do "run -a; quit"
+    fi
+}
+
+# Clean up simulation files
+vsim_cleanup () {
+    cd ${VSIM_DIR}
+    rm -rf work/
+    rm -f transcript modelsim.ini vsim.wlf ./*.fst ./*.vcd ./*.log ./*.rpt
+}
+
+# Parse command line
+if [ $# -lt 1 ]; then
+    fatal_error "missing command"
+fi
+
+COMMAND="$1"
+shift
+
+case "${COMMAND}" in
+    compile)
+        vsim_compile
+        ;;
+    compile-net)
+        vsim_compile_net
+        ;;
+    run)
+        USE_GUI=0
+        if [[ "${1-}" == "-gui" ]]; then
+            USE_GUI=1
+            shift
+        fi
+        if [ $# -lt 1 ]; then
+            fatal_error "missing binary"
+        fi
+        if [ ! -f "$1" ]; then
+            fatal_error "cannot open binary file '$1'"
+        fi
+        vsim_run $(realpath "$1") ${USE_GUI}
+        ;;
+    cleanup)
+        vsim_cleanup
+        ;;
+    help)
+        usage
+        ;;
+    *)
+        fatal_error "unknown command '${COMMAND}'"
+        ;;
+esac

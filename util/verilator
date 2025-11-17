@@ -1,0 +1,115 @@
+#!/bin/bash
+
+# Adjust paths regardless of where the script is called from
+SCRIPT_NAME=$(basename $0)
+SCRIPT_DIR=$(dirname $(realpath $0))
+ROOT_DIR=$(realpath ${SCRIPT_DIR}/..)
+VERILATOR_DIR="${ROOT_DIR}/verilator"
+
+# Set variables
+VERILATOR=${VERILATOR:-verilator}
+
+# Set up logging
+if [ -t 1 ]; then
+  RED=$'\033[31m'
+  YELLOW=$'\033[33m'
+  BOLD=$'\033[1m'
+  RESET=$'\033[0m'
+else
+  RED=""
+  YELLOW=""
+  BOLD=""
+  RESET=""
+fi
+
+usage () {
+    cat <<EOF
+Usage: ${BOLD}${SCRIPT_NAME} <command> [args...]${RESET}
+
+Commands:
+  ${BOLD}compile     ${RESET} : Verilate Croc RTL and testbench
+  ${BOLD}run <binary>${RESET} : Simulate <binary> on verilated design
+  ${BOLD}cleanup     ${RESET} : Remove generated files
+  ${BOLD}help        ${RESET} : Show this help message
+EOF
+}
+
+error () {
+    printf '%b\n' "${RED}${BOLD}ERROR:${RESET} $*" >&2
+}
+
+fatal_error () {
+    error $*
+    usage
+    exit 1
+}
+
+warning () {
+    printf '%b\n' "${YELLOW}${BOLD}WARNING:${RESET} $*" >&2
+}
+
+verilator_compile () {
+    cd ${VERILATOR_DIR}
+    if [ ! -f croc.f ]; then
+        fatal_error "missing file list 'croc.f'"
+    fi
+    ${VERILATOR} -Wno-fatal -Wno-style \
+	    -Wno-BLKANDNBLK -Wno-WIDTHEXPAND \
+        -Wno-WIDTHTRUNC -Wno-WIDTHCONCAT \
+        -Wno-ASCRANGE --binary -j 0 --timing \
+        --autoflush --trace-fst --trace-threads 2 \
+        --trace-structs --unroll-count 1 \
+        --unroll-stmts 1 --x-assign fast \
+        --x-initial fast -O3 --top tb_croc_soc \
+        -f croc.f
+}
+
+verilator_run () {
+    if [ ! -f "$1" ]; then
+        fatal_error "cannot open binary file '$1'"
+    fi
+    BINARY=$(realpath "$1")
+    cd ${VERILATOR_DIR}
+    if [ ! -f croc.f ]; then
+        fatal_error "missing executable 'obj_dir/Vtb_croc_soc'. Did you verilate the design?"
+    fi
+    obj_dir/Vtb_croc_soc +binary="${BINARY}"
+}
+
+verilator_cleanup () {
+    cd ${VERILATOR_DIR}
+    rm -rf ./obj_dir/
+    rm -f ./*.fst ./*.vcd
+}
+
+# Parse command line
+if [ $# -lt 1 ]; then
+    fatal_error "missing command"
+fi
+
+COMMAND="$1"
+shift
+
+case "${COMMAND}" in
+    compile)
+        verilator_compile
+        ;;
+    run)
+        if [ $# -lt 1 ]; then
+            fatal_error "missing binary"
+        fi
+        if [ ! -f "$1" ]; then
+            fatal_error "cannot open binary file '$1'"
+        fi
+        verilator_run $(realpath "$1")
+        ;;
+    cleanup)
+        verilator_cleanup
+        ;;
+    help)
+        usage
+        ;;
+    *)
+        fatal_error "unknown command '${COMMAND}'"
+        ;;
+esac
