@@ -11,8 +11,7 @@ if {[info script] ne ""} {
     cd "[file dirname [info script]]/../"
 }
 
-# Configuration variables are in yosys_commono
-# get environment variables
+# Configuration variables are in yosys_common
 source scripts/yosys_common.tcl
 
 # ABC logic optimization script
@@ -22,7 +21,7 @@ set abc_script [processAbcScript scripts/abc-opt.script]
 source scripts/init_tech.tcl
 
 yosys plugin -i slang.so
-# default from yosys_common.tcl: top_design=croc_chip; sv_flist=../croc.flist
+# default from yosys_common.tcl: top_design=croc_chip; sv_flist=./croc.flist
 yosys read_slang --top $top_design -F $sv_flist \
         --compat-mode --keep-hierarchy \
         --allow-use-before-declare --ignore-unknown-modules
