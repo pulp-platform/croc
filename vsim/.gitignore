@@ -5,3 +5,4 @@ transcript
 vsim.wlf
 modelsim.ini
 *.vcd
+*.fst
