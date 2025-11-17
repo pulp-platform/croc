@@ -385,6 +385,14 @@ module core_wrap import croc_pkg::*; #() (
     assign core_bus_outputs[i].data_be = data_be;
     assign core_bus_outputs[i].data_addr = data_addr;
     assign core_bus_outputs[i].data_wdata = data_wdata;
+    assign instr_gnt    = core_input_connect[i].instr_gnt;
+    assign instr_rvalid = core_input_connect[i].instr_rvalid;
+    assign instr_rdata  = core_input_connect[i].instr_rdata;
+    assign instr_err    = core_input_connect[i].instr_err;
+    assign data_gnt     = core_input_connect[i].data_gnt;
+    assign data_rvalid  = core_input_connect[i].data_rvalid;
+    assign data_rdata   = core_input_connect[i].data_rdata;
+    assign data_err     = core_input_connect[i].data_err;
   `endif
 
     // lowest 8 bits are ignored internally
