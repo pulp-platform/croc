@@ -70,9 +70,15 @@ module croc_domain import croc_pkg::*; #(
     if (!rst_ni) begin
       relobi_faults_q <= '0;
       core_faults_q <= '0;
+      uart_faults_q <= '0;
+      gpio_faults_q <= '0;
+      timer_faults_q <= '0;
     end else begin
       relobi_faults_q <= relobi_faults;
       core_faults_q <= core_faults;
+      uart_faults_q <= uart_faults;
+      gpio_faults_q <= gpio_faults;
+      timer_faults_q <= timer_faults;
     end
   end
 
@@ -514,7 +520,11 @@ module croc_domain import croc_pkg::*; #(
   assign timer_faults[0] = '0;
 `endif // TARGET_TIMER_UNIT_TMRG
 `ifdef TARGET_RELCORE
+`ifdef TMR_IRQ
   sbr_relobi_rsp_t [2:0] hmr_ctrl_relobi_rsp;
+`else // TMR_IRQ
+  sbr_relobi_rsp_t [0:0] hmr_ctrl_relobi_rsp;
+`endif // TMR_IRQ
   sbr_relobi_req_t hmr_ctrl_relobi_cut_req;
   sbr_relobi_rsp_t hmr_ctrl_relobi_cut_rsp;
 
@@ -548,15 +558,16 @@ module croc_domain import croc_pkg::*; #(
   );
   assign core_faults[0][1] = 1'b0;
   for (genvar i = 0; i < 3; i++) begin : gen_hmr_ctrl_decoder_tmr_part
+    assign hmr_ctrl_relobi_cut_rsp.gnt[i] = hmr_ctrl_relobi_rsp[i].gnt[0];
+    assign hmr_ctrl_relobi_cut_rsp.rvalid[i] = hmr_ctrl_relobi_rsp[i].rvalid[0];
 `else // TMR_IRQ
   assign hmr_ctrl_relobi_cut_rsp.r = hmr_ctrl_relobi_rsp[0].r;
   assign core_faults[0] = '0;
   assign relobi_faults[13:12] = '0;
+  assign hmr_ctrl_relobi_cut_rsp.gnt = hmr_ctrl_relobi_rsp[0].gnt;
+  assign hmr_ctrl_relobi_cut_rsp.rvalid = hmr_ctrl_relobi_rsp[0].rvalid;
   for (genvar i = 0; i < 1; i++) begin : gen_hmr_ctrl_decoder
 `endif
-    assign hmr_ctrl_relobi_cut_rsp.gnt[i] = hmr_ctrl_relobi_rsp[i].gnt[0];
-    assign hmr_ctrl_relobi_cut_rsp.rvalid[i] = hmr_ctrl_relobi_rsp[i].rvalid[0];
-
     relobi_decoder #(
       .Cfg (SbrObiCfg),
       .relobi_req_t (sbr_relobi_req_t),

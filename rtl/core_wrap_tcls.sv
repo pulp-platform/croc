@@ -393,6 +393,8 @@ module core_wrap import croc_pkg::*; #() (
     assign data_rvalid  = core_input_connect[i].data_rvalid;
     assign data_rdata   = core_input_connect[i].data_rdata;
     assign data_err     = core_input_connect[i].data_err;
+    assign faults[2*i+1] = 1'b0;
+    assign faults[2*i+2] = 1'b0;
   `endif
 
     // lowest 8 bits are ignored internally
