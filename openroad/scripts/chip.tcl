@@ -296,6 +296,9 @@ detailed_route -output_drc ${report_dir}/${log_id_str}_${proj_name}_route_drc.rp
                -clean_patches \
                -verbose 1
 
+# Post-route antenna fixing
+source scripts/post_route_antenna_fix.tcl
+
 utl::report "Saving detailed route"
 save_checkpoint ${log_id_str}_${proj_name}.drt
 report_metrics "${log_id_str}_${proj_name}.drt"
