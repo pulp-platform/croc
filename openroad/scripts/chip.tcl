@@ -25,6 +25,8 @@ source scripts/init_tech.tcl
 
 set log_id 0
 
+# Set number of threads for multithreaded operations
+set_thread_count 8
 
 ###############################################################################
 # Initialization                                                              #
@@ -100,8 +102,6 @@ set log_id_str [format "%02d" $log_id]
 utl::report "###############################################################################"
 utl::report "# Step ${log_id_str}: GLOBAL PLACEMENT"
 utl::report "###############################################################################"
-
-set_thread_count 8
 
 set GPL_ARGS {  -density 0.75 }
 
@@ -289,27 +289,24 @@ utl::report "# Step ${log_id_str}: DETAILED ROUTE"
 utl::report "###############################################################################"
 
 utl::report "Detailed route"
-set_thread_count 8
 
-# OpenROAD fixes antennas based on the global routing guides as it lacks ECO routing
-# So we iterate antenna fixing and detailed routing (which refines the routing guides)
-for {set iter 1} { $iter <= 3 && [check_antennas] } { incr iter } {
-    # Requires LEF cell with class 'CORE ANTENNACELL', otherwise you need to give a cell
-    repair_antennas -ratio_margin 30 -iterations 5
+# Requires LEF cell with class 'CORE ANTENNACELL', otherwise you need to give a cell
+repair_antennas -ratio_margin 30 -iterations 5
 
-    detailed_route -output_drc ${report_dir}/${log_id_str}_${proj_name}_route_drc.rpt \
-                -droute_end_iter 30 \
-                -drc_report_iter_step 5 \
-                -save_guide_updates \
-                -clean_patches \
-                -verbose 1
+detailed_route -output_drc ${report_dir}/${log_id_str}_${proj_name}_route_drc.rpt \
+            -droute_end_iter 30 \
+            -drc_report_iter_step 5 \
+            -save_guide_updates \
+            -clean_patches \
+            -verbose 1
 
-    utl::report "Saving detailed route"
-    save_checkpoint ${log_id_str}_${proj_name}.drt
-    report_metrics "${log_id_str}_${proj_name}.drt"
-    report_image "${log_id_str}_${proj_name}.drt" true false false true
-}
+# Post-route antenna fixing
+source scripts/post_route_antenna_fix.tcl
 
+utl::report "Saving detailed route"
+save_checkpoint ${log_id_str}_${proj_name}.drt
+report_metrics "${log_id_str}_${proj_name}.drt"
+report_image "${log_id_str}_${proj_name}.drt" true false false true
 
 ###############################################################################
 # FINISHING                                                                   #

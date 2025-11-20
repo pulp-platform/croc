@@ -35,10 +35,10 @@ foreach inst $insts {
 #   bonding pad               70.0 ,   70.0
 #   seal ring thickness       35.0 ,   35.0
 #   ---------------------------------------
-#   -> OR die area          1715.0 x 1715.0
+#   -> OR core area         1715.0 x 1715.0
 
-set chipH    1715; # OR die height (top to bottom)
-set chipW    1715; # OR die width (left to right)
+set chipH    2000; # final chip height (top to bottom)
+set chipW    2000; # final chip width (left to right)
 set padD      180; # pad depth (edge to core)
 set padW       80; # pad width (beachfront)
 set padBond    70; # bonding pad size
