@@ -1,0 +1,104 @@
+#!/bin/bash
+
+# Adjust paths regardless of where the script is called from
+SCRIPT_NAME=$(basename $0)
+SCRIPT_DIR=$(dirname $(realpath $0))
+ROOT_DIR=$(realpath ${SCRIPT_DIR}/..)
+YOSYS_DIR="${ROOT_DIR}/yosys"
+YOSYS_OUT_DIR=${YOSYS_DIR}/out
+YOSYS_TMP_DIR=${YOSYS_DIR}/tmp
+YOSYS_REPORTS_DIR=${YOSYS_DIR}/reports
+
+# Set variables
+YOSYS=${YOSYS:-yosys}
+
+# Set up logging
+if [ -t 1 ]; then
+  RED=$'\033[31m'
+  YELLOW=$'\033[33m'
+  BOLD=$'\033[1m'
+  RESET=$'\033[0m'
+else
+  RED=""
+  YELLOW=""
+  BOLD=""
+  RESET=""
+fi
+
+usage () {
+    cat <<EOF
+Usage: ${BOLD}${SCRIPT_NAME} <command> [args...]${RESET}
+
+Commands:
+  ${BOLD}synth [--top <top>] ${RESET} : Synthesize Croc with Yosys
+  ${BOLD}cleanup             ${RESET} : Remove generated files
+  ${BOLD}help                ${RESET} : Show this help message
+EOF
+}
+
+error () {
+    printf '%b\n' "${RED}${BOLD}ERROR:${RESET} $*" >&2
+}
+
+fatal_error () {
+    error $*
+    usage
+    exit 1
+}
+
+warning () {
+    printf '%b\n' "${YELLOW}${BOLD}WARNING:${RESET} $*" >&2
+}
+
+yosys_run_synthesis () {
+    top="$1"
+    cd ${YOSYS_DIR}
+    mkdir -p ${YOSYS_OUT_DIR}
+    mkdir -p ${YOSYS_TMP_DIR}
+    mkdir -p ${YOSYS_REPORTS_DIR}
+	SV_FLIST="${ROOT_DIR}/croc.flist" \
+	  TOP_DESIGN="${top}" \
+	  TMP="${YOSYS_TMP_DIR}" \
+	  OUT="${YOSYS_OUT_DIR}" \
+	  REPORTS="${YOSYS_REPORTS_DIR}" \
+	  ${YOSYS} -c ${YOSYS_DIR}/scripts/yosys_synthesis.tcl \
+		2>&1 | TZ=UTC gawk '{ print strftime("[%Y-%m-%d %H:%M %Z]"), $$0 }' \
+		     | tee "${YOSYS_DIR}/${top}.log" \
+		     | gawk -f ${YOSYS_DIR}/scripts/filter_output.awk
+}
+
+yosys_cleanup () {
+    cd ${YOSYS_DIR}
+    rm -rf ${YOSYS_OUT_DIR} ${YOSYS_TMP_DIR} ${YOSYS_REPORTS_DIR} ./*.log
+}
+
+# Parse command line
+if [ $# -lt 1 ]; then
+    fatal_error "missing command"
+fi
+
+COMMAND="$1"
+shift
+
+case "${COMMAND}" in
+    synth)
+        top=croc_chip
+        if [[ "${1-}" == "--top" ]]; then
+            shift
+            if [ $# -lt 1 ]; then
+                fatal_error "incomplete option '--top <top-module>'"
+            fi
+            top="$1"
+        fi
+        yosys_run_synthesis ${top}
+        ;;
+    cleanup)
+        yosys_cleanup
+        ;;
+    help)
+        usage
+        ;;
+    *)
+        fatal_error "unknown command '${COMMAND}'"
+        ;;
+esac
