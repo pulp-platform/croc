@@ -24,7 +24,7 @@ jobs:
       - name: Run simulation commands in OSEDA
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: "make sw && make verilator"
+          cmd: "make sw && ./util/verilator compile && ./util/verilator run sw/bin/helloworld.hex"
       - name: Upload built software
         uses: actions/upload-artifact@v4
         with:
@@ -59,7 +59,7 @@ jobs:
       - name: Setup OSEDA container
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: "make yosys && tail -n 40 yosys/reports/*area.rpt"
+          cmd: "./util/yosys synth && tail -n 40 yosys/reports/*area.rpt"
       - name: Upload synthesis reports
         uses: actions/upload-artifact@v4
         with:
