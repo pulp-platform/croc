@@ -1,0 +1,115 @@
+#!/bin/bash
+
+# Adjust paths regardless of where the script is called from
+SCRIPT_NAME=$(basename $0)
+SCRIPT_DIR=$(dirname $(realpath $0))
+ROOT_DIR=$(realpath ${SCRIPT_DIR}/..)
+XIL_DIR="${ROOT_DIR}/xilinx"
+XIL_SCRIPT_DIR="${XIL_DIR}/scripts"
+XIL_BUILD_DIR="${XIL_DIR}/build"
+
+# Set variables
+VIVADO=${VIVADO:-"vitis-2022.1 vivado"}
+
+# Set up logging
+if [ -t 1 ]; then
+  RED=$'\033[31m'
+  YELLOW=$'\033[33m'
+  BOLD=$'\033[1m'
+  RESET=$'\033[0m'
+else
+  RED=""
+  YELLOW=""
+  BOLD=""
+  RESET=""
+fi
+
+usage () {
+    cat <<EOF
+Usage: ${BOLD}${SCRIPT_NAME} <command> [args...]${RESET}
+
+Commands:
+  ${BOLD}run     ${RESET} : Generate bitstream with Vivado
+  ${BOLD}cleanup ${RESET} : Remove generated files
+  ${BOLD}help    ${RESET} : Show this help message
+EOF
+}
+
+error () {
+    printf '%b\n' "${RED}${BOLD}ERROR:${RESET} $*" >&2
+}
+
+fatal_error () {
+    error $*
+    usage
+    exit 1
+}
+
+warning () {
+    printf '%b\n' "${YELLOW}${BOLD}WARNING:${RESET} $*" >&2
+}
+
+show_info () {
+    printf '%b\n' "${BOLD}INFO:${RESET} $*" >&2
+}
+
+vivado_build_ip () {
+    ip="$1"
+    ip_dir=${XIL_BUILD_DIR}/genesys2.${ip}
+    mkdir -p ${ip_dir}
+    if [ -f ${ip_dir}/out.xci ]; then
+        show_info "Skipping \"${ip}\" IP"
+        return
+    else
+        show_info "Generating \"${ip}\" IP"
+    fi
+    cd ${ip_dir}
+    ${VIVADO} -mode batch -log ${XIL_BUILD_DIR}/genesys2.${ip}.log \
+        -jou ${XIL_BUILD_DIR}/genesys2.${ip}.jou -source ${XIL_SCRIPT_DIR}/impl_ip.tcl \
+        -tclargs genesys2 ${ip}
+}
+
+vivado_run () {
+    cd ${XIL_DIR}
+    mkdir -p ${XIL_BUILD_DIR}/genesys2.clkwiz
+    mkdir -p ${XIL_BUILD_DIR}/genesys2.vio
+    mkdir -p ${XIL_BUILD_DIR}/genesys2.croc
+
+    vivado_build_ip "clkwiz"
+    vivado_build_ip "vio"
+
+    cd ${XIL_DIR}/build/genesys2.croc
+    echo "set ROOT \"${ROOT_DIR}\"" > ${XIL_SCRIPT_DIR}/set_root.tcl
+    ${VIVADO} -mode batch -log ../croc.genesys2.log \
+        -jou ../croc.genesys2.jou -source ${XIL_SCRIPT_DIR}/set_root.tcl \
+        -source ${XIL_SCRIPT_DIR}/impl_sys.tcl \
+        -tclargs genesys2 croc ../genesys2.clkwiz/out.xci ../genesys2.vio/out.xci
+}
+
+vivado_cleanup () {
+    cd ${XILINX_DIR}
+    rm -rf ${XIL_BUILD_DIR}
+}
+
+# Parse command line
+if [ $# -lt 1 ]; then
+    fatal_error "missing command"
+fi
+
+COMMAND="$1"
+shift
+
+case "${COMMAND}" in
+    run)
+        vivado_run
+        ;;
+    cleanup)
+        vivado_cleanup
+        ;;
+    help)
+        usage
+        ;;
+    *)
+        fatal_error "unknown command '${COMMAND}'"
+        ;;
+esac
