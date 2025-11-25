@@ -32,6 +32,11 @@ _start:
   li      x15, 0
   call main
 _eoc:
-  la      t0, status
-  sw      a0, 0(t0)
+  # Write status register in SoC control regs
+  # Bit 0 signals end of computation
+  # Bits 31:1 contain return code
+  slli    t0, a0, 1
+  ori     t0, t0, 1
+  la      t1, status
+  sw      t0, 0(t1)
   wfi
