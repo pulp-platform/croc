@@ -285,6 +285,8 @@ module tb_croc_soc #(
     endtask
 
     // Wait for termination signal and get return code
+    // Poll bit zero of core status register which signals end of computation
+    // Bits 1 to 31 contain the application's return value
     task automatic jtag_wait_for_eoc(output bit [31:0] exit_code);
         automatic dm::sbcs_t sbcs = dm::sbcs_t'{sbreadonaddr: 1'b1, sbaccess: 2, default: '0};
         jtag_write(dm::SBCS, sbcs, 0, 1);
@@ -294,7 +296,11 @@ module tb_croc_soc #(
             jtag_dbg.wait_idle(20);
             jtag_dbg.read_dmi_exp_backoff(dm::SBData0, exit_code);
         end while (exit_code == 0);
-        $display("@%t | [JTAG] Simulation finished: return code 0x%0h", $time, exit_code);
+        exit_code >>= 1;
+        if (exit_code)
+            $display("@%t | [JTAG] Simulation finished: FAIL (return code 0x%0h)", $time, exit_code);
+        else
+            $display("@%t | [JTAG] Simulation finished: SUCCESS", $time);
         $finish();
     endtask
 
