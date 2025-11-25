@@ -1,0 +1,151 @@
+#!/bin/bash
+
+# Adjust paths regardless of where the script is called from
+SCRIPT_NAME=$(basename $0)
+SCRIPT_DIR=$(dirname $(realpath $0))
+ROOT_DIR=$(realpath ${SCRIPT_DIR}/..)
+PDK_DIR="${ROOT_DIR}/ihp13/pdk"
+YOSYS_DIR="${ROOT_DIR}/yosys"
+OR_DIR="${ROOT_DIR}/openroad"
+OR_OUT_DIR=${OR_DIR}/out
+OR_SAVE_DIR=${OR_DIR}/save
+OR_REPORTS_DIR=${OR_DIR}/reports
+
+# Set variables
+OPENROAD=${OPENROAD:-openroad}
+
+# Set up logging
+if [ -t 1 ]; then
+  RED=$'\033[31m'
+  YELLOW=$'\033[33m'
+  BOLD=$'\033[1m'
+  RESET=$'\033[0m'
+else
+  RED=""
+  YELLOW=""
+  BOLD=""
+  RESET=""
+fi
+
+usage () {
+    cat <<EOF
+Usage: ${BOLD}${SCRIPT_NAME} <command> [args...]${RESET}
+
+Commands:
+  ${BOLD}run     [--net <netlist>] [--top <top>] [--gui] ${RESET} : Place&Route of Croc with OpenRoad
+  ${BOLD}start   [--gui]                                 ${RESET} : Start OpenRoad
+  ${BOLD}cleanup                                         ${RESET} : Remove generated files
+  ${BOLD}help                                            ${RESET} : Show this help message
+EOF
+}
+
+error () {
+    printf '%b\n' "${RED}${BOLD}ERROR:${RESET} $*" >&2
+}
+
+fatal_error () {
+    error $*
+    usage
+    exit 1
+}
+
+warning () {
+    printf '%b\n' "${YELLOW}${BOLD}WARNING:${RESET} $*" >&2
+}
+
+openroad_run_pnr () {
+    net="$1"
+    top="$2"
+    use_gui="$3"
+    or_gui_flag=""
+    if [ "${use_gui}" = "1" ]; then
+        or_gui_flag="-gui"
+    fi
+    if [ -z "${DISPLAY}" ]; then
+        QT_QPA_PLATFORM="offscreen"
+    fi
+    cd ${OR_DIR}
+    mkdir -p ${OR_OUT_DIR}
+    mkdir -p ${OR_SAVE_DIR}
+    mkdir -p ${OR_REPORTS_DIR}
+	NETLIST="${net}" \
+	  TOP_DESIGN="${top}" \
+	  PROJ_NAME="croc" \
+	  SAVE="${OR_SAVE_DIR}" \
+	  REPORTS="${OR_REPORTS_DIR}" \
+	  PDK="${PDK_DIR}" \
+	  QT_QPA_PLATFORM="${QT_QPA_PLATFORM}" \
+	  ${OPENROAD} ${OR_DIR}/scripts/chip.tcl \
+	    ${or_gui_flag} \
+		-log croc.log 2>&1 | \
+        TZ=UTC gawk '{ print strftime("[%Y-%m-%d %H:%M %Z]"), $$0 }';
+}
+
+openroad_start () {
+    use_gui="$1"
+    or_gui_flag=""
+    if [ "${use_gui}" = "1" ]; then
+        or_gui_flag="-gui"
+    fi
+    cd ${OR_DIR}
+	PROJ_NAME="croc" \
+	  SAVE="${OR_SAVE_DIR}" \
+	  REPORTS="${OR_REPORTS_DIR}" \
+      ${OPENROAD} ${or_gui_flag} scripts/startup.tcl
+}
+
+openroad_cleanup () {
+    cd ${OR_DIR}
+    rm -rf ${OR_OUT_DIR} ${OR_SAVE_DIR} ${OR_REPORTS_DIR} croc.log
+}
+
+# Parse command line
+if [ $# -lt 1 ]; then
+    fatal_error "missing command"
+fi
+
+COMMAND="$1"
+shift
+
+case "${COMMAND}" in
+    run)
+        net=${YOSYS_DIR}/out/croc_chip_yosys.v
+        top=croc_chip
+        use_gui=0
+        if [[ "${1-}" == "--net" ]]; then
+            shift
+            if [ $# -lt 1 ]; then
+                fatal_error "incomplete option '--net <netlist>'"
+            fi
+            net="$1"
+        fi
+        if [[ "${1-}" == "--top" ]]; then
+            shift
+            if [ $# -lt 1 ]; then
+                fatal_error "incomplete option '--top <top-module>'"
+            fi
+            top="$1"
+        fi
+        if [[ "${1-}" == "--gui" ]]; then
+            use_gui=1
+            shift
+        fi
+        openroad_run_pnr ${net} ${top} ${use_gui}
+        ;;
+    start)
+        use_gui=0
+        if [[ "${1-}" == "--gui" ]]; then
+            use_gui=1
+        fi
+        openroad_start ${use_gui}
+        ;;
+    cleanup)
+        openroad_cleanup
+        ;;
+    help)
+        usage
+        ;;
+    *)
+        fatal_error "unknown command '${COMMAND}'"
+        ;;
+esac
