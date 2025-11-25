@@ -34,6 +34,12 @@ module soc_ctrl_regs #(
   logic     [31:0]   rdata_d,   rdata_q;
   logic                err_d,     err_q;
 
+  // bit enable mask: defines which bits are written to by wdata of the OBI request
+  logic [31:0] be_mask;
+  for (genvar i = 0; unsigned'(i) < 32/8; ++i ) begin : gen_write_mask
+    assign be_mask[8*i +: 8] = {8{obi_req_i.a.be[i]}};
+  end
+
   // Latch OBI request
   assign obi_req_d = obi_req_i;
 
@@ -63,8 +69,8 @@ module soc_ctrl_regs #(
     if (obi_req_i.req) begin
 
       if (obi_req_i.a.we) begin : write
-        automatic logic [31:0] wdata = obi_req_i.a.wdata;
-        unique case (obi_req_i.a.addr[IntAddrWidth-1:0])
+        automatic logic [31:0] wdata = obi_req_i.a.wdata & be_mask;
+        unique case ({obi_req_i.a.addr[IntAddrWidth-1:2], 2'b00})
           SOC_CTRL_BOOTADDR_OFFSET: begin
             boot_addr_d = wdata;
           end
@@ -86,7 +92,7 @@ module soc_ctrl_regs #(
         endcase
 
       end else begin : read
-        unique case (obi_req_i.a.addr[IntAddrWidth-1:0])
+        unique case ({obi_req_i.a.addr[IntAddrWidth-1:2], 2'b00})
           SOC_CTRL_BOOTADDR_OFFSET: begin
             rdata_d = boot_addr_q;
           end
@@ -103,7 +109,8 @@ module soc_ctrl_regs #(
             rdata_d = {31'b0, sram_dly_q};
           end
           default: begin
-            err_d = 1'b1;
+            rdata_d = 32'hBADCAB1E;
+            err_d   = 1'b1;
           end
         endcase
       end
