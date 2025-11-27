@@ -555,21 +555,16 @@ module croc_domain import croc_pkg::*; #(
   );
 
   // OBI timer
-  // TODO: add generic OBI timer unit
-  // Timer error subordinate
-  obi_err_sbr #(
-    .ObiCfg      ( SbrObiCfg     ),
-    .obi_req_t   ( sbr_obi_req_t ),
-    .obi_rsp_t   ( sbr_obi_rsp_t ),
-    .NumMaxTrans ( 1             ),
-    .RspData     ( 32'hBADCAB1E  )
-  ) i_timer_err (
+  obi_timer #(
+    .obi_req_t ( sbr_obi_req_t ),
+    .obi_rsp_t ( sbr_obi_rsp_t )
+  ) i_obi_timer (
     .clk_i,
     .rst_ni,
-    .testmode_i,
     .obi_req_i  ( timer_obi_req ),
-    .obi_rsp_o  ( timer_obi_rsp )
+    .obi_rsp_o  ( timer_obi_rsp ),
+    .expired_o  ( obi_timer_irq ),
+    .overflow_o ( ) // Not connected
   );
-  assign obi_timer_irq = 1'b0;
 
 endmodule

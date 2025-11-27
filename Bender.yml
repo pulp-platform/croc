@@ -32,6 +32,7 @@ sources:
   - rtl/soc_ctrl/soc_ctrl_regs_pkg.sv
   - rtl/gpio/gpio_reg_pkg.sv
   - rtl/clint/clint_reg_pkg.sv
+  - rtl/obi_timer/obi_timer_reg_pkg.sv
   # add your design files containing anything but modules (packages) here
 
     # RTL
@@ -43,6 +44,7 @@ sources:
       - rtl/gpio/gpio_reg_top.sv
       - rtl/gpio/gpio.sv
       - rtl/clint/clint.sv
+      - rtl/obi_timer/obi_timer.sv
       # Level 2
       - rtl/croc_domain.sv
       - rtl/user_domain.sv
