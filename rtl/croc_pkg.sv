@@ -108,16 +108,18 @@ package croc_pkg;
     PeriphSocCtrl  = 2,
     PeriphUart     = 3,
     PeriphGpio     = 4,
-    PeriphTimer    = 5
+    PeriphTimer    = 5,
+    PeriphClint    = 6
   } periph_outputs_e;
 
   /// Address map given to the peripheral mux
-  localparam addr_map_rule_t [4:0] periph_addr_map = '{
+  localparam addr_map_rule_t [5:0] periph_addr_map = '{
     '{ idx: PeriphDebug,   start_addr: 32'h0000_0000, end_addr: 32'h0004_0000 },
     '{ idx: PeriphSocCtrl, start_addr: 32'h0300_0000, end_addr: 32'h0300_1000 },
     '{ idx: PeriphUart,    start_addr: 32'h0300_2000, end_addr: 32'h0300_3000 },
     '{ idx: PeriphGpio,    start_addr: 32'h0300_5000, end_addr: 32'h0300_6000 },
-    '{ idx: PeriphTimer,   start_addr: 32'h0300_A000, end_addr: 32'h0300_B000 }
+    '{ idx: PeriphTimer,   start_addr: 32'h0300_A000, end_addr: 32'h0300_B000 },
+    '{ idx: PeriphClint,   start_addr: 32'h0204_0000, end_addr: 32'h0208_0000 }
   };
 
   // +1 for additional OBI error

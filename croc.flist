@@ -151,6 +151,8 @@ rtl/timer_unit/timer_unit_counter.sv
 rtl/timer_unit/timer_unit_counter_presc.sv
 rtl/timer_unit/apb_timer_unit.sv
 rtl/timer_unit/timer_unit.sv
+rtl/clint/clint_reg_pkg.sv
+rtl/clint/clint.sv
 ihp13/tc_clk.sv
 ihp13/tc_sram_impl.sv
 rtl/croc_pkg.sv

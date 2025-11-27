@@ -53,14 +53,15 @@ module croc_domain import croc_pkg::*; #(
   logic [31:0] boot_addr;
 
   // interrupts (irqs)
+  logic clint_timer_irq;
+  logic clint_software_irq;
+  logic obi_timer_irq;
   logic uart_irq;
   logic gpio_irq;
-  logic timer0_irq0;
-  logic timer0_irq1;
   logic [15:0] interrupts;
   always_comb begin
     interrupts    = '0;
-    interrupts[0] = timer0_irq1;
+    interrupts[0] = obi_timer_irq;
     interrupts[1] = uart_irq;
     interrupts[2] = gpio_irq;
     interrupts[3+:NumExternalIrqs] = interrupts_i;
@@ -157,6 +158,10 @@ module croc_domain import croc_pkg::*; #(
   // Timer periph bus
   sbr_obi_req_t timer_obi_req;
   sbr_obi_rsp_t timer_obi_rsp;
+
+  // CLINT bus
+  sbr_obi_req_t clint_obi_req;
+  sbr_obi_rsp_t clint_obi_rsp;
   
   // Fanout to individual peripherals
   assign error_obi_req                     = all_periph_obi_req[PeriphError];
@@ -171,6 +176,8 @@ module croc_domain import croc_pkg::*; #(
   assign all_periph_obi_rsp[PeriphGpio]    = gpio_obi_rsp;
   assign timer_obi_req                     = all_periph_obi_req[PeriphTimer];
   assign all_periph_obi_rsp[PeriphTimer]   = timer_obi_rsp;
+  assign clint_obi_req                     = all_periph_obi_req[PeriphClint];
+  assign all_periph_obi_rsp[PeriphClint]   = clint_obi_rsp;
 
 
   // -----------------
@@ -183,8 +190,9 @@ module croc_domain import croc_pkg::*; #(
     .ref_clk_i,
     .test_enable_i    ( testmode_i  ),
 
-    .irqs_i           ( interrupts  ),
-    .timer0_irq_i     ( timer0_irq0 ),
+    .irqs_i           ( interrupts         ),
+    .timer_irq_i      ( clint_timer_irq    ),
+    .software_irq_i   ( clint_software_irq ),
 
     .boot_addr_i      ( boot_addr   ),
 
@@ -532,33 +540,36 @@ module croc_domain import croc_pkg::*; #(
     .obi_rsp_o      ( gpio_obi_rsp )
   );
 
-  // Timer
-  timer_unit #(
-    .ID_WIDTH   ( SbrObiCfg.IdWidth )
-  ) i_timer (
+  // CLINT
+  clint #(
+    .obi_req_t ( sbr_obi_req_t ),
+    .obi_rsp_t ( sbr_obi_rsp_t )
+  ) i_clint (
     .clk_i,
     .rst_ni,
-    .ref_clk_i,
-    
-    .req_i      ( timer_obi_req.req     ),
-    .addr_i     ( timer_obi_req.a.addr  ),
-    .wen_i      ( ~timer_obi_req.a.we   ),
-    .wdata_i    ( timer_obi_req.a.wdata ),
-    .be_i       ( timer_obi_req.a.be    ),
-    .id_i       ( timer_obi_req.a.aid   ),
-    .gnt_o      ( timer_obi_rsp.gnt     ),
-    
-    .r_valid_o  ( timer_obi_rsp.rvalid  ),
-    .r_opc_o    ( ),
-    .r_id_o     ( timer_obi_rsp.r.rid   ),
-    .r_rdata_o  ( timer_obi_rsp.r.rdata ),
-    .event_lo_i ('0 ),
-    .event_hi_i ('0 ),
-    .irq_lo_o   ( timer0_irq0           ),
-    .irq_hi_o   ( timer0_irq1           ),
-    .busy_o     (                       )
+    .rtc_i          ( ref_clk_i          ),
+    .software_irq_o ( clint_software_irq ),
+    .timer_irq_o    ( clint_timer_irq    ),
+    .obi_req_i      ( clint_obi_req      ),
+    .obi_rsp_o      ( clint_obi_rsp      )
   );
-  assign timer_obi_rsp.r.err        = 1'b0;
-  assign timer_obi_rsp.r.r_optional = 1'b0;
+
+  // OBI timer
+  // TODO: add generic OBI timer unit
+  // Timer error subordinate
+  obi_err_sbr #(
+    .ObiCfg      ( SbrObiCfg     ),
+    .obi_req_t   ( sbr_obi_req_t ),
+    .obi_rsp_t   ( sbr_obi_rsp_t ),
+    .NumMaxTrans ( 1             ),
+    .RspData     ( 32'hBADCAB1E  )
+  ) i_timer_err (
+    .clk_i,
+    .rst_ni,
+    .testmode_i,
+    .obi_req_i  ( timer_obi_req ),
+    .obi_rsp_o  ( timer_obi_rsp )
+  );
+  assign obi_timer_irq = 1'b0;
 
 endmodule

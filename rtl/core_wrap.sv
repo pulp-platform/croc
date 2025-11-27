@@ -12,7 +12,8 @@ module core_wrap import croc_pkg::*; #() (
   input  logic test_enable_i,
 
   input logic [15:0] irqs_i,
-  input logic timer0_irq_i,
+  input logic timer_irq_i,
+  input logic software_irq_i,
 
   input  logic [31:0] boot_addr_i,
 
@@ -95,11 +96,11 @@ module core_wrap import croc_pkg::*; #() (
     .data_err_i,
 
     // Interrupts
-    .irq_software_i     ( 1'b0         ),
-    .irq_timer_i        ( timer0_irq_i ),
-    .irq_external_i     ( 1'b0         ),
-    .irq_fast_i         ( irqs_i       ),
-    .irq_nm_i           ( 1'b0         ),
+    .irq_software_i     ( software_irq_i ),
+    .irq_timer_i        ( timer_irq_i    ),
+    .irq_external_i     ( 1'b0           ),
+    .irq_fast_i         ( irqs_i         ),
+    .irq_nm_i           ( 1'b0           ),
     .irq_pending_o      ( ),
 
 
