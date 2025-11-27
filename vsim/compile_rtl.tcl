@@ -3,6 +3,8 @@ set ROOT ".."
 # Compile Croc RTL files
 vlog -incr -sv -svinputport=compat \
     +define+SIMULATION \
+    +define+RVFI \
+    +define+TRACE_EXECUTION \
     +incdir+$ROOT/rtl/common_cells/include \
     +incdir+$ROOT/rtl/apb/include \
     +incdir+$ROOT/rtl/obi/include \
@@ -128,6 +130,9 @@ vlog -incr -sv -svinputport=compat \
     $ROOT/rtl/cve2/cve2_prefetch_buffer.sv \
     $ROOT/rtl/cve2/cve2_if_stage.sv \
     $ROOT/rtl/cve2/cve2_core.sv \
+    $ROOT/rtl/cve2/cve2_tracer_pkg.sv \
+    $ROOT/rtl/cve2/cve2_tracer.sv \
+    $ROOT/rtl/cve2/cve2_core_tracing.sv \
     $ROOT/rtl/obi_uart/obi_uart_pkg.sv \
     $ROOT/rtl/obi_uart/obi_uart_baudgen.sv \
     $ROOT/rtl/obi_uart/obi_uart_interrupts.sv \
