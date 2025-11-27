@@ -60,7 +60,7 @@ _trap_vector_table:
   /*irq 13*/ j _default_handler
   /*irq 14*/ j _default_handler
   /*irq 15*/ j _default_handler
-  /*irq 16*/ j _default_handler
+  /*irq 16*/ j _obi_timer_handler
   /*irq 17*/ j _default_handler
   /*irq 18*/ j _default_handler
   /*irq 19*/ j _default_handler
@@ -110,6 +110,36 @@ _default_handler:
 
 .weak generic_interrupt_handler
 generic_interrupt_handler:
+  ret
+
+_obi_timer_handler:
+  addi sp, sp, -80
+  sw ra, 72(sp)
+  sw t0, 64(sp)
+  sw t1, 56(sp)
+  sw t2, 48(sp)
+  sw a0, 40(sp)
+  sw a1, 32(sp)
+  sw a2, 24(sp)
+  sw a3, 16(sp)
+  sw a4,  8(sp)
+  sw a5,  0(sp)
+  call obi_timer_handler
+  lw ra, 72(sp)
+  lw t0, 64(sp)
+  lw t1, 56(sp)
+  lw t2, 48(sp)
+  lw a0, 40(sp)
+  lw a1, 32(sp)
+  lw a2, 24(sp)
+  lw a3, 16(sp)
+  lw a4,  8(sp)
+  lw a5,  0(sp)
+  addi sp, sp, 80
+  mret
+
+.weak obi_timer_handler
+obi_timer_handler:
   ret
 
 # CLINT timer interrupt handler
