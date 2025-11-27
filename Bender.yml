@@ -15,7 +15,6 @@ dependencies:
   tech_cells_generic:   { git: "https://github.com/pulp-platform/tech_cells_generic.git",   version: 0.2.13 }
   register_interface:   { git: "https://github.com/pulp-platform/register_interface.git",   version: 0.4.1  }
   apb:                  { git: "https://github.com/pulp-platform/apb.git",                  version: 0.2.4  }
-  timer_unit:           { git: "https://github.com/pulp-platform/timer_unit.git",           version: 1.0.3  }
   obi:                  { git: "https://github.com/pulp-platform/obi.git",                  version: 0.1.7  }
   obi_peripherals:      { git: "https://github.com/pulp-platform/obi_peripherals.git",      rev: 21ee04d    } # UART
   cve2:                 { path: "rtl/cve2" } # a vendor package (no Bender.yml), see below 
@@ -159,14 +158,6 @@ vendor_package:
       - { from: 'Bender.yml',                         to: 'Bender.yml',                         patch_dir: '' }
       - { from: 'README.md',                          to: 'README.md',                          patch_dir: '' }
 
-  - name: timer_unit
-    target_dir: rtl/timer_unit
-    upstream: { git: "https://github.com/pulp-platform/timer_unit.git", rev: 4c69615c89db9397a9747d6f6d6a36727854f0bc } # v1.0.3
-    patch_dir: "rtl/patches/timer_unit"
-    mapping:
-      - { from: 'rtl/',               to: '',               patch_dir: 'rtl/' }
-      - { from: 'Bender.yml',         to: 'Bender.yml',     patch_dir: '' }
-      - { from: 'doc/timer_unit.pdf', to: 'timer_unit.pdf', patch_dir: 'doc/' }
 
   - name: obi_peripherals
     target_dir: rtl/obi_uart

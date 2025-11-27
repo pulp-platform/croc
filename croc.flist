@@ -147,10 +147,6 @@ rtl/riscv-dbg/dm_sba.sv
 rtl/riscv-dbg/dm_top.sv
 rtl/riscv-dbg/dmi_jtag.sv
 rtl/riscv-dbg/dm_obi_top.sv
-rtl/timer_unit/timer_unit_counter.sv
-rtl/timer_unit/timer_unit_counter_presc.sv
-rtl/timer_unit/apb_timer_unit.sv
-rtl/timer_unit/timer_unit.sv
 rtl/clint/clint_reg_pkg.sv
 rtl/clint/clint.sv
 ihp13/tc_clk.sv
