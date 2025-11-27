@@ -22,8 +22,8 @@ void sleep_ms(uint32_t ms) {
 
     *reg32(TIMER_BASE_ADDR, TIMER_CMP_LOW_REG_OFFSET) = ms;
 
-    set_mtie(1);  // Machine Timer Interrupt Enable
-    set_mie(1);  // Global Interrupt Enable
+    set_interrupt_enable(1, IRQ_TIMER);  // Machine Timer Interrupt Enable
+    set_global_irq_enable(1);  // Global Interrupt Enable
 
     // start timer
     *reg32(TIMER_BASE_ADDR, CFG_LOW_REG_OFFSET) = config;
@@ -34,5 +34,5 @@ void sleep_ms(uint32_t ms) {
     *reg32(TIMER_BASE_ADDR, CFG_LOW_REG_OFFSET) &= ~(1 << CFG_LOW_REG_ENABLE_BIT);
 
     // disable timer interrupt
-    set_mtie(0);
+    set_interrupt_enable(0, IRQ_TIMER);;
 }
