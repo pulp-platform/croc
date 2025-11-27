@@ -8,38 +8,18 @@
 # Preparation for the synthesis flow
 # A common setup to provide some functionality and define variables
 
-# list of global variables that may be used
-# define with scheme: <local-var> { <ENVVAR>  <fallback> }
-set variables {
-    sv_flist    { SV_FLIST    "../croc.flist" }
-    top_design  { TOP_DESIGN  "croc_chip"     }
-    out_dir     { OUT         out             }
-    tmp_dir     { TMP         tmp             }
-    rep_dir     { REPORTS     reports         }
-}
+# set global variables
+set sv_flist   "./croc.flist"
+set top_design "croc_chip"
+set out_dir    out
+set tmp_dir    tmp
+set rep_dir    reports
 
-
-# check if an env-var exists and is non-empty
-proc envVarValid {var_name} {
-    if { [info exists ::env($var_name)]} {
-	    if {$::env($var_name) != "0" && $::env($var_name) ne ""} {
-            return 1
-        }
-    }
-    return 0
-}
-
-# If the ENVVAR is valid use it, otherwise use fallback
-foreach var [dict keys $variables] {  
-    set values [dict get $variables $var]
-    set env_var [lindex $values 0]
-    set fallback [lindex $values 1]
-
-    if {[envVarValid $env_var]} {
-        puts "using: $var= '$::env($env_var)'"
-        set $var $::env($env_var)
-    }
-}
+puts "using: sv_flist   = '$sv_flist'"
+puts "using: top_design = '$top_design'"
+puts "using: out_dir    = '$out_dir'"
+puts "using: tmp_dir    = '$tmp_dir'"
+puts "using: rep_dir    = '$rep_dir'"
 
 # process ABC script and write to temporary directory
 proc processAbcScript {abc_script} {
