@@ -1,20 +1,30 @@
-bender script vivado -t fpga -t rtl -t genesys2 > scripts/add_sources.genesys2.tcl
-mkdir -p build/genesys2.clkwiz
-cd build/genesys2.clkwiz && \
-    vitis-2022.1 vivado -mode batch -log ../genesys2.clkwiz.log -jou ../genesys2.clkwiz.jou \
-    -source ../../scripts/impl_ip.tcl \
-    -tclargs genesys2 clkwiz \
-    && cd ../..
-mkdir -p build/genesys2.vio
-cd build/genesys2.vio &&
-    vitis-2022.1 vivado -mode batch -log ../genesys2.vio.log -jou ../genesys2.vio.jou \
-    -source ../../scripts/impl_ip.tcl \
-    -tclargs genesys2 vio\
-    && cd ../..
-mkdir -p build/genesys2.croc
-cd build/genesys2.croc && \
-    vitis-2022.1 vivado -mode batch -log ../croc.genesys2.log -jou ../croc.genesys2.jou \
-    -source ../../scripts/impl_sys.tcl \
-    -tclargs genesys2 croc \
-    ../genesys2.clkwiz/out.xci \
-    ../genesys2.vio/out.xci
+#!/bin/bash
+
+# Set variables
+VIVADO=${VIVADO:-"vitis-2022.1 vivado"}
+
+# Clean up generated files
+rm -rf build/
+rm -rf out/
+mkdir build
+mkdir out
+mkdir build/genesys2.clkwiz
+mkdir build/genesys2.vio
+mkdir build/genesys2.croc
+
+# Implement clock wizard IP
+cd build/genesys2.clkwiz
+${VIVADO} -mode batch -source ../../scripts/impl_ip.tcl \
+    -tclargs genesys2 clkwiz
+cd ../..
+
+# Implement VirtualIO IP
+cd build/genesys2.vio
+${VIVADO} -mode batch -source ../../scripts/impl_ip.tcl \
+    -tclargs genesys2 vio
+cd ../..
+
+# Implement Croc
+cd build/genesys2.croc
+${VIVADO} -mode batch -source ../../scripts/impl_sys.tcl \
+    -tclargs genesys2 croc ../genesys2.clkwiz/out.xci ../genesys2.vio/out.xci
