@@ -5,28 +5,11 @@
 # Authors:
 # - Tim Fischer <fischeti@iis.ee.ethz.ch>
 
-
-# Check whether PROJ_NAME is part of the environment variables
-
-
-
-if { [info exists ::env(PROJ_NAME)] } {
-    set proj_name $::env(PROJ_NAME)
-} else {
-    set proj_name "untitled"
-}
-
-if { [info exists ::env(REPORTS)] } {
-    set report_dir $::env(REPORTS)
-} else {
-    set report_dir "reports"
-}
-
-if { [info exists ::env(SAVE)] } {
-    set save_dir $::env(SAVE)
-} else {
-    set save_dir "save"
-}
+set proj_name  "croc"
+set netlist    "../yosys/out/croc_chip_yosys.v"
+set top_design "croc_chip"
+set report_dir "reports"
+set save_dir   "save"
 
 utl::report "Setting up project $proj_name"
 utl::report " - Report directory: $report_dir"
