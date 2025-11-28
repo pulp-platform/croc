@@ -8,23 +8,14 @@
 # - Philippe Sauter   <phsauter@iis.ee.ethz.ch>
 
 # The main OpenRoad chip flow
-set proj_name $::env(PROJ_NAME)
-set netlist $::env(NETLIST)
-set top_design $::env(TOP_DESIGN)
-set report_dir $::env(REPORTS)
-set save_dir $::env(SAVE)
-set time [elapsed_run_time]
-set step_by_step_debug 0
 
-# helper scripts
-source scripts/reports.tcl
-source scripts/checkpoint.tcl
-
-# initialize technology data
-source scripts/init_tech.tcl
-
+# Helper variables
 set log_id 0
+set step_by_step_debug 0
+set time [elapsed_run_time]
 
+# Define variables, helper functions and initialize technology data
+source scripts/startup.tcl
 
 ###############################################################################
 # Initialization                                                              #
