@@ -25,6 +25,8 @@ source scripts/init_tech.tcl
 
 set log_id 0
 
+# Set number of threads for multithreaded operations
+set_thread_count 8
 
 ###############################################################################
 # Initialization                                                              #
@@ -47,20 +49,6 @@ check_setup -verbose                                      > ${report_dir}/${log_
 report_checks -unconstrained -format end -no_line_splits >> ${report_dir}/${log_id_str}_${proj_name}_checks.rpt
 report_checks -format end -no_line_splits                >> ${report_dir}/${log_id_str}_${proj_name}_checks.rpt
 report_checks -format end -no_line_splits                >> ${report_dir}/${log_id_str}_${proj_name}_checks.rpt
-
-# Size of the chip
-set chipW            1760.0
-set chipH            1760.0
-
-# thickness of annular ring for pads (length of a pad)
-set padRing           180.0
-set coreMargin [expr $padRing + 35]; # space for power ring
-
-utl::report "Initialize Chip"
-initialize_floorplan -die_area "0 0 $chipW $chipH" \
-                     -core_area "$coreMargin $coreMargin [expr $chipW-$coreMargin] [expr $chipH-$coreMargin]" \
-                     -site "CoreSite"
-
 
 utl::report "Connect global nets (power)"
 source scripts/power_connect.tcl
@@ -115,13 +103,11 @@ utl::report "###################################################################
 utl::report "# Step ${log_id_str}: GLOBAL PLACEMENT"
 utl::report "###############################################################################"
 
-set_thread_count 8
+set GPL_ARGS {  -density 0.75 }
 
-set GPL_ARGS {  -density 0.60 }
-
-set GPL2_ARGS { -density 0.60
+set GPL2_ARGS { -density 0.75
                 -routability_driven
-                -routability_check_overflow 0.30
+                -routability_check_overflow 0.35
                 -timing_driven }
 # density:            In every part of the chip, about N% of the area is occupied by standard cells
 # routability_driven: Reduce density target when there are a lot of wires in an area
@@ -302,26 +288,25 @@ utl::report "###################################################################
 utl::report "# Step ${log_id_str}: DETAILED ROUTE"
 utl::report "###############################################################################"
 
+utl::report "Detailed route"
+
 # Requires LEF cell with class 'CORE ANTENNACELL', otherwise you need to give a cell
 repair_antennas -ratio_margin 30 -iterations 5
-# check_antennas
 
-utl::report "Detailed route"
-set_thread_count 8
 detailed_route -output_drc ${report_dir}/${log_id_str}_${proj_name}_route_drc.rpt \
-               -bottom_routing_layer Metal2 \
-               -top_routing_layer TopMetal1 \
-               -droute_end_iter 30 \
-               -drc_report_iter_step 5 \
-               -save_guide_updates \
-               -clean_patches \
-               -verbose 1
+            -droute_end_iter 30 \
+            -drc_report_iter_step 5 \
+            -save_guide_updates \
+            -clean_patches \
+            -verbose 1
+
+# Post-route antenna fixing
+source scripts/post_route_antenna_fix.tcl
 
 utl::report "Saving detailed route"
 save_checkpoint ${log_id_str}_${proj_name}.drt
 report_metrics "${log_id_str}_${proj_name}.drt"
 report_image "${log_id_str}_${proj_name}.drt" true false false true
-
 
 ###############################################################################
 # FINISHING                                                                   #
