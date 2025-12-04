@@ -147,7 +147,7 @@ vendor_package:
   ###############
   - name: riscv-dbg
     target_dir: rtl/riscv-dbg
-    upstream: { git: "https://github.com/pulp-platform/riscv-dbg.git", rev: "8ef87abf81cab39ad7b52435aa2a3357678fa1d6" } # branch verilator-phsauter
+    upstream: { git: "https://github.com/pulp-platform/riscv-dbg.git", rev: "a21b39ad11833d9afc7ab366944b811d5a641901" } # branch verilator-phsauter
     patch_dir: "rtl/patches/riscv-dbg"
     mapping:
       - { from: 'src/',                               to: '',                                   patch_dir: 'src/' }
