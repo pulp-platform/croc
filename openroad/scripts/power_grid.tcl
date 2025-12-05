@@ -29,14 +29,12 @@ if {[info exists power_grid_defined]} {
 ##  Power settings
 ##########################################################################
 # Core Power Ring
-## Space between pads and core -> used for power ring
-set PowRingSpace  35
+## Offset from core to power ring
+set pgcrOffset 2
 ## Spacing must meet TM2 rules
 set pgcrSpacing 6
 ## Width must meet TM2 rules
 set pgcrWidth 10
-## Offset from core to power ring
-set pgcrOffset [expr ($PowRingSpace - $pgcrSpacing - 2 * $pgcrWidth) / 2]
 
 # TopMetal2 Core Power Grid
 set tpg2Width     6; # arbitrary number
@@ -108,7 +106,7 @@ add_pdn_ring -grid {core_grid} \
    -layer        {TopMetal1 TopMetal2} \
    -widths       "$pgcrWidth $pgcrWidth" \
    -spacings     "$pgcrSpacing $pgcrSpacing" \
-   -pad_offsets  "6 6" \
+   -core_offsets "$pgcrOffset $pgcrOffset" \
    -add_connect                        \
    -connect_to_pads                    \
    -connect_to_pad_layers TopMetal2
@@ -135,7 +133,6 @@ add_pdn_connect -grid {core_grid} -layers {TopMetal2 Metal2}
 add_pdn_connect -grid {core_grid} -layers {TopMetal2 Metal4}
 # add_pdn_connect -grid {core_grid} -layers {TopMetal2 TopMetal1}
 # power ring to standard cell rails
-add_pdn_connect -grid {core_grid} -layers {Metal3 Metal1}
 add_pdn_connect -grid {core_grid} -layers {Metal3 Metal2}
 
 
