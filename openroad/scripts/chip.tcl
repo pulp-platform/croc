@@ -48,20 +48,6 @@ report_checks -unconstrained -format end -no_line_splits >> ${report_dir}/${log_
 report_checks -format end -no_line_splits                >> ${report_dir}/${log_id_str}_${proj_name}_checks.rpt
 report_checks -format end -no_line_splits                >> ${report_dir}/${log_id_str}_${proj_name}_checks.rpt
 
-# Size of the chip
-set chipW            1760.0
-set chipH            1760.0
-
-# thickness of annular ring for pads (length of a pad)
-set padRing           180.0
-set coreMargin [expr $padRing + 35]; # space for power ring
-
-utl::report "Initialize Chip"
-initialize_floorplan -die_area "0 0 $chipW $chipH" \
-                     -core_area "$coreMargin $coreMargin [expr $chipW-$coreMargin] [expr $chipH-$coreMargin]" \
-                     -site "CoreSite"
-
-
 utl::report "Connect global nets (power)"
 source scripts/power_connect.tcl
 
