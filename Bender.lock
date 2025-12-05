@@ -66,9 +66,3 @@ packages:
       Path: rtl/tech_cells_generic
     dependencies:
     - common_verification
-  timer_unit:
-    revision: null
-    version: null
-    source:
-      Path: rtl/timer_unit
-    dependencies: []

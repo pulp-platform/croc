@@ -7,8 +7,8 @@
 
 #include "uart.h"
 #include "print.h"
-#include "timer.h"
 #include "gpio.h"
+#include "clint.h"
 #include "util.h"
 
 /// @brief Example integer square root
@@ -44,7 +44,7 @@ int main() {
     // uart loopback
     uart_loopback_enable();
     printf("internal msg\n");
-    sleep_ms(1);
+    clint_sleep_ms(1);
     for(uint8_t idx = 0; idx<15; idx++) {
         receive_buff[idx] = uart_read();
         if(receive_buff[idx] == '\n') {
@@ -79,7 +79,7 @@ int main() {
 
     // using the timer
     printf("Tick\n");
-    sleep_ms(10);
+    clint_sleep_ms(10);
     printf("Tock\n");
     uart_write_flush();
     return 0;
