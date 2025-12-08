@@ -27,6 +27,35 @@ foreach inst $insts {
 }
 
 ##########################################################################
+# Die and Core Area 
+##########################################################################
+# Dimensions:                          [um]
+#   final chip size (4sqmm) 2000.0 x 2000.0
+#   io cell depth            180.0 ,  180.0
+#   bonding pad               70.0 ,   70.0
+#   seal ring thickness       35.0 ,   35.0
+#   ---------------------------------------
+#   -> OR core area         1715.0 x 1715.0
+
+set chipH    2000; # final chip height (top to bottom)
+set chipW    2000; # final chip width (left to right)
+set padD      180; # pad depth (edge to core)
+set padW       80; # pad width (beachfront)
+set padBond    70; # bonding pad size
+set sealRing   35; # seal ring thickness
+set powerRing  50; # power ring thickness
+
+# starting from the outside and working towards the core area
+set coreMargin [expr {$sealRing + $padD + $padBond + $powerRing}];
+
+utl::report "Initialize Chip"
+# coordinates are lower-left x and y, upper-right x and y
+initialize_floorplan -die_area "0 0 $chipW $chipH" \
+                     -core_area "$coreMargin $coreMargin [expr $chipW-$coreMargin] [expr $chipH-$coreMargin]" \
+                     -site "CoreSite"
+
+
+##########################################################################
 # Pads/IOs 
 ##########################################################################
 utl::report "Create Padring"
@@ -92,7 +121,7 @@ placeInstance $bank0_sram0 $X $Y R0
 
 # Bank1
 set X [expr $X]
-set Y [expr $Y - $RamSize256x64_H - 15]
+set Y [expr $Y - $RamSize256x64_H - 20]
 placeInstance $bank1_sram0 $X $Y R0
 
 
