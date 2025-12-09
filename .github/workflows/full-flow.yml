@@ -26,22 +26,19 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-
+      - name: Free disk space
+        uses: ./.github/actions/free-space
       - name: Run Yosys, OpenROAD and KLayout
         uses: ./.github/actions/oseda-cmd
         with:
           cmd: "make yosys && make openroad && make klayout"
-      - name: Upload openroad output
+      - name: Upload openroad outputs
         uses: actions/upload-artifact@v4
         with:
           name: croc-openroad-out
-          path: openroad/out
-        continue-on-error: true
-      - name: Upload openroad reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: croc-openroad-reports
-          path: openroad/reports
+          path: |
+            openroad/out
+            openroad/reports
         continue-on-error: true
       - name: Upload gds
         uses: actions/upload-artifact@v4

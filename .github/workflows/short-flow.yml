@@ -20,7 +20,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-
+      - name: Free disk space
+        uses: ./.github/actions/free-space
       - name: Run simulation commands in OSEDA
         uses: ./.github/actions/oseda-cmd
         with:
@@ -31,21 +32,17 @@ jobs:
           name: croc-sw
           path: sw/bin
         continue-on-error: true
-      - name: Upload waveform
-        uses: actions/upload-artifact@v4
-        with:
-          name: croc-waveform
-          path: croc.fst
-        continue-on-error: true
-
       - name: Upload simulation output
         uses: actions/upload-artifact@v4
         with:
           name: simulation-output
-          path: ${{ env.result_log }}
+          path: |
+            verilator/croc.fst
+            verilator/croc.log
+        continue-on-error: true
       - name: Check simulation output
         shell: bash
-        run: ./.github/scripts/check_sim.sh ${{ env.result_log }}
+        run: ./.github/scripts/check_sim.sh ./verilator/croc.log
 
   synthesis:
     runs-on: ubuntu-latest
@@ -55,20 +52,18 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-
+      - name: Free disk space
+        uses: ./.github/actions/free-space
       - name: Setup OSEDA container
         uses: ./.github/actions/oseda-cmd
         with:
           cmd: "make yosys && tail -n 40 yosys/reports/*area.rpt"
-      - name: Upload synthesis reports
+      - name: Upload synthesis outputs
         uses: actions/upload-artifact@v4
         with:
           name: croc-synth-reports
-          path: yosys/reports
+          path: |
+            yosys/reports
+            yosys/out
         continue-on-error: true
-      - name: Upload netlist
-        uses: actions/upload-artifact@v4
-        with:
-          name: croc-netlist
-          path: yosys/out
-        continue-on-error: true
+
