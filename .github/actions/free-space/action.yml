@@ -1,0 +1,45 @@
+# Copyright (c) 2025 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Author:  Philippe Sauter <phsauter@iis.ee.ethz.ch>
+
+name: 'Free Disk Space on Runner'
+description: 'Frees disk space on GitHub-hosted runners to make room for eg large Docker images'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Show disk usage before cleanup
+      shell: bash
+      run: |
+        echo "Disk usage before cleanup:"
+        df -h
+
+    - name: Prune Docker data
+      shell: bash
+      run: |
+        # Remove stopped containers, unused networks, dangling images, and build cache
+        docker system prune -af || true
+
+    - name: Remove large preinstalled SDKs and toolchains
+      shell: bash
+      run: |
+        # These paths are known big space hogs on ubuntu-latest runners
+        sudo rm -rf /usr/local/lib/android || true
+        sudo rm -rf /usr/share/dotnet || true
+        sudo rm -rf /opt/ghc || true
+        sudo rm -rf /opt/hostedtoolcache/CodeQL || true
+        sudo rm -rf /opt/hostedtoolcache/go || true
+
+    - name: Clean APT caches
+      shell: bash
+      run: |
+        sudo apt-get clean || true
+        sudo rm -rf /var/lib/apt/lists/* || true
+
+    - name: Show disk usage after cleanup
+      shell: bash
+      run: |
+        echo "Disk usage after cleanup:"
+        df -h
