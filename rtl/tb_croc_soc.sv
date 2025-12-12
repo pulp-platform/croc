@@ -42,13 +42,14 @@ module tb_croc_soc #(
     logic [GpioCount-1:0] gpio_o;            
     logic [GpioCount-1:0] gpio_out_en_o;
 
+    // Base of the SRAM banks
+    localparam bit [31:0] SramBaseAddr    = croc_pkg::get_croc_start_addr(croc_pkg::XbarBank0);
+
     // Register addresses
-    localparam bit [31:0] BootAddrAddr   = croc_pkg::SocCtrlAddrOffset
-                                           + soc_ctrl_regs_pkg::SOC_CTRL_BOOTADDR_OFFSET;
-    localparam bit [31:0] FetchEnAddr    = croc_pkg::SocCtrlAddrOffset
-                                           + soc_ctrl_regs_pkg::SOC_CTRL_FETCHEN_OFFSET;
-    localparam bit [31:0] CoreStatusAddr = croc_pkg::SocCtrlAddrOffset
-                                           + soc_ctrl_regs_pkg::SOC_CTRL_CORESTATUS_OFFSET;
+    localparam bit [31:0] SocCtrlBaseAddr = croc_pkg::get_periph_start_addr(croc_pkg::PeriphSocCtrl);
+    localparam bit [31:0] BootAddrAddr    = SocCtrlBaseAddr + soc_ctrl_regs_pkg::SOC_CTRL_BOOTADDR_OFFSET;
+    localparam bit [31:0] FetchEnAddr     = SocCtrlBaseAddr + soc_ctrl_regs_pkg::SOC_CTRL_FETCHEN_OFFSET;
+    localparam bit [31:0] CoreStatusAddr  = SocCtrlBaseAddr + soc_ctrl_regs_pkg::SOC_CTRL_CORESTATUS_OFFSET;
 
     /////////////////////////////
     //  Command Line Arguments //
@@ -462,7 +463,7 @@ module tb_croc_soc #(
         jtag_init();
 
         // write test value to sram
-        jtag_write_reg32(croc_pkg::SramBaseAddr, 32'h1234_5678, 1'b1);
+        jtag_write_reg32(SramBaseAddr, 32'h1234_5678, 1'b1);
         // load binary to sram
         jtag_load_hex(binary_path);
 

@@ -57,11 +57,13 @@ sbr_obi_rsp_t user_sbr_obi_rsp;
 mgr_obi_req_t user_mgr_obi_req;
 mgr_obi_rsp_t user_mgr_obi_rsp;
 
+localparam int unsigned NumExternalIrqs = 4;
 logic [NumExternalIrqs-1:0] interrupts;
-logic [GpioCount-1:0] gpio_in_sync;
+logic [      GpioCount-1:0] gpio_in_sync;
 
 croc_domain #(
-  .GpioCount( GpioCount ) 
+  .GpioCount       ( GpioCount       ),
+  .NumExternalIrqs ( NumExternalIrqs )
 ) i_croc (
   .clk_i,
   .rst_ni ( synced_rst_n ),
@@ -95,7 +97,8 @@ croc_domain #(
 );
 
 user_domain #(
-  .GpioCount( GpioCount ) 
+  .GpioCount       ( GpioCount       ),
+  .NumExternalIrqs ( NumExternalIrqs )
 ) i_user (
   .clk_i,
   .rst_ni ( synced_rst_n ),

@@ -6,7 +6,8 @@
 // - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
 module croc_domain import croc_pkg::*; #(
-  parameter int unsigned GpioCount = 16
+  parameter int unsigned GpioCount = 16,
+  parameter int unsigned NumExternalIrqs = 4
 ) (
   input  logic      clk_i,
   input  logic      rst_ni,
@@ -94,8 +95,8 @@ module croc_domain import croc_pkg::*; #(
   // Subordinate buses out of crossbar
   // ----------------------------------
   // Main xbar subordinate buses, must align with addr map indices!
-  sbr_obi_req_t [NumXbarSbr-1:0] all_sbr_obi_req;
-  sbr_obi_rsp_t [NumXbarSbr-1:0] all_sbr_obi_rsp;
+  sbr_obi_req_t [NumXbarSubordinates-1:0] all_sbr_obi_req;
+  sbr_obi_rsp_t [NumXbarSubordinates-1:0] all_sbr_obi_rsp;
 
   // user bus defined in module port
 
@@ -305,21 +306,21 @@ module croc_domain import croc_pkg::*; #(
   // -----------------
 
   obi_xbar #(
-    .SbrPortObiCfg      ( MgrObiCfg        ),
-    .MgrPortObiCfg      ( SbrObiCfg        ),
-    .sbr_port_obi_req_t ( mgr_obi_req_t    ),
-    .sbr_port_a_chan_t  ( mgr_obi_a_chan_t ),
-    .sbr_port_obi_rsp_t ( mgr_obi_rsp_t    ),
-    .sbr_port_r_chan_t  ( mgr_obi_r_chan_t ),
-    .mgr_port_obi_req_t ( sbr_obi_req_t    ),
-    .mgr_port_obi_rsp_t ( sbr_obi_rsp_t    ),
-    .NumSbrPorts        ( NumXbarManagers  ),
-    .NumMgrPorts        ( NumXbarSbr       ),
-    .NumMaxTrans        ( 2                ),
-    .NumAddrRules       ( NumXbarSbrRules  ),
-    .addr_map_rule_t    ( addr_map_rule_t  ),
-    .UseIdForRouting    ( 1'b0             ),
-    .Connectivity       ( '1               )
+    .SbrPortObiCfg      ( MgrObiCfg            ),
+    .MgrPortObiCfg      ( SbrObiCfg            ),
+    .sbr_port_obi_req_t ( mgr_obi_req_t        ),
+    .sbr_port_a_chan_t  ( mgr_obi_a_chan_t     ),
+    .sbr_port_obi_rsp_t ( mgr_obi_rsp_t        ),
+    .sbr_port_r_chan_t  ( mgr_obi_r_chan_t     ),
+    .mgr_port_obi_req_t ( sbr_obi_req_t        ),
+    .mgr_port_obi_rsp_t ( sbr_obi_rsp_t        ),
+    .NumSbrPorts        ( NumXbarManagers      ),
+    .NumMgrPorts        ( NumXbarSubordinates  ),
+    .NumMaxTrans        ( 2                    ),
+    .NumAddrRules       ( $size(croc_addr_map) ),
+    .addr_map_rule_t    ( addr_map_rule_t      ),
+    .UseIdForRouting    ( 1'b0                 ),
+    .Connectivity       ( '1                   )
   ) i_main_xbar (
     .clk_i,
     .rst_ni,
@@ -338,6 +339,7 @@ module croc_domain import croc_pkg::*; #(
   // -----------------
   // Memories
   // -----------------
+  localparam int unsigned SramBankAddrWidth = cf_math_pkg::idx_width(SramBankNumWords);
 
   for (genvar i = 0; i < NumSramBanks; i++) begin : gen_sram_bank
     logic bank_req, bank_we, bank_gnt, bank_single_err;
@@ -419,7 +421,7 @@ module croc_domain import croc_pkg::*; #(
 
   addr_decode #(
     .NoIndices ( NumPeriphs                     ),
-    .NoRules   ( NumPeriphRules                 ),
+    .NoRules   ( $size(periph_addr_map)         ),
     .addr_t    ( logic[SbrObiCfg.DataWidth-1:0] ),
     .rule_t    ( addr_map_rule_t                ),
     .Napot     ( 1'b0                           )
@@ -473,7 +475,7 @@ module croc_domain import croc_pkg::*; #(
   soc_ctrl_regs #(
     .obi_req_t       ( sbr_obi_req_t ),
     .obi_rsp_t       ( sbr_obi_rsp_t ),
-    .BootAddrDefault ( SramBaseAddr  )
+    .BootAddrDefault ( BootAddr      )
   ) i_soc_ctrl (
     .clk_i,
     .rst_ni,

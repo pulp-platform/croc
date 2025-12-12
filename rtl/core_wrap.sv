@@ -44,6 +44,9 @@ module core_wrap import croc_pkg::*; #() (
   output logic        core_busy_o
 );
 
+  // Base address of the debug module in the memory map.
+  localparam bit [31:0] DebugAddrOffset = get_periph_start_addr(PeriphDebug);
+
   // lowest 8 bits are ignored internally
   logic[31:0] ibex_boot_addr;
   assign ibex_boot_addr = boot_addr_i & 32'hFFFFFF00; 
@@ -53,23 +56,23 @@ module core_wrap import croc_pkg::*; #() (
 `else
   cve2_core #(
 `endif
-    .PMPEnable          ( 1'b0                ),
-    .PMPGranularity     ( 0                   ),
-    .PMPNumRegions      ( 4                   ),
-    .MHPMCounterNum     ( 0                   ),
-    .MHPMCounterWidth   ( 40                  ),
-    .RV32E              ( 0                   ),
-    .RV32M              ( cve2_pkg::RV32MNone ),
-    .RV32B              ( cve2_pkg::RV32BNone ),
-    .DbgTriggerEn       ( 1'b1                ),
-    .DbgHwBreakNum      ( 1                   ),
-    .DmHaltAddr         ( DebugAddrOffset + dm::HaltAddress[31:0]      ),
-    .DmExceptionAddr    ( DebugAddrOffset + dm::ExceptionAddress[31:0] )
+    .PMPEnable        ( 1'b0                ),
+    .PMPGranularity   ( 0                   ),
+    .PMPNumRegions    ( 4                   ),
+    .MHPMCounterNum   ( 0                   ),
+    .MHPMCounterWidth ( 40                  ),
+    .RV32E            ( 0                   ),
+    .RV32M            ( cve2_pkg::RV32MNone ),
+    .RV32B            ( cve2_pkg::RV32BNone ),
+    .DbgTriggerEn     ( 1'b1                ),
+    .DbgHwBreakNum    ( 1                   ),
+    .DmHaltAddr       ( DebugAddrOffset + dm::HaltAddress[31:0]      ),
+    .DmExceptionAddr  ( DebugAddrOffset + dm::ExceptionAddress[31:0] )
   ) i_ibex (
     .clk_i,
     .rst_ni,
     .test_en_i          ( test_enable_i  ),
-    .hart_id_i          ( HartId ),
+    .hart_id_i          ( 32'd0          ),
     .boot_addr_i        ( ibex_boot_addr ),
 
     // Instruction Memory Interface:

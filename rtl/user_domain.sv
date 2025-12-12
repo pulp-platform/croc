@@ -6,7 +6,8 @@
 // - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
 module user_domain import user_pkg::*; import croc_pkg::*; #(
-  parameter int unsigned GpioCount = 16
+  parameter int unsigned GpioCount = 16,
+  parameter int unsigned NumExternalIrqs = 4
 ) (
   input  logic      clk_i,
   input  logic      ref_clk_i,
