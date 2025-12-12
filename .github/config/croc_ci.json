@@ -4,14 +4,14 @@
     },
     "gds" : {
         "file"        : "/fosic/designs/croc/artistic/meerkat_work/croc_chip.gds.gz",
-        "x_offset_um" : -80,
-        "y_offset_um" : -80,
-        "width_um"    : 1920,
-        "height_um"   : 1920
+        "x_offset_um" : 0,
+        "y_offset_um" : 0,
+        "width_um"    : 1930,
+        "height_um"   : 1930
     },
     "image": {
-        "px_width"          : 1920,
-        "px_height"         : 1920,
+        "px_width"          : 1930,
+        "px_height"         : 1930,
         "overrender_factor" : 4,
         "num_segs_width"    : 1,
         "num_segs_height"   : 1
