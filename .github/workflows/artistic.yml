@@ -102,7 +102,7 @@ jobs:
       - name: Generate logo GDS
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: "cd artistic; python3 scripts/meerkat.py -m '112,112,178,178' -i meerkat_work/logo_mono.png -g meerkat_work/croc_tm.gds -l 134 -n croc -s meerkat_work/croc_logo.svg -o meerkat_work/croc_logo.gds"
+          cmd: "cd artistic; python3 scripts/meerkat.py -m '145,145,145,145' -i meerkat_work/logo_mono.png -g meerkat_work/croc_tm.gds -l 134 -n croc -s meerkat_work/croc_logo.svg -o meerkat_work/croc_logo.gds"
       - name: Upload logo GDS
         uses: actions/upload-artifact@v4
         with:
