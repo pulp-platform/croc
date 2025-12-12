@@ -30,20 +30,40 @@ static inline void wfi() {
     asm volatile("wfi" ::: "memory");
 }
 
-// Enables or disables M-mode timer interrupts.
-static inline void set_mtie(int enable) {
+static inline uint32_t get_mstatus() {
+    uint32_t mstatus;
+    asm volatile("csrr %0, mstatus" : "=r"(mstatus)::"memory");
+    return mstatus;
+}
+
+static inline uint32_t get_mie() {
+    uint32_t mie;
+    asm volatile("csrr %0, mie" : "=r"(mie)::"memory");
+    return mie;
+}
+
+// Enables or disables interrupts for interrupt `irq`.
+static inline void set_interrupt_enable(int enable, int irq) {
+    if (irq <= 0 || irq > 30) return;
     if (enable)
-        asm volatile("csrs mie, %0" ::"r"(128) : "memory");
+        asm volatile("csrs mie, %0" ::"r"(1 << irq) : "memory");
     else
-        asm volatile("csrc mie, %0" ::"r"(128) : "memory");
+        asm volatile("csrc mie, %0" ::"r"(1 << irq) : "memory");
 }
 
 // Enables or disables M-mode global interrupts.
-static inline void set_mie(int enable) {
+static inline void set_global_irq_enable(int enable) {
     if (enable)
         asm volatile("csrsi mstatus, 8" ::: "memory");
     else
         asm volatile("csrci mstatus, 8" ::: "memory");
+}
+
+// Get mcause CSR
+static inline uint32_t get_mcause() {
+    uint32_t mcause;
+    asm volatile("csrr %0, mcause" : "=r"(mcause)::"memory");
+    return mcause;
 }
 
 // Get cycle count since reset
