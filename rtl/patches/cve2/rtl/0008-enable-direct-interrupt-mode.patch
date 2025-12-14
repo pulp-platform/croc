@@ -1,0 +1,44 @@
+From 43208f6f9b77c7872f19b2af53c3ccee6b7688b0 Mon Sep 17 00:00:00 2001
+From: Enrico Zelioli <ezelioli@iis.ee.ethz.ch>
+Date: Sun, 14 Dec 2025 17:08:15 +0100
+Subject: [PATCH] enable direct interrupt mode
+
+---
+ cve2_cs_registers.sv | 7 +++----
+ cve2_if_stage.sv     | 2 +-
+ 2 files changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/cve2_cs_registers.sv b/cve2_cs_registers.sv
+index 2a557fae..c2bb1c11 100644
+--- a/cve2_cs_registers.sv
++++ b/cve2_cs_registers.sv
+@@ -497,10 +497,9 @@ import cve2_pkg::*;
+     mtval_en     = 1'b0;
+     mtval_d      = csr_wdata_int;
+     mtvec_en     = csr_mtvec_init_i;
+-    // mtvec.MODE set to vectored
+-    // mtvec.BASE must be 256-byte aligned
+-    mtvec_d      = csr_mtvec_init_i ? {boot_addr_i[31:8], 6'b0, 2'b01} :
+-                                      {csr_wdata_int[31:8], 6'b0, 2'b01};
++    // mtvec.BASE must be 4-byte aligned
++    mtvec_d      = csr_mtvec_init_i ? {boot_addr_i[31:2], 2'b00} :
++                                      {csr_wdata_int[31:2], csr_wdata_int[1:0]};
+     dcsr_en      = 1'b0;
+     dcsr_d       = dcsr_q;
+     depc_d       = {csr_wdata_int[31:1], 1'b0};
+diff --git a/cve2_if_stage.sv b/cve2_if_stage.sv
+index b16b604a..d7c3ee85 100644
+--- a/cve2_if_stage.sv
++++ b/cve2_if_stage.sv
+@@ -122,7 +122,7 @@ module cve2_if_stage import cve2_pkg::*; #(
+   always_comb begin : exc_pc_mux
+     unique case (exc_pc_mux_i)
+       EXC_PC_EXC:     exc_pc = { csr_mtvec_i[31:8], 8'h00              };
+-      EXC_PC_IRQ:     exc_pc = { csr_mtvec_i[31:8], irq_id[5:0], 2'b00 };
++      EXC_PC_IRQ:     exc_pc = (csr_mtvec_i[1:0] == 2'b01) ? { csr_mtvec_i[31:8], irq_id[5:0], 2'b00 } : { csr_mtvec_i[31:2], 2'b00 };
+       EXC_PC_DBD:     exc_pc = DmHaltAddr;
+       EXC_PC_DBG_EXC: exc_pc = DmExceptionAddr;
+       default:        exc_pc = { csr_mtvec_i[31:8], 8'h00              };
+-- 
+2.43.5
+
