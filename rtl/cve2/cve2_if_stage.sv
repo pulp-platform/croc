@@ -122,7 +122,7 @@ module cve2_if_stage import cve2_pkg::*; #(
   always_comb begin : exc_pc_mux
     unique case (exc_pc_mux_i)
       EXC_PC_EXC:     exc_pc = { csr_mtvec_i[31:8], 8'h00              };
-      EXC_PC_IRQ:     exc_pc = { csr_mtvec_i[31:8], irq_id[5:0], 2'b00 };
+      EXC_PC_IRQ:     exc_pc = (csr_mtvec_i[1:0] == 2'b01) ? { csr_mtvec_i[31:8], irq_id[5:0], 2'b00 } : { csr_mtvec_i[31:2], 2'b00 };
       EXC_PC_DBD:     exc_pc = DmHaltAddr;
       EXC_PC_DBG_EXC: exc_pc = DmExceptionAddr;
       default:        exc_pc = { csr_mtvec_i[31:8], 8'h00              };
