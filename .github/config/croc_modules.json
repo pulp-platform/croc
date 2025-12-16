@@ -1,0 +1,34 @@
+{
+    "i_uart": {
+        "name": "UART",
+        "color": "#f88c05"
+    },
+    "i_dm_top": {
+        "name": "Debug",
+        "color": "#d489cc"
+    },
+    "i_dmi_jtag": {
+        "name": "JTAG",
+        "color": "#80499c"
+    },
+    "i_obi_timer": {
+        "name": "Timer",
+        "color": "#f3d408"
+    },
+    "i_core_wrap": {
+        "name": "Core",
+        "color": "#fb120d"
+    },
+    "i_user": {
+        "name": "User",
+        "color": "#1bb32c"
+    },
+    "i_gpio": {
+        "name": "GPIO",
+        "color": "#43fdaa"
+    },
+    "gen_sram_bank": {
+        "name": "SRAM",
+        "color": "#39729f"
+    }
+}

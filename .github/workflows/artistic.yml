@@ -42,7 +42,7 @@ jobs:
             echo "run-id=${RUN_ID}" >> "$GITHUB_OUTPUT"
         env:
             GH_TOKEN: ${{ github.token }}
-      - name: Download artifact from "Full Flow" workflow
+      - name: Download GDS artifact from "Full Flow" workflow
         uses: actions/download-artifact@v4
         with:
           name: croc-gds
@@ -50,12 +50,20 @@ jobs:
           repository: ${{ github.repository }}
           run-id: ${{ steps.get-run-id.outputs.run-id }}
           path: klayout
+      - name: Download DEF artifact from "Full Flow" workflow
+        uses: actions/download-artifact@v4
+        with:
+          name: croc-openroad-out
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ steps.get-run-id.outputs.run-id }}
+          path: openroad
 
       - name: Checkout ArtistIC repository
         uses: actions/checkout@v4
         with:
           repository: pulp-platform/artistic
-          ref: 33986fa39e07d89a8337d65e84b01113bf18ea03
+          ref: 31277dfbcb5f15d219c9834bc9e6f1c9b4705bf3
           path: artistic
       - name: Update package lists and install Inkscape, img2pdf
         run: |
@@ -74,9 +82,10 @@ jobs:
           path: doc/artwork/logo.png
         continue-on-error: true
 
-      - name: Install ImageMagick
+      - name: Install ImageMagick, Potrace, Pillow, svgpathtools
         run: |
-          sudo apt-get install -y imagemagick
+          sudo apt-get install -y imagemagick potrace
+          pip install --break-system-packages svgpathtools Pillow
       - name: Install packages in OSEDA
         uses: ./.github/actions/oseda-cmd
         with:
@@ -103,7 +112,7 @@ jobs:
       - name: Generate logo GDS
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: "cd artistic; python3 scripts/meerkat.py -m '145,145,145,145' -i meerkat_work/logo_mono.png -g meerkat_work/croc_tm.gds -l 134 -n croc -s meerkat_work/croc_logo.svg -o meerkat_work/croc_logo.gds"
+          cmd: "cd artistic; python3 scripts/meerkat.py -i meerkat_work/logo_mono.png -g meerkat_work/croc_tm.gds -l 134 -n croc -s meerkat_work/croc_logo.svg -o meerkat_work/croc_logo.gds"
       - name: Upload logo GDS
         uses: actions/upload-artifact@v4
         with:
@@ -162,6 +171,13 @@ jobs:
           mv artistic/renderics//DPI__croc_0-0.png artistic/renderics/croc_render.png
           mv artistic/renderics//PDF__croc_0-0.pdf artistic/renderics/croc_render.pdf
           convert artistic/renderics/croc_render.png artistic/renderics/croc_render.jpg
+      - name: Create annotated outlines SVG
+        run: |
+          python3 artistic/scripts/gen_outline.py -i openroad/out/croc.def -o artistic/renderics/croc_modules.svg -b artistic/renderics/croc_render.jpg --lef_files ihp13/pdk/ihp-sg13g2/libs.ref/sg13g2_sram/lef/*.lef --px_scale 15000 --module_json .github/config/croc_modules.json --opacity 0.65 --font_size 35 --luminosity 0.85
+      - name: Create annotated outlines PNG and PDF
+        run: |
+          inkscape artistic/renderics/croc_modules.svg -o artistic/renderics/croc_modules.png
+          inkscape artistic/renderics/croc_modules.svg -o artistic/renderics/croc_modules.pdf
       - name: Upload render PNG
         uses: actions/upload-artifact@v4
         with:
@@ -179,6 +195,24 @@ jobs:
         with:
           name: render-jpg
           path: artistic/renderics/croc_render.jpg
+        continue-on-error: true
+      - name: Upload render module SVG
+        uses: actions/upload-artifact@v4
+        with:
+          name: render-module-svg
+          path: artistic/renderics/croc_modules.svg
+        continue-on-error: true
+      - name: Upload render module PNG
+        uses: actions/upload-artifact@v4
+        with:
+          name: render-module-png
+          path: artistic/renderics/croc_modules.png
+        continue-on-error: true
+      - name: Upload render module PDF
+        uses: actions/upload-artifact@v4
+        with:
+          name: render-module-pdf
+          path: artistic/renderics/croc_modules.pdf
         continue-on-error: true
 # Map render and deploy below:
       - name: Render b/w map layer tiles
@@ -203,6 +237,10 @@ jobs:
       - name: Copy GDS to be deployed
         run: |
           cp artistic/meerkat_work/croc_logo.gds artistic/mapify/croc_logo.gds
+      - name: Copy Outlines to be deployed
+        run: |
+          cp artistic/renderics/croc_modules.* artistic/mapify/
+          cp artistic/renderics/croc_render.jpg artistic/mapify/
       - name: Upload OpenStreetMap DB to pages
         uses: actions/upload-pages-artifact@v3
         with:
