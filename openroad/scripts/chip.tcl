@@ -182,7 +182,7 @@ utl::report "Repair clock inverters"
 repair_clock_inverters
 
 utl::report "Clock Tree Synthesis"
-set_wire_rc -clock -layer Metal4
+set_wire_rc -clock -layer Metal3
 clock_tree_synthesis -buf_list $ctsBuf -root_buf $ctsBufRoot \
                      -sink_clustering_enable \
                      -obstruction_aware \

@@ -88,6 +88,7 @@ set core_topY     [lindex $coreArea 3]
 # We need to define the metal tracks 
 # (where the wires on each metal should go)
 # this function is defined in init_tech.tcl
+utl::report "Create Tracks"
 makeTracks
 
 # the height of a standard cell, useful to align things
@@ -104,8 +105,8 @@ source src/instances.tcl
 # Placing 
 ##########################################################################
 # use these for macro placement
-set floorPaddingX      20.0
-set floorPaddingY      20.0
+set floorPaddingX      16.0
+set floorPaddingY      16.0
 set floor_leftX       [expr $core_leftX + $floorPaddingX]
 set floor_bottomY     [expr $core_bottomY + $floorPaddingY]
 set floor_rightX      [expr $core_rightX - $floorPaddingX]
@@ -126,4 +127,4 @@ set Y [expr $Y - $RamSize256x64_H - 15]
 placeInstance $bank1_sram0 $X $Y R0
 
 
-cut_rows -halo_width_x 2 -halo_width_y 1
+cut_rows -halo_width_x 5 -halo_width_y 2
