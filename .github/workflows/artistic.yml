@@ -8,6 +8,7 @@
 name: ArtistIC Render
 
 on:
+    workflow_dispatch:
     workflow_run:
       workflows: ["Full Flow"]
       types: [completed]
