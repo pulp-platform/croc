@@ -46,7 +46,10 @@ yosys setattr -set keep_hierarchy 1 "t:reg_uart_wrap$*"
 yosys setattr -set keep_hierarchy 1 "t:soc_ctrl_regs$*"
 yosys setattr -set keep_hierarchy 1 "t:tc_clk*$*"
 yosys setattr -set keep_hierarchy 1 "t:tc_sram_impl$*"
-yosys setattr -set keep_hierarchy 1 "t:cdc_*$*"
+yosys setattr -set keep_hierarchy 1 "t:cdc_reset*$*"
+yosys setattr -set keep_hierarchy 1 "t:cdc*phase_*$*"
+yosys setattr -set keep_hierarchy 1 "t:cdc*_src*$*"
+yosys setattr -set keep_hierarchy 1 "t:cdc*_dst*$*"
 yosys setattr -set keep_hierarchy 1 "t:sync$*"
 
 
@@ -55,6 +58,7 @@ yosys blackbox "t:tc_sram_blackbox$*"
 
 # map dont_touch attribute commonly applied to output-nets of async regs to keep
 yosys attrmap -rename dont_touch keep
+yosys attrmap -tocase keep -imap keep="true" keep=1
 # copy the keep attribute to their driving cells (retain on net for debugging)
 yosys attrmvcp -copy -attr keep
 
@@ -77,7 +81,9 @@ yosys tee -q -o "${rep_dir}/${top_design}_initial_opt.rpt" stat
 yosys wreduce 
 yosys peepopt
 yosys opt_clean
+yosys write_verilog -norename -noexpr ${tmp_dir}/${top_design}_yosys_abstract4.v
 yosys opt -full
+yosys write_verilog -norename -noexpr ${tmp_dir}/${top_design}_yosys_abstract5.v
 yosys booth
 yosys share
 yosys opt
@@ -92,10 +98,12 @@ yosys share
 yosys opt -full
 yosys clean -purge
 
-yosys write_verilog -norename ${tmp_dir}/${top_design}_yosys_abstract.v
+yosys clean -purge
+yosys write_verilog -norename -noexpr ${tmp_dir}/${top_design}_yosys_abstract.v
 yosys tee -q -o "${rep_dir}/${top_design}_abstract.rpt" stat -tech cmos
 
 yosys techmap
+yosys write_verilog -norename -noexpr ${tmp_dir}/${top_design}_yosys_abstract3.v
 yosys opt -fast
 yosys clean -purge
 
@@ -105,7 +113,10 @@ yosys tee -q -o "${rep_dir}/${top_design}_generic.rpt" stat -tech cmos
 yosys tee -q -o "${rep_dir}/${top_design}_generic.json" stat -json -tech cmos
 
 # flatten all hierarchy except marked modules
+yosys write_verilog -norename ${tmp_dir}/${top_design}_yosys_abstract2.v
 yosys flatten
+yosys write_verilog -norename ${tmp_dir}/${top_design}_flatten.v
+# yosys opt_hier
 
 yosys clean -purge
 
@@ -116,6 +127,7 @@ yosys clean -purge
 yosys splitnets -format __v
 # rename DFFs from the driven signal
 yosys rename -wire -suffix _reg t:*DFF*
+yosys write_verilog -norename ${tmp_dir}/${top_design}_yosys_rename.v
 yosys select -write ${rep_dir}/${top_design}_registers.rpt t:*DFF*
 # rename all other cells
 yosys autoname t:*DFF* %n
