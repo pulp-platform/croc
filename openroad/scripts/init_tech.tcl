@@ -62,7 +62,7 @@ read_lef ${pdk_cells_lef}/sg13g2_stdcell.lef
 read_lef ${pdk_io_lef}/sg13g2_io.lef
 read_lef ${pdk_pad_lef}/bondpad_70x70.lef
 
-foreach file [glob -directory $pdk_sram_lef *.lef] {
+foreach file [glob -directory $pdk_sram_lef RM_IHPSG13*.lef] {
 	read_lef "$file"
 }
 
@@ -79,11 +79,11 @@ set dont_use_cells sg13g2_IOPad*
 
 proc makeTracks {} {
     utl::report "Metal Tracks"
-	make_tracks Metal1    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.48
-	make_tracks Metal2    -x_offset 0 -x_pitch 0.42 -y_offset 0 -y_pitch 0.42
-	make_tracks Metal3    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.48
-	make_tracks Metal4    -x_offset 0 -x_pitch 0.42 -y_offset 0 -y_pitch 0.42
-	make_tracks Metal5    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.48
-	make_tracks TopMetal1 -x_offset 1.46 -x_pitch 2.28 -y_offset 1.46 -y_pitch 2.28
+	make_tracks Metal1    -x_offset 0 -x_pitch 0.42 -y_offset 0 -y_pitch 0.42
+	make_tracks Metal2    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.48
+	make_tracks Metal3    -x_offset 0 -x_pitch 0.42 -y_offset 0 -y_pitch 0.42
+	make_tracks Metal4    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.48
+	make_tracks Metal5    -x_offset 0 -x_pitch 0.42 -y_offset 0 -y_pitch 0.42
+	make_tracks TopMetal1 -x_offset 1.64 -x_pitch 2.28 -y_offset 1.64 -y_pitch 2.28
 	make_tracks TopMetal2 -x_offset 2.00 -x_pitch 4.00 -y_offset 2.00 -y_pitch 4.00
 }

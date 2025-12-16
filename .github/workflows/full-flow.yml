@@ -31,7 +31,7 @@ jobs:
       - name: Run Yosys, OpenROAD and KLayout
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: "make yosys && make openroad && make klayout"
+          cmd: "make yosys && make openroad && make finishing"
       - name: Upload openroad outputs
         uses: actions/upload-artifact@v4
         with:
@@ -44,5 +44,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: croc-gds
-          path: klayout/croc_chip.gds
+          path: klayout/out/croc_chip.gds.gz
         continue-on-error: true
