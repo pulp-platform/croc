@@ -57,7 +57,12 @@ module croc_chip import croc_pkg::*; #() (
   output wire unused0_o,
   output wire unused1_o,
   output wire unused2_o,
-  output wire unused3_o
+  output wire unused3_o,
+
+  inout wire VDD,
+  inout wire VSS,
+  inout wire VDDIO,
+  inout wire VSSIO
 ); 
     logic soc_clk_i;
     logic soc_rst_ni;
