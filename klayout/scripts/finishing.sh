@@ -7,6 +7,8 @@ root_dir=$(realpath $(dirname "${BASH_SOURCE[0]}")/../..)
 klayout_dir=${root_dir}/ihp13/pdk/ihp-sg13g2/libs.tech/klayout
 export KLAYOUT_PATH=$klayout_dir
 export PDK=ihp-sg13g2
+export PDK_ROOT=${root_dir}/ihp13/pdk
+
 echo "Root: ${root_dir}"
 echo "KLayout: ${klayout_dir}"
 
