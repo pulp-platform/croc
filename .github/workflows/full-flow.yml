@@ -45,4 +45,9 @@ jobs:
         with:
           name: croc-gds
           path: klayout/out/croc_chip.gds.gz
+      - name: Upload sealed gds
+        uses: actions/upload-artifact@v4
+        with:
+          name: croc-gds-sealed
+          path: klayout/out/croc_chip_sealed.gds.gz
         continue-on-error: true
