@@ -1,17 +1,17 @@
-From 75a75826ae9701bc5bcfce7399a80f435786c7c8 Mon Sep 17 00:00:00 2001
+From 7775101e0ab8668f8abe1d7b0854ae13a153b6da Mon Sep 17 00:00:00 2001
 From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
-Date: Tue, 6 May 2025 17:16:23 +0200
+Date: Fri, 19 Dec 2025 15:40:35 +0100
 Subject: [PATCH] adjust Bender source paths
 
 ---
- Bender.yml | 223 +++++++++++++++++++----------------------------------
- 1 file changed, 79 insertions(+), 144 deletions(-)
+ Bender.yml | 231 +++++++++++++++++++----------------------------------
+ 1 file changed, 83 insertions(+), 148 deletions(-)
 
 diff --git a/Bender.yml b/Bender.yml
-index df66670..208fc3b 100644
+index cf837d6..14c2e46 100644
 --- a/Bender.yml
 +++ b/Bender.yml
-@@ -23,157 +23,92 @@ sources:
+@@ -23,161 +23,96 @@ sources:
    # etc. Files within a level are ordered alphabetically.
  
    # Level 0
@@ -32,6 +32,7 @@ index df66670..208fc3b 100644
 -      - src/exp_backoff.sv
 -      - src/fifo_v3.sv
 -      - src/gray_to_binary.sv
+-      - src/heaviside.sv
 -      - src/isochronous_4phase_handshake.sv
 -      - src/isochronous_spill_register.sv
 -      - src/lfsr.sv
@@ -43,6 +44,7 @@ index df66670..208fc3b 100644
 -      - src/plru_tree.sv
 -      - src/passthrough_stream_fifo.sv
 -      - src/popcount.sv
+-      - src/ring_buffer.sv
 -      - src/rr_arb_tree.sv
 -      - src/rstgen_bypass.sv
 -      - src/serial_deglitch.sv
@@ -73,6 +75,7 @@ index df66670..208fc3b 100644
 +      - exp_backoff.sv
 +      - fifo_v3.sv
 +      - gray_to_binary.sv
++      - heaviside.sv
 +      - isochronous_4phase_handshake.sv
 +      - isochronous_spill_register.sv
 +      - lfsr.sv
@@ -84,6 +87,7 @@ index df66670..208fc3b 100644
 +      - plru_tree.sv
 +      - passthrough_stream_fifo.sv
 +      - popcount.sv
++      - ring_buffer.sv
 +      - rr_arb_tree.sv
 +      - rstgen_bypass.sv
 +      - serial_deglitch.sv
@@ -104,13 +108,17 @@ index df66670..208fc3b 100644
 +      - read.sv
        # Level 1
 -      - src/addr_decode_dync.sv
+-      - src/boxcar.sv
 -      - src/cdc_2phase.sv
 -      - src/cdc_4phase.sv
 -      - src/clk_int_div_static.sv
+-      - src/trip_counter.sv
 +      - addr_decode_dync.sv
++      - boxcar.sv
 +      - cdc_2phase.sv
 +      - cdc_4phase.sv
 +      - clk_int_div_static.sv
++      - trip_counter.sv
        # Level 2
 -      - src/addr_decode.sv
 -      - src/addr_decode_napot.sv
@@ -249,5 +257,5 @@ index df66670..208fc3b 100644
 -  - src/edge_propagator_rx.sv
 +      - mem_to_banks.sv
 -- 
-2.39.3
+2.43.5
 

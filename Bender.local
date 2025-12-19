@@ -3,7 +3,6 @@ overrides:
   tech_cells_generic: { path: "rtl/tech_cells_generic" }
   common_cells: { path: "rtl/common_cells" }
   apb: { path: "rtl/apb" }
-  register_interface: { path: "rtl/register_interface" }
   obi_peripherals: { path: "rtl/obi_uart" }
   ibex: { path: "rtl/ibex" }
   obi: { path: "rtl/obi" }

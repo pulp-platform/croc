@@ -1,19 +1,19 @@
-From 2242cdc93bfc8f004694ad07b36e611baf31d656 Mon Sep 17 00:00:00 2001
+From fd7b4dba0ae605357b75631ef7794ba8681f3c2f Mon Sep 17 00:00:00 2001
 From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
-Date: Tue, 1 Apr 2025 18:38:28 +0200
+Date: Fri, 19 Dec 2025 17:17:20 +0100
 Subject: [PATCH] add bender package manifest
 
 ---
- Bender.yml | 51 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 51 insertions(+)
+ Bender.yml | 52 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 52 insertions(+)
  create mode 100644 rtl/Bender.yml
 
 diff --git a/Bender.yml b/Bender.yml
 new file mode 100644
-index 00000000..73be92b7
+index 00000000..86a1556c
 --- /dev/null
 +++ b/Bender.yml
-@@ -0,0 +1,51 @@
+@@ -0,0 +1,52 @@
 +# Copyright 2024 ETH Zurich and University of Bologna
 +# Solderpad Hardware License, Version 0.51, see LICENSE for details.
 +# SPDX-License-Identifier: SHL-0.51
@@ -32,6 +32,7 @@ index 00000000..73be92b7
 +    - cve2_pkg.sv
 +    # Level 1
 +    - cve2_alu.sv
++    - cve2_branch_predict.sv
 +    - cve2_compressed_decoder.sv
 +    - cve2_controller.sv
 +    - cve2_counter.sv
@@ -66,5 +67,5 @@ index 00000000..73be92b7
 +      - cve2_tracer.sv
 +      - cve2_core_tracing.sv
 -- 
-2.34.1
+2.43.5
 

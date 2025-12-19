@@ -42,15 +42,6 @@ packages:
     dependencies:
     - common_cells
     - obi
-  register_interface:
-    revision: null
-    version: null
-    source:
-      Path: rtl/register_interface
-    dependencies:
-    - apb
-    - common_cells
-    - common_verification
   riscv-dbg:
     revision: null
     version: null

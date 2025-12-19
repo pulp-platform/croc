@@ -1,17 +1,17 @@
-From 9c5d147e3656ff23fed8f9900b04db0596c00084 Mon Sep 17 00:00:00 2001
+From e0de80b5389671982bfd2e6455a21990b3a50fc3 Mon Sep 17 00:00:00 2001
 From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
-Date: Tue, 6 May 2025 17:08:53 +0200
+Date: Fri, 19 Dec 2025 15:44:23 +0100
 Subject: [PATCH] adjust Bender source paths
 
 ---
- Bender.yml | 28 ++++++++++------------------
- 1 file changed, 10 insertions(+), 18 deletions(-)
+ Bender.yml | 32 ++++++++++++--------------------
+ 1 file changed, 12 insertions(+), 20 deletions(-)
 
 diff --git a/Bender.yml b/Bender.yml
-index a67bec7..33b2830 100644
+index d7be422..94808a1 100644
 --- a/Bender.yml
 +++ b/Bender.yml
-@@ -16,24 +16,16 @@ export_include_dirs:
+@@ -16,26 +16,18 @@ export_include_dirs:
  
  sources:
    # Level 1
@@ -20,8 +20,12 @@ index a67bec7..33b2830 100644
    # Level 2
 -  - src/obi_intf.sv
 -  - src/obi_rready_converter.sv
+-  - src/apb_to_obi.sv
+-  - src/obi_to_apb.sv
 +  - obi_intf.sv
 +  - obi_rready_converter.sv
++  - apb_to_obi.sv
++  - obi_to_apb.sv
    # Level 3
 -  - src/obi_atop_resolver.sv
 -  - src/obi_cut.sv
@@ -47,5 +51,5 @@ index a67bec7..33b2830 100644
 -      - src/test/tb_obi_atop_resolver.sv
 +  - obi_xbar.sv
 -- 
-2.39.3
+2.43.5
 

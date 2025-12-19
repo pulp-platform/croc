@@ -20,6 +20,8 @@ Most IPs will also support a SystemVerilog `interface` variant, also based on `O
 - `obi_err_sbr.sv`: A error subordinate, responding with the error bit set.
 - `obi_sram_shim.sv`: An adapter for a standard sram.
 - `obi_atop_resolver.sv`: An atomics filter, resolving atomic operations on an exclusive bus.
+- `apb_to_obi.sv`: A protocol converter from APB to OBI.
+- `obi_to_apb.sv`: A protocol converter from OBI to APB.
 
 ## License
 Solderpad Hardware License, Version 0.51

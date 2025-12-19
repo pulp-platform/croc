@@ -16,6 +16,7 @@ sources:
     - cve2_pkg.sv
     # Level 1
     - cve2_alu.sv
+    - cve2_branch_predict.sv
     - cve2_compressed_decoder.sv
     - cve2_controller.sv
     - cve2_counter.sv
