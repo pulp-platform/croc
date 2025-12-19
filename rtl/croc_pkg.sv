@@ -6,7 +6,6 @@
 // - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
 // header files for the two interconnect types used in Croc
-`include "register_interface/typedef.svh"
 `include "obi/typedef.svh"
 
 /// Package for croc configuration, address map and interconnect types

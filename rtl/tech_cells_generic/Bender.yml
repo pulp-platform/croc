@@ -1,6 +1,5 @@
 package:
   name: tech_cells_generic
-  description: "Technology-agnostic building blocks."
 
 dependencies:
   common_verification: { git: "https://github.com/pulp-platform/common_verification.git", version: 0.2.0 }

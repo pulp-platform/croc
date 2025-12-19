@@ -13,7 +13,6 @@ YOSYS     ?= yosys
 OPENROAD  ?= openroad
 KLAYOUT   ?= klayout
 VSIM      ?= vsim
-REGGEN    ?= $(PYTHON3) $(shell $(BENDER) path register_interface)/vendor/lowrisc_opentitan/util/regtool.py
 
 # Directories
 # directory of the path to the last called Makefile (this one)

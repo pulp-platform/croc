@@ -25,6 +25,8 @@ module tc_sram #(
   parameter              SimInit      = "zeros",  // Simulation initialization, fixed to zero here!
   parameter bit          PrintSimCfg  = 1'b0,     // Print configuration
   parameter              ImplKey      = "none",   // Reference to specific implementation
+  parameter              FPGAImplKey  = "auto",   // Reference to specific implementation for fpga
+
   // DEPENDENT PARAMETERS, DO NOT OVERWRITE!
   parameter int unsigned AddrWidth = (NumWords > 32'd1) ? $clog2(NumWords) : 32'd1,
   parameter int unsigned BeWidth   = (DataWidth + ByteWidth - 32'd1) / ByteWidth, // ceil_div
@@ -89,7 +91,7 @@ module tc_sram #(
       .MEMORY_INIT_FILE    ( "none"           ), // String
       .MEMORY_INIT_PARAM   ( "0"              ), // String
       .MEMORY_OPTIMIZATION ( "true"           ), // String
-      .MEMORY_PRIMITIVE    ( "auto"           ), // String
+      .MEMORY_PRIMITIVE    ( FPGAImplKey      ), // String
       .MEMORY_SIZE         ( Size             ), // DECIMAL in bit!
       .MESSAGE_CONTROL     ( 0                ), // DECIMAL
       .READ_DATA_WIDTH_A   ( DataWidthAligned ), // DECIMAL
@@ -128,7 +130,7 @@ module tc_sram #(
       .MEMORY_INIT_FILE        ( "none"           ), // String
       .MEMORY_INIT_PARAM       ( "0"              ), // String
       .MEMORY_OPTIMIZATION     ( "true"           ), // String
-      .MEMORY_PRIMITIVE        ( "auto"           ), // String
+      .MEMORY_PRIMITIVE        ( FPGAImplKey      ), // String
       .MEMORY_SIZE             ( Size             ), // DECIMAL in bits!
       .MESSAGE_CONTROL         ( 0                ), // DECIMAL
       .READ_DATA_WIDTH_A       ( DataWidthAligned ), // DECIMAL

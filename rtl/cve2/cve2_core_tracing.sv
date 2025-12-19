@@ -1,31 +1,30 @@
+// Copyright (c) 2025 Eclipse Foundation
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * cve2 RISC-V core with tracing enabled
+ * Top level module of the cve2 RISC-V core with tracing enabled
  */
 
 module cve2_core_tracing import cve2_pkg::*; #(
   parameter bit          PMPEnable         = 1'b0,
   parameter int unsigned PMPGranularity    = 0,
   parameter int unsigned PMPNumRegions     = 4,
-  parameter int unsigned MHPMCounterNum    = 0,
+  parameter int unsigned MHPMCounterNum    = 10,
   parameter int unsigned MHPMCounterWidth  = 40,
   parameter bit          RV32E             = 1'b0,
   parameter rv32m_e      RV32M             = RV32MFast,
   parameter rv32b_e      RV32B             = RV32BNone,
   parameter bit          DbgTriggerEn      = 1'b0,
   parameter int unsigned DbgHwBreakNum     = 1,
-  parameter int unsigned DmHaltAddr        = 32'h1A110800,
-  parameter int unsigned DmExceptionAddr   = 32'h1A110808
+  parameter bit          XInterface        = 1'b0
 ) (
   // Clock and Reset
   input  logic                         clk_i,
   input  logic                         rst_ni,
 
   input  logic                         test_en_i,     // enable all clock gates for testing
-
 
   input  logic [31:0]                  hart_id_i,
   input  logic [31:0]                  boot_addr_i,
@@ -49,6 +48,25 @@ module cve2_core_tracing import cve2_pkg::*; #(
   input  logic [31:0]                  data_rdata_i,
   input  logic                         data_err_i,
 
+  // Core-V Extension Interface (CV-X-IF)
+  // Issue Interface
+  output logic                         x_issue_valid_o,
+  input  logic                         x_issue_ready_i,
+  output x_issue_req_t                 x_issue_req_o,
+  input  x_issue_resp_t                x_issue_resp_i,
+
+  // Register Interface
+  output x_register_t                  x_register_o,
+
+  // Commit Interface
+  output logic                         x_commit_valid_o,
+  output x_commit_t                    x_commit_o,
+
+  // Result Interface
+  input  logic                         x_result_valid_i,
+  output logic                         x_result_ready_o,
+  input  x_result_t                    x_result_i,
+
   // Interrupt inputs
   input  logic                         irq_software_i,
   input  logic                         irq_timer_i,
@@ -59,11 +77,14 @@ module cve2_core_tracing import cve2_pkg::*; #(
 
   // Debug Interface
   input  logic                         debug_req_i,
+  output logic                         debug_halted_o,
+  input  logic [31:0]                  dm_halt_addr_i,
+  input  logic [31:0]                  dm_exception_addr_i,
   output crash_dump_t                  crash_dump_o,
 
   // CPU Control Signals
   input  logic                         fetch_enable_i,
-  output logic                         core_busy_o
+  output logic                         core_busy_o,
 
 );
 
@@ -113,18 +134,17 @@ module cve2_core_tracing import cve2_pkg::*; #(
   assign unused_rvfi_ext_mcycle = rvfi_ext_mcycle;
 
   cve2_core #(
-    .PMPEnable         (PMPEnable),
-    .PMPGranularity    (PMPGranularity),
-    .PMPNumRegions     (PMPNumRegions),
-    .MHPMCounterNum    (MHPMCounterNum),
-    .MHPMCounterWidth  (MHPMCounterWidth),
-    .RV32E             (RV32E),
-    .RV32M             (RV32M),
-    .RV32B             (RV32B),
-    .DbgTriggerEn      (DbgTriggerEn),
-    .DbgHwBreakNum     (DbgHwBreakNum),
-    .DmHaltAddr        (DmHaltAddr),
-    .DmExceptionAddr   (DmExceptionAddr)
+    .PMPEnable        ( PMPEnable        ),
+    .PMPGranularity   ( PMPGranularity   ),
+    .PMPNumRegions    ( PMPNumRegions    ),
+    .MHPMCounterNum   ( MHPMCounterNum   ),
+    .MHPMCounterWidth ( MHPMCounterWidth ),
+    .RV32E            ( RV32E            ),
+    .RV32M            ( RV32M            ),
+    .RV32B            ( RV32B            ),
+    .DbgTriggerEn     ( DbgTriggerEn     ),
+    .DbgHwBreakNum    ( DbgHwBreakNum    ),
+    .XInterface       ( XInterface       )
   ) u_cve2_core (
     .clk_i,
     .rst_ni,
@@ -152,13 +172,36 @@ module cve2_core_tracing import cve2_pkg::*; #(
     .data_rdata_i,
     .data_err_i,
 
+    // Core-V Extension Interface (CV-X-IF)
+    // Issue Interface
+    .x_issue_valid_o,
+    .x_issue_ready_i,
+    .x_issue_req_o,
+    .x_issue_resp_i,
+
+    // Register Interface
+    .x_register_o,
+
+    // Commit Interface
+    .x_commit_valid_o,
+    .x_commit_o,
+
+    // Result Interface
+    .x_result_valid_i,
+    .x_result_ready_o,
+    .x_result_i,
+
     .irq_software_i,
     .irq_timer_i,
     .irq_external_i,
     .irq_fast_i,
     .irq_nm_i,
+    .irq_pending_o,
 
     .debug_req_i,
+    .debug_halted_o,
+    .dm_halt_addr_i,
+    .dm_exception_addr_i,
     .crash_dump_o,
 
     .rvfi_valid,
@@ -190,11 +233,10 @@ module cve2_core_tracing import cve2_pkg::*; #(
     .rvfi_ext_mcycle,
 
     .fetch_enable_i,
-    .core_sleep_o
+    .core_busy_o
   );
 
-  cve2_tracer
-  u_cve2_tracer (
+  cve2_tracer u_cve2_tracer (
     .clk_i,
     .rst_ni,
 

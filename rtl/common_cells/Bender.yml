@@ -39,6 +39,7 @@ sources:
       - exp_backoff.sv
       - fifo_v3.sv
       - gray_to_binary.sv
+      - heaviside.sv
       - isochronous_4phase_handshake.sv
       - isochronous_spill_register.sv
       - lfsr.sv
@@ -50,6 +51,7 @@ sources:
       - plru_tree.sv
       - passthrough_stream_fifo.sv
       - popcount.sv
+      - ring_buffer.sv
       - rr_arb_tree.sv
       - rstgen_bypass.sv
       - serial_deglitch.sv
@@ -70,9 +72,11 @@ sources:
       - read.sv
       # Level 1
       - addr_decode_dync.sv
+      - boxcar.sv
       - cdc_2phase.sv
       - cdc_4phase.sv
       - clk_int_div_static.sv
+      - trip_counter.sv
       # Level 2
       - addr_decode.sv
       - addr_decode_napot.sv

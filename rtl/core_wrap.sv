@@ -46,11 +46,21 @@ module core_wrap import croc_pkg::*; #() (
 );
 
   // Base address of the debug module in the memory map.
-  localparam bit [31:0] DebugAddrOffset = get_periph_start_addr(PeriphDebug);
+  localparam bit [31:0] DebugAddrOffset       = get_periph_start_addr(PeriphDebug);
+  localparam bit [31:0] DebugHaltAddress      = DebugAddrOffset + dm::HaltAddress[31:0];
+  localparam bit [31:0] DebugExceptionAddress = DebugAddrOffset + dm::ExceptionAddress[31:0];
 
   // lowest 8 bits are ignored internally
   logic[31:0] ibex_boot_addr;
   assign ibex_boot_addr = boot_addr_i & 32'hFFFFFF00; 
+
+  // CV-X-IF tie-offs (extension disabled)
+  cve2_pkg::x_issue_resp_t x_issue_resp;
+  cve2_pkg::x_result_t     x_result;
+  always_comb begin
+    x_issue_resp = '0;
+    x_result     = '0;
+  end
 // ifdef ordered according to priority
 `ifdef TRACE_EXECUTION
   cve2_core_tracing #(
@@ -67,14 +77,13 @@ module core_wrap import croc_pkg::*; #() (
     .RV32B            ( cve2_pkg::RV32BNone ),
     .DbgTriggerEn     ( 1'b1                ),
     .DbgHwBreakNum    ( 1                   ),
-    .DmHaltAddr       ( DebugAddrOffset + dm::HaltAddress[31:0]      ),
-    .DmExceptionAddr  ( DebugAddrOffset + dm::ExceptionAddress[31:0] )
+    .XInterface       ( 1'b0                )
   ) i_ibex (
     .clk_i,
     .rst_ni,
-    .test_en_i          ( test_enable_i  ),
-    .hart_id_i          ( 32'd0          ),
-    .boot_addr_i        ( ibex_boot_addr ),
+    .test_en_i        ( test_enable_i  ),
+    .hart_id_i        ( 32'd0          ),
+    .boot_addr_i      ( ibex_boot_addr ),
 
     // Instruction Memory Interface:
     .instr_req_o,
@@ -95,18 +104,32 @@ module core_wrap import croc_pkg::*; #() (
     .data_rdata_i,
     .data_err_i,
 
+    // Core-V Extension Interface (disabled)
+    .x_issue_valid_o     ( ),
+    .x_issue_ready_i     ( 1'b1 ),
+    .x_issue_req_o       ( ),
+    .x_issue_resp_i      ( x_issue_resp ),
+    .x_register_o        ( ),
+    .x_commit_valid_o    ( ),
+    .x_commit_o          ( ),
+    .x_result_valid_i    ( 1'b0 ),
+    .x_result_ready_o    ( ),
+    .x_result_i          ( x_result ),
+
     // Interrupts
-    .irq_software_i     ( software_irq_i ),
-    .irq_timer_i        ( timer_irq_i    ),
-    .irq_external_i     ( 1'b0           ),
-    .irq_fast_i         ( irqs_i         ),
-    .irq_nm_i           ( 1'b0           ),
-    .irq_pending_o      ( ),
-
-
-    .crash_dump_o       ( ),
+    .irq_software_i      ( software_irq_i ),
+    .irq_timer_i         ( timer_irq_i    ),
+    .irq_external_i      ( 1'b0           ),
+    .irq_fast_i          ( irqs_i         ),
+    .irq_nm_i            ( 1'b0           ),
+    .irq_pending_o       ( ),
 
     .debug_req_i,
+    .debug_halted_o      ( ),
+    .dm_halt_addr_i      ( DebugHaltAddress      ),
+    .dm_exception_addr_i ( DebugExceptionAddress ),
+    .crash_dump_o        ( ),
+    
     .fetch_enable_i,
     .core_busy_o
   );

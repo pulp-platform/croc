@@ -1,3 +1,4 @@
+// Copyright (c) 2025 Eclipse Foundation
 // Copyright lowRISC contributors.
 // Copyright 2018 ETH Zurich and University of Bologna, see also CREDITS.md.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
@@ -12,10 +13,7 @@
 
 `include "lowrisc_prim/prim_assert.svh"
 
-module cve2_if_stage import cve2_pkg::*; #(
-  parameter int unsigned DmHaltAddr        = 32'h1A110800,
-  parameter int unsigned DmExceptionAddr   = 32'h1A110808
-) (
+module cve2_if_stage import cve2_pkg::*; (
   input  logic                         clk_i,
   input  logic                         rst_ni,
 
@@ -67,6 +65,10 @@ module cve2_if_stage import cve2_pkg::*; #(
                                                                 // the debug request
   input  logic [31:0]                 csr_mtvec_i,              // base PC to jump to on exception
   output logic                        csr_mtvec_init_o,         // tell CS regfile to init mtvec
+
+  // debug signals
+  input logic [31:0]                  dm_halt_addr_i,           // default 32'h1A110800
+  input logic [31:0]                  dm_exception_addr_i,      // default 32'h1A110808
 
   // pipeline stall
   input  logic                        id_in_ready_i,            // ID stage is ready for new instr
@@ -123,8 +125,8 @@ module cve2_if_stage import cve2_pkg::*; #(
     unique case (exc_pc_mux_i)
       EXC_PC_EXC:     exc_pc = { csr_mtvec_i[31:8], 8'h00              };
       EXC_PC_IRQ:     exc_pc = (csr_mtvec_i[1:0] == 2'b01) ? { csr_mtvec_i[31:8], irq_id[5:0], 2'b00 } : { csr_mtvec_i[31:2], 2'b00 };
-      EXC_PC_DBD:     exc_pc = DmHaltAddr;
-      EXC_PC_DBG_EXC: exc_pc = DmExceptionAddr;
+      EXC_PC_DBD:     exc_pc = dm_halt_addr_i;
+      EXC_PC_DBG_EXC: exc_pc = dm_exception_addr_i;
       default:        exc_pc = { csr_mtvec_i[31:8], 8'h00              };
     endcase
   end
@@ -174,6 +176,23 @@ module cve2_if_stage import cve2_pkg::*; #(
 
       .busy_o              ( prefetch_busy              )
   );
+
+  `ifndef SYNTHESIS
+    // (As instroduced on the Ibex core project)
+    // Needed by the RISC-V compliance checking simulation model for linking 
+    // against C++ testbench code, that expects the simutil_get_scramble_key 
+    // or simutil_get_scramble_nonce functions.
+    // As a slightly ugly hack, let's define the DPI functions here (the 
+    // real versions are defined in prim_util_get_scramble_params.svh)
+    export "DPI-C" function simutil_get_scramble_key;
+    export "DPI-C" function simutil_get_scramble_nonce;
+    function automatic int simutil_get_scramble_key(output bit [127:0] val);
+      return 0;
+    endfunction
+    function automatic int simutil_get_scramble_nonce(output bit [319:0] nonce);
+      return 0;
+    endfunction
+  `endif
 
   assign unused_fetch_addr_n0 = fetch_addr_n[0];
 
@@ -264,15 +283,15 @@ module cve2_if_stage import cve2_pkg::*; #(
   ////////////////
 
   // Selectors must be known/valid.
-  `ASSERT_KNOWN(IbexExcPcMuxKnown, exc_pc_mux_i)
+  `ASSERT_KNOWN(CVE2ExcPcMuxKnown, exc_pc_mux_i)
 
   // Boot address must be aligned to 256 bytes.
-  `ASSERT(IbexBootAddrUnaligned, boot_addr_i[7:0] == 8'h00)
+  `ASSERT(CVE2BootAddrUnaligned, boot_addr_i[7:0] == 8'h00)
 
   // Address must not contain X when request is sent.
-  `ASSERT(IbexInstrAddrUnknown, instr_req_o |-> !$isunknown(instr_addr_o))
+  `ASSERT(CVE2InstrAddrUnknown, instr_req_o |-> !$isunknown(instr_addr_o))
 
   // Address must be word aligned when request is sent.
-  `ASSERT(IbexInstrAddrUnaligned, instr_req_o |-> (instr_addr_o[1:0] == 2'b00))
+  `ASSERT(CVE2InstrAddrUnaligned, instr_req_o |-> (instr_addr_o[1:0] == 2'b00))
 
 endmodule

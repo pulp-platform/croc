@@ -1,6 +1,6 @@
 # Generic Technology Cells (API to Cell Library)
 
-Maintainer: Nils Wistoff <nwistoff@iis.ee.ethz.ch>
+Maintainer: Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
 This repository contains technology related cells like SRAMs, clock-gating cells, power management cells. The description here are:
 

@@ -119,4 +119,12 @@
   `OBI_TYPEDEF_R_CHAN_T(obi_t``_r_chan_t, cfg.DataWidth, cfg.IdWidth, obi_t``_r_optional_t)                                                                      \
   `OBI_TYPEDEF_INTEGRITY_RSP_T(obi_t``_rsp_t, obi_t``_r_chan_t)
 
+`define OBI_TYPEDEF_DEFAULT_ALL(obi_t, cfg)                                                                \
+  `OBI_TYPEDEF_MINIMAL_A_OPTIONAL(obi_t``_a_optional_t)                                                    \
+  `OBI_TYPEDEF_A_CHAN_T(obi_t``_a_chan_t, cfg.AddrWidth, cfg.DataWidth, cfg.IdWidth, obi_t``_a_optional_t) \
+  `OBI_TYPEDEF_DEFAULT_REQ_T(obi_t``_req_t, obi_t``_a_chan_t)                                              \
+  `OBI_TYPEDEF_MINIMAL_R_OPTIONAL(obi_t``_r_optional_t)                                                    \
+  `OBI_TYPEDEF_R_CHAN_T(obi_t``_r_chan_t, cfg.DataWidth, cfg.IdWidth, obi_t``_r_optional_t)                \
+  `OBI_TYPEDEF_RSP_T(obi_t``_rsp_t, obi_t``_r_chan_t)
+
 `endif // OBI_TYPEDEF_SVH
