@@ -9,10 +9,9 @@ errors = 0
 
 # Load technology file
 tech = pya.Technology()
-tech.load(tech_file)
 layoutOptions = tech.load_layout_options
-if len(layer_map) > 0:
-  layoutOptions.lefdef_config.map_file = layer_map
+layoutOptions.lefdef_config.map_file = layer_map
+layoutOptions.lefdef_config.lef_files = lef_files.split(' ')
 
 # Load def file
 main_layout = pya.Layout()
@@ -36,9 +35,7 @@ for i in main_layout.each_cell():
 
 # Load in the gds to merge
 print("[INFO] Merging GDS/OAS files...")
-with open(gds_flist, 'rb') as file:
-    in_files_list = file.read()
-for fil in in_files_list.split():
+for fil in gds_files.split():
   print("\t{0}".format(fil))
   main_layout.read(fil)
 
@@ -52,13 +49,12 @@ top.copy_tree(main_layout.cell(design_name))
 print("[INFO] Checking for missing cell from GDS/OAS...")
 missing_cell = False
 regex = None
-if 'GDS_ALLOW_EMPTY' in os.environ:
-    print("[INFO] Found GDS_ALLOW_EMPTY variable.")
-    regex = os.getenv('GDS_ALLOW_EMPTY')
+if gds_allow_empty == 'True':
+    print("[INFO] Allow GDS_ALLOW_EMPTY.")
 for i in top_only_layout.each_cell():
   if i.is_empty():
     missing_cell = True
-    if regex is not None and re.match(regex, i.name):
+    if gds_allow_empty == 'True':
         print("[WARNING] LEF Cell '{0}' ignored. Matches GDS_ALLOW_EMPTY.".format(i.name))
     else:
         print("[ERROR] LEF Cell '{0}' has no matching GDS/OAS cell."
