@@ -69,22 +69,21 @@ module soc_ctrl_regs #(
     if (obi_req_i.req) begin
 
       if (obi_req_i.a.we) begin : write
-        automatic logic [31:0] wdata = obi_req_i.a.wdata & be_mask;
         unique case ({obi_req_i.a.addr[IntAddrWidth-1:2], 2'b00})
           SOC_CTRL_BOOTADDR_OFFSET: begin
-            boot_addr_d = wdata;
+            boot_addr_d = obi_req_i.a.wdata & be_mask;
           end
           SOC_CTRL_FETCHEN_OFFSET: begin
-            fetch_en_d = wdata[0];
+            fetch_en_d = obi_req_i.a.wdata[0] & be_mask[0];
           end
           SOC_CTRL_CORESTATUS_OFFSET: begin
-            core_status_d = wdata;
+            core_status_d = obi_req_i.a.wdata & be_mask;
           end
           SOC_CTRL_BOOTMODE_OFFSET: begin
-            boot_mode_d = wdata[0];
+            boot_mode_d = obi_req_i.a.wdata[0] & be_mask[0];
           end
           SOC_CTRL_SRAM_DLY_OFFSET: begin
-            sram_dly_d = wdata[0];
+            sram_dly_d = obi_req_i.a.wdata[0] & be_mask[0];
           end
           default: begin
             err_d = 1'b1;

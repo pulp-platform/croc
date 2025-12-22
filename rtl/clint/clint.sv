@@ -84,16 +84,15 @@ module clint #(
     if (obi_req_i.req) begin
 
       if (obi_req_i.a.we) begin : write
-        automatic logic [31:0] wdata_masked = obi_req_i.a.wdata & be_mask;
         unique case ({obi_req_i.a.addr[IntAddrWidth-1:2], 2'b00})
           CLINT_MSIP_OFFSET: begin
-            msip_d = (msip_q & ~be_mask[0]) | wdata_masked[0];
+            msip_d = (msip_q & ~be_mask[0]) | (obi_req_i.a.wdata[0] & be_mask[0]);
           end
           CLINT_MTIMECMP_LOW0_OFFSET: begin
-            mtimecmp_d[31:0] = (mtimecmp_q[31:0] & ~be_mask) | wdata_masked;
+            mtimecmp_d[31:0] = (mtimecmp_q[31:0] & ~be_mask) | (obi_req_i.a.wdata & be_mask);
           end
           CLINT_MTIMECMP_HIGH0_OFFSET: begin
-            mtimecmp_d[63:32] = (mtimecmp_q[63:32] & ~be_mask) | wdata_masked;
+            mtimecmp_d[63:32] = (mtimecmp_q[63:32] & ~be_mask) | (obi_req_i.a.wdata & be_mask);
           end
           default: begin
             err_d = 1'b1;
