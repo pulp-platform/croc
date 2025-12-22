@@ -85,24 +85,23 @@ module obi_timer #(
     if (obi_req_i.req) begin
 
       if (obi_req_i.a.we) begin : write
-        automatic logic [31:0] wdata_masked = obi_req_i.a.wdata & be_mask;
         unique case ({obi_req_i.a.addr[IntAddrWidth-1:2], 2'b00})
           OBI_TIMER_COUNT_OFFSET: begin
-            count_d = (count_q & ~be_mask) | wdata_masked;
+            count_d = (count_q & ~be_mask) | (obi_req_i.a.wdata & be_mask);
           end
           OBI_TIMER_COMPARE_OFFSET: begin
-            compare_d = (compare_q & ~be_mask) | wdata_masked;
+            compare_d = (compare_q & ~be_mask) | (obi_req_i.a.wdata & be_mask);
             count_d   = '0;
           end
           OBI_TIMER_CTRL_OFFSET: begin
-            enable_d    = (enable_q & ~be_mask[0]) | wdata_masked[0];
-            autoreset_d = (autoreset_q & ~be_mask[1]) | wdata_masked[1];
+            enable_d    = (enable_q & ~be_mask[0]) | (obi_req_i.a.wdata[0] & be_mask[0]);
+            autoreset_d = (autoreset_q & ~be_mask[1]) | (obi_req_i.a.wdata[1] & be_mask[1]);
           end
           OBI_TIMER_STATUS_OFFSET: begin
-            if (wdata_masked[0]) begin
+            if (obi_req_i.a.wdata[0] & be_mask[0]) begin
               expired_sticky_d  = 1'b0;
             end
-            if (wdata_masked[1]) begin
+            if (obi_req_i.a.wdata[1] & be_mask[1]) begin
               overflow_sticky_d = 1'b0;
             end
           end
