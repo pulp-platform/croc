@@ -98,7 +98,7 @@ VERILATOR_ARGS += --x-assign fast --x-initial fast
 VERILATOR_CFLAGS += -O3 -march=native -mtune=native
 
 verilator/croc.f: Bender.lock Bender.yml
-	$(BENDER) script verilator -t rtl -t verilator -DSYNTHESIS -DVERILATOR > $@
+	$(BENDER) script verilator -t rtl -t verilator -t cve2_include_tracer -DSYNTHESIS -DVERILATOR -DTRACE_EXECUTION > $@
 
 verilator/obj_dir/Vtb_croc_soc: verilator/croc.f $(SW_HEX)
 	cd verilator; $(VERILATOR) $(VERILATOR_ARGS) -O3 --top tb_croc_soc -f croc.f
