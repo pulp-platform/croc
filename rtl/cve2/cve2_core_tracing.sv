@@ -150,7 +150,6 @@ module cve2_core_tracing import cve2_pkg::*; #(
     .rst_ni,
 
     .test_en_i,
-    .ram_cfg_i,
 
     .hart_id_i,
     .boot_addr_i,
