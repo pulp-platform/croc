@@ -231,7 +231,8 @@ module croc_domain import croc_pkg::*; #(
     datasize: dm::DataCount,
     dataaddr: dm::DataAddr
   };
-  dm::hartinfo_t hartinfo = HARTINFO;
+  dm::hartinfo_t [0:0] hartinfo;
+  assign hartinfo[0] = HARTINFO;
 
   logic dmi_rst_n, dmi_req_valid, dmi_req_ready, dmi_resp_valid, dmi_resp_ready;
   dm::dmi_req_t dmi_req;
