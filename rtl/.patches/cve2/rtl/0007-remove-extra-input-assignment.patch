@@ -1,0 +1,24 @@
+From 82fec88c88e2648db731e60e543827222701f05b Mon Sep 17 00:00:00 2001
+From: Enrico Zelioli <ezelioli@iis.ee.ethz.ch>
+Date: Mon, 22 Dec 2025 18:23:56 +0100
+Subject: [PATCH] remove extra input assignment
+
+---
+ cve2_core_tracing.sv | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/cve2_core_tracing.sv b/cve2_core_tracing.sv
+index efc157c0..f4a124de 100644
+--- a/cve2_core_tracing.sv
++++ b/cve2_core_tracing.sv
+@@ -150,7 +150,6 @@ module cve2_core_tracing import cve2_pkg::*; #(
+     .rst_ni,
+ 
+     .test_en_i,
+-    .ram_cfg_i,
+ 
+     .hart_id_i,
+     .boot_addr_i,
+-- 
+2.43.5
+
