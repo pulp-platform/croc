@@ -63,7 +63,9 @@ sources:
 
   - target: any(simulation, verilator)
     files:
-      - rtl/tb_croc_soc.sv
+      - rtl/test/tb_croc_pkg.sv
+      - rtl/test/croc_vip.sv
+      - rtl/test/tb_croc_soc.sv
 
   - target: genesys2
     files:
