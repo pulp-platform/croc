@@ -59,8 +59,8 @@ module croc_vip #(
   //  JTAG  //
   ////////////
 
-  localparam time TApplJtag = 0.2*ClkPeriodJtag;
-  localparam time TTestJtag = 0.8*ClkPeriodJtag;
+  localparam realtime TApplJtag = 0.2*ClkPeriodJtag;
+  localparam realtime TTestJtag = 0.8*ClkPeriodJtag;
   localparam dm::sbcs_t JtagInitSbcs = dm::sbcs_t'{
     sbautoincrement: 1'b1, sbreadondata: 1'b1, sbaccess: 3, default: '0};
 
@@ -278,19 +278,12 @@ module croc_vip #(
   localparam int unsigned ClkFrequency     = 1s / ClkPeriodSys;
   localparam int unsigned UartDivisior     = ClkFrequency / (UartBaudRate*16);
   localparam int unsigned UartRealBaudRate = ClkFrequency / (UartDivisior*16);
-  localparam time         UartBaudPeriod   = 1s / UartRealBaudRate;
+  localparam realtime     UartBaudPeriod   = 1s / UartRealBaudRate;
 
   initial begin
     $display("ClkFrequency: %dMHz", ClkFrequency / 1_000_000);
     $display("UartRealBaudRate: %d", UartRealBaudRate);
   end
-
-  localparam byte_bt UartDebugCmdRead  = 'h11;
-  localparam byte_bt UartDebugCmdWrite = 'h12;
-  localparam byte_bt UartDebugCmdExec  = 'h13;
-  localparam byte_bt UartDebugAck      = 'h06;
-  localparam byte_bt UartDebugEot      = 'h04;
-  localparam byte_bt UartDebugEoc      = 'h14;
 
   logic uart_reading_byte;
 

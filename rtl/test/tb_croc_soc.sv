@@ -14,11 +14,11 @@ module tb_croc_soc #(
 
   import tb_croc_pkg::*;
 
+  // Signals fully controlled by the VIP
+  // use VIP functions/tasks to manipulate these signals
   logic rst_n;
   logic sys_clk;
   logic ref_clk;
-
-  logic fetch_en;
 
   logic jtag_tck;
   logic jtag_trst_n;
@@ -29,9 +29,13 @@ module tb_croc_soc #(
   logic uart_rx;
   logic uart_tx;
 
+  // Signals partially controlled by the VIP
   logic [GpioCount-1:0] gpio_in;
   logic [GpioCount-1:0] gpio_out;
   logic [GpioCount-1:0] gpio_out_en;
+
+  // Signals controlled by the testbench
+  logic fetch_en;
 
   /////////////////////////////
   //  Command Line Arguments //
@@ -40,6 +44,7 @@ module tb_croc_soc #(
   string binary_path;
 
   initial begin
+    // $value$plusargs defines what to look for (here +binary=...)
     if ($value$plusargs("binary=%s", binary_path)) begin
       $display("Running program: %s", binary_path);
     end else begin
@@ -51,6 +56,16 @@ module tb_croc_soc #(
   ////////////
   //  VIP   //
   ////////////
+  // Verification IP 
+  // - drives clocks and resets
+  // - provides helper tasks and functions for JTAG, namely:
+  //   - jtag_load_hex: loads a hex file into the DUT's memory
+  //   - jtag_write_reg32: write 32-bit value to DUT
+  //   - jtag_read_reg32: read 32-bit value from DUT
+  //   - jtag_halt / jtag_resume: control core execution
+  //   - jtag_wait_for_eoc: wait for end of code execution (core writes non-zero to status register)
+  // - prints UART output to console (you can also write via uart_write_byte)
+  // - internal GPIO loopback for helloworld test
 
   croc_vip #(
     .GpioCount ( GpioCount )
@@ -108,11 +123,6 @@ module tb_croc_soc #(
 
   initial begin
     $timeformat(-9, 0, "ns", 12); // 1: scale (ns=-9), 2: decimals, 3: suffix, 4: print-field width
-    // configure FST (waveform) dump
-    `ifdef TRACE_WAVE
-    $dumpfile("croc.fst");
-    $dumpvars(1, i_croc_soc);
-    `endif
 
     fetch_en = 1'b0;
 
@@ -142,10 +152,30 @@ module tb_croc_soc #(
 
     // finish simulation
     repeat(50) @(posedge sys_clk);
-    `ifdef TRACE_WAVE
-    $dumpflush;
-    `endif
     $finish();
+  end
+
+  ////////////////
+  //  Waveform  //
+  ////////////////
+  // start waveform dump at time 0, independent of stimuli
+  initial begin
+    `ifdef TRACE_WAVE
+      `ifdef VERILATOR
+        $dumpfile("croc.fst");
+        $dumpvars(1, i_croc_soc);
+      `else
+        $dumpfile("croc.vcd");
+        $dumpvars(1, i_croc_soc);
+      `endif
+    `endif
+  end
+
+  // flush waveform dump when simulation ends
+  final begin
+    `ifdef TRACE_WAVE
+      $dumpflush;
+    `endif
   end
 
 endmodule
