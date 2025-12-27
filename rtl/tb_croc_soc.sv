@@ -281,6 +281,8 @@ module tb_croc_soc #(
                 end
             end
         end
+        // Write one extra word to prevent the core from fetching uninitialized instructions
+        jtag_write(dm::SBData0, 32'h0);
         jtag_dbg.write_dmi(dm::SBCS, JtagInitSbcs);
         $fclose(file);
     endtask
