@@ -4,108 +4,78 @@
 #
 # Authors:
 # - Philippe Sauter <phsauter@iis.ee.ethz.ch>
-
-# Tools
-BENDER ?= bender
+# - Enrico Zelioli <ezelioli@iis.ee.ethz.ch>
 
 # Directories
 # directory of the path to the last called Makefile (this one)
-PROJ_DIR  := $(realpath $(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
+PROJ_DIR := $(realpath $(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
+SW_DIR   := $(PROJ_DIR)/sw
+SRC_DIR  := $(SW_DIR)/lib/src
+INC_DIR  := $(SW_DIR)/lib/inc
+BIN_DIR  := $(SW_DIR)/bin
 
+# Toolchain
+RISCV_PREFIX  ?= riscv64-unknown-elf-
+RISCV_CC      := $(RISCV_PREFIX)gcc
+RISCV_OBJDUMP := $(RISCV_PREFIX)objdump
+RISCV_OBJCOPY := $(RISCV_PREFIX)objcopy
+RISCV_LD      := $(RISCV_PREFIX)ld
 
-default: help
+# Compilation and linking flags
+RISCV_FLAGS   := -march=rv32i_zicsr -mabi=ilp32 -mcmodel=medany -static -std=gnu99 -Os -nostdlib -fno-builtin -ffreestanding
+RISCV_CCFLAGS := $(RISCV_FLAGS) -I$(INC_DIR) -I$(SW_DIR)
+RISCV_LDFLAGS := $(RISCV_FLAGS) -static -nostartfiles -lm -lgcc
 
-################
-# Dependencies #
-################
-# Download RCX file used for parasitic extraction from ORFS (configuration got ok by IHP)
-IHP_RCX_URL  := "https://raw.githubusercontent.com/The-OpenROAD-Project/OpenROAD-flow-scripts/7747f88f70daaeb63f43ce36e71829707b7e3fa7/flow/platforms/ihp-sg13g2/IHP_rcx_patterns.rules"
-IHP_RCX_FILE := $(PROJ_DIR)/openroad/IHP_rcx_patterns.rules
+# Build files
+CRT0        := $(SW_DIR)/crt0.S
+LINK        := $(SW_DIR)/link.ld
+LIB_SOURCES := $(wildcard $(SRC_DIR)/*.[cS])
+LIB_OBJS    := $(LIB_SOURCES:$(SRC_DIR)/%=$(SRC_DIR)/%.o)
 
-## Checkout/update dependencies using Bender
-checkout: $(IHP_RCX_FILE)
-	$(BENDER) checkout
-	git submodule update --init --recursive
+# Build all assembly and C files in the top level as seperate binaries
+TOP_SOURCES   := $(filter-out $(CRT0), $(wildcard $(SW_DIR)/*.[cS]))
+TOP_BASENAMES := $(basename $(notdir $(TOP_SOURCES)))
+ALL_TARGETS   := $(TOP_BASENAMES:%=$(BIN_DIR)/%.dump) $(TOP_BASENAMES:%=$(BIN_DIR)/%.hex)
 
-$(IHP_RCX_FILE):
-	curl -L -o $@ $(IHP_RCX_URL)
+# Default make target
+.PHONY: default
+default: all
 
-## Reset dependencies (without updating Bender.lock)
-clean-deps:
-	rm -rf .bender
-	git submodule deinit -f --all
+# Create output bin directory
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
 
-.PHONY: checkout clean-deps
+# Compile assembly file
+%.S.o: %.S
+	$(RISCV_CC) $(RISCV_CCFLAGS) -c $< -o $@
 
+# Compile C file
+%.c.o: %.c
+	$(RISCV_CC) $(RISCV_CCFLAGS) -c $< -o $@
 
-############
-# Software #
-############
-SW_HEX ?= sw/bin/helloworld.hex
+# Link assembly application
+$(BIN_DIR)/%.elf: $(SW_DIR)/%.S.o $(CRT0).o $(LIB_OBJS) | $(BIN_DIR)
+	$(RISCV_CC) -o $@ $^ $(RISCV_LDFLAGS) -T$(LINK)
 
-$(SW_HEX): sw/*.c sw/*.h sw/*.S sw/*.ld
-	$(MAKE) -C sw/ compile
+# Link C application
+$(BIN_DIR)/%.elf: $(SW_DIR)/%.c.o $(CRT0).o $(LIB_OBJS) | $(BIN_DIR)
+	$(RISCV_CC) -o $@ $^ $(RISCV_LDFLAGS) -T$(LINK)
+
+# Create dis-assembled version of ELF binary
+$(BIN_DIR)/%.dump: $(BIN_DIR)/%.elf
+	$(RISCV_OBJDUMP) -D -s $< >$@
+
+# Create hex version of ELF binary
+$(BIN_DIR)/%.hex: $(BIN_DIR)/%.elf
+	$(RISCV_OBJCOPY) -O verilog $< $@
 
 ## Build all top-level programs in sw/
-software: $(SW_HEX)
-
-sw: $(SW_HEX)
-
-.PHONY: software sw
-
-#############
-# Finishing #
-#############
-ihp13/pdk.patched:
-	- cd ihp13/pdk; git apply ../patches/0001-Filling-improvements.patch
-	touch $@
-
-klayout/out/croc_chip_sealed.gds.gz: ihp13/pdk.patched openroad/out/croc.def klayout/scripts/*.py klayout/scripts/*.sh
-	bash klayout/scripts/finishing.sh
-
-finishing: klayout/out/croc_chip_sealed.gds.gz
-.PHONY: finishing
-
-#################
-# Documentation #
-#################
-
-help: Makefile
-	@printf "Available targets:\n------------------\n"
-	@for mkfile in $(MAKEFILE_LIST); do \
-		awk '/^[a-zA-Z\-\_0-9]+:/ { \
-			helpMessage = match(lastLine, /^## (.*)/); \
-			if (helpMessage) { \
-				helpCommand = substr($$1, 0, index($$1, ":")-1); \
-				helpMessage = substr(lastLine, RSTART + 3, RLENGTH); \
-				printf "%-20s %s\n", helpCommand, helpMessage; \
-			} \
-		} \
-		{ lastLine = $$0 }' $$mkfile; \
-	done
-
-.PHONY: help
-
-###########
-# Format  #
-###########
-CLANG_FORMAT_EXECUTABLE ?= clang-format
-
-## Automatically format the code using clang-format and black
-format:
-	@echo -e "\033[1m-> Formatting Python Code...\033[0m"
-	@black */*.py
-	@echo -e "\033[1m-> Formatting C Code...\033[0m"
-	@python scripts/run_clang_format.py -ir sw/ --clang-format-executable=$(CLANG_FORMAT_EXECUTABLE)
-
-.PHONY: format
-
-###########
-# Cleanup #
-###########
+.PHONY: all
+all: $(ALL_TARGETS)
 
 ## Delete generated files and directories
-clean: 
-	$(MAKE) -C sw clean
-
 .PHONY: clean
+clean:
+	rm -rf $(BIN_DIR)
+	rm -f $(PROJ_DIR)/sw/*.o
+	rm -f $(PROJ_DIR)/sw/lib/src/*.o
