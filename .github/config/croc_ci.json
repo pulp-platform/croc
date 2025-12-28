@@ -34,7 +34,7 @@
         "TV1"  : {"layer" : "125/0", "color" : "#7FFFD4", "alpha" : "0.5" },
         "T1"   : {"layer" : "126/0", "color" : "#7FFFD4", "alpha" : "0.5" },
         "TV2"  : {"layer" : "133/0", "color" : "#1E90FF", "alpha" : "0.5" },
-        "T2"   : {"layer" : "134/0", "color" : "#FFFFFF", "alpha" : "0.8" }
+        "T2"   : {"layer" : "134/0", "color" : "#FFFFFF", "alpha" : "0.3" }
     },
     "work" : {
         "dir" : "/fosic/designs/croc/artistic/renderics"
