@@ -3,28 +3,71 @@
 # SPDX-License-Identifier: SHL-0.51
 
 # Authors:
-# - Tobias Senti <tsenti@ethz.ch>
+# - Tobias Senti      <tsenti@ethz.ch>
 # - Jannis Schönleber <janniss@iis.ee.ethz.ch>
 # - Philippe Sauter   <phsauter@iis.ee.ethz.ch>
 
+# Stage 00: Initialization, Floorplan, and Power Grid
+#
+# This stage performs:
+# - Reading and linking the netlist
+# - Reading timing constraints
+# - Connecting global power nets
+# - Creating the floorplan (die/core area, macro placement, IO placement)
+# - Generating the power distribution network
+#
+# Required environment variables:
+#   PROJ_NAME    - Project name (e.g., "croc")
+#   NETLIST      - Path to synthesized netlist
+#   TOP_DESIGN   - Top module name
+#   REPORTS      - Reports output directory
+#   SAVE         - Checkpoint save directory
+#
+# Output checkpoint: 00_${PROJ_NAME}.floorplan
+
+###############################################################################
+# Setup
+###############################################################################
+set proj_name $::env(PROJ_NAME)
+set netlist $::env(NETLIST)
+set top_design $::env(TOP_DESIGN)
+set report_dir $::env(REPORTS)
+set save_dir $::env(SAVE)
+
+# Helper scripts
+source scripts/reports.tcl
+source scripts/checkpoint.tcl
 source scripts/floorplan_util.tcl
 
-##########################################################################
-# Reset (mark everything as unplaced)
-##########################################################################
+# Initialize technology data (PDK libraries, LEFs, etc.)
+source scripts/init_tech.tcl
 
-set block [ord::get_db_block]
-set insts [odb::dbBlock_getInsts $block]
-foreach inst $insts {
-  set master [[$inst getMaster] getName]
-  # delete IO filler and unplace the rest
-  if {[lsearch -exact $iofill $master] != -1 || $master eq $iocorner} {
-    odb::dbInst_destroy $inst
-    continue
-  } else {
-    odb::dbInst_setPlacementStatus $inst "none"
-  }
-}
+set log_id 0
+set log_id_str [format "%02d" $log_id]
+
+###############################################################################
+# Initialization
+###############################################################################
+utl::report "###############################################################################"
+utl::report "# Step ${log_id_str}: Initialization, Floorplan, and Power Grid"
+utl::report "###############################################################################"
+
+# Read and check design
+utl::report "Read netlist: ${netlist}"
+read_verilog $netlist
+link_design $top_design
+
+utl::report "Read constraints"
+read_sdc src/constraints.sdc
+
+utl::report "Check constraints"
+check_setup -verbose                                      > ${report_dir}/${log_id_str}_${proj_name}_checks.rpt
+report_checks -unconstrained -format end -no_line_splits >> ${report_dir}/${log_id_str}_${proj_name}_checks.rpt
+report_checks -format end -no_line_splits                >> ${report_dir}/${log_id_str}_${proj_name}_checks.rpt
+report_checks -format end -no_line_splits                >> ${report_dir}/${log_id_str}_${proj_name}_checks.rpt
+
+utl::report "Connect global nets (power)"
+source scripts/power_connect.tcl
 
 ##########################################################################
 # Die and Core Area 
@@ -127,3 +170,19 @@ placeInstance $bank1_sram0 $X $Y R0
 
 
 cut_rows -halo_width_x 2 -halo_width_y 1
+
+
+
+utl::report "Create Power Grid"
+source scripts/power_grid.tcl
+
+# Save checkpoint
+save_checkpoint 00_${proj_name}.floorplan
+report_image "00_${proj_name}.floorplan" true
+
+utl::report "###############################################################################"
+utl::report "# Stage 00 complete: Checkpoint saved to ${save_dir}/00_${proj_name}.floorplan.zip"
+utl::report "###############################################################################"
+
+# Exit successfully
+exit 0

@@ -34,13 +34,43 @@ proc save_checkpoint { checkpoint_name } {
 proc load_checkpoint { checkpoint_name } {
     global save_dir
     utl::report "Loading checkpoint $checkpoint_name"
+
+    # Check if it's a direct .odb file path
+    if { [file extension $checkpoint_name] eq ".odb" } {
+        if { [file exists $checkpoint_name] } {
+            utl::report "Loading ODB file directly: $checkpoint_name"
+            read_db $checkpoint_name
+            # Try to find corresponding SDC file
+            set sdc_file [file rootname $checkpoint_name].sdc
+            if { [file exists $sdc_file] } {
+                read_sdc $sdc_file
+            }
+            return
+        } else {
+            utl::error "ODB file not found: $checkpoint_name"
+        }
+    }
+
+    # Otherwise treat as checkpoint name (existing logic)
     set checkpoint ${save_dir}/${checkpoint_name}
 
-    exec unzip -u ${checkpoint}.zip -d ${save_dir}/${checkpoint_name}
-    #read_verilog ${checkpoint}/$checkpoint_name.v
-    read_db ${checkpoint}/$checkpoint_name.odb
-    if { [file exists ${checkpoint}/$checkpoint_name.sdc] } {
-        read_sdc ${checkpoint}/$checkpoint_name.sdc
+    # Check if .zip file exists
+    if { [file exists ${checkpoint}.zip] } {
+        exec unzip -u ${checkpoint}.zip -d ${save_dir}/${checkpoint_name}
+        #read_verilog ${checkpoint}/$checkpoint_name.v
+        read_db ${checkpoint}/$checkpoint_name.odb
+        if { [file exists ${checkpoint}/$checkpoint_name.sdc] } {
+            read_sdc ${checkpoint}/$checkpoint_name.sdc
+        }
+    } elseif { [file exists ${checkpoint}.odb] } {
+        # Support loading bare .odb file (not zipped)
+        utl::report "Loading bare ODB file: ${checkpoint}.odb"
+        read_db ${checkpoint}.odb
+        if { [file exists ${checkpoint}.sdc] } {
+            read_sdc ${checkpoint}.sdc
+        }
+    } else {
+        utl::error "Checkpoint not found: ${checkpoint}.zip or ${checkpoint}.odb"
     }
 }
 
