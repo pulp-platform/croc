@@ -6,10 +6,15 @@
 # Authors:
 # - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
+RUNDIR=${XDG_RUNTIME_DIR:-/tmp/runtime-$(id -u)}
+mkdir -p "$RUNDIR"
+
 env UID=$(id -u) GID=$(id -g) docker compose pull pulp-docker
 
 env UID=$(id -u) GID=$(id -g) docker compose run --rm \
   -e PS1="\[\033[01;32m\]osic:\[\033[00m\]\[\033[01;34m\]\w\[\033[00m\] $" \
   -e DISPLAY=$DISPLAY \
+  -e XDG_RUNTIME_DIR=$RUNDIR \
+  -v "$RUNDIR:$RUNDIR" \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
   pulp-docker
