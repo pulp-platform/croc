@@ -335,14 +335,16 @@ module croc_domain import croc_pkg::*; #(
     .rst_ni,
     .testmode_i,
 
-    .sbr_ports_req_i  ( {core_instr_obi_req, core_data_obi_req, dbg_req_obi_req, user_mgr_obi_req_i } ), // from managers towards subordinates
+    // connections between managers and crossbar
+    .sbr_ports_req_i  ( {core_instr_obi_req, core_data_obi_req, dbg_req_obi_req, user_mgr_obi_req_i } ),
     .sbr_ports_rsp_o  ( {core_instr_obi_rsp, core_data_obi_rsp, dbg_req_obi_rsp, user_mgr_obi_rsp_o } ),
-    .mgr_ports_req_o  ( all_sbr_obi_req ), // connections to subordinates
+    // connections between crossbar and subordinates
+    .mgr_ports_req_o  ( all_sbr_obi_req ), 
     .mgr_ports_rsp_i  ( all_sbr_obi_rsp ),
 
-    .addr_map_i       ( croc_addr_map   ),
-    .en_default_idx_i ( 4'b1111          ),
-    .default_idx_i    ( '0              )
+    .addr_map_i       ( croc_addr_map ),
+    .en_default_idx_i ( '1            ),
+    .default_idx_i    ( XbarError     )
   );
 
   // -----------------
@@ -435,13 +437,13 @@ module croc_domain import croc_pkg::*; #(
     .rule_t    ( addr_map_rule_t                ),
     .Napot     ( 1'b0                           )
   ) i_addr_decode_periphs (
-    .addr_i           ( xbar_periph_obi_req.a.addr  ),
-    .addr_map_i       ( periph_addr_map             ),
-    .idx_o            ( periph_idx                  ),
-    .dec_valid_o      (),
-    .dec_error_o      (),
-    .en_default_idx_i ( 1'b1 ),
-    .default_idx_i    ( '0 )
+    .addr_i           ( xbar_periph_obi_req.a.addr ),
+    .addr_map_i       ( periph_addr_map            ),
+    .idx_o            ( periph_idx                 ),
+    .dec_valid_o      ( ),
+    .dec_error_o      ( ),
+    .en_default_idx_i ( 1'b1        ),
+    .default_idx_i    ( PeriphError )
   );
 
   obi_demux #(
@@ -460,21 +462,6 @@ module croc_domain import croc_pkg::*; #(
 
     .mgr_ports_req_o   ( all_periph_obi_req ),
     .mgr_ports_rsp_i   ( all_periph_obi_rsp )
-  );
-
-  // Peripheral space error subordinate
-  obi_err_sbr #(
-    .ObiCfg      ( SbrObiCfg     ),
-    .obi_req_t   ( sbr_obi_req_t ),
-    .obi_rsp_t   ( sbr_obi_rsp_t ),
-    .NumMaxTrans ( 1             ),
-    .RspData     ( 32'hBADCAB1E  )
-  ) i_periph_err (
-    .clk_i,
-    .rst_ni,
-    .testmode_i,
-    .obi_req_i  ( error_obi_req ),
-    .obi_rsp_o  ( error_obi_rsp )
   );
 
   // SoC Control
@@ -566,6 +553,21 @@ module croc_domain import croc_pkg::*; #(
     .obi_rsp_o  ( timer_obi_rsp ),
     .expired_o  ( obi_timer_irq ),
     .overflow_o ( ) // Not connected
+  );
+
+  // Peripheral space error subordinate
+  obi_err_sbr #(
+    .ObiCfg      ( SbrObiCfg     ),
+    .obi_req_t   ( sbr_obi_req_t ),
+    .obi_rsp_t   ( sbr_obi_rsp_t ),
+    .NumMaxTrans ( 1             ),
+    .RspData     ( 32'hBADCAB1E  )
+  ) i_periph_err (
+    .clk_i,
+    .rst_ni,
+    .testmode_i,
+    .obi_req_i  ( error_obi_req ),
+    .obi_rsp_o  ( error_obi_rsp )
   );
 
 endmodule
