@@ -13,6 +13,7 @@ YOSYS     ?= yosys
 OPENROAD  ?= openroad
 KLAYOUT   ?= klayout
 VSIM      ?= vsim
+CARGO     ?= cargo
 
 # Directories
 # directory of the path to the last called Makefile (this one)
@@ -62,6 +63,12 @@ sw: $(SW_HEX)
 ##################
 # RTL Simulation #
 ##################
+# CircumSpect DPI library
+CSPECT_LIB := $(PROJ_DIR)/circumspect/target/release/libcspect.a
+
+$(CSPECT_LIB): circumspect/Cargo.toml
+	cd circumspect; $(CARGO) build --release --lib
+
 # Questasim/Modelsim/vsim
 VLOG_ARGS  = -svinputport=compat
 VSIM_ARGS  = -t 1ns -voptargs=+acc
@@ -100,8 +107,8 @@ VERILATOR_CFLAGS += -O3 -march=native -mtune=native
 verilator/croc.f: Bender.lock Bender.yml
 	$(BENDER) script verilator -t rtl -t verilator -t cve2_include_tracer -DSYNTHESIS -DVERILATOR -DTRACE_EXECUTION > $@
 
-verilator/obj_dir/Vtb_croc_soc: verilator/croc.f $(SW_HEX)
-	cd verilator; $(VERILATOR) $(VERILATOR_ARGS) -O3 --top tb_croc_soc -f croc.f
+verilator/obj_dir/Vtb_croc_soc: verilator/croc.f $(CSPECT_LIB) $(SW_HEX)
+	cd verilator; $(VERILATOR) $(VERILATOR_ARGS) -O3 --top tb_croc_soc -f croc.f $(CSPECT_LIB)
 
 ## Simulate RTL using Verilator
 verilator: verilator/obj_dir/Vtb_croc_soc

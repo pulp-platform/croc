@@ -61,6 +61,15 @@ sources:
     files:
       - yosys/out/croc_chip_yosys_debug.v
 
+  - target: cspect
+    defines:
+      CSPECT: ~
+    include_dirs:
+      - circumspect/include
+    files:
+      - circumspect/include/cspect_pkg.sv
+      - rtl/test/croc_cspect.sv
+
   - target: any(simulation, verilator)
     files:
       - rtl/test/tb_croc_pkg.sv
