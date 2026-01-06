@@ -10,10 +10,6 @@ Croc was successfully taped out in Nov 2024. The chip is called [MLEM](http://as
 MLEM was designed and prepared for tapeout by ETHZ students as a bachelor project. The exact code and scripts used for the tapeout can be seen in the frozen [mlem-tapeout](https://github.com/pulp-platform/croc/tree/mlem-tapeout) branch.
 
 
-**IMPORTANT: Update to 1.1 recommended.**  
-Release 1.1 and newer includes a fix for the SRAMs where the `A_DLY` pin was tied low instead of high. The pin controls internal timings and the old version may create violations for some SRAMs.  
-
-
 ## Architecture
 
 ![Croc block diagram](doc/croc_arch.svg)
@@ -33,11 +29,14 @@ The main SoC configurations are in `rtl/croc_pkg.sv`:
 
 | Parameter           | Default          | Function                                              |
 |---------------------|------------------|-------------------------------------------------------|
-| `HartId`            | `0`              | Core's Hart ID                                        |
 | `PulpJtagIdCode`    | `32'hED9_C0C50`  | Debug module ID code                                  |
-| `NumExternalIrqs`   | `4`              | Number of external interrupts into Croc domain        |
-| `BankNumWords`      | `512`            | Number of 32bit words in a memory bank                |
+| `SramBankNumWords`  | `512`            | Number of 32bit words in a memory bank                |
 | `NumSramBanks`      | `2`              | Number of memory banks                                |
+| `BootAddr`          | `32'h1000_0000`  | Default boot address set in 'soc_ctrl' register       |
+| `croc_addr_map`     | see 'Memory Map' | Routing rules used for the main crossbar              |
+| `periph_addr_map`   | see 'Memory Map' | Routing rules used for the peripheral demuliplexer    |
+
+Further configurations can be made in `rtl/core_wrap.sv` (core specifics) and `rtl/croc_soc.sv` (connectivity between domains and to/from outside).
 
 The SRAMs are instantiated via a technology wrapper called `tc_sram_impl` (tc: tech_cells), the technology-independent implementation is in `rtl/tech_cells_generic/tc_sram_impl.sv`. A number of SRAM configurations are implemented using IHP130 SRAM memories in `ihp13/tc_sram_impl.sv`. If an unimplemented SRAM configuration is instantiated it will result in a `tc_sram_blackbox` module which can then be easily identified from the synthesis results.
 
@@ -94,7 +93,7 @@ Cell/Module placement                      |  Routing
 
 ## Requirements
 We are using the excellent docker container maintained by Harald Pretl. If you get stuck with installing the tools, we urge you to check the [Tool Repository](https://github.com/iic-jku/IIC-OSIC-TOOLS).  
-The current supported version is 2025.03, no other version is officially supported.
+The current supported version is 2025.12, no other version is officially supported.
 
 ### ETHZ systems
 ETHZ Design Center maintains an internal version of the IHP PDK, with integrations into all tools we have access to. For this reason if you work on the ETH systems it is recommended to use the `icdesign` tool (cockpit) instead of the liked Github repo.  
@@ -114,7 +113,7 @@ source ethz.env
 Additionally you may prefer to just enter a shell in the pre-installed osic-tools container using:
 ```sh
 oseda bash
-# older version eg: oseda -2025.03 bash
+# specific version eg: oseda -2025.12 bash
 ```
 
 ### Other systems

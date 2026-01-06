@@ -185,12 +185,7 @@ utl::report "Clock Tree Synthesis"
 set_wire_rc -clock -layer Metal3
 clock_tree_synthesis -buf_list $ctsBuf -root_buf $ctsBufRoot \
                      -sink_clustering_enable \
-                     -obstruction_aware \
-                     -balance_levels
-
-# Repair wire length between clock pad and clock-tree root
-utl::report "Repair clock nets"
-repair_clock_nets
+                     -repair_clock_nets
 
 # legalize cts cells
 utl::report "Detailed placement"
@@ -236,7 +231,7 @@ utl::report "###################################################################
 # eventually needs M4/M5 it may struggle with finding space
 # to place vias down to M2/M3 -> reserve some space on M2/M3
 # Reduce TM1 to avoid too much routing there (bigger tracks -> bad for routing)
-set_global_routing_layer_adjustment Metal2-Metal3 0.30
+set_global_routing_layer_adjustment Metal2-Metal3 0.20
 set_global_routing_layer_adjustment TopMetal1 0.20
 set_routing_layers -signal Metal2-TopMetal1 -clock Metal2-TopMetal1
 
@@ -295,8 +290,6 @@ repair_antennas -ratio_margin 30 -iterations 5
 utl::report "Detailed route"
 set_thread_count 8
 detailed_route -output_drc ${report_dir}/${log_id_str}_${proj_name}_route_drc.rpt \
-               -bottom_routing_layer Metal2 \
-               -top_routing_layer TopMetal1 \
                -droute_end_iter 30 \
                -drc_report_iter_step 5 \
                -save_guide_updates \
