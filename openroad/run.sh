@@ -1,4 +1,10 @@
 #!/bin/bash
+# Copyright 2026 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+# Authors:
+#
+# - Enrico Zelioli  <ezelioli@iis.ee.ethz.ch>
 
 # Set variables
 OPENROAD=${OPENROAD:-openroad}
