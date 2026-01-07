@@ -7,7 +7,7 @@
 # - Jannis Schönleber <janniss@iis.ee.ethz.ch>
 # - Philippe Sauter   <phsauter@iis.ee.ethz.ch>
 
-# Stage 01: Placement (Repair Netlist + Global Placement + Detailed Placement)
+# Stage 02: Placement (Repair Netlist + Global Placement + Detailed Placement)
 #
 # This stage performs:
 # - Initial repair of the netlist (tie cells, buffers)
@@ -21,8 +21,8 @@
 #   SAVE         - Checkpoint save directory
 #   INPUT_CHECKPOINT - Input checkpoint name (without .zip extension)
 #
-# Input checkpoint: 00_${PROJ_NAME}.power_grid
-# Output checkpoint: 03_${PROJ_NAME}.dpl
+# Input checkpoint: 01_${PROJ_NAME}.floorplan
+# Output checkpoint: 02_${PROJ_NAME}.placed
 
 ###############################################################################
 # Setup
@@ -42,13 +42,15 @@ set input_checkpoint $::env(INPUT_CHECKPOINT)
 utl::report "Loading checkpoint: ${input_checkpoint}"
 load_checkpoint ${input_checkpoint}
 
+utl::report "###############################################################################"
+utl::report "# Stage 02: PLACEMENT"
+utl::report "###############################################################################"
+
 ###############################################################################
 # Initial Repair Netlist
 ###############################################################################
-set log_id 1
-set log_id_str [format "%02d" $log_id]
 utl::report "###############################################################################"
-utl::report "# Step ${log_id_str}: Initial Repair Netlist"
+utl::report "# 02-01: Initial Repair Netlist"
 utl::report "###############################################################################"
 
 # Set layers used for estimate_parasitics
@@ -71,15 +73,13 @@ remove_buffers
 utl::report "Repair design"
 repair_design -verbose
 
-save_checkpoint ${log_id_str}_${proj_name}.pre_place
+save_checkpoint ${proj_name}.pre_place
 
 ###############################################################################
 # Global Placement
 ###############################################################################
-incr log_id
-set log_id_str [format "%02d" $log_id]
 utl::report "###############################################################################"
-utl::report "# Step ${log_id_str}: GLOBAL PLACEMENT"
+utl::report "# 02-02: GLOBAL PLACEMENT"
 utl::report "###############################################################################"
 
 set_thread_count 8
@@ -100,28 +100,28 @@ set GPL2_ARGS { -density 0.60
 # Rough placement to get parasitics from steiner-tree estimate so we can run repair_timing
 utl::report "Global Placement (1)"
 global_placement {*}$GPL_ARGS
-report_metrics "${log_id_str}_${proj_name}.gpl1"
-report_image "${log_id_str}_${proj_name}.gpl1" true true
-save_checkpoint ${log_id_str}_${proj_name}.gpl1
+report_metrics "${proj_name}.gpl1"
+report_image "${proj_name}.gpl1" true true
+save_checkpoint ${proj_name}.gpl1
 
 utl::report "Estimate parasitics"
 estimate_parasitics -placement
 utl::report "Repair design"
 repair_design -verbose
-save_checkpoint ${log_id_str}_${proj_name}.gpl1_fix
+save_checkpoint ${proj_name}.gpl1_fix
 
 # Old versions of repair_timing may swap non-equal pins, deactivated for now to avoid problems
 # Likely introduced in: https://github.com/The-OpenROAD-Project/OpenROAD/pull/3215 (fixed in new versions)
 utl::report "Repair setup"
 repair_timing -setup -skip_pin_swap -verbose
-save_checkpoint ${log_id_str}_${proj_name}.gpl1_repaired
+save_checkpoint ${proj_name}.gpl1_repaired
 
 # Actual global placement with routability and timing driven
 utl::report "Global Placement (2)"
 global_placement {*}$GPL2_ARGS
-report_metrics "${log_id_str}_${proj_name}.gpl2"
-report_image "${log_id_str}_${proj_name}.gpl2" true true
-save_checkpoint ${log_id_str}_${proj_name}.gpl2
+report_metrics "${proj_name}.gpl2"
+report_image "${proj_name}.gpl2" true true
+save_checkpoint ${proj_name}.gpl2
 
 ###############################################################################
 # Detailed Placement
@@ -129,7 +129,7 @@ save_checkpoint ${log_id_str}_${proj_name}.gpl2
 incr log_id
 set log_id_str [format "%02d" $log_id]
 utl::report "###############################################################################"
-utl::report "# Step ${log_id_str}: DETAILED PLACEMENT"
+utl::report "# 02-03: DETAILED PLACEMENT"
 utl::report "###############################################################################"
 
 set DPL_ARGS {}
@@ -144,12 +144,12 @@ optimize_mirroring
 utl::report "Estimate parasitics"
 estimate_parasitics -placement
 
-report_metrics "${log_id_str}_${proj_name}.dpl"
-save_checkpoint ${log_id_str}_${proj_name}.dpl
-report_image "${log_id_str}_${proj_name}.dpl" true true
+report_metrics "02_${proj_name}.placed"
+save_checkpoint 02_${proj_name}.placed
+report_image "02_${proj_name}.placed" true true
 
 utl::report "###############################################################################"
-utl::report "# Stage 01 complete: Checkpoint saved to ${save_dir}/${log_id_str}_${proj_name}.dpl.zip"
+utl::report "# Stage 02 complete: Checkpoint saved to ${save_dir}/02_${proj_name}.placed.zip"
 utl::report "###############################################################################"
 
 # Exit successfully

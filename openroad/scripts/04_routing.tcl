@@ -7,7 +7,7 @@
 # - Jannis Schönleber <janniss@iis.ee.ethz.ch>
 # - Philippe Sauter   <phsauter@iis.ee.ethz.ch>
 
-# Stage 03: Routing (Global Route + Detailed Route)
+# Stage 04: Routing (Global Route + Detailed Route)
 #
 # This stage performs:
 # - Global routing with congestion awareness
@@ -22,8 +22,8 @@
 #   SAVE         - Checkpoint save directory
 #   INPUT_CHECKPOINT - Input checkpoint name (without .zip extension)
 #
-# Input checkpoint: 04_${PROJ_NAME}.cts
-# Output checkpoint: 06_${PROJ_NAME}.drt
+# Input checkpoint: 03_${PROJ_NAME}.cts
+# Output checkpoint: 04_${PROJ_NAME}.routed
 
 ###############################################################################
 # Setup
@@ -43,13 +43,15 @@ set input_checkpoint $::env(INPUT_CHECKPOINT)
 utl::report "Loading checkpoint: ${input_checkpoint}"
 load_checkpoint ${input_checkpoint}
 
+utl::report "###############################################################################"
+utl::report "# Stage 04: ROUTING"
+utl::report "###############################################################################"
+
 ###############################################################################
 # Global Route
 ###############################################################################
-set log_id 5
-set log_id_str [format "%02d" $log_id]
 utl::report "###############################################################################"
-utl::report "# Step ${log_id_str}: GLOBAL ROUTE"
+utl::report "# 04-01: GLOBAL ROUTE"
 utl::report "###############################################################################"
 
 # Reduce routing resources (max utilization) of lower layers by 20%
@@ -63,17 +65,17 @@ set_global_routing_layer_adjustment TopMetal1 0.20
 set_routing_layers -signal Metal2-TopMetal1 -clock Metal2-TopMetal1
 
 utl::report "Global route"
-global_route -guide_file ${report_dir}/${log_id_str}_${proj_name}_route.guide \
-    -congestion_report_file ${report_dir}/${log_id_str}_${proj_name}_congestion.rpt \
+global_route -guide_file ${report_dir}/${proj_name}_route.guide \
+    -congestion_report_file ${report_dir}/${proj_name}_congestion.rpt \
     -allow_congestion
 # Default params but -allow_congestion
 # It continues even if it didn't find a solution (may be able to fix afterwards)
 
 utl::report "Estimate parasitics"
 estimate_parasitics -global_routing
-report_metrics "${log_id_str}_${proj_name}.grt"
-save_checkpoint ${log_id_str}_${proj_name}.grt
-report_image "${log_id_str}_${proj_name}.grt" true false false true
+report_metrics "${proj_name}.grt"
+save_checkpoint ${proj_name}.grt
+report_image "${proj_name}.grt" true false false true
 
 grt::set_verbose 0
 
@@ -94,23 +96,21 @@ detailed_placement
 
 # Route only the modified net by DPL
 global_route -end_incremental \
-            -congestion_report_file ${report_dir}/${log_id_str}_congestion_repaired_initial.rpt \
-            -guide_file ${report_dir}/${log_id_str}_${proj_name}_route.guide \
+            -congestion_report_file ${report_dir}/congestion_repaired_initial.rpt \
+            -guide_file ${report_dir}/${proj_name}_route.guide \
             -allow_congestion \
             -verbose
 
 estimate_parasitics -global_routing
-report_metrics "${log_id_str}_${proj_name}.grt_repaired"
-save_checkpoint ${log_id_str}_${proj_name}.grt_repaired
-report_image "${log_id_str}_${proj_name}.grt_repaired" true true false true
+report_metrics "${proj_name}.grt_repaired"
+save_checkpoint ${proj_name}.grt_repaired
+report_image "${proj_name}.grt_repaired" true true false true
 
 ###############################################################################
 # Detailed Route
 ###############################################################################
-incr log_id
-set log_id_str [format "%02d" $log_id]
 utl::report "###############################################################################"
-utl::report "# Step ${log_id_str}: DETAILED ROUTE"
+utl::report "# 04-02: DETAILED ROUTE"
 utl::report "###############################################################################"
 
 # Repair antennas (requires LEF cell with class 'CORE ANTENNACELL')
@@ -119,7 +119,7 @@ repair_antennas -ratio_margin 30 -iterations 5
 
 utl::report "Detailed route"
 set_thread_count 8
-detailed_route -output_drc ${report_dir}/${log_id_str}_${proj_name}_route_drc.rpt \
+detailed_route -output_drc ${report_dir}/${proj_name}_route_drc.rpt \
                -droute_end_iter 30 \
                -drc_report_iter_step 5 \
                -save_guide_updates \
@@ -127,12 +127,12 @@ detailed_route -output_drc ${report_dir}/${log_id_str}_${proj_name}_route_drc.rp
                -verbose 1
 
 utl::report "Saving detailed route"
-save_checkpoint ${log_id_str}_${proj_name}.drt
-report_metrics "${log_id_str}_${proj_name}.drt"
-report_image "${log_id_str}_${proj_name}.drt" true false false true
+save_checkpoint 04_${proj_name}.routed
+report_metrics "04_${proj_name}.routed"
+report_image "04_${proj_name}.routed" true false false true
 
 utl::report "###############################################################################"
-utl::report "# Stage 03 complete: Checkpoint saved to ${save_dir}/${log_id_str}_${proj_name}.drt.zip"
+utl::report "# Stage 04 complete: Checkpoint saved to ${save_dir}/04_${proj_name}.routed.zip"
 utl::report "###############################################################################"
 
 # Exit successfully

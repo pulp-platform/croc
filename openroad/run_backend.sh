@@ -30,17 +30,17 @@ Usage:
     ./run_backend.sh [OPTIONS]
 
 Options:
-    --all                   Run entire backend flow
+    --all                  Run entire backend flow
     --step <name>          Run specific step only
     --from <name>          Run from specific step to the end
     --help, -h             Show this help message
 
 Steps:
-    floorplan    - Initialize, floorplan, and power grid (stage 00)
-    placement    - Repair netlist and placement (stage 01)
-    cts          - Clock tree synthesis (stage 02)
-    routing      - Global and detailed routing (stage 03)
-    finishing    - Filler cells and output generation (stage 04)
+    floorplan    - Initialize, floorplan, and power grid (stage 01)
+    placement    - Repair netlist and placement (stage 02)
+    cts          - Clock tree synthesis (stage 03)
+    routing      - Global and detailed routing (stage 04)
+    finishing    - Filler cells and output generation (stage 05)
 
 Environment Variables:
     PROJ_NAME       - Project name (default: croc)

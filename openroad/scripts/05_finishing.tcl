@@ -7,7 +7,7 @@
 # - Jannis Schönleber <janniss@iis.ee.ethz.ch>
 # - Philippe Sauter   <phsauter@iis.ee.ethz.ch>
 
-# Stage 04: Finishing
+# Stage 05: Finishing
 #
 # This stage performs:
 # - Filler cell placement
@@ -21,8 +21,8 @@
 #   SAVE         - Checkpoint save directory
 #   INPUT_CHECKPOINT - Input checkpoint name (without .zip extension)
 #
-# Input checkpoint: 06_${PROJ_NAME}.drt
-# Output checkpoint: 07_${PROJ_NAME}.final
+# Input checkpoint: 04_${PROJ_NAME}.routed
+# Output checkpoint: 05_${PROJ_NAME}.final
 
 ###############################################################################
 # Setup
@@ -45,10 +45,8 @@ load_checkpoint ${input_checkpoint}
 ###############################################################################
 # Finishing
 ###############################################################################
-set log_id 7
-set log_id_str [format "%02d" $log_id]
 utl::report "###############################################################################"
-utl::report "# Step ${log_id_str}: FINISHING"
+utl::report "# Stage 05: FINISHING"
 utl::report "###############################################################################"
 
 utl::report "Filler placement"
@@ -58,11 +56,11 @@ filler_placement $stdfill
 utl::report "Global connect"
 global_connect
 
-save_checkpoint ${log_id_str}_${proj_name}.final
-report_image "${log_id_str}_${proj_name}.final" true true false true
+save_checkpoint 05_${proj_name}.final
+report_image "05_${proj_name}.final" true true false true
 
 estimate_parasitics -global_routing
-report_metrics "${log_id_str}_${proj_name}.final"
+report_metrics "05_${proj_name}.final"
 
 utl::report "Write output files"
 write_def                      out/${proj_name}.def
@@ -77,16 +75,16 @@ write_sdc                      out/${proj_name}.sdc
 # extract_parasitics -ext_model_file IHP_rcx_patterns.rules
 # write_spef out/${proj_name}.spef
 # read_spef  out/${proj_name}.spef; # readback parasitics for OpenSTA
-# report_metrics "${log_id_str}_${proj_name}.extract"
+# report_metrics "${step_nr}_${proj_name}.extract"
 
 utl::report "###############################################################################"
-utl::report "# Stage 04 complete: Final outputs written to out/"
+utl::report "# Stage 05 complete: Final outputs written to out/"
 utl::report "#   - DEF:        out/${proj_name}.def"
 utl::report "#   - Verilog:    out/${proj_name}.v"
 utl::report "#   - LVS netlist: out/${proj_name}_lvs.v"
 utl::report "#   - ODB:        out/${proj_name}.odb"
 utl::report "#   - SDC:        out/${proj_name}.sdc"
-utl::report "# Checkpoint saved to ${save_dir}/${log_id_str}_${proj_name}.final.zip"
+utl::report "# Checkpoint saved to ${save_dir}/05_${proj_name}.final.zip"
 utl::report "###############################################################################"
 
 # Exit successfully

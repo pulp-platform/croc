@@ -7,7 +7,7 @@
 # - Jannis Schönleber <janniss@iis.ee.ethz.ch>
 # - Philippe Sauter   <phsauter@iis.ee.ethz.ch>
 
-# Stage 00: Initialization, Floorplan, and Power Grid
+# Stage 01: Initialization, Floorplan, and Power Grid
 #
 # This stage performs:
 # - Reading and linking the netlist
@@ -23,7 +23,7 @@
 #   REPORTS      - Reports output directory
 #   SAVE         - Checkpoint save directory
 #
-# Output checkpoint: 00_${PROJ_NAME}.floorplan
+# Output checkpoint: 01_${PROJ_NAME}.floorplan
 
 ###############################################################################
 # Setup
@@ -42,14 +42,15 @@ source scripts/floorplan_util.tcl
 # Initialize technology data (PDK libraries, LEFs, etc.)
 source scripts/init_tech.tcl
 
-set log_id 0
-set log_id_str [format "%02d" $log_id]
+utl::report "###############################################################################"
+utl::report "# Stage 01: FLOORPLAN"
+utl::report "###############################################################################"
 
 ###############################################################################
 # Initialization
 ###############################################################################
 utl::report "###############################################################################"
-utl::report "# Step ${log_id_str}: Initialization, Floorplan, and Power Grid"
+utl::report "# 01-01: Initialization"
 utl::report "###############################################################################"
 
 # Read and check design
@@ -69,6 +70,9 @@ report_checks -format end -no_line_splits                >> ${report_dir}/${log_
 utl::report "Connect global nets (power)"
 source scripts/power_connect.tcl
 
+utl::report "###############################################################################"
+utl::report "# 01-02: Core and Die Area"
+utl::report "###############################################################################"
 ##########################################################################
 # Die and Core Area 
 ##########################################################################
@@ -102,7 +106,9 @@ initialize_floorplan -die_area "0 0 $chipW $chipH" \
 ##########################################################################
 # Pads/IOs 
 ##########################################################################
-utl::report "Create Padring"
+utl::report "###############################################################################"
+utl::report "# 01-03: Padring"
+utl::report "###############################################################################"
 source src/padring.tcl
 
 
@@ -140,6 +146,9 @@ set siteHeight        [ord::dbu_to_microns [[dpl::get_row_site] getHeight]]
 ##########################################################################
 # Paths to the instances of macros
 ##########################################################################
+utl::report "###############################################################################"
+utl::report "# 01-04: Macro Placement"
+utl::report "###############################################################################"
 utl::report "Macro Names"
 source src/instances.tcl
 
@@ -168,20 +177,21 @@ set X [expr $X]
 set Y [expr $Y - $RamSize256x64_H - 15]
 placeInstance $bank1_sram0 $X $Y R0
 
-
 cut_rows -halo_width_x 2 -halo_width_y 1
 
 
 
-utl::report "Create Power Grid"
+utl::report "###############################################################################"
+utl::report "# 01-04: Power Grid"
+utl::report "###############################################################################"
 source scripts/power_grid.tcl
 
 # Save checkpoint
-save_checkpoint 00_${proj_name}.floorplan
-report_image "00_${proj_name}.floorplan" true
+save_checkpoint 01_${proj_name}.floorplan
+report_image "01_${proj_name}.floorplan" true
 
 utl::report "###############################################################################"
-utl::report "# Stage 00 complete: Checkpoint saved to ${save_dir}/00_${proj_name}.floorplan.zip"
+utl::report "# Stage 01 complete: Checkpoint saved to ${save_dir}/01_${proj_name}.floorplan.zip"
 utl::report "###############################################################################"
 
 # Exit successfully
