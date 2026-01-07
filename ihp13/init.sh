@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: SHL-0.51
 # Authors:
 #
-# - Enrico Zelioli  <ezelioli@iis.ee.ethz.ch>
+# - Thomas Benz  <tbenz@iis.ee.ethz.ch>
 
 # Apply patches required for filling
 if [ ! -f pdk.patched ]; then
