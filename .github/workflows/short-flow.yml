@@ -25,7 +25,7 @@ jobs:
       - name: Run simulation commands in OSEDA
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: "make sw && cd verilator && ./run.sh"
+          cmd: "make all && cd verilator && ./run.sh"
       - name: Upload built software
         uses: actions/upload-artifact@v4
         with:
