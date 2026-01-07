@@ -31,8 +31,9 @@ Usage:
 
 Options:
     --help, -h          Show this help message
-    --skip-flist        Skip file list generation (use existing croc.flist)
-    --skip-synthesis    Skip synthesis (use existing netlist)
+    --flist             Run synthesis file list re-generation
+    --synthesis         Run synthesis (use existing croc.flist)
+    --backend           Run backend (use existing netlist)
 
 Environment Variables:
     PROJ_NAME       - Project name (default: croc)
@@ -62,55 +63,7 @@ EOF
     exit 0
 }
 
-log_section() {
-    echo ""
-    echo "================================================================================"
-    echo "  $*"
-    echo "================================================================================"
-    echo ""
-}
-
-
-####################
-### Parse Arguments
-####################
-skip_flist=false
-skip_synthesis=false
-
-while [[ $# -gt 0 ]]; do
-    case "$1" in
-        --help|-h)
-            show_help
-            ;;
-        --skip-flist)
-            skip_flist=true
-            shift
-            ;;
-        --skip-synthesis)
-            skip_synthesis=true
-            shift
-            ;;
-        *)
-            echo "[ERROR] Unknown option: $1 (use --help for usage)" >&2
-            exit 1
-            ;;
-    esac
-done
-
-################
-### Main Flow
-################
-echo "================================================================================"
-echo "  Croc SoC ASIC Flow - Complete Run"
-echo "================================================================================"
-echo "[INFO] Project: ${PROJ_NAME}"
-echo "[INFO] Top Design: ${TOP_DESIGN}"
-echo "[INFO] PDK: ${PDK_ROOT}"
-
-#############################
-# Step 1: Generate File List
-#############################
-if [[ "${skip_flist}" == "false" ]]; then
+generate_flist() {
     echo "[INFO] Using Bender to generate croc.flist"
 
     command -v "${BENDER}" &>/dev/null || { echo "[ERROR] Bender not found: ${BENDER}" >&2; exit 1; }
@@ -121,50 +74,36 @@ if [[ "${skip_flist}" == "false" ]]; then
         > croc.flist
 
     echo "[SUCCESS] File list generated: croc.flist"
-else
-    [[ -f "croc.flist" ]] || { echo "[ERROR] croc.flist not found. Remove --skip-flist to generate it." >&2; exit 1; }
-    echo "[INFO] Using existing croc.flist"
-fi
+}
+
 
 ####################
-# Synthesis
+### Parse Arguments
 ####################
-if [[ "${skip_synthesis}" == "false" ]]; then
-    echo "================================================================================"
-    echo "  Synthesis (Yosys)"
-    echo "================================================================================"
-    yosys/run_synthesis.sh
-else
-    echo "================================================================================"
-    echo "  Using Existing Netlist"
-    echo "================================================================================"
-    [[ -f "${NETLIST}" ]] || { echo "[ERROR] Netlist not found: ${NETLIST}. Remove --skip-synthesis to generate it." >&2; exit 1; }
-    echo "[INFO] Using existing netlist: ${NETLIST}"
-fi
 
-###################
-# Backend
-###################
-echo "================================================================================"
-echo "  Backend (OpenROAD)"
-echo "================================================================================"
-openroad/run_backend.sh --all
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --help|-h)
+            show_help
+            ;;
+        --flist)
+            generate_flist
+            shift
+            ;;
+        --synthesis)
+            [[ -f "croc.flist" ]] || { echo "[ERROR] croc.flist not found. Run with --flist to generate it." >&2; exit 1; }
+            yosys/run_synthesis.sh
+            shift
+            ;;
+        --backend)
+            [[ -f "${NETLIST}" ]] || { echo "[ERROR] Netlist not found: ${NETLIST}. Run with --synthesis to generate it." >&2; exit 1; }
+            openroad/run_backend.sh --all
+            shift
+            ;;
+        *)
+            echo "[ERROR] Unknown option: $1 (use --help for usage)" >&2
+            exit 1
+            ;;
+    esac
+done
 
-###################
-# Summary
-###################
-echo "================================================================================"
-echo "  Flow Complete!"
-echo "================================================================================"
-echo "[INFO] Final outputs:"
-echo "[INFO]   - Netlist:       ${NETLIST}"
-echo "[INFO]   - DEF:           ${OR_OUT}/${PROJ_NAME}.def"
-echo "[INFO]   - ODB:           ${OR_OUT}/${PROJ_NAME}.odb"
-echo "[INFO]   - Verilog:       ${OR_OUT}/${PROJ_NAME}.v"
-echo "[INFO]   - LVS netlist:   ${OR_OUT}/${PROJ_NAME}_lvs.v"
-echo "[INFO]   - SDC:           ${OR_OUT}/${PROJ_NAME}.sdc"
-echo "[INFO] "
-echo "[INFO] Checkpoints:      ${OR_SAVE}/"
-echo "[INFO] Reports:          ${OR_REPORTS}/"
-echo "[INFO] "
-echo "[SUCCESS] Croc SoC ASIC flow completed successfully!"

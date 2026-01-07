@@ -70,9 +70,6 @@ echo "[INFO] Starting Yosys synthesis for ${TOP_DESIGN}"
 
 # File list
 SV_FLIST="${SV_FLIST:-${croc_root}/croc.flist}"
-if [[ ! -f "${SV_FLIST}" ]]; then 
-    echo "[ERROR] File not found: ${SV_FLIST}" >&2; exit 1;
-fi
 echo "[INFO] Using file list: ${SV_FLIST}"
 
 # Create output directories
@@ -85,7 +82,6 @@ logfile="${YOSYS_DIR}/${TOP_DESIGN}.log"
 
 # Check Yosys is available
 command -v "${YOSYS}" &>/dev/null || { echo "[ERROR] Yosys not found: ${YOSYS}" >&2; exit 1; }
-echo "[INFO] Using Yosys: $(command -v ${YOSYS})"
 
 # Run Yosys synthesis
 echo "[INFO] Running Yosys synthesis..."
@@ -101,7 +97,7 @@ export TMP="${YOSYS_TMP}"
 export OUT="${YOSYS_OUT}"
 export REPORTS="${YOSYS_REPORTS}"
 
-# Run Yosys with timestamped logging (matching original Makefile behavior)
+# Run Yosys with timestamped logging
 if ${YOSYS} -c "${YOSYS_DIR}/scripts/yosys_synthesis.tcl" 2>&1 | \
     TZ=UTC gawk '{ print strftime("[%Y-%m-%d %H:%M %Z]"), $0 }' | \
     tee "${logfile}" | \
