@@ -49,7 +49,7 @@ jobs:
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
           run-id: ${{ steps.get-run-id.outputs.run-id }}
-          path: klayout
+          path: klayout/out
       - name: Download DEF artifact from "Full Flow" workflow
         uses: actions/download-artifact@v4
         with:
@@ -93,7 +93,7 @@ jobs:
       - name: Meercat setup, export top-level GDS
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: "ls -lah klayout; cd artistic; mkdir -p meerkat_work; python3 scripts/meerkat_interface.py -i ../../klayout/croc_chip.gds -m croc_tm.gds.gz -g croc_logo.gds -o croc_chip.gds.gz -w meerkat_work -l 134; cd meerkat_work; klayout -zz -rm ../scripts/export_top_metal.py; gzip -d croc_tm.gds.gz"
+          cmd: "ls -lah klayout; cd artistic; mkdir -p meerkat_work; python3 scripts/meerkat_interface.py -i ../../klayout/out/croc_chip.gds.gz -m croc_tm.gds.gz -g croc_logo.gds -o croc_chip.gds.gz -w meerkat_work -l 134; cd meerkat_work; klayout -zz -rm ../scripts/export_top_metal.py; gzip -d croc_tm.gds.gz"
       - name: Upload top-level GDS
         uses: actions/upload-artifact@v4
         with:

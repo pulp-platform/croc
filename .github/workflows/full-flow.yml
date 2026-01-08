@@ -25,13 +25,13 @@ jobs:
       - name: Checkout repository (with submodules)
         uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: recursive
       - name: Free disk space
         uses: ./.github/actions/free-space
       - name: Run Yosys, OpenROAD and KLayout
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: "make yosys && make openroad && make klayout"
+          cmd: "make yosys && make openroad && make finishing"
       - name: Upload openroad outputs
         uses: actions/upload-artifact@v4
         with:
@@ -44,5 +44,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: croc-gds
-          path: klayout/croc_chip.gds
+          path: klayout/out/croc_chip.gds.gz
+      - name: Upload sealed gds
+        uses: actions/upload-artifact@v4
+        with:
+          name: croc-gds-sealed
+          path: klayout/out/croc_chip_sealed.gds.gz
         continue-on-error: true

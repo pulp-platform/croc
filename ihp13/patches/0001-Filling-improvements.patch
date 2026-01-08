@@ -1,0 +1,426 @@
+From 6603c4b764475516639f7843b6ac370616800956 Mon Sep 17 00:00:00 2001
+From: Thomas Benz <tbenz@iis.ee.ethz.ch>
+Date: Thu, 4 Sep 2025 16:39:22 +0200
+Subject: [PATCH] Filling improvements
+
+---
+ .../tech/macros/sg13g2_filler_ActGatP.lym     |   6 +
+ .../tech/macros/sg13g2_filler_Metal.lym       |  35 +++--
+ .../tech/macros/sg13g2_filler_TopMetal1.lym   | 132 ++++++++++++++++++
+ .../tech/macros/sg13g2_filler_TopMetal2.lym   | 131 +++++++++++++++++
+ .../libs.tech/klayout/tech/scripts/filler.py  |   8 +-
+ 5 files changed, 299 insertions(+), 13 deletions(-)
+ create mode 100644 ihp-sg13g2/libs.tech/klayout/tech/macros/sg13g2_filler_TopMetal1.lym
+ create mode 100644 ihp-sg13g2/libs.tech/klayout/tech/macros/sg13g2_filler_TopMetal2.lym
+
+diff --git a/ihp-sg13g2/libs.tech/klayout/tech/macros/sg13g2_filler_ActGatP.lym b/ihp-sg13g2/libs.tech/klayout/tech/macros/sg13g2_filler_ActGatP.lym
+index a60a7ef..4cade7a 100644
+--- a/ihp-sg13g2/libs.tech/klayout/tech/macros/sg13g2_filler_ActGatP.lym
++++ b/ihp-sg13g2/libs.tech/klayout/tech/macros/sg13g2_filler_ActGatP.lym
+@@ -149,6 +149,8 @@
+   # CREATE Activ FILLER
+   ##########################################################################
+ 
++  print(" -> Calculate Activ exclusion region\n")
++
+   extent_all_layers = source.extent
+   Activ_cpy=Activ.dup
+   Poly_cpy=GatPoly.dup
+@@ -188,6 +190,8 @@
+   # CREATE GatPoly FILLER
+   ##########################################################################
+ 
++  print(" -> Calculate GatPoly exclusion region\n")
++
+   Activ_gp_cpy=Activ.dup
+   Poly_filler_cpy=GatPoly_filler.dup
+   Poly_gp_cpy=GatPoly.dup
+@@ -233,7 +237,9 @@
+ 
+   org_x = 2000.0
+   org_y = org_x
++  print(" -> Perform GatePoly fill\n")
+   (cellframe1-exclLayAct-exclLayGatP).fill(act_fill, hstep(spacing_h, offset_v), vstep(offset_h, spacing_v))
++  print(" -> Perform Activ fill\n")
+   (cellframe1-exclLayGatP-exclLayAct).fill(gp_fill, hstep(gp_spacing_h, gp_offset_v), vstep(gp_offset_h, gp_spacing_v))
+ </text>
+ </klayout-macro>
+diff --git a/ihp-sg13g2/libs.tech/klayout/tech/macros/sg13g2_filler_Metal.lym b/ihp-sg13g2/libs.tech/klayout/tech/macros/sg13g2_filler_Metal.lym
+index 147cd1e..ff38154 100644
+--- a/ihp-sg13g2/libs.tech/klayout/tech/macros/sg13g2_filler_Metal.lym
++++ b/ihp-sg13g2/libs.tech/klayout/tech/macros/sg13g2_filler_Metal.lym
+@@ -195,10 +195,10 @@
+ 	end
+ 
+ 	distances = {
+-		'distance_m1' => 1.5,
+-		'distance_m2' => 1.5,
+-		'distance_m3' => 2.0,
+-		'distance_m4' => 2.0,
++		'distance_m1' => 0.42,
++		'distance_m2' => 0.42,
++		'distance_m3' => 0.42,
++		'distance_m4' => 1.2,
+ 		'distance_m5' => 2.0
+ 	}
+ 
+@@ -259,6 +259,9 @@
+ 	pattern_m5_s = fill_pattern("Met5_S_FILL_CELL").shape(67, 22, box(0.0, 0.0, width_m5_s, height_m5_s))
+ 	pattern_m5_m = fill_pattern("Met5_M_FILL_CELL").shape(67, 22, box(0.0, 0.0, width_m5_m, height_m5_m))
+ 
++
++	# This is my stupid way of hacking in multi_origin functionality as the true parameter seems to create off-grid structures. All values are pure guesses.
++
+ 	print("Filling M1\n")
+ 	M1Fil_b = Metal1_filler.dup
+ 	M1Fil_b.size(0.42, 0.42, "square_limit")
+@@ -267,8 +270,12 @@
+ 	M1Fil_d = TRANS.dup
+ 	M1Fil_d.size(1.0, 1.0, "square_limit")
+ 	M1Fil = EdgeSeal.holes - (M1Fil_b | M1Fil_c | M1Fil_d | Metal1_nofill | Metal1_slit | TRANS | NoMetFiller)
+-	M1Fil_left = M1Fil.fill_with_left(pattern_m1_m, hstep(width_m1_m + distance_m1_m), vstep(height_m1_m + distance_m1_m))
+-	M1Fil_left.fill(pattern_m1_s, hstep(width_m1_s + distance_m1_s), vstep(height_m1_s + distance_m1_s))
++	m1Fil_left = M1Fil.fill_with_left(pattern_m1_m, hstep(width_m1_m + distance_m1_m), vstep(height_m1_m + distance_m1_m))
++	for it in 0..24 do
++		origin_shift = (it * 0.07).round(2)
++		print(" -> Detail iteration #{it}: shift - #{origin_shift}\n")
++		m1Fil_left = m1Fil_left.fill_with_left(pattern_m1_s, hstep(width_m1_s + distance_m1_s), vstep(height_m1_s + distance_m1_s), origin(origin_shift, origin_shift))
++	end
+ 
+ 	print("Filling M2\n")
+ 	M2Fil_b = Metal2_filler.dup
+@@ -278,8 +285,12 @@
+ 	M2Fil_d = TRANS.dup
+ 	M2Fil_d.size(1.0, 1.0, "square_limit")
+ 	M2Fil = EdgeSeal.holes - (M2Fil_b | M2Fil_c | M2Fil_d | Metal2_nofill | Metal2_slit | TRANS | NoMetFiller)
+-	M2Fil_left = M2Fil.fill_with_left(pattern_m2_m, hstep(width_m2_m + distance_m2_m), vstep(height_m2_m + distance_m2_m))
+-	M2Fil_left.fill(pattern_m2_s, hstep(width_m2_s + distance_m2_s), vstep(height_m2_s + distance_m2_s))
++	m2Fil_left = M2Fil.fill_with_left(pattern_m2_m, hstep(width_m2_m + distance_m2_m), vstep(height_m2_m + distance_m2_m))
++	for it in 0..24 do
++		origin_shift = (it * 0.07).round(2)
++		print(" -> Detail iteration #{it}: shift - #{origin_shift}\n")
++		m2Fil_left = m2Fil_left.fill_with_left(pattern_m2_s, hstep(width_m2_s + distance_m2_s), vstep(height_m2_s + distance_m2_s), origin(origin_shift, origin_shift))
++	end
+ 
+ 	print("Filling M3\n")
+ 	M3Fil_b = Metal3_filler.dup
+@@ -289,8 +300,12 @@
+ 	M3Fil_d = TRANS.dup
+ 	M3Fil_d.size(1.0, 1.0, "square_limit")
+ 	M3Fil = EdgeSeal.holes - (M3Fil_b | M3Fil_c | M3Fil_d | Metal3_nofill | Metal3_slit | TRANS | NoMetFiller)
+-	M3Fil_left = M3Fil.fill_with_left(pattern_m3_m, hstep(width_m3_m + distance_m3_m), vstep(height_m3_m + distance_m3_m))
+-	M3Fil_left.fill(pattern_m3_s, hstep(width_m3_s + distance_m3_s), vstep(height_m3_s + distance_m3_s))
++	m3Fil_left = M3Fil.fill_with_left(pattern_m3_m, hstep(width_m3_m + distance_m3_m), vstep(height_m3_m + distance_m3_m))
++	for it in 0..24 do
++		origin_shift = (it * 0.07).round(2)
++		print(" -> Detail iteration #{it}: shift - #{origin_shift}\n")
++		m3Fil_left = m3Fil_left.fill_with_left(pattern_m3_s, hstep(width_m3_s + distance_m3_s), vstep(height_m3_s + distance_m3_s), origin(origin_shift, origin_shift))
++	end
+ 
+ 	print("Filling M4\n")
+ 	M4Fil_b = Metal4_filler.dup
+diff --git a/ihp-sg13g2/libs.tech/klayout/tech/macros/sg13g2_filler_TopMetal1.lym b/ihp-sg13g2/libs.tech/klayout/tech/macros/sg13g2_filler_TopMetal1.lym
+new file mode 100644
+index 0000000..a17cc9c
+--- /dev/null
++++ b/ihp-sg13g2/libs.tech/klayout/tech/macros/sg13g2_filler_TopMetal1.lym
+@@ -0,0 +1,132 @@
++<?xml version="1.0" encoding="utf-8"?>
++<klayout-macro>
++ <description>Fill TopMetal 1</description>
++ <version>0.1</version>
++ <category>filler</category>
++ <prolog/>
++ <epilog/>
++ <doc/>
++ <autorun>false</autorun>
++ <autorun-early>false</autorun-early>
++ <priority>0</priority>
++ <shortcut/>
++ <show-in-menu>true</show-in-menu>
++ <group-name>filler</group-name>
++ <menu-path>sg13g2_menu&gt;end("SG13G2 PDK").end</menu-path>
++ <interpreter>dsl</interpreter>
++ <dsl-interpreter-name>drc-dsl-xml</dsl-interpreter-name>
++ <text>
++	# Automatic filler generation script for TopMetal
++	Activ = source.input("1/0")
++	Activ_pin = source.input("1/2")
++	Activ_mask = source.input("1/20")
++	Activ_filler = source.input("1/22")
++	Activ_nofill = source.input("1/23")
++	BiWind = source.input("3/0")
++	GatPoly = source.input("5/0")
++	GatPoly_pin = source.input("5/2")
++	GatPoly_filler = source.input("5/22")
++	GatPoly_nofill = source.input("5/23")
++	Cont = source.input("6/0")
++	nSD = source.input("7/0")
++	nSD_block = source.input("7/21")
++	Metal1 = source.input("8/0")
++	Metal1_pin = source.input("8/2")
++	Metal1_filler = source.input("8/22")
++	Metal1_nofill = source.input("8/23")
++	Metal1_slit = source.input("8/24")
++	Passiv = source.input("9/0")
++	Metal2 = source.input("10/0")
++	Metal2_pin = source.input("10/2")
++	Metal2_filler = source.input("10/22")
++	Metal2_nofill = source.input("10/23")
++	Metal2_slit = source.input("10/24")
++	BasPoly = source.input("13/0")
++	pSD = source.input("14/0")
++	DigiBnd = source.input("16/0")
++	Via1 = source.input("19/0")
++	RES = source.input("24/0")
++	SRAM = source.input("25/0")
++	TRANS = source.input("26/0")
++	IND = source.input("27/0")
++	SalBlock = source.input("28/0")
++	Via2 = source.input("29/0")
++	Metal3 = source.input("30/0")
++	Metal3_pin = source.input("30/2")
++	Metal3_filler = source.input("30/22")
++	Metal3_nofill = source.input("30/23")
++	Metal3_slit = source.input("30/24")
++	NWell = source.input("31/0")
++	NWell_pin = source.input("31/2")
++	nBuLay = source.input("32/0")
++	nBuLay_block = source.input("32/21")
++	EmWind = source.input("33/0")
++	DeepCo = source.input("35/0")
++	MIM = source.input("36/0")
++	EdgeSeal = source.input("39/0")
++	dfpad = source.input("41/0")
++	dfpad_pillar = source.input("41/35")
++	dfpad_sbump = source.input("41/36")
++	ThickGateOx = source.input("44/0")
++	PWell = source.input("46/0")
++	PWell_block = source.input("46/21")
++	Via3 = source.input("49/0")
++	Metal4 = source.input("50/0")
++	Metal4_pin = source.input("50/2")
++	Metal4_filler = source.input("50/22")
++	Metal4_nofill = source.input("50/23")
++	Metal4_slit = source.input("50/24")
++	EmPoly = source.input("55/0")
++	DigiSub = source.input("60/0")
++	TEXT_0 = source.labels("63/0")
++	Via4 = source.input("66/0")
++	Metal5 = source.input("67/0")
++	Metal5_pin = source.input("67/2")
++	Metal5_filler = source.input("67/22")
++	Metal5_nofill = source.input("67/23")
++	Metal5_slit = source.input("67/24")
++	Polimide = source.input("98/0")
++	Recog = source.input("99/0")
++	Recog_esd = source.input("99/30")
++	Recog_diode = source.input("99/31")
++	Recog_tsv = source.input("99/32")
++	EXTBlock = source.input("111/0")
++	TopVia1 = source.input("125/0")
++	TopMetal1 = source.input("126/0")
++	TopMetal1_pin = source.input("126/2")
++	TopMetal1_filler = source.input("126/22")
++	TopMetal1_nofill = source.input("126/23")
++	TopMetal1_slit = source.input("126/24")
++	PolyRes = source.input("128/0")
++	Vmim = source.input("129/0")
++	TopVia2 = source.input("133/0")
++	TopMetal2 = source.input("134/0")
++	TopMetal2_pin = source.input("134/2")
++	TopMetal2_filler = source.input("134/22")
++	TopMetal2_nofill = source.input("134/23")
++	TopMetal2_slit = source.input("134/24")
++	ColWind = source.input("139/0")
++	RFMEM = source.input("147/0")
++	DeepVia = source.input("152/0")
++	LBE = source.input("157/0")
++	NoMetFiller = source.input("160/0")
++
++	# Paramter
++	width = 5.0
++	height = 10.0
++	distance = 3.05  # exact value of 3.0, which is a min. value for TM1Fil.b causes random DRC violations
++
++	# Create filler cell
++	pattern_tm1 = fill_pattern("TM1_FILL_CELL").shape(126, 22, box(0.0, 0.0, width, height))
++
++	# Define noFill exclusion layer
++	TM1Fil_c = TopMetal1.dup
++	TM1Fil_c.size(3.0, 3.0, "square_limit")
++	TM1Fil_d = TRANS.dup
++	TM1Fil_d.size(4.9, 4.9, "square_limit")
++	exclLayTM1 = TM1Fil_c | TM1Fil_d | TopMetal1_filler | TopMetal1_nofill | TopMetal1_slit | TRANS
++
++	# perform fill
++	(EdgeSeal.holes - exclLayTM1).fill(pattern_tm1, hstep(width + distance), vstep(height + distance))
++</text>
++</klayout-macro>
+diff --git a/ihp-sg13g2/libs.tech/klayout/tech/macros/sg13g2_filler_TopMetal2.lym b/ihp-sg13g2/libs.tech/klayout/tech/macros/sg13g2_filler_TopMetal2.lym
+new file mode 100644
+index 0000000..58fc9ea
+--- /dev/null
++++ b/ihp-sg13g2/libs.tech/klayout/tech/macros/sg13g2_filler_TopMetal2.lym
+@@ -0,0 +1,131 @@
++<?xml version="1.0" encoding="utf-8"?>
++<klayout-macro>
++ <description>Fill TopMetal 2</description>
++ <version>0.1</version>
++ <category>filler</category>
++ <prolog/>
++ <epilog/>
++ <doc/>
++ <autorun>false</autorun>
++ <autorun-early>false</autorun-early>
++ <priority>0</priority>
++ <shortcut/>
++ <show-in-menu>true</show-in-menu>
++ <group-name>filler</group-name>
++ <menu-path>sg13g2_menu&gt;end("SG13G2 PDK").end</menu-path>
++ <interpreter>dsl</interpreter>
++ <dsl-interpreter-name>drc-dsl-xml</dsl-interpreter-name>
++ <text>
++	# Automatic filler generation script for TopMetal
++	Activ = source.input("1/0")
++	Activ_pin = source.input("1/2")
++	Activ_mask = source.input("1/20")
++	Activ_filler = source.input("1/22")
++	Activ_nofill = source.input("1/23")
++	BiWind = source.input("3/0")
++	GatPoly = source.input("5/0")
++	GatPoly_pin = source.input("5/2")
++	GatPoly_filler = source.input("5/22")
++	GatPoly_nofill = source.input("5/23")
++	Cont = source.input("6/0")
++	nSD = source.input("7/0")
++	nSD_block = source.input("7/21")
++	Metal1 = source.input("8/0")
++	Metal1_pin = source.input("8/2")
++	Metal1_filler = source.input("8/22")
++	Metal1_nofill = source.input("8/23")
++	Metal1_slit = source.input("8/24")
++	Passiv = source.input("9/0")
++	Metal2 = source.input("10/0")
++	Metal2_pin = source.input("10/2")
++	Metal2_filler = source.input("10/22")
++	Metal2_nofill = source.input("10/23")
++	Metal2_slit = source.input("10/24")
++	BasPoly = source.input("13/0")
++	pSD = source.input("14/0")
++	DigiBnd = source.input("16/0")
++	Via1 = source.input("19/0")
++	RES = source.input("24/0")
++	SRAM = source.input("25/0")
++	TRANS = source.input("26/0")
++	IND = source.input("27/0")
++	SalBlock = source.input("28/0")
++	Via2 = source.input("29/0")
++	Metal3 = source.input("30/0")
++	Metal3_pin = source.input("30/2")
++	Metal3_filler = source.input("30/22")
++	Metal3_nofill = source.input("30/23")
++	Metal3_slit = source.input("30/24")
++	NWell = source.input("31/0")
++	NWell_pin = source.input("31/2")
++	nBuLay = source.input("32/0")
++	nBuLay_block = source.input("32/21")
++	EmWind = source.input("33/0")
++	DeepCo = source.input("35/0")
++	MIM = source.input("36/0")
++	EdgeSeal = source.input("39/0")
++	dfpad = source.input("41/0")
++	dfpad_pillar = source.input("41/35")
++	dfpad_sbump = source.input("41/36")
++	ThickGateOx = source.input("44/0")
++	PWell = source.input("46/0")
++	PWell_block = source.input("46/21")
++	Via3 = source.input("49/0")
++	Metal4 = source.input("50/0")
++	Metal4_pin = source.input("50/2")
++	Metal4_filler = source.input("50/22")
++	Metal4_nofill = source.input("50/23")
++	Metal4_slit = source.input("50/24")
++	EmPoly = source.input("55/0")
++	DigiSub = source.input("60/0")
++	TEXT_0 = source.labels("63/0")
++	Via4 = source.input("66/0")
++	Metal5 = source.input("67/0")
++	Metal5_pin = source.input("67/2")
++	Metal5_filler = source.input("67/22")
++	Metal5_nofill = source.input("67/23")
++	Metal5_slit = source.input("67/24")
++	Polimide = source.input("98/0")
++	Recog = source.input("99/0")
++	Recog_esd = source.input("99/30")
++	Recog_diode = source.input("99/31")
++	Recog_tsv = source.input("99/32")
++	EXTBlock = source.input("111/0")
++	TopVia1 = source.input("125/0")
++	TopMetal1 = source.input("126/0")
++	TopMetal1_pin = source.input("126/2")
++	TopMetal1_filler = source.input("126/22")
++	TopMetal1_nofill = source.input("126/23")
++	TopMetal1_slit = source.input("126/24")
++	PolyRes = source.input("128/0")
++	Vmim = source.input("129/0")
++	TopVia2 = source.input("133/0")
++	TopMetal2 = source.input("134/0")
++	TopMetal2_pin = source.input("134/2")
++	TopMetal2_filler = source.input("134/22")
++	TopMetal2_nofill = source.input("134/23")
++	TopMetal2_slit = source.input("134/24")
++	ColWind = source.input("139/0")
++	RFMEM = source.input("147/0")
++	DeepVia = source.input("152/0")
++	LBE = source.input("157/0")
++	NoMetFiller = source.input("160/0")
++
++	# Paramter
++	width = 5.0
++	height = 10.0
++	distance = 3.05  # exact value of 3.0, which is a min. value for TM1Fil.b causes random DRC violations
++
++	# Create filler cell
++	pattern_tm2 = fill_pattern("TM2_FILL_CELL").shape(134, 22, box(0.0, 0.0, width, height))
++
++	TM2Fil_c = TopMetal2.dup
++	TM2Fil_c.size(3.0, 3.0, "square_limit")
++	TM2Fil_d = TRANS.dup
++	TM2Fil_d.size(4.9, 4.9, "square_limit")
++	exclLayTM2 = TM2Fil_c | TM2Fil_d | TopMetal2_filler | TopMetal2_nofill | TopMetal2_slit | TRANS
++
++	# perform fill
++	(EdgeSeal.holes - exclLayTM2).fill(pattern_tm2, hstep(width + distance), vstep(height + distance))
++</text>
++</klayout-macro>
+diff --git a/ihp-sg13g2/libs.tech/klayout/tech/scripts/filler.py b/ihp-sg13g2/libs.tech/klayout/tech/scripts/filler.py
+index 05a0fc7..47904bf 100644
+--- a/ihp-sg13g2/libs.tech/klayout/tech/scripts/filler.py
++++ b/ihp-sg13g2/libs.tech/klayout/tech/scripts/filler.py
+@@ -12,7 +12,8 @@ This script has optional arguments to disable fill for some areas:
+ 
+ * no_activ - Disable Activ and GatPoly fill
+ * no_metal - Disable Metal1 to Metal 5 fill
+-* no_topmetal - Disable TopMetal1 and TopMetal2 fill
++* no_topmetal_1 - Disable TopMetal1 fill
++* no_topmetal_2 - Disable TopMetal2 fill
+ 
+ These arguments don't take a value. See the following example.
+ 
+@@ -39,9 +40,10 @@ except NameError:
+ 
+ NO_ACTIV = 'no_activ' in globals()
+ NO_METAL = 'no_metal' in globals()
+-NO_TOPMETAL = 'no_topmetal' in globals()
++NO_TOPMETAL1 = 'no_topmetal_1' in globals()
++NO_TOPMETAL2 = 'no_topmetal_2' in globals()
+ 
+-scripts = [(NO_ACTIV, 'ActGatP'), (NO_METAL, 'Metal'), (NO_TOPMETAL, 'TopMetal')]
++scripts = [(NO_ACTIV, 'ActGatP'), (NO_METAL, 'Metal'), (NO_TOPMETAL1, 'TopMetal1'), (NO_TOPMETAL2, 'TopMetal2')]
+ 
+ for disabled, area in scripts:
+     if disabled:
+-- 
+2.39.3
+

@@ -126,13 +126,21 @@ yosys-flist: Bender.lock Bender.yml rtl/*/Bender.yml
 include yosys/yosys.mk
 include openroad/openroad.mk
 
-klayout/croc_chip.gds: $(OR_OUT)/croc.def klayout/*.sh klayout/*.py
-	./klayout/def2gds.sh
+.PHONY: yosys-flist
 
-## Generate merged .gds from openroads .def output
-klayout: klayout/croc_chip.gds
 
-.PHONY: klayout yosys-flist
+#############
+# Finishing #
+#############
+ihp13/pdk.patched:
+	- cd ihp13/pdk; git apply ../patches/0001-Filling-improvements.patch
+	touch $@
+
+klayout/out/croc_chip_sealed.gds.gz: ihp13/pdk.patched openroad/out/croc.def klayout/scripts/*.py klayout/scripts/*.sh
+	cd klayout; bash scripts/finishing.sh
+
+finishing: klayout/out/croc_chip_sealed.gds.gz
+.PHONY: finishing
 
 
 #################
@@ -176,7 +184,7 @@ format:
 ## Delete generated files and directories
 clean:
 	rm -f $(SV_FLIST)
-	rm -f klayout/croc_chip.gds
+	rm -rf klayout/out/
 	rm -rf verilator/obj_dir/
 	rm -f verilator/croc.f
 	rm -f verilator/croc.vcd
