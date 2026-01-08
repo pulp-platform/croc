@@ -29,18 +29,20 @@ if {[info exists power_grid_defined]} {
 ##  Power settings
 ##########################################################################
 # Core Power Ring
-## Offset from core to power ring
-set pgcrOffset 2
+## Space between pads and core -> used for power ring
+set PowRingSpace  35
 ## Spacing must meet TM2 rules
-set pgcrSpacing 6
+set pgcrSpacing 4
 ## Width must meet TM2 rules
-set pgcrWidth 10
+set pgcrWidth 8
+## Offset from core to power ring
+set pgcrOffset [expr ($PowRingSpace - $pgcrSpacing - 2 * $pgcrWidth) / 2]
 
-# TopMetal2 Core Power Grid
-set tpg2Width     6; # arbitrary number
-set tpg2Pitch   204; # multiple of pad-pitch
-set tpg2Spacing  60; # big enough to skip over a pad
-set tpg2Offset   97; # offset from leftX of core
+# TopMetal1 Core Power Grid
+set tpg1Width     3; # arbitrary number
+set tpg1Pitch   228; # multiple of pad-pitch
+set tpg1Spacing  60; # big enough to skip over a pad
+set tpg1Offset   97; # offset from leftX of core
 
 # Macro Power Rings -> M3 and M2
 ## Spacing must be larger than pitch of M2/M3
@@ -52,7 +54,7 @@ set mprOffsetX 2.4
 set mprOffsetY 0.6
 
 # macro power grid (stripes on TopMetal1/TopMetal2 depending on orientation)
-set mpgWidth 6
+set mpgWidth 3
 set mpgSpacing 4
 set mpgOffset 20; # arbitrary
 
@@ -83,18 +85,18 @@ proc sram_power { name macro } {
         set stripe_dist [expr $stripe_dist/2]
     }
 
-    add_pdn_stripe -grid ${name}_grid -layer {TopMetal1} -width $mpgWidth -spacing $mpgSpacing \
+    add_pdn_stripe -grid ${name}_grid -layer {Metal5} -width $mpgWidth -spacing $mpgSpacing \
                    -pitch $stripe_dist -offset $mpgOffset -extend_to_core_ring -starts_with POWER -snap_to_grid
 
     # Connection of Macro Power Ring to standard-cell rails
-    add_pdn_connect -grid ${name}_grid -layers {Metal3 Metal1}
+    add_pdn_connect -grid ${name}_grid -layers {Metal4 Metal2}
+    add_pdn_connect -grid ${name}_grid -layers {Metal4 Metal1}
     # Connection of Stripes on Macro to Macro Power Ring
-    add_pdn_connect -grid ${name}_grid -layers {TopMetal1 Metal3}
-    add_pdn_connect -grid ${name}_grid -layers {TopMetal1 Metal4}
+    add_pdn_connect -grid ${name}_grid -layers {Metal5 Metal4}
     # Connection of Stripes on Macro to Macro Power Pins
     # add_pdn_connect -grid ${name}_grid -layers {TopMetal1 Metal4}
     # Connection of Stripes on Macro to Core Power Stripes
-    add_pdn_connect -grid ${name}_grid -layers {TopMetal2 TopMetal1}
+    add_pdn_connect -grid ${name}_grid -layers {TopMetal1 Metal5}
 }
 
 
@@ -112,28 +114,27 @@ add_pdn_ring -grid {core_grid} \
    -connect_to_pad_layers TopMetal2
 
 # M1 Standardcell Rows (tracks)
-add_pdn_stripe -grid {core_grid} -layer {Metal1} -width {0.44} -offset {0} \
+add_pdn_stripe -grid {core_grid} -layer {Metal1} -width {0.32} -offset {0} \
                -followpins -extend_to_core_ring
 
 
 sram_power "sram_256x64"  "RM_IHPSG13_1P_256x64_c2_bm_bist"
 
 # Top power grid
-# Top 2 Stripe
-add_pdn_stripe -grid {core_grid} -layer {TopMetal2} -width $tpg2Width \
-               -pitch $tpg2Pitch -spacing $tpg2Spacing -offset $tpg2Offset \
-               -extend_to_core_ring -snap_to_grid -number_of_straps 7
+# Top 1 Stripe
+add_pdn_stripe  -grid {core_grid} -layer {TopMetal1} -width $tpg1Width \
+                -pitch $tpg1Pitch -spacing $tpg1Spacing -offset $tpg1Offset \
+                -extend_to_core_ring -snap_to_grid -number_of_straps 7
 
 # "The add_pdn_connect command is used to define which layers in the power grid are to be connected together.
 #  During power grid generation, vias will be added for overlapping power nets and overlapping ground nets."
-# M1 is declared vertical but tracks still horizontal
-# vertical TopMetal2 to below horizonals (M1 has horizontal power tracks)
-add_pdn_connect -grid {core_grid} -layers {TopMetal2 Metal1}
-add_pdn_connect -grid {core_grid} -layers {TopMetal2 Metal2}
-add_pdn_connect -grid {core_grid} -layers {TopMetal2 Metal4}
-# add_pdn_connect -grid {core_grid} -layers {TopMetal2 TopMetal1}
+# vertical TopMetal1 to below horizonals (M1 has horizontal power tracks)
+add_pdn_connect -grid {core_grid} -layers {TopMetal1 Metal1}
+add_pdn_connect -grid {core_grid} -layers {TopMetal1 Metal3}
+add_pdn_connect -grid {core_grid} -layers {TopMetal1 Metal5}
 # power ring to standard cell rails
 add_pdn_connect -grid {core_grid} -layers {Metal3 Metal2}
+add_pdn_connect -grid {core_grid} -layers {Metal2 Metal1}
 
 
 ##########################################################################
