@@ -3,18 +3,20 @@
        "chip"       : "croc"
     },
     "gds" : {
-        "file"        : "/fosic/designs/croc/artistic/meerkat_work/croc_chip.gds.gz",
-        "x_offset_um" : -59,
-        "y_offset_um" : -59,
-        "width_um"    : 2048,
-        "height_um"   : 2048
+        "file"        : "../meerkat_work/croc_chip.gds.gz",
+        "x_offset_um" : 0,
+        "y_offset_um" : 0,
+        "width_um"    : 1930,
+        "height_um"   : 1930
     },
     "image": {
-        "px_width"          : 20480,
-        "px_height"         : 20480,
-        "overrender_factor" : 1,
-        "num_segs_width"    : 5,
-        "num_segs_height"   : 5
+        "px_width"          : 965,
+        "px_height"         : 965,
+        "overrender_factor" : 4,
+        "num_segs_width"    : 1,
+        "num_segs_height"   : 1,
+        "num_tiles_width"   : 1,
+        "num_tiles_height"  : 1
     },
     "paper": {
         "width_cm"  : 84.1,
@@ -34,29 +36,14 @@
         "TV1"  : {"layer" : "125/0", "color" : "#7FFFD4", "alpha" : "0.5" },
         "T1"   : {"layer" : "126/0", "color" : "#7FFFD4", "alpha" : "0.5" },
         "TV2"  : {"layer" : "133/0", "color" : "#1E90FF", "alpha" : "0.5" },
-        "T2"   : {"layer" : "134/0", "color" : "#FFFFFF", "alpha" : "0.8" }
+        "T2"   : {"layer" : "134/0", "color" : "#FFFFFF", "alpha" : "0.4" }
     },
     "work" : {
-        "dir" : "/fosic/designs/croc/artistic/renderics"
-    },
-    "map" : {
-        "output" : "/fosic/designs/croc/artistic/mapify",
-        "layers"      : [
-            "#RENDER#",
-            "M1",
-            "M2",
-            "M3",
-            "M4",
-            "M5",
-            "T1",
-            "T2"
-        ],
-        "openmaps_tile_size_px" : 512,
-        "tmp" : "/fosic/designs/croc/artistic/mapify_tmp"
+        "dir" : "../renderics"
     },
     "tech" : {
         "manifest_version" : 1,
-        "max_px_tile"      : 2500000000,
+        "max_px_tile"      : "-",
         "pdk"              : "ihp13",
         "layer_order"      : [
             "CONT",
