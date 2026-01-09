@@ -3,29 +3,76 @@
 # SPDX-License-Identifier: SHL-0.51
 
 # Authors:
-# - Tobias Senti <tsenti@ethz.ch>
+# - Tobias Senti      <tsenti@ethz.ch>
 # - Jannis Schönleber <janniss@iis.ee.ethz.ch>
 # - Philippe Sauter   <phsauter@iis.ee.ethz.ch>
 
+# Stage 01: Initialization, Floorplan, and Power Grid
+#
+# This stage performs:
+# - Reading and linking the netlist
+# - Reading timing constraints
+# - Connecting global power nets
+# - Creating the floorplan (die/core area, macro placement, IO placement)
+# - Generating the power distribution network
+#
+# Required environment variables:
+#   PROJ_NAME    - Project name (e.g., "croc")
+#   NETLIST      - Path to synthesized netlist
+#   TOP_DESIGN   - Top module name
+#   REPORTS      - Reports output directory
+#   SAVE         - Checkpoint save directory
+#
+# Output checkpoint: 01_${PROJ_NAME}.floorplan
+
+###############################################################################
+# Setup
+###############################################################################
+set proj_name $::env(PROJ_NAME)
+set netlist $::env(NETLIST)
+set top_design $::env(TOP_DESIGN)
+set report_dir $::env(REPORTS)
+set save_dir $::env(SAVE)
+
+# Helper scripts
+source scripts/reports.tcl
+source scripts/checkpoint.tcl
 source scripts/floorplan_util.tcl
 
-##########################################################################
-# Reset (mark everything as unplaced)
-##########################################################################
+# Initialize technology data (PDK libraries, LEFs, etc.)
+source scripts/init_tech.tcl
 
-set block [ord::get_db_block]
-set insts [odb::dbBlock_getInsts $block]
-foreach inst $insts {
-  set master [[$inst getMaster] getName]
-  # delete IO filler and unplace the rest
-  if {[lsearch -exact $iofill $master] != -1 || $master eq $iocorner} {
-    odb::dbInst_destroy $inst
-    continue
-  } else {
-    odb::dbInst_setPlacementStatus $inst "none"
-  }
-}
+utl::report "###############################################################################"
+utl::report "# Stage 01: FLOORPLAN"
+utl::report "###############################################################################"
 
+###############################################################################
+# Initialization
+###############################################################################
+utl::report "###############################################################################"
+utl::report "# 01-01: Initialization"
+utl::report "###############################################################################"
+
+# Read and check design
+utl::report "Read netlist: ${netlist}"
+read_verilog $netlist
+link_design $top_design
+
+utl::report "Read constraints"
+read_sdc src/constraints.sdc
+
+utl::report "Check constraints"
+check_setup -verbose                                      > ${report_dir}/01_${proj_name}_checks.rpt
+report_checks -unconstrained -format end -no_line_splits >> ${report_dir}/01_${proj_name}_checks.rpt
+report_checks -format end -no_line_splits                >> ${report_dir}/01_${proj_name}_checks.rpt
+report_checks -format end -no_line_splits                >> ${report_dir}/01_${proj_name}_checks.rpt
+
+utl::report "Connect global nets (power)"
+source scripts/power_connect.tcl
+
+utl::report "###############################################################################"
+utl::report "# 01-02: Core and Die Area"
+utl::report "###############################################################################"
 ##########################################################################
 # Die and Core Area 
 ##########################################################################
@@ -59,7 +106,9 @@ initialize_floorplan -die_area "0 0 $chipW $chipH" \
 ##########################################################################
 # Pads/IOs 
 ##########################################################################
-utl::report "Create Padring"
+utl::report "###############################################################################"
+utl::report "# 01-03: Padring"
+utl::report "###############################################################################"
 source src/padring.tcl
 
 
@@ -88,7 +137,6 @@ set core_topY     [lindex $coreArea 3]
 # We need to define the metal tracks 
 # (where the wires on each metal should go)
 # this function is defined in init_tech.tcl
-utl::report "Create Tracks"
 makeTracks
 
 # the height of a standard cell, useful to align things
@@ -98,6 +146,9 @@ set siteHeight        [ord::dbu_to_microns [[dpl::get_row_site] getHeight]]
 ##########################################################################
 # Paths to the instances of macros
 ##########################################################################
+utl::report "###############################################################################"
+utl::report "# 01-04: Macro Placement"
+utl::report "###############################################################################"
 utl::report "Macro Names"
 source src/instances.tcl
 
@@ -105,8 +156,8 @@ source src/instances.tcl
 # Placing 
 ##########################################################################
 # use these for macro placement
-set floorPaddingX      16.0
-set floorPaddingY      16.0
+set floorPaddingX      20.0
+set floorPaddingY      20.0
 set floor_leftX       [expr $core_leftX + $floorPaddingX]
 set floor_bottomY     [expr $core_bottomY + $floorPaddingY]
 set floor_rightX      [expr $core_rightX - $floorPaddingX]
@@ -126,5 +177,22 @@ set X [expr $X]
 set Y [expr $Y - $RamSize256x64_H - 15]
 placeInstance $bank1_sram0 $X $Y R0
 
+cut_rows -halo_width_x 2 -halo_width_y 1
 
-cut_rows -halo_width_x 5 -halo_width_y 2
+
+
+utl::report "###############################################################################"
+utl::report "# 01-04: Power Grid"
+utl::report "###############################################################################"
+source scripts/power_grid.tcl
+
+# Save checkpoint
+save_checkpoint 01_${proj_name}.floorplan
+report_image "01_${proj_name}.floorplan" true
+
+utl::report "###############################################################################"
+utl::report "# Stage 01 complete: Checkpoint saved to ${save_dir}/01_${proj_name}.floorplan.zip"
+utl::report "###############################################################################"
+
+# Exit successfully
+exit 0

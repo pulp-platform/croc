@@ -140,4 +140,4 @@ add_pdn_connect -grid {core_grid} -layers {Metal2 Metal1}
 ##########################################################################
 ##  Generate
 ##########################################################################
-pdngen -failed_via_report ${report_dir}/${log_id_str}_${proj_name}_pdngen.rpt
+pdngen -failed_via_report ${report_dir}/01_${proj_name}_pdngen.rpt

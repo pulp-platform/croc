@@ -26,10 +26,12 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+
+      # Check out croc repo and cleanup
       - name: Checkout repository (with submodules)
         uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: recursive
       - name: Free disk space
         uses: ./.github/actions/free-space
       - name: Get run ID of "Full Flow" workflow
@@ -42,6 +44,8 @@ jobs:
             echo "run-id=${RUN_ID}" >> "$GITHUB_OUTPUT"
         env:
             GH_TOKEN: ${{ github.token }}
+
+      # Restore previous artifacts (GDS and DEF)
       - name: Download GDS artifact from "Full Flow" workflow
         uses: actions/download-artifact@v4
         with:
@@ -59,193 +63,76 @@ jobs:
           run-id: ${{ steps.get-run-id.outputs.run-id }}
           path: openroad
 
-      - name: Checkout ArtistIC repository
-        uses: actions/checkout@v4
-        with:
-          repository: pulp-platform/artistic
-          ref: 31277dfbcb5f15d219c9834bc9e6f1c9b4705bf3
-          path: artistic
-      - name: Update package lists and install Inkscape, img2pdf
+      # Install dependencies
+      - name: Update package lists and install Inkscape, img2pdf, Magick, potrace, Pillow
         run: |
           sudo apt-get update
-          sudo apt-get install -y inkscape img2pdf
-      - name: Customize input logo
-        run : |
-          sed "s/#DATE#/$(date '+%Y-%m-%d')/g" doc/artwork/logo_chip.svg > doc/artwork/logo.svg
-          sed -i "s/#HASH#/$(git rev-parse --short HEAD)/g" doc/artwork/logo.svg
-          sed -i "s|#REPO#|gh.io/$GITHUB_REPOSITORY|g" doc/artwork/logo.svg
-          inkscape doc/artwork/logo.svg -w 660 -h 660 -o doc/artwork/logo.png
-      - name: Upload logo
-        uses: actions/upload-artifact@v4
-        with:
-          name: png-logo
-          path: doc/artwork/logo.png
-        continue-on-error: true
-
-      - name: Install ImageMagick, Potrace, Pillow, svgpathtools
-        run: |
-          sudo apt-get install -y imagemagick potrace
+          sudo apt-get install -y inkscape img2pdf imagemagick potrace
           pip install --break-system-packages svgpathtools Pillow
       - name: Install packages in OSEDA
         uses: ./.github/actions/oseda-cmd
         with:
           cmd: "pip install --break-system-packages gdspy"
-      - name: Meercat setup, export top-level GDS
-        uses: ./.github/actions/oseda-cmd
-        with:
-          cmd: "ls -lah klayout; cd artistic; mkdir -p meerkat_work; python3 scripts/meerkat_interface.py -i ../../klayout/out/croc_chip.gds.gz -m croc_tm.gds.gz -g croc_logo.gds -o croc_chip.gds.gz -w meerkat_work -l 134; cd meerkat_work; klayout -zz -rm ../scripts/export_top_metal.py; gzip -d croc_tm.gds.gz"
-      - name: Upload top-level GDS
-        uses: actions/upload-artifact@v4
-        with:
-          name: top-level-gds
-          path: artistic/meerkat_work/croc_tm.gds
-        continue-on-error: true
-      - name: Translate the logo to mono
-        run: |
-          convert doc/artwork/logo.png -remap pattern:gray50 artistic/meerkat_work/logo_mono.png
-      - name: Upload mono logo
-        uses: actions/upload-artifact@v4
-        with:
-          name: mono-logo
-          path: artistic/meerkat_work/logo_mono.png
-        continue-on-error: true
-      - name: Generate logo GDS
-        uses: ./.github/actions/oseda-cmd
-        with:
-          cmd: "cd artistic; python3 scripts/meerkat.py -i meerkat_work/logo_mono.png -g meerkat_work/croc_tm.gds -l 134 -n croc -s meerkat_work/croc_logo.svg -o meerkat_work/croc_logo.gds"
-      - name: Upload logo GDS
-        uses: actions/upload-artifact@v4
-        with:
-          name: logo-gds
-          path: artistic/meerkat_work/croc_logo.gds
-        continue-on-error: true
-      - name: Upload logo SVG
-        uses: actions/upload-artifact@v4
-        with:
-          name: logo-svg
-          path: artistic/meerkat_work/croc_logo.svg
-        continue-on-error: true
-      - name: Merge logo GDS with chip GDS
-        uses: ./.github/actions/oseda-cmd
-        with:
-          cmd: "cd artistic; cd meerkat_work; klayout -zz -rm ../scripts/merge_logo.py"
-      - name: Upload chip GDS
-        uses: actions/upload-artifact@v4
-        with:
-          name: chip-gds
-          path: artistic/meerkat_work/croc_chip.gds.gz
-        continue-on-error: true
 
-      - name: Prepare render
+      # Prepare and create logo
+      - name: Prepare logo
         run: |
-          mkdir -p artistic/renderics
-          cp -v .github/config/croc_ci.json artistic/renderics/croc_ci.json
-          cp -v .github/config/croc_map_ci.json artistic/renderics/croc_map_ci.json
-          sed "s|/fosic/designs|/home/runner/work/croc|g" artistic/renderics/croc_ci.json > artistic/renderics/croc_ci_runner.json
-          sed "s|/fosic/designs|/home/runner/work/croc|g" artistic/renderics/croc_map_ci.json > artistic/renderics/croc_map_ci_runner.json
-      - name: Analyze render
+          cd artistic; ./run_artistic.sh --prepare-logo
+      - name: Create Logo
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: "cd artistic; make analyze CFG_FILE=/fosic/designs/croc/artistic/renderics/croc_ci.json > renderics/analyze.txt"
-      - name: Upload render summary
-        uses: actions/upload-artifact@v4
-        with:
-          name: render-summary
-          path: artistic/renderics/analyze.txt
-        continue-on-error: true
-      - name: Upload color preview
-        uses: actions/upload-artifact@v4
-        with:
-          name: render-color-preview
-          path: artistic/renderics/colors_croc.svg
-        continue-on-error: true
-      - name: Render b/w layer tiles
+          cmd: "cd artistic; ./run_artistic.sh --create-logo croc_chip.gds.gz"
+
+      # Render Chip
+      - name: Render RAW
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: "cd artistic; make gen_raw CFG_FILE=/fosic/designs/croc/artistic/renderics/croc_ci.json"
-      - name: Render PDFs
+          cmd: "cd artistic; ./run_artistic.sh --render-raw"
+      - name: Render PDF
         run: |
-          cd artistic; make -j gen_pdfs CFG_FILE=renderics/croc_ci_runner.json
-      - name: Finish render
-        run: |
-          mv artistic/renderics//DPI__croc_0-0.png artistic/renderics/croc_render.png
-          mv artistic/renderics//PDF__croc_0-0.pdf artistic/renderics/croc_render.pdf
-          convert artistic/renderics/croc_render.png artistic/renderics/croc_render.jpg
+          cd artistic; ./run_artistic.sh --render-pdf
+
+      # Render Outlines
       - name: Create annotated outlines SVG
         run: |
-          python3 artistic/scripts/gen_outline.py -i openroad/out/croc.def -o artistic/renderics/croc_modules.svg -b artistic/renderics/croc_render.jpg --lef_files ihp13/pdk/ihp-sg13g2/libs.ref/sg13g2_sram/lef/*.lef --px_scale 15000 --module_json .github/config/croc_modules.json --opacity 0.65 --font_size 35 --luminosity 0.85
-      - name: Create annotated outlines PNG and PDF
-        run: |
-          inkscape artistic/renderics/croc_modules.svg -o artistic/renderics/croc_modules.png
-          inkscape artistic/renderics/croc_modules.svg -o artistic/renderics/croc_modules.pdf
-      - name: Upload render PNG
-        uses: actions/upload-artifact@v4
-        with:
-          name: render-png
-          path: artistic/renderics/croc_render.png
-        continue-on-error: true
-      - name: Upload render PDF
-        uses: actions/upload-artifact@v4
-        with:
-          name: render-pdf
-          path: artistic/renderics/croc_render.pdf
-        continue-on-error: true
-      - name: Upload render JPG
-        uses: actions/upload-artifact@v4
-        with:
-          name: render-jpg
-          path: artistic/renderics/croc_render.jpg
-        continue-on-error: true
-      - name: Upload render module SVG
-        uses: actions/upload-artifact@v4
-        with:
-          name: render-module-svg
-          path: artistic/renderics/croc_modules.svg
-        continue-on-error: true
-      - name: Upload render module PNG
-        uses: actions/upload-artifact@v4
-        with:
-          name: render-module-png
-          path: artistic/renderics/croc_modules.png
-        continue-on-error: true
-      - name: Upload render module PDF
-        uses: actions/upload-artifact@v4
-        with:
-          name: render-module-pdf
-          path: artistic/renderics/croc_modules.pdf
-        continue-on-error: true
-# Map render and deploy below:
-      - name: Render b/w map layer tiles
+          cd artistic; ./run_artistic.sh --outline
+
+      # Render Map
+      - name: Render map RAW
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: "cd artistic; make gen_raw CFG_FILE=/fosic/designs/croc/artistic/renderics/croc_map_ci.json"
-      - name: Render Map Tiles
+          cmd: "cd artistic; ./run_artistic.sh --render-map-raw"
+      - name: Render map DB
         run: |
-          cd artistic; make -j gen_tiles CFG_FILE=renderics/croc_map_ci_runner.json
-      - name: Mapify Tiles
-        run: |
-          cd artistic; python3 scripts/mapify.py renderics/croc_map_ci_runner.json | sh
-      - name: Copy index.html
-        run: |
-          cp .github/config/gh-pages-map.html artistic/mapify/index.html
-      - name: Upload OpenStreetMap DB
+          cd artistic; ./run_artistic.sh --render-map-db
+
+      # Upload artifacts
+      - name: Upload ArtistIC artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: map-db
-          path: artistic/mapify
+          name: croc-artistic
+          path: |
+            artistic/meerkat_work/croc_chip.gds.gz
+            artistic/meerkat_work/croc_logo.*
+            artistic/meerkat_work/*.log
+            artistic/renderics/croc_modules.*
+            artistic/renderics/croc_render.*
+            artistic/renderics/croc_colors.svg
+            artistic/renderics/*.log
         continue-on-error: true
-      - name: Copy GDS to be deployed
+
+      # Deploy
+      - name: Copy files to be deployed
         run: |
+          cp openroad/reports/04_croc.routed.png artistic/mapify/croc_routed.png
           cp artistic/meerkat_work/croc_logo.gds artistic/mapify/croc_logo.gds
-      - name: Copy Outlines to be deployed
-        run: |
-          cp artistic/renderics/croc_modules.* artistic/mapify/
-          cp artistic/renderics/croc_render.jpg artistic/mapify/
+          cp artistic/renderics/croc_modules.jpg artistic/mapify/croc_modules.jpg
+          cp artistic/renderics/croc_render.jpg artistic/mapify/croc_render.jpg
       - name: Upload OpenStreetMap DB to pages
         uses: actions/upload-pages-artifact@v3
         with:
           path: artistic/mapify
-      - name: Deploy pages (on main only)
+      - name: Deploy pages
         if: github.ref == 'refs/heads/main'
         id: deployment
         uses: actions/deploy-pages@v4
