@@ -1,3 +1,6 @@
 [submodule "ihp13/pdk"]
 	path = ihp13/pdk
 	url = https://github.com/IHP-GmbH/IHP-Open-PDK
+[submodule "circumspect"]
+	path = circumspect
+	url = https://github.com/schilkp/circumspect.git

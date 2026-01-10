@@ -7,6 +7,7 @@
 // - Enrico Zelioli <ezelioli@iis.ee.ethz.ch>
 
 `define TRACE_WAVE
+// `define CSPECT
 
 module tb_croc_soc #(
   parameter int unsigned GpioCount = 32
@@ -115,6 +116,52 @@ module tb_croc_soc #(
     .gpio_out_en_o ( gpio_out_en )
   );
 
+  `ifdef CSPECT
+
+  croc_cspect_if croc_cspect_if();
+
+  `ifdef TRACE_EXECUTION
+  `define I_CVE2 i_croc_soc.i_croc.i_core_wrap.i_ibex.u_cve2_core
+  `else
+  `define I_CVE2 i_croc_soc.i_croc.i_core_wrap.i_ibex
+  `endif
+
+  assign croc_cspect_if.fetch_en          = fetch_en;
+  assign croc_cspect_if.cve2_dbg_mode     = `I_CVE2.debug_mode;
+  assign croc_cspect_if.cve2_priv_mode    = `I_CVE2.priv_mode_id;
+  assign croc_cspect_if.cve2_dbg_req      = `I_CVE2.id_stage_i.controller_i.enter_debug_mode;
+  assign croc_cspect_if.cve2_exc_req      = `I_CVE2.id_stage_i.controller_i.exc_req_q;
+  assign croc_cspect_if.cve2_ctrl_state   = croc_cspect_pkg::cve2_ctrl_fsm_e'(`I_CVE2.id_stage_i.controller_i.ctrl_fsm_cs);
+  assign croc_cspect_if.cve2_exc_cause    = `I_CVE2.exc_cause;
+  assign croc_cspect_if.cve2_exc_instr    = `I_CVE2.instr_rdata_id;
+  assign croc_cspect_if.cve2_pc           = `I_CVE2.pc_id;
+  assign croc_cspect_if.cve2_inst_req     = `I_CVE2.instr_req_o;
+  assign croc_cspect_if.cve2_inst_gnt     = `I_CVE2.instr_gnt_i;
+  assign croc_cspect_if.cve2_inst_valid   = `I_CVE2.instr_rvalid_i;
+  assign croc_cspect_if.cve2_inst_addr    = `I_CVE2.instr_addr_o;
+  assign croc_cspect_if.cve2_inst_data    = `I_CVE2.instr_rdata_i;
+  assign croc_cspect_if.cve2_data_req     = `I_CVE2.data_req_o;
+  assign croc_cspect_if.cve2_data_gnt     = `I_CVE2.data_gnt_i;
+  assign croc_cspect_if.cve2_data_valid   = `I_CVE2.data_rvalid_i;
+  assign croc_cspect_if.cve2_data_we      = `I_CVE2.data_we_o;
+  assign croc_cspect_if.cve2_data_addr    = `I_CVE2.data_addr_o;
+  assign croc_cspect_if.cve2_data_rdata   = `I_CVE2.data_rdata_i;
+  assign croc_cspect_if.cve2_data_wdata   = `I_CVE2.data_wdata_o;
+  assign croc_cspect_if.cve2_irq_software = `I_CVE2.irq_software_i;
+  assign croc_cspect_if.cve2_irq_timer    = `I_CVE2.irq_timer_i;
+  assign croc_cspect_if.cve2_irq_external = `I_CVE2.irq_external_i;
+  assign croc_cspect_if.cve2_irq_fast     = `I_CVE2.irq_fast_i;
+  assign croc_cspect_if.cve2_irq_nm       = `I_CVE2.irq_nm_i;
+  assign croc_cspect_if.cve2_regs         = `I_CVE2.register_file_i.rf_reg;
+
+  croc_cspect_logger i_croc_cspect_logger (
+    .clk_i   ( sys_clk        ),
+    .rst_ni  ( rst_n          ),
+    .croc_if ( croc_cspect_if )
+  );
+
+  `endif // CSPECT
+
   /////////////////
   //  Testbench  //
   /////////////////
@@ -123,6 +170,11 @@ module tb_croc_soc #(
 
   initial begin
     $timeformat(-9, 0, "ns", 12); // 1: scale (ns=-9), 2: decimals, 3: suffix, 4: print-field width
+
+    // Start CircumSpect logging
+    `ifdef CSPECT
+    ->croc_cspect_if.start_log;
+    `endif
 
     fetch_en = 1'b0;
 
