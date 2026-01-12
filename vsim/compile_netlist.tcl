@@ -1,17 +1,8 @@
-# Copyright (c) 2024 ETH Zurich and University of Bologna.
-# Licensed under the Apache License, Version 2.0, see LICENSE for details.
-# SPDX-License-Identifier: Apache-2.0
-#
-# Published with permission from Siemens.
-# Siemens QuestaSim is available through EDA Higher Education Software Program
-# https://www.sw.siemens.com/en-US/academic/educators/eda-higher-education-software/
-#
-# Authors:
-# - Philippe Sauter <phsauter@iis.ee.ethz.ch>
-
+# This script was generated automatically by bender.
 set ROOT ".."
 
 if {[catch { vlog -incr -sv \
+    -svinputport=compat \
     "+define+TARGET_IHP13" \
     "+define+TARGET_NETLIST_YOSYS" \
     "+define+TARGET_SIMULATION" \
@@ -23,6 +14,7 @@ if {[catch { vlog -incr -sv \
 }]} {return 1}
 
 if {[catch { vlog -incr -sv \
+    -svinputport=compat \
     "+define+TARGET_IHP13" \
     "+define+TARGET_NETLIST_YOSYS" \
     "+define+TARGET_SIMULATION" \
@@ -35,6 +27,7 @@ if {[catch { vlog -incr -sv \
 }]} {return 1}
 
 if {[catch { vlog -incr -sv \
+    -svinputport=compat \
     "+define+TARGET_IHP13" \
     "+define+TARGET_NETLIST_YOSYS" \
     "+define+TARGET_SIMULATION" \
@@ -46,6 +39,7 @@ if {[catch { vlog -incr -sv \
 }]} {return 1}
 
 if {[catch { vlog -incr -sv \
+    -svinputport=compat \
     "+define+TARGET_IHP13" \
     "+define+TARGET_NETLIST_YOSYS" \
     "+define+TARGET_SIMULATION" \
@@ -58,6 +52,7 @@ if {[catch { vlog -incr -sv \
 }]} {return 1}
 
 if {[catch { vlog -incr -sv \
+    -svinputport=compat \
     "+define+TARGET_IHP13" \
     "+define+TARGET_NETLIST_YOSYS" \
     "+define+TARGET_SIMULATION" \
@@ -121,6 +116,7 @@ if {[catch { vlog -incr -sv \
 }]} {return 1}
 
 if {[catch { vlog -incr -sv \
+    -svinputport=compat \
     "+define+TARGET_IHP13" \
     "+define+TARGET_NETLIST_YOSYS" \
     "+define+TARGET_SIMULATION" \
@@ -162,6 +158,7 @@ if {[catch { vlog -incr -sv \
 }]} {return 1}
 
 if {[catch { vlog -incr -sv \
+    -svinputport=compat \
     "+define+TARGET_IHP13" \
     "+define+TARGET_NETLIST_YOSYS" \
     "+define+TARGET_SIMULATION" \
@@ -186,6 +183,7 @@ if {[catch { vlog -incr -sv \
 }]} {return 1}
 
 if {[catch { vlog -incr -sv \
+    -svinputport=compat \
     "+define+TARGET_IHP13" \
     "+define+TARGET_NETLIST_YOSYS" \
     "+define+TARGET_SIMULATION" \
@@ -199,6 +197,7 @@ if {[catch { vlog -incr -sv \
 }]} {return 1}
 
 if {[catch { vlog -incr -sv \
+    -svinputport=compat \
     "+define+TARGET_IHP13" \
     "+define+TARGET_NETLIST_YOSYS" \
     "+define+TARGET_SIMULATION" \
@@ -231,6 +230,7 @@ if {[catch { vlog -incr -sv \
 }]} {return 1}
 
 if {[catch { vlog -incr -sv \
+    -svinputport=compat \
     "+define+TARGET_IHP13" \
     "+define+TARGET_NETLIST_YOSYS" \
     "+define+TARGET_SIMULATION" \
@@ -251,6 +251,7 @@ if {[catch { vlog -incr -sv \
 }]} {return 1}
 
 if {[catch { vlog -incr -sv \
+    -svinputport=compat \
     "+define+TARGET_IHP13" \
     "+define+TARGET_NETLIST_YOSYS" \
     "+define+TARGET_SIMULATION" \
@@ -268,6 +269,7 @@ if {[catch { vlog -incr -sv \
 }]} {return 1}
 
 if {[catch { vlog -incr -sv \
+    -svinputport=compat \
     "+define+TARGET_IHP13" \
     "+define+TARGET_NETLIST_YOSYS" \
     "+define+TARGET_SIMULATION" \
@@ -280,6 +282,7 @@ if {[catch { vlog -incr -sv \
 }]} {return 1}
 
 if {[catch { vlog -incr -sv \
+    -svinputport=compat \
     "+define+TARGET_IHP13" \
     "+define+TARGET_NETLIST_YOSYS" \
     "+define+TARGET_SIMULATION" \
@@ -295,6 +298,7 @@ if {[catch { vlog -incr -sv \
 }]} {return 1}
 
 if {[catch { vlog -incr -sv \
+    -svinputport=compat \
     "+define+TARGET_IHP13" \
     "+define+TARGET_NETLIST_YOSYS" \
     "+define+TARGET_SIMULATION" \
@@ -307,6 +311,7 @@ if {[catch { vlog -incr -sv \
 }]} {return 1}
 
 if {[catch { vlog -incr -sv \
+    -svinputport=compat \
     "+define+TARGET_IHP13" \
     "+define+TARGET_NETLIST_YOSYS" \
     "+define+TARGET_SIMULATION" \
@@ -319,6 +324,7 @@ if {[catch { vlog -incr -sv \
 }]} {return 1}
 
 if {[catch { vlog -incr -sv \
+    -svinputport=compat \
     "+define+TARGET_IHP13" \
     "+define+TARGET_NETLIST_YOSYS" \
     "+define+TARGET_SIMULATION" \
@@ -334,6 +340,7 @@ if {[catch { vlog -incr -sv \
 }]} {return 1}
 
 if {[catch { vlog -incr -sv \
+    -svinputport=compat \
     "+define+TARGET_IHP13" \
     "+define+TARGET_NETLIST_YOSYS" \
     "+define+TARGET_SIMULATION" \
@@ -353,6 +360,7 @@ if {[catch { vlog -incr -sv \
 }]} {return 1}
 
 if {[catch { vlog -incr -sv \
+    -svinputport=compat \
     "+define+TARGET_IHP13" \
     "+define+TARGET_NETLIST_YOSYS" \
     "+define+TARGET_SIMULATION" \
@@ -367,6 +375,7 @@ if {[catch { vlog -incr -sv \
 }]} {return 1}
 
 if {[catch { vlog -incr -sv \
+    -svinputport=compat \
     "+define+TARGET_IHP13" \
     "+define+TARGET_NETLIST_YOSYS" \
     "+define+TARGET_SIMULATION" \
@@ -381,6 +390,7 @@ if {[catch { vlog -incr -sv \
 }]} {return 1}
 
 if {[catch { vlog -incr -sv \
+    -svinputport=compat \
     "+define+TARGET_IHP13" \
     "+define+TARGET_NETLIST_YOSYS" \
     "+define+TARGET_SIMULATION" \

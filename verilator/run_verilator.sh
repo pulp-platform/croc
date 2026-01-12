@@ -29,6 +29,7 @@ Options:
     --help, -h          Show this help message
     --dry-run, -n       Don't actually run any command; just print them
     --verbose, -v       Print commands before executing them
+    --flist             Regenerate flist (croc.f)
     --build             Build croc_soc Verilator binary
     --run BINARY        Run binary in Verilator
 
@@ -50,6 +51,7 @@ run_cmd() {
 
 
 build_verilator() {
+    run_cmd "echo [INFO][Verilator] Build Verilator"
     run_cmd "verilator \
         -Wno-fatal \
         -Wno-style \
@@ -93,7 +95,8 @@ generate_flist() {
 }
 
 run_binary() {
-    obj_dir/Vtb_croc_soc +binary="$1" | tee croc.log
+    run_cmd "echo [INFO][Verilator] Running $1"
+    run_cmd "obj_dir/Vtb_croc_soc +binary="$1" | tee croc.log"
 }
 
 
