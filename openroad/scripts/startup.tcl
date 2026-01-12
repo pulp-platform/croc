@@ -5,19 +5,25 @@
 # Authors:
 # - Tim Fischer <fischeti@iis.ee.ethz.ch>
 
-set proj_name  "croc"
-set netlist    "../yosys/out/croc_chip_yosys.v"
-set top_design "croc_chip"
+###############################################################################
+# Setup
+###############################################################################
+set proj_name $::env(PROJ_NAME)
+set top_design $::env(TOP_DESIGN)
+set netlist "../yosys/out/${top_design}_yosys.v"
 set report_dir "reports"
-set save_dir   "save"
+set save_dir "save"
 
 utl::report "Setting up project $proj_name"
+utl::report " - Netlist: $netlist"
+utl::report " - Top design: $top_design"
 utl::report " - Report directory: $report_dir"
 utl::report " - Save directory: $save_dir"
 
-# helper scripts
+# Helper scripts
 source scripts/reports.tcl
 source scripts/checkpoint.tcl
+source scripts/floorplan_util.tcl
 
-# initialize technology data
+# Initialize technology data (PDK libraries, LEFs, etc.)
 source scripts/init_tech.tcl

@@ -11,11 +11,12 @@ set -u  # Error on undefined vars
 ################
 ### Setup
 ################
-script_dir=$(realpath $(dirname "${BASH_SOURCE[0]}"))
-croc_root=$(realpath "${script_dir}/..")
-
 # Source environment
-source "${croc_root}/env.sh"
+source "../env.sh"
+
+mkdir -p "${YOSYS_OUT}"
+mkdir -p "${YOSYS_TMP}"
+mkdir -p "${YOSYS_REPORTS}"
 
 ##############################
 ### Helper Functions (inline)
@@ -29,85 +30,128 @@ Usage:
 
 Options:
     --help, -h          Show this help message
+    --dry-run, -n       Don't actually run any command; just print them
+    --verbose, -v       Print commands before executing theme
+    --synth             Synthesize ${TOP_DESIGN}
+    --open              Open Yosys
+    --flist             Regenerate flist (src/croc.flist)
 
 Environment Variables:
-    TOP_DESIGN          Top module name (default: croc_chip)
-    YOSYS               Path to Yosys binary (default: yosys)
-    SV_FLIST            Path to file list (default: ../croc.flist)
+    TOP_DESIGN          Top module name (default: ${TOP_DESIGN})
 
 Inputs:
-    - RTL file list: ${CROC_ROOT}/croc.flist
+    - RTL file list: src/croc.flist
     - PDK Liberty files (auto-discovered)
-    - Synthesis scripts: yosys/scripts/yosys_synthesis.tcl
 
 Outputs:
-    - Netlist: yosys/out/${TOP_DESIGN}_yosys.v
-    - Debug netlist: yosys/out/${TOP_DESIGN}_yosys_debug.v
-    - Reports: yosys/reports/*.rpt
-    - Log: yosys/${TOP_DESIGN}.log
+    - Netlist: out/${TOP_DESIGN}_yosys.v
+    - Debug netlist: out/${TOP_DESIGN}_yosys_debug.v
+    - Reports: reports/*.rpt
+    - Log: ${TOP_DESIGN}.log
 
 Example:
     # Basic run
-    ./run_synthesis.sh
+    ./run_synthesis.sh --synth
 
     # Override top module
-    TOP_DESIGN=my_chip ./run_synthesis.sh
+    TOP_DESIGN=my_chip ./run_synthesis.sh --synth
 EOF
     exit 0
 }
 
+
+run_cmd() {
+    if [ "$DRYRUN" = 1 ]; then
+        echo $1
+    else
+        eval $1
+    fi
+}
+
+
+run_yosys() {
+    run_cmd "echo [INFO][Yosys] Synthesizing ${TOP_DESIGN}"
+    run_cmd "yosys \
+        -c scripts/yosys_synthesis.tcl 2>&1 | \
+        TZ=UTC gawk '{ print strftime(\"[%Y-%m-%d %H:%M %Z]\"), \$0 }' | \
+        tee ${TOP_DESIGN}.log | \
+        gawk -f scripts/filter_output.awk"
+}
+
+
+open_yosys() {
+    run_cmd "echo [INFO][Yosys] Open Yosys"
+    run_cmd "yosys -C"
+}
+
+
+generate_flist() {
+    run_cmd "echo [INFO][Bender] Generate src/croc.flist"
+    run_cmd "bender \
+        script flist-plus \
+        -t asic \
+        -t ihp13 \
+        -t rtl \
+        -t synthesis \
+        -D VERILATOR=1 \
+        -D SYNTHESIS=1 \
+        -D COMMON_CELLS_ASSERTS_OFF=1 \
+        > src/croc.flist"
+
+    run_cmd "echo [INFO][Bender] Remove absolute paths"
+    run_cmd "sed -i 's|${CROC_ROOT}|..|g' src/croc.flist"
+
+    run_cmd "echo [INFO][Bender] File list generated: src/croc.flist"
+}
+
+
 ####################
 ### Parse Arguments
 ####################
-if [[ "${1:-}" == "--help" ]] || [[ "${1:-}" == "-h" ]]; then
+
+DRYRUN=0
+
+# default action if no argument is given
+if [ $# -eq 0 ]; then
     show_help
+    return 0
 fi
 
-################
-### Main Script
-################
-echo "[INFO] Starting Yosys synthesis for ${TOP_DESIGN}"
+# check for global arguments
+for arg in "$@"; do
+    [[ "$arg" == -v || "$arg" == --verbose ]] && set -x
+    [[ "$arg" == -n || "$arg" == --dry-run ]] && DRYRUN=1
+done
 
-# File list
-SV_FLIST="${SV_FLIST:-${croc_root}/croc.flist}"
-echo "[INFO] Using file list: ${SV_FLIST}"
-
-# Create output directories
-mkdir -p "${YOSYS_OUT}"
-mkdir -p "${YOSYS_TMP}"
-mkdir -p "${YOSYS_REPORTS}"
-
-# Output files
-logfile="${YOSYS_DIR}/${TOP_DESIGN}.log"
-
-# Check Yosys is available
-command -v "${YOSYS}" &>/dev/null || { echo "[ERROR] Yosys not found: ${YOSYS}" >&2; exit 1; }
-
-# Run Yosys synthesis
-echo "[INFO] Running Yosys synthesis..."
-echo "[INFO]   Top module: ${TOP_DESIGN}"
-echo "[INFO]   PDK: ${PDK_ROOT}"
-
-cd "${YOSYS_DIR}"
-
-# Set environment for TCL script
-export SV_FLIST
-export TOP_DESIGN
-export TMP="${YOSYS_TMP}"
-export OUT="${YOSYS_OUT}"
-export REPORTS="${YOSYS_REPORTS}"
-
-# Run Yosys with timestamped logging
-if ${YOSYS} -c "${YOSYS_DIR}/scripts/yosys_synthesis.tcl" 2>&1 | \
-    TZ=UTC gawk '{ print strftime("[%Y-%m-%d %H:%M %Z]"), $0 }' | \
-    tee "${logfile}" | \
-    gawk -f "${YOSYS_DIR}/scripts/filter_output.awk"; then
-
-    echo "[SUCCESS] Synthesis complete!"
-    echo "[INFO] Output netlist: ${YOSYS_OUT}/${TOP_DESIGN}_yosys.v"
-    echo "[INFO] Debug netlist: ${YOSYS_OUT}/${TOP_DESIGN}_yosys_debug.v"
-    echo "[INFO] Reports: ${YOSYS_REPORTS}/"
-    echo "[INFO] Log file: ${logfile}"
-else
-    echo "[ERROR] Synthesis failed! Check log: ${logfile}" >&2
-fi
+# parse arguments
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --help|-h)
+            show_help
+            ;;
+        --verbose|-v)
+            shift
+            ;;
+        --dry-run|-n)
+            shift
+            ;;
+        # script-specific commands
+        --flist)
+            generate_flist
+            shift
+            ;;
+        --synth)
+            run_yosys
+            shift
+            ;;
+        --open)
+            open_yosys
+            shift
+            ;;
+        # Error handling
+        *)
+            echo "[ERROR] Unknown option: $1 (use --help for usage)" >&2
+            exit 1
+            ;;
+    esac
+done

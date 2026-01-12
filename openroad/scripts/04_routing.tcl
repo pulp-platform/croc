@@ -28,20 +28,11 @@
 ###############################################################################
 # Setup
 ###############################################################################
-set proj_name $::env(PROJ_NAME)
-set top_design $::env(TOP_DESIGN)
-set report_dir $::env(REPORTS)
-set save_dir $::env(SAVE)
-
-# Helper scripts
-source scripts/reports.tcl
-source scripts/checkpoint.tcl
-source scripts/init_tech.tcl
+source scripts/startup.tcl
 
 # Load checkpoint from previous stage
-set input_checkpoint $::env(INPUT_CHECKPOINT)
-utl::report "Loading checkpoint: ${input_checkpoint}"
-load_checkpoint ${input_checkpoint}
+utl::report "Loading checkpoint: 03_${proj_name}.cts"
+load_checkpoint 03_${proj_name}.cts
 
 # Set layers used for estimate_parasitics
 set_wire_rc -clock -layer Metal4
@@ -69,17 +60,17 @@ set_global_routing_layer_adjustment TopMetal1 0.20
 set_routing_layers -signal Metal2-TopMetal1 -clock Metal2-TopMetal1
 
 utl::report "Global route"
-global_route -guide_file ${report_dir}/04_${proj_name}_route.guide \
-    -congestion_report_file ${report_dir}/04_${proj_name}_congestion.rpt \
+global_route -guide_file ${report_dir}/04-01_${proj_name}_route.guide \
+    -congestion_report_file ${report_dir}/04-01_${proj_name}_congestion.rpt \
     -allow_congestion
 # Default params but -allow_congestion
 # It continues even if it didn't find a solution (may be able to fix afterwards)
 
 utl::report "Estimate parasitics"
 estimate_parasitics -global_routing
-report_metrics "04_${proj_name}.grt"
-save_checkpoint 04_${proj_name}.grt
-report_image "04_${proj_name}.grt" true false false true
+report_metrics "04-01_${proj_name}.grt"
+save_checkpoint 04-01_${proj_name}.grt
+report_image "04-01_${proj_name}.grt" true false false true
 
 grt::set_verbose 0
 
@@ -106,9 +97,9 @@ global_route -end_incremental \
             -verbose
 
 estimate_parasitics -global_routing
-report_metrics "04_${proj_name}.grt_repaired"
-save_checkpoint 04_${proj_name}.grt_repaired
-report_image "04_${proj_name}.grt_repaired" true true false true
+report_metrics "04-01_${proj_name}.grt_repaired"
+save_checkpoint 04-01_${proj_name}.grt_repaired
+report_image "04-01_${proj_name}.grt_repaired" true true false true
 
 ###############################################################################
 # Detailed Route

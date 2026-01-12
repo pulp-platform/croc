@@ -33,7 +33,6 @@ if {[file exists "../technology"]} {
 
 set pdk_pad_lef   ../ihp13/bondpad/lef
 
-
 # LIB
 define_corners tt ff
 

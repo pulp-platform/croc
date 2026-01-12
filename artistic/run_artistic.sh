@@ -10,9 +10,10 @@ set -u  # Error on undefined vars
 ################
 ### Setup
 ################
+# Source environment
+source "../env.sh"
 
-export GITHUB_REPOSITORY="${GITHUB_REPOSITORY:-localhost}"
-mkdir -p meerkat_work renderics
+export GITHUB_REPOSITORY="${GITHUB_REPOSITORY:-localhost}" # Get commit in CI run
 
 
 ################
@@ -28,122 +29,140 @@ Usage:
 
 Options:
     --help, -h          Show this help message
-    --logo src_file     Create an ASIC art on the top metal layer from `artistic/src/logo_chip.svg`
-                        The source file is seen relative to the `klayout/out` directory.
+    --dry-run, -n       Don't actually run any command; just print them
+    --verbose, -v       Print commands before executing them
+    --logo SRC_FILE     Create an ASIC art on the top metal layer from 'artistic/src/logo_chip.svg'
+                        The source file is seen relative to the 'klayout/out' directory.
     --render            Render the logo-enhanced GDS
-    --outline           Annotate the render with module oulines defined in `artistic/src/croc_modules.json`
+    --outline           Annotate the render with module oulines defined in 'artistic/src/croc_modules.json'
     --render-map        Render and generate an OpenStreetMap DB
     --cleanup           Cleanup intermittend files
+
 EOF
     exit 0
 }
 
 
+run_cmd() {
+    if [ "$DRYRUN" = 1 ]; then
+        echo $1
+    else
+        eval $1
+    fi
+}
+
+
 prepare_logo() {
-    echo "[INFO] Preparing logo"
+    run_cmd "echo [INFO] Preparing logo"
 
     # customize logo
-    sed "s/#DATE#/$(date '+%Y-%m-%d')/g" src/logo_chip.svg > meerkat_work/croc_logo.svg
-    sed -i "s/#HASH#/$(git rev-parse --short HEAD)/g" meerkat_work/croc_logo.svg
-    sed -i "s|#REPO#|gh.io/$GITHUB_REPOSITORY|g" meerkat_work/croc_logo.svg
+    run_cmd "mkdir -p meerkat_work"
+    run_cmd "sed 's/#DATE#/$(date '+%Y-%m-%d')/g' src/logo_chip.svg > meerkat_work/croc_logo.svg"
+    run_cmd "sed -i 's/#HASH#/$(git rev-parse --short HEAD)/g' meerkat_work/croc_logo.svg"
+    run_cmd "sed -i 's|#REPO#|gh.io/$GITHUB_REPOSITORY|g' meerkat_work/croc_logo.svg"
 
-    inkscape meerkat_work/croc_logo.svg -w 660 -h 660 -o meerkat_work/croc_logo.png > /dev/null 2>&1
+    run_cmd "inkscape meerkat_work/croc_logo.svg \
+        -w 660 \
+        -h 660 \
+        -o meerkat_work/croc_logo.png \
+        > /dev/null 2>&1"
 
-    convert meerkat_work/croc_logo.png \
+    run_cmd "convert meerkat_work/croc_logo.png \
         -dither FloydSteinberg \
         -remap pattern:gray50 \
         meerkat_work/croc_logo.mono.png \
-        > /dev/null
+        > /dev/null"
 }
 
 
 create_logo() {
-    echo "[INFO][Meerkat] Preparing top metal export"
+    run_cmd "echo [INFO][Meerkat] Preparing top metal export"
 
-    python3 artistic/scripts/meerkat_interface.py \
+    run_cmd "python3 artistic/scripts/meerkat_interface.py \
         -i ../../klayout/out/$1 \
         -m croc_tm.gds.gz \
         -g croc_logo.gds \
         -o croc_chip.gds.gz \
         -w meerkat_work \
-        -l 134
+        -l 134"
 
-        echo "[INFO][Meerkat] Export top metal"
-        cd meerkat_work
-        klayout -zz -rm ../artistic/scripts/export_top_metal.py
-        gzip -f -d croc_tm.gds.gz
-        cd ..
+    run_cmd "echo [INFO][Meerkat] Export top metal"
+    run_cmd "cd meerkat_work"
+    run_cmd "klayout -zz -rm ../artistic/scripts/export_top_metal.py"
+    run_cmd "gzip -f -d croc_tm.gds.gz"
+    run_cmd "cd .."
 
-        echo "[INFO][Meerkat] Create logo"
-        python3 artistic/scripts/meerkat.py \
-            -i meerkat_work/croc_logo.mono.png \
-            -g meerkat_work/croc_tm.gds \
-            -l 134 \
-            -n croc \
-            -s meerkat_work/croc_logo.svg \
-            -o meerkat_work/croc_logo.gds \
-            > meerkat_work/meerkat.log
+    run_cmd "echo [INFO][Meerkat] Create logo"
+    run_cmd "python3 artistic/scripts/meerkat.py \
+        -i meerkat_work/croc_logo.mono.png \
+        -g meerkat_work/croc_tm.gds \
+        -l 134 \
+        -n croc \
+        -s meerkat_work/croc_logo.svg \
+        -o meerkat_work/croc_logo.gds \
+        > meerkat_work/meerkat.log"
 
-        echo "[INFO] Merge logo with chip"
-        cd meerkat_work
-        klayout -zz -rm ../artistic/scripts/merge_logo.py
-        cd ..
+    run_cmd "echo [INFO] Merge logo with chip"
+    run_cmd "cd meerkat_work"
+    run_cmd "klayout -zz -rm ../artistic/scripts/merge_logo.py"
+    run_cmd "cd .."
 }
 
 
 render() {
-    echo "[INFO][RenderICs] Run $1 for $2.json"
-    make -C artistic $1 CFG_FILE=../src/$2.json > renderics/$2_$1.log 2>&1
+    run_cmd "mkdir -p renderics"
+    run_cmd "echo [INFO][RenderICs] Run $1 for $2.json"
+    run_cmd "make -C artistic $1 CFG_FILE=../src/$2.json > renderics/$2_$1.log 2>&1"
 }
 
 
 finish_render() {
-    echo "[INFO][RenderICs] Convert output files"
-    cp renderics/DPI__croc_0-0.png renderics/croc_render.png
-    cp renderics/PDF__croc_0-0.pdf renderics/croc_render.pdf
-    convert renderics/croc_render.png renderics/croc_render.jpg
+    run_cmd "echo [INFO][RenderICs] Convert output files"
+    run_cmd "cp renderics/DPI__croc_0-0.png renderics/croc_render.png"
+    run_cmd "cp renderics/PDF__croc_0-0.pdf renderics/croc_render.pdf"
+    run_cmd "convert renderics/croc_render.png renderics/croc_render.jpg"
 }
 
 
 gen_outline() {
-    echo "[INFO][OutlineGen] Generate module outlines"
-    python3 artistic/scripts/gen_outline.py \
+    run_cmd "echo [INFO][OutlineGen] Generate module outlines"
+    run_cmd "python3 artistic/scripts/gen_outline.py \
     -i ../openroad/out/croc.def \
     -o renderics/croc_modules.svg \
     -b renderics/croc_render.jpg \
-    --lef_files ../ihp13/pdk/ihp-sg13g2/libs.ref/sg13g2_sram/lef/*.lef \
+    --lef_files ${PDK_DIR_LEF_SRAMS}/*.lef \
     --px_scale 15000 \
     --module_json src/croc_modules.json \
     --opacity 0.65 \
     --font_size 35 \
     --luminosity 0.85 \
     --scale 2.0 \
-    > renderics/gen_outline.log
+    > renderics/gen_outline.log"
 }
 
 
 finish_outline() {
-    echo "[INFO][OutlineGen] Convert output files"
-    inkscape renderics/croc_modules.svg -o renderics/croc_modules.png > /dev/null 2>&1
-    inkscape renderics/croc_modules.svg -o renderics/croc_modules.pdf > /dev/null 2>&1
-    convert renderics/croc_modules.png renderics/croc_modules.jpg
+    run_cmd "echo [INFO][OutlineGen] Convert output files"
+    run_cmd "inkscape renderics/croc_modules.svg -o renderics/croc_modules.png > /dev/null 2>&1"
+    run_cmd "inkscape renderics/croc_modules.svg -o renderics/croc_modules.pdf > /dev/null 2>&1"
+    run_cmd "convert renderics/croc_modules.png renderics/croc_modules.jpg"
 }
 
 
 convert_map() {
-    echo "[INFO][Mapify] Convert to OpenStreetMap DB"
-    cd artistic
-    python3 scripts/mapify.py ../src/croc_map.json | bash
-    cp ../src/show_map.html ../mapify/index.html
+    run_cmd "echo [INFO][Mapify] Convert to OpenStreetMap DB"
+    run_cmd "cd artistic"
+    run_cmd "python3 scripts/mapify.py ../src/croc_map.json | bash"
+    run_cmd "cp ../src/show_map.html ../mapify/index.html"
 }
 
 
 cleanup() {
-    echo "[INFO][RenderICs] Cleanup"
-    rm -f renderics/???__*.png
+    run_cmd "echo [INFO][RenderICs] Cleanup"
+    run_cmd "rm -f renderics/???__*.png"
 
-    echo "[INFO][Mapify] Cleanup"
-    rm -rf ../mapify_tmp
+    run_cmd "echo [INFO][Mapify] Cleanup"
+    run_cmd "rm -rf mapify_tmp"
 }
 
 
@@ -151,11 +170,33 @@ cleanup() {
 ### Parse Arguments
 ####################
 
+DRYRUN=0
+
+# default action if no argument is given
+if [ $# -eq 0 ]; then
+    show_help
+    return 0
+fi
+
+# check for global arguments
+for arg in "$@"; do
+    [[ "$arg" == -v || "$arg" == --verbose ]] && set -x
+    [[ "$arg" == -n || "$arg" == --dry-run ]] && DRYRUN=1
+done
+
+# parse arguments
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --help|-h)
             show_help
             ;;
+        --verbose|-v)
+            shift
+            ;;
+        --dry-run|-n)
+            shift
+            ;;
+        # script-specific commands
         --prepare-logo) # CI only
             prepare_logo
             shift
@@ -212,6 +253,7 @@ while [[ $# -gt 0 ]]; do
             cleanup
             shift
             ;;
+        # Error handling
         *)
             echo "[ERROR] Unknown option: $1 (use --help for usage)" >&2
             exit 1

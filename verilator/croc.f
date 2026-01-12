@@ -1,12 +1,13 @@
-
-+define+VERILATOR
-+define+COMMON_CELLS_ASSERTS_OFF
-
 +incdir+../rtl/apb/include
 +incdir+../rtl/common_cells/include
 +incdir+../rtl/cve2/include
 +incdir+../rtl/obi/include
-
++define+TARGET_FLIST
++define+TARGET_RTL
++define+TARGET_SYNTHESIS
++define+TARGET_VERILATOR
++define+VERILATOR=1
++define+COMMON_CELLS_ASSERTS_OFF=1
 ../rtl/common_verification/clk_rst_gen.sv
 ../rtl/tech_cells_generic/tc_sram.sv
 ../rtl/tech_cells_generic/tc_sram_impl.sv
@@ -163,6 +164,8 @@
 ../rtl/croc_domain.sv
 ../rtl/user_domain.sv
 ../rtl/croc_soc.sv
+../rtl/croc_chip.sv
 ../rtl/test/tb_croc_pkg.sv
 ../rtl/test/croc_vip.sv
 ../rtl/test/tb_croc_soc.sv
+

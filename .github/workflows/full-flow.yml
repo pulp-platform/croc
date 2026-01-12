@@ -31,7 +31,7 @@ jobs:
       - name: Run Yosys, OpenROAD and KLayout
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: "cd yosys && ./run_synthesis.sh && cd ../openroad && QT_QPA_PLATFORM=offscreen ./run_backend.sh --all && cd ../klayout && ./finishing.sh"
+          cmd: "cd yosys && ./run_synthesis.sh --synth && cd ../openroad && QT_QPA_PLATFORM=offscreen ./run_backend.sh --all && cd ../klayout && ./run_finishing.sh --gds --seal"
       - name: Upload openroad outputs
         uses: actions/upload-artifact@v4
         with:

@@ -2,8 +2,13 @@
 +incdir+../rtl/common_cells/include
 +incdir+../rtl/cve2/include
 +incdir+../rtl/obi/include
++define+TARGET_ASIC
++define+TARGET_FLIST
++define+TARGET_IHP13
++define+TARGET_RTL
 +define+TARGET_SYNTHESIS
-+define+SYNTHESIS
++define+VERILATOR=1
++define+SYNTHESIS=1
 +define+COMMON_CELLS_ASSERTS_OFF=1
 ../rtl/common_cells/binary_to_gray.sv
 ../rtl/common_cells/cb_filter_pkg.sv
@@ -159,3 +164,4 @@
 ../rtl/user_domain.sv
 ../rtl/croc_soc.sv
 ../rtl/croc_chip.sv
+

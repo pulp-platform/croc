@@ -27,20 +27,11 @@
 ###############################################################################
 # Setup
 ###############################################################################
-set proj_name $::env(PROJ_NAME)
-set top_design $::env(TOP_DESIGN)
-set report_dir $::env(REPORTS)
-set save_dir $::env(SAVE)
-
-# Helper scripts
-source scripts/reports.tcl
-source scripts/checkpoint.tcl
-source scripts/init_tech.tcl
+source scripts/startup.tcl
 
 # Load checkpoint from previous stage
-set input_checkpoint $::env(INPUT_CHECKPOINT)
-utl::report "Loading checkpoint: ${input_checkpoint}"
-load_checkpoint ${input_checkpoint}
+utl::report "Loading checkpoint: 04_${proj_name}.routed"
+load_checkpoint 04_${proj_name}.routed
 
 # Set layers used for estimate_parasitics
 set_wire_rc -clock -layer Metal4

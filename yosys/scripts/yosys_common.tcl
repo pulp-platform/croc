@@ -9,7 +9,7 @@
 # A common setup to provide some functionality and define variables
 
 # set global variables
-set sv_flist   "./croc.flist"
+set sv_flist   "src/croc.flist"
 set top_design "croc_chip"
 set out_dir    out
 set tmp_dir    tmp

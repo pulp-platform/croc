@@ -12,34 +12,63 @@ if [[ -n "${BASH_SOURCE[0]}" ]]; then
 else
     export CROC_ROOT=$(pwd)
 fi
+echo "[INFO][ENV] Croc root: $CROC_ROOT"
 
-################
-## Tool Paths ##
-################
-export BENDER="${BENDER:-bender}"
-export PYTHON3="${PYTHON3:-python3}"
-export YOSYS="${YOSYS:-yosys}"
-export OPENROAD="${OPENROAD:-openroad}"
-export KLAYOUT="${KLAYOUT:-klayout}"
-export VERILATOR="${VERILATOR:-/foss/tools/bin/verilator}"
-export VSIM="${VSIM:-vsim}"
 
 ################
 ## PDK Discovery (priority: PDK_ROOT → technology/ → ihp13/pdk/)
 ################
-if [[ -z "${PDK_ROOT:-}" ]]; then
-    if [[ -d "${CROC_ROOT}/technology" ]]; then
-        export PDK_ROOT="${CROC_ROOT}/technology"
-    elif [[ -d "${CROC_ROOT}/ihp13/pdk" ]]; then
-        export PDK_ROOT="${CROC_ROOT}/ihp13/pdk"
+
+if [[ -d "${CROC_ROOT}/technology" ]]; then
+
+    echo "[INFO][ENV] Init tech from ETHZ DZ cockpit"
+    export PDK_ROOT="$CROC_ROOT/technology"
+    export KLAYOUT_PATH="$CROC_ROOT/klayout/.klayout"
+    export PDK_DIR_LEF_TECH="$PDK_ROOT/lef"
+    export PDK_DIR_LEF_CELLS="$PDK_ROOT/lef"
+    export PDK_DIR_LEF_SRAMS="$PDK_ROOT/lef"
+    export PDK_DIR_LEF_IOS="$PDK_ROOT/lef"
+    export PDK_DIR_LEF_BOND="$CROC_ROOT/ihp13/bondpad/lef"
+    export PDK_DIR_GDS_CELLS="$PDK_ROOT/gds"
+    export PDK_DIR_GDS_SRAMS="$PDK_ROOT/gds"
+    export PDK_DIR_GDS_IOS="$PDK_ROOT/gds"
+    export PDK_DIR_GDS_BOND="$CROC_ROOT/ihp13/bondpad/gds"
+
+elif [[ -d "${CROC_ROOT}/ihp13/pdk" ]]; then
+
+    echo "[INFO][ENV] Init tech from Github PDK"
+    export PDK_ROOT="$CROC_ROOT/ihp13/pdk"
+    export KLAYOUT_PATH="$PDK_ROOT/ihp-sg13g2/libs.tech/klayout"
+    export PDK_DIR_LEF_TECH="$PDK_ROOT/ihp-sg13g2/libs.ref/sg13g2_stdcell/lef"
+    export PDK_DIR_LEF_CELLS="$PDK_ROOT/ihp-sg13g2/libs.ref/sg13g2_stdcell/lef"
+    export PDK_DIR_LEF_SRAMS="$PDK_ROOT/ihp-sg13g2/libs.ref/sg13g2_sram/lef"
+    export PDK_DIR_LEF_IOS="$PDK_ROOT/ihp-sg13g2/libs.ref/sg13g2_io/lef"
+    export PDK_DIR_LEF_BOND="$CROC_ROOT/ihp13/bondpad/lef"
+    export PDK_DIR_GDS_CELLS="$PDK_ROOT/ihp-sg13g2/libs.ref/sg13g2_stdcell/gds"
+    export PDK_DIR_GDS_SRAMS="$PDK_ROOT/ihp-sg13g2/libs.ref/sg13g2_sram/gds"
+    export PDK_DIR_GDS_IOS="$PDK_ROOT/ihp-sg13g2/libs.ref/sg13g2_io/gds"
+    export PDK_DIR_GDS_BOND="$CROC_ROOT/ihp13/bondpad/gds"
+
+    # Apply PDK patches required for filling
+    if [ ! -f ${CROC_ROOT}/ihp13/pdk.patched ]; then
+        git -C ${PDK_ROOT} apply ../patches/0001-Filling-improvements.patch
+        touch ${CROC_ROOT}/ihp13/pdk.patched
+        echo "[INFO][ENV] Applied all PDK patches"
     else
-        echo "[WARNING] PDK not found. Set PDK_ROOT or ensure ihp13/pdk/ exists"
-        export PDK_ROOT=""  # Set to empty to avoid unbound variable error
+        echo "[INFO][ENV] PDK patches already applied"
     fi
+
 else
-    # PDK_ROOT was already set, export it to ensure it's available
-    export PDK_ROOT
+    echo "[WARNING][ENV] PDK not found. Set PDK_ROOT and KLAYOUT_PATH or ensure ihp13/pdk/ exists"
+    export PDK_ROOT=""  # Set to empty to avoid unbound variable error
+    export KLAYOUT_PATH="" # Set to empty to avoid unbound variable error
 fi
+
+echo "[INFO][ENV] PDK root: $PDK_ROOT"
+echo "[INFO][ENV] KLayout path: $KLAYOUT_PATH"
+
+export PDK=ihp-sg13g2
+
 
 ################
 ## Project Settings ##
@@ -76,16 +105,4 @@ export SW_BIN="${SW_DIR}/bin"
 export NETLIST="${YOSYS_OUT}/${TOP_DESIGN}_yosys.v"
 export NETLIST_DEBUG="${YOSYS_OUT}/${TOP_DESIGN}_yosys_debug.v"
 
-################
-## PDK Paths (derived from PDK_ROOT) ##
-################
-# Check if using ETHZ DZ cockpit or GitHub PDK
-if [[ -d "${CROC_ROOT}/technology" ]]; then
-    # ETHZ DZ cockpit layout
-    export PDK_VARIANT="ethz_cockpit"
-    export PDK="${PDK_ROOT}"
-else
-    # GitHub PDK layout
-    export PDK_VARIANT="github"
-    export PDK="${PDK_ROOT}/ihp-sg13g2"
-fi
+

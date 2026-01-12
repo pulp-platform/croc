@@ -28,19 +28,7 @@
 ###############################################################################
 # Setup
 ###############################################################################
-set proj_name $::env(PROJ_NAME)
-set netlist $::env(NETLIST)
-set top_design $::env(TOP_DESIGN)
-set report_dir $::env(REPORTS)
-set save_dir $::env(SAVE)
-
-# Helper scripts
-source scripts/reports.tcl
-source scripts/checkpoint.tcl
-source scripts/floorplan_util.tcl
-
-# Initialize technology data (PDK libraries, LEFs, etc.)
-source scripts/init_tech.tcl
+source scripts/startup.tcl
 
 utl::report "###############################################################################"
 utl::report "# Stage 01: FLOORPLAN"
@@ -62,11 +50,10 @@ utl::report "Read constraints"
 read_sdc src/constraints.sdc
 
 utl::report "Check constraints"
-check_setup -verbose                                      > ${report_dir}/01_${proj_name}_checks.rpt
-report_checks -unconstrained -format end -no_line_splits >> ${report_dir}/01_${proj_name}_checks.rpt
-report_checks -format end -no_line_splits                >> ${report_dir}/01_${proj_name}_checks.rpt
-report_checks -format end -no_line_splits                >> ${report_dir}/01_${proj_name}_checks.rpt
-
+check_setup -verbose                                      > ${report_dir}/01-01_${proj_name}_checks.rpt
+report_checks -unconstrained -format end -no_line_splits >> ${report_dir}/01-01_${proj_name}_checks.rpt
+report_checks -format end -no_line_splits                >> ${report_dir}/01-01_${proj_name}_checks.rpt
+report_checks -format end -no_line_splits                >> ${report_dir}/01-01_${proj_name}_checks.rpt
 utl::report "Connect global nets (power)"
 source scripts/power_connect.tcl
 

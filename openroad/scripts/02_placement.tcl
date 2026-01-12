@@ -27,20 +27,11 @@
 ###############################################################################
 # Setup
 ###############################################################################
-set proj_name $::env(PROJ_NAME)
-set top_design $::env(TOP_DESIGN)
-set report_dir $::env(REPORTS)
-set save_dir $::env(SAVE)
-
-# Helper scripts
-source scripts/reports.tcl
-source scripts/checkpoint.tcl
-source scripts/init_tech.tcl
+source scripts/startup.tcl
 
 # Load checkpoint from previous stage
-set input_checkpoint $::env(INPUT_CHECKPOINT)
-utl::report "Loading checkpoint: ${input_checkpoint}"
-load_checkpoint ${input_checkpoint}
+utl::report "Loading checkpoint: 01_${proj_name}.floorplan"
+load_checkpoint 01_${proj_name}.floorplan
 
 # Set layers used for estimate_parasitics
 set_wire_rc -clock -layer Metal4
@@ -73,7 +64,7 @@ remove_buffers
 utl::report "Repair design"
 repair_design -verbose
 
-save_checkpoint 02_${proj_name}.pre_place
+save_checkpoint 02-01_${proj_name}.pre_place
 
 ###############################################################################
 # Global Placement
@@ -100,28 +91,28 @@ set GPL2_ARGS { -density 0.60
 # Rough placement to get parasitics from steiner-tree estimate so we can run repair_timing
 utl::report "Global Placement (1)"
 global_placement {*}$GPL_ARGS
-report_metrics "02_${proj_name}.gpl1"
-report_image "02_${proj_name}.gpl1" true true
-save_checkpoint 02_${proj_name}.gpl1
+report_metrics "02-02_${proj_name}.gpl1"
+report_image "02-02_${proj_name}.gpl1" true true
+save_checkpoint 02-02_${proj_name}.gpl1
 
 utl::report "Estimate parasitics"
 estimate_parasitics -placement
 utl::report "Repair design"
 repair_design -verbose
-save_checkpoint 02_${proj_name}.gpl1_fix
+save_checkpoint 02-02_${proj_name}.gpl1_fix
 
 # Old versions of repair_timing may swap non-equal pins, deactivated for now to avoid problems
 # Likely introduced in: https://github.com/The-OpenROAD-Project/OpenROAD/pull/3215 (fixed in new versions)
 utl::report "Repair setup"
 repair_timing -setup -skip_pin_swap -verbose
-save_checkpoint 02_${proj_name}.gpl1_repaired
+save_checkpoint 02-02_${proj_name}.gpl1_repaired
 
 # Actual global placement with routability and timing driven
 utl::report "Global Placement (2)"
 global_placement {*}$GPL2_ARGS
-report_metrics "02_${proj_name}.gpl2"
-report_image "02_${proj_name}.gpl2" true true
-save_checkpoint 02_${proj_name}.gpl2
+report_metrics "02-02_${proj_name}.gpl2"
+report_image "02-02_${proj_name}.gpl2" true true
+save_checkpoint 02-02_${proj_name}.gpl2
 
 ###############################################################################
 # Detailed Placement
