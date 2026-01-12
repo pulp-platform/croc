@@ -15,6 +15,7 @@ source "../env.sh"
 
 VSIM=${VSIM:-questa-2025.3 vsim}
 
+mkdir -p reports
 
 ################
 ### Helpers
