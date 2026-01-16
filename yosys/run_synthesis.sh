@@ -1,7 +1,11 @@
 #!/bin/bash
-# Copyright (c) 2024 ETH Zurich and University of Bologna.
+# Copyright (c) 2026 ETH Zurich and University of Bologna.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+#
+# Authors:
+# - Philippe Sauter <phsauter@iis.ee.ethz.ch>
+# - Thomas Benz     <tbenz@iis.ee.ethz.ch>
 #
 # Synthesize RTL to gate-level netlist using Yosys
 
@@ -9,17 +13,14 @@ set -e  # Exit on error
 set -u  # Error on undefined vars
 
 ################
-### Setup
+# Setup
 ################
 # Source environment
 source "../env.sh"
 
-mkdir -p "${YOSYS_OUT}"
-mkdir -p "${YOSYS_TMP}"
-mkdir -p "${YOSYS_REPORTS}"
 
 ##############################
-### Helper Functions (inline)
+# Helper Functions (inline)
 ##############################
 show_help() {
     cat << EOF
@@ -30,8 +31,8 @@ Usage:
 
 Options:
     --help, -h          Show this help message
-    --dry-run, -n       Don't actually run any command; just print them
-    --verbose, -v       Print commands before executing theme
+    --dry-run, -n       Only print commands instead of executing
+    --verbose, -v       Print commands while executing
     --synth             Synthesize ${TOP_DESIGN}
     --open              Open Yosys
     --flist             Regenerate flist (src/croc.flist)
@@ -55,6 +56,7 @@ Example:
 
     # Override top module
     TOP_DESIGN=my_chip ./run_synthesis.sh --synth
+
 EOF
     exit 0
 }
@@ -106,7 +108,7 @@ generate_flist() {
 
 
 ####################
-### Parse Arguments
+# Parse Arguments
 ####################
 
 DRYRUN=0

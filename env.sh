@@ -1,7 +1,11 @@
 #!/bin/bash
-# Copyright (c) 2024 ETH Zurich and University of Bologna.
+# Copyright (c) 2026 ETH Zurich and University of Bologna.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+#
+# Authors:
+# - Philippe Sauter <phsauter@iis.ee.ethz.ch>
+# - Thomas Benz     <tbenz@iis.ee.ethz.ch>
 #
 # Environment setup for Croc SoC ASIC flow
 # This file is sourced by all scripts to set up tool paths and PDK location
@@ -15,9 +19,10 @@ fi
 echo "[INFO][ENV] Croc root: $CROC_ROOT"
 
 
-################
-## PDK Discovery (priority: PDK_ROOT → technology/ → ihp13/pdk/)
-################
+###################
+# PDK Discovery
+###################
+# priority: technology/ over ihp13/pdk/
 
 if [[ -d "${CROC_ROOT}/technology" ]]; then
 
@@ -67,42 +72,18 @@ fi
 echo "[INFO][ENV] PDK root: $PDK_ROOT"
 echo "[INFO][ENV] KLayout path: $KLAYOUT_PATH"
 
-export PDK=ihp-sg13g2
 
-
-################
-## Project Settings ##
-################
+######################
+# Project Settings
+######################
 export PROJ_NAME="${PROJ_NAME:-croc}"
 export TOP_DESIGN="${TOP_DESIGN:-croc_chip}"
 export DUT_DESIGN="${DUT_DESIGN:-croc_soc}"
 
-################
-## Directory Structure ##
-################
-# Yosys
-export YOSYS_DIR="${CROC_ROOT}/yosys"
-export YOSYS_OUT="${YOSYS_DIR}/out"
-export YOSYS_REPORTS="${YOSYS_DIR}/reports"
-export YOSYS_TMP="${YOSYS_DIR}/tmp"
 
-# OpenROAD
-export OR_DIR="${CROC_ROOT}/openroad"
-export OR_OUT="${OR_DIR}/out"
-export OR_REPORTS="${OR_DIR}/reports"
-export OR_SAVE="${OR_DIR}/save"
-
-# KLayout
-export KLAYOUT_DIR="${CROC_ROOT}/klayout"
-
-# Software
-export SW_DIR="${CROC_ROOT}/sw"
-export SW_BIN="${SW_DIR}/bin"
-
-################
-## Netlist Paths ##
-################
-export NETLIST="${YOSYS_OUT}/${TOP_DESIGN}_yosys.v"
-export NETLIST_DEBUG="${YOSYS_OUT}/${TOP_DESIGN}_yosys_debug.v"
-
+###################
+# Netlist Paths
+###################
+export NETLIST="${CROC_ROOT}/yosys/${TOP_DESIGN}_yosys.v"
+export NETLIST_DEBUG="${CROC_ROOT}/yosys/${TOP_DESIGN}_yosys_debug.v"
 

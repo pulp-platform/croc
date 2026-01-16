@@ -2,13 +2,16 @@
 # Copyright (c) 2026 ETH Zurich and University of Bologna.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+#
+# Authors:
+# - Thomas Benz <tbenz@iis.ee.ethz.ch>
 
 set -e  # Exit on error
 set -u  # Error on undefined vars
 
 
 ################
-### Setup
+# Setup
 ################
 # Source environment
 source "../env.sh"
@@ -17,7 +20,7 @@ export GITHUB_REPOSITORY="${GITHUB_REPOSITORY:-localhost}" # Get commit in CI ru
 
 
 ################
-### Helpers
+# Helpers
 ################
 
 show_help() {
@@ -29,14 +32,14 @@ Usage:
 
 Options:
     --help, -h          Show this help message
-    --dry-run, -n       Don't actually run any command; just print them
-    --verbose, -v       Print commands before executing them
+    --dry-run, -n       Only print commands instead of executing
+    --verbose, -v       Print commands while executing
     --logo SRC_FILE     Create an ASIC art on the top metal layer from 'artistic/src/logo_chip.svg'
                         The source file is seen relative to the 'klayout/out' directory.
     --render            Render the logo-enhanced GDS
     --outline           Annotate the render with module oulines defined in 'artistic/src/croc_modules.json'
     --render-map        Render and generate an OpenStreetMap DB
-    --cleanup           Cleanup intermittend files
+    --cleanup           Cleanup intermittent files
 
 EOF
     exit 0
@@ -167,7 +170,7 @@ cleanup() {
 
 
 ####################
-### Parse Arguments
+# Parse Arguments
 ####################
 
 DRYRUN=0

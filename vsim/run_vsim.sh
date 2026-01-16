@@ -2,13 +2,21 @@
 # Copyright (c) 2026 ETH Zurich and University of Bologna.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+#
+# Published with permission from Siemens. 
+# Siemens QuestaSim is available through EDA Higher Education Software Program
+# https://www.sw.siemens.com/en-US/academic/educators/eda-higher-education-software/
+#
+# Authors:
+# - Thomas Benz     <tbenz@iis.ee.ethz.ch>
+
 
 set -e  # Exit on error
 set -u  # Error on undefined vars
 
 
 ################
-### Setup
+# Setup
 ################
 # Source environment
 source "../env.sh"
@@ -18,7 +26,7 @@ VSIM=${VSIM:-questa-2025.3 vsim}
 mkdir -p reports
 
 ################
-### Helpers
+# Helpers
 ################
 
 show_help() {
@@ -30,11 +38,11 @@ Usage:
 
 Options:
     --help, -h          Show this help message
-    --dry-run, -n       Don't actually run any command; just print them
-    --verbose, -v       Print commands before executing them
+    --dry-run, -n       Only print commands instead of executing
+    --verbose, -v       Print commands while executing
     --flist             Regenerate compile script reading sources (compile_rtl.tcl, compile_netlist.tcl)
-    --build             Compile Croc RTL  in VSIM
-    --build-netlist     Compile Crop post-synthesis netlist in VSIM
+    --build             Compile Croc RTL in VSIM
+    --build-netlist     Compile Croc post-synthesis netlist in VSIM
     --run BINARY        Run binary in VSIM
     --run-gui BINARY    Prepare running binary in VSIM, open GUI
 
@@ -180,7 +188,7 @@ run_vsim_gui() {
 
 
 ####################
-### Parse Arguments
+# Parse Arguments
 ####################
 
 DRYRUN=0

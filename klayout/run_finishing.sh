@@ -2,8 +2,8 @@
 # Copyright 2026 ETH Zurich and University of Bologna.
 # Solderpad Hardware License, Version 0.51, see LICENSE for details.
 # SPDX-License-Identifier: SHL-0.51
-# Authors:
 #
+# Authors:
 # - Thomas Benz  <tbenz@iis.ee.ethz.ch>
 
 # KLayout batch mode to create the sealring and metal fill
@@ -13,15 +13,15 @@ set -u  # Error on undefined vars
 
 
 ################
-### Setup
+# Setup
 ################
 # Source environment
 source "../env.sh"
 
 
-################
-## Technology ##
-################
+###############
+# Technology
+###############
 
 lef_files="$(find "$PDK_DIR_LEF_TECH" -name 'sg13g2_stdcell.lef' -exec realpath {} \;) \
      $(find "$PDK_DIR_LEF_CELLS" -name 'sg13g2_tech.lef' -exec realpath {} \;) \
@@ -38,7 +38,7 @@ gds_files="$(find "$PDK_DIR_GDS_CELLS" -name 'sg13g2_stdcell.gds' -exec realpath
 SEAL_RING_SPACE=42
 
 ##############################
-### Helper Functions (inline)
+# Helper Functions (inline)
 ##############################
 
 show_help() {
@@ -49,13 +49,20 @@ Usage: ./run_finishing.sh [OPTIONS]
 
 Options:
     --help, -h          Show this help message
-    --dry-run, -n       Don't actually run any command; just print them
-    --verbose, -v       Print commands before executing them
+    --dry-run, -n       Only print commands instead of executing
+    --verbose, -v       Print commands while executing
     --gds               Convert DEF to GDS
     --seal              Create seal ring and merge it with GDS
     --fill-metal        Add metal filling to sealed GDS
     --fill-activ        Add activ filling to metal-filled GDS (takes a long time)
     --fill              Add metal and activ filling to sealed GDS (takes a long time)
+
+Examples:
+    # Convert DEF to GDS
+    ./run_finishing.sh --gds
+
+    # Convert DEF to GDS and add seal ring
+    ./run_finishing.sh --gds --seal
 
 EOF
     exit 0
@@ -144,7 +151,7 @@ fill_activ() {
 
 
 ####################
-### Parse Arguments
+# Parse Arguments
 ####################
 
 DRYRUN=0
