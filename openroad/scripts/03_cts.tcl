@@ -18,9 +18,6 @@
 # Required environment variables:
 #   PROJ_NAME    - Project name (e.g., "croc")
 #   TOP_DESIGN   - Top module name
-#   REPORTS      - Reports output directory
-#   SAVE         - Checkpoint save directory
-#   INPUT_CHECKPOINT - Input checkpoint name (without .zip extension)
 #
 # Input checkpoint: 02_${PROJ_NAME}.placed
 # Output checkpoint: 03_${PROJ_NAME}.cts
@@ -31,16 +28,12 @@
 source scripts/startup.tcl
 
 # Load checkpoint from previous stage
-utl::report "Loading checkpoint: 02_${proj_name}.placed"
 load_checkpoint 02_${proj_name}.placed
 
 # Set layers used for estimate_parasitics
 set_wire_rc -clock -layer Metal4
 set_wire_rc -signal -layer Metal4
 
-###############################################################################
-# Clock Tree Synthesis
-###############################################################################
 utl::report "###############################################################################"
 utl::report "# Stage 03: CLOCK TREE SYNTHESIS"
 utl::report "###############################################################################"
@@ -76,7 +69,7 @@ report_metrics "03_${proj_name}.cts_unrepaired"
 
 # Repair all setup timing
 utl::report "Repair setup"
-repair_timing -setup -skip_pin_swap -verbose
+repair_timing -setup -verbose
 
 # Place inserted cells
 utl::report "Detailed placement"
@@ -88,7 +81,7 @@ check_placement -verbose
 utl::report "Estimate parasitics"
 estimate_parasitics -placement
 
-report_cts -out_file ${report_dir}/${proj_name}.cts.rpt
+report_cts -out_file ${report_dir}/03_${proj_name}.cts.rpt
 report_metrics "03_${proj_name}.cts"
 save_checkpoint 03_${proj_name}.cts
 report_image "03_${proj_name}.cts" true false true
@@ -96,6 +89,3 @@ report_image "03_${proj_name}.cts" true false true
 utl::report "###############################################################################"
 utl::report "# Stage 03 complete: Checkpoint saved to ${save_dir}/03_${proj_name}.cts.zip"
 utl::report "###############################################################################"
-
-# Exit successfully
-exit 0

@@ -17,9 +17,6 @@
 # Required environment variables:
 #   PROJ_NAME    - Project name (e.g., "croc")
 #   TOP_DESIGN   - Top module name
-#   REPORTS      - Reports output directory
-#   SAVE         - Checkpoint save directory
-#   INPUT_CHECKPOINT - Input checkpoint name (without .zip extension)
 #
 # Input checkpoint: 01_${PROJ_NAME}.floorplan
 # Output checkpoint: 02_${PROJ_NAME}.placed
@@ -30,7 +27,6 @@
 source scripts/startup.tcl
 
 # Load checkpoint from previous stage
-utl::report "Loading checkpoint: 01_${proj_name}.floorplan"
 load_checkpoint 01_${proj_name}.floorplan
 
 # Set layers used for estimate_parasitics
@@ -41,9 +37,6 @@ utl::report "###################################################################
 utl::report "# Stage 02: PLACEMENT"
 utl::report "###############################################################################"
 
-###############################################################################
-# Initial Repair Netlist
-###############################################################################
 utl::report "###############################################################################"
 utl::report "# 02-01: Initial Repair Netlist"
 utl::report "###############################################################################"
@@ -66,9 +59,7 @@ repair_design -verbose
 
 save_checkpoint 02-01_${proj_name}.pre_place
 
-###############################################################################
-# Global Placement
-###############################################################################
+
 utl::report "###############################################################################"
 utl::report "# 02-02: GLOBAL PLACEMENT"
 utl::report "###############################################################################"
@@ -101,10 +92,8 @@ utl::report "Repair design"
 repair_design -verbose
 save_checkpoint 02-02_${proj_name}.gpl1_fix
 
-# Old versions of repair_timing may swap non-equal pins, deactivated for now to avoid problems
-# Likely introduced in: https://github.com/The-OpenROAD-Project/OpenROAD/pull/3215 (fixed in new versions)
 utl::report "Repair setup"
-repair_timing -setup -skip_pin_swap -verbose
+repair_timing -setup -verbose
 save_checkpoint 02-02_${proj_name}.gpl1_repaired
 
 # Actual global placement with routability and timing driven
@@ -114,9 +103,7 @@ report_metrics "02-02_${proj_name}.gpl2"
 report_image "02-02_${proj_name}.gpl2" true true
 save_checkpoint 02-02_${proj_name}.gpl2
 
-###############################################################################
-# Detailed Placement
-###############################################################################
+
 utl::report "###############################################################################"
 utl::report "# 02-03: DETAILED PLACEMENT"
 utl::report "###############################################################################"
@@ -140,6 +127,3 @@ report_image "02_${proj_name}.placed" true true
 utl::report "###############################################################################"
 utl::report "# Stage 02 complete: Checkpoint saved to ${save_dir}/02_${proj_name}.placed.zip"
 utl::report "###############################################################################"
-
-# Exit successfully
-exit 0

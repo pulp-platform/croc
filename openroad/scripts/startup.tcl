@@ -13,13 +13,18 @@ set top_design $::env(TOP_DESIGN)
 set netlist "../yosys/out/${top_design}_yosys.v"
 set report_dir "reports"
 set save_dir "save"
+set out_dir "out"
+
+file mkdir $report_dir
+file mkdir $save_dir
+file mkdir $out_dir
 
 utl::report "Setting up project $proj_name"
 utl::report " - Netlist: $netlist"
 utl::report " - Top design: $top_design"
 utl::report " - Report directory: $report_dir"
 utl::report " - Save directory: $save_dir"
-
+utl::report " - Output directory: $out_dir"
 # Helper scripts
 source scripts/reports.tcl
 source scripts/checkpoint.tcl

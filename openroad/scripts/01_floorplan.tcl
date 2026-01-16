@@ -20,8 +20,6 @@
 #   PROJ_NAME    - Project name (e.g., "croc")
 #   NETLIST      - Path to synthesized netlist
 #   TOP_DESIGN   - Top module name
-#   REPORTS      - Reports output directory
-#   SAVE         - Checkpoint save directory
 #
 # Output checkpoint: 01_${PROJ_NAME}.floorplan
 
@@ -34,9 +32,6 @@ utl::report "###################################################################
 utl::report "# Stage 01: FLOORPLAN"
 utl::report "###############################################################################"
 
-###############################################################################
-# Initialization
-###############################################################################
 utl::report "###############################################################################"
 utl::report "# 01-01: Initialization"
 utl::report "###############################################################################"
@@ -57,12 +52,10 @@ report_checks -format end -no_line_splits                >> ${report_dir}/01-01_
 utl::report "Connect global nets (power)"
 source scripts/power_connect.tcl
 
+
 utl::report "###############################################################################"
 utl::report "# 01-02: Core and Die Area"
 utl::report "###############################################################################"
-##########################################################################
-# Die and Core Area 
-##########################################################################
 # Dimensions:                          [um]
 #   final chip size (4sqmm) 2000.0 x 2000.0
 #   seal ring thickness       35.0 ,   35.0 x2
@@ -90,9 +83,7 @@ initialize_floorplan -die_area "0 0 $chipW $chipH" \
                      -core_area "$coreMargin $coreMargin [expr $chipW-$coreMargin] [expr $chipH-$coreMargin]" \
                      -site "CoreSite"
 
-##########################################################################
-# Pads/IOs 
-##########################################################################
+
 utl::report "###############################################################################"
 utl::report "# 01-03: Padring"
 utl::report "###############################################################################"
@@ -130,18 +121,14 @@ makeTracks
 set siteHeight        [ord::dbu_to_microns [[dpl::get_row_site] getHeight]]
 
 
-##########################################################################
-# Paths to the instances of macros
-##########################################################################
 utl::report "###############################################################################"
 utl::report "# 01-04: Macro Placement"
 utl::report "###############################################################################"
+# Paths to the instances of macros
 utl::report "Macro Names"
 source src/instances.tcl
 
-##########################################################################
-# Placing 
-##########################################################################
+# Placing macros
 # use these for macro placement
 set floorPaddingX      20.0
 set floorPaddingY      20.0
@@ -167,7 +154,6 @@ placeInstance $bank1_sram0 $X $Y R0
 cut_rows -halo_width_x 2 -halo_width_y 1
 
 
-
 utl::report "###############################################################################"
 utl::report "# 01-04: Power Grid"
 utl::report "###############################################################################"
@@ -181,5 +167,3 @@ utl::report "###################################################################
 utl::report "# Stage 01 complete: Checkpoint saved to ${save_dir}/01_${proj_name}.floorplan.zip"
 utl::report "###############################################################################"
 
-# Exit successfully
-exit 0

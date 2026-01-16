@@ -18,9 +18,6 @@
 # Required environment variables:
 #   PROJ_NAME    - Project name (e.g., "croc")
 #   TOP_DESIGN   - Top module name
-#   REPORTS      - Reports output directory
-#   SAVE         - Checkpoint save directory
-#   INPUT_CHECKPOINT - Input checkpoint name (without .zip extension)
 #
 # Input checkpoint: 03_${PROJ_NAME}.cts
 # Output checkpoint: 04_${PROJ_NAME}.routed
@@ -31,7 +28,6 @@
 source scripts/startup.tcl
 
 # Load checkpoint from previous stage
-utl::report "Loading checkpoint: 03_${proj_name}.cts"
 load_checkpoint 03_${proj_name}.cts
 
 # Set layers used for estimate_parasitics
@@ -42,9 +38,6 @@ utl::report "###################################################################
 utl::report "# Stage 04: ROUTING"
 utl::report "###############################################################################"
 
-###############################################################################
-# Global Route
-###############################################################################
 utl::report "###############################################################################"
 utl::report "# 04-01: GLOBAL ROUTE"
 utl::report "###############################################################################"
@@ -60,8 +53,8 @@ set_global_routing_layer_adjustment TopMetal1 0.20
 set_routing_layers -signal Metal2-TopMetal1 -clock Metal2-TopMetal1
 
 utl::report "Global route"
-global_route -guide_file ${report_dir}/04-01_${proj_name}_route.guide \
-    -congestion_report_file ${report_dir}/04-01_${proj_name}_congestion.rpt \
+global_route -guide_file ${report_dir}/04_${proj_name}_route.guide \
+    -congestion_report_file ${report_dir}/04_${proj_name}_route_congestionrpt \
     -allow_congestion
 # Default params but -allow_congestion
 # It continues even if it didn't find a solution (may be able to fix afterwards)
@@ -79,8 +72,8 @@ utl::report "Perform buffer insertion..."
 repair_design -verbose
 
 utl::report "Repair setup and hold violations..."
-repair_timing -skip_pin_swap -setup -verbose -repair_tns 100
-repair_timing -skip_pin_swap -hold -hold_margin 0.1 -verbose -repair_tns 100
+repair_timing -setup -verbose -repair_tns 100
+repair_timing -hold -hold_margin 0.1 -verbose -repair_tns 100
 
 utl::report "GRT incremental..."
 # Run to get modified net by DPL
@@ -91,8 +84,8 @@ detailed_placement
 
 # Route only the modified net by DPL
 global_route -end_incremental \
-            -congestion_report_file ${report_dir}/congestion_repaired_initial.rpt \
-            -guide_file ${report_dir}/${proj_name}_route.guide \
+            -guide_file ${report_dir}/04_${proj_name}_route.guide \
+            -congestion_report_file ${report_dir}/04_${proj_name}_route_congestion.rpt \
             -allow_congestion \
             -verbose
 
@@ -101,9 +94,7 @@ report_metrics "04-01_${proj_name}.grt_repaired"
 save_checkpoint 04-01_${proj_name}.grt_repaired
 report_image "04-01_${proj_name}.grt_repaired" true true false true
 
-###############################################################################
-# Detailed Route
-###############################################################################
+
 utl::report "###############################################################################"
 utl::report "# 04-02: DETAILED ROUTE"
 utl::report "###############################################################################"
@@ -114,7 +105,7 @@ repair_antennas -ratio_margin 30 -iterations 5
 
 utl::report "Detailed route"
 set_thread_count 8
-detailed_route -output_drc ${report_dir}/${proj_name}_route_drc.rpt \
+detailed_route -output_drc ${report_dir}/04_${proj_name}_route_drc.rpt \
                -droute_end_iter 30 \
                -drc_report_iter_step 5 \
                -save_guide_updates \
@@ -129,6 +120,3 @@ report_image "04_${proj_name}.routed" true false false true
 utl::report "###############################################################################"
 utl::report "# Stage 04 complete: Checkpoint saved to ${save_dir}/04_${proj_name}.routed.zip"
 utl::report "###############################################################################"
-
-# Exit successfully
-exit 0
