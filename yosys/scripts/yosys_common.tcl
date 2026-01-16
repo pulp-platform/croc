@@ -15,6 +15,10 @@ set out_dir    out
 set tmp_dir    tmp
 set rep_dir    reports
 
+file mkdir $out_dir
+file mkdir $tmp_dir
+file mkdir $rep_dir
+
 puts "using: sv_flist   = '$sv_flist'"
 puts "using: top_design = '$top_design'"
 puts "using: out_dir    = '$out_dir'"
@@ -24,12 +28,11 @@ puts "using: rep_dir    = '$rep_dir'"
 # process ABC script and write to temporary directory
 proc processAbcScript {abc_script} {
     global tmp_dir
-    set src_dir [file join [file dirname [info script]] ../src]
     set abc_out_path $tmp_dir/[file tail $abc_script]
 
     # substitute {STRING} placeholders with their value
     set raw [read -nonewline [open $abc_script r]]
-    set abc_script_recaig [string map -nocase [list "{REC_AIG}" [subst "$src_dir/lazy_man_synth_library.aig"]] $raw]
+    set abc_script_recaig [string map -nocase [list "{REC_AIG}" [subst "src/lazy_man_synth_library.aig"]] $raw]
     set abc_out [open $abc_out_path w]
     puts -nonewline $abc_out $abc_script_recaig
 

@@ -76,19 +76,14 @@ yosys write_verilog -norename -noexpr -attr2comment ${tmp_dir}/${top_design}_yos
 yosys opt_expr
 yosys opt -noff
 yosys fsm
-yosys tee -q -o "${rep_dir}/${top_design}_initial_opt.rpt" stat
 yosys wreduce 
 yosys peepopt
 yosys opt_clean
-yosys write_verilog -norename -noexpr ${tmp_dir}/${top_design}_yosys_abstract4.v
 yosys opt -full
-yosys write_verilog -norename -noexpr ${tmp_dir}/${top_design}_yosys_abstract5.v
 yosys booth
 yosys share
 yosys opt
 yosys memory -nomap
-yosys tee -q -o "${rep_dir}/${top_design}_memories.rpt" stat
-yosys write_verilog -norename -noexpr -attr2comment ${tmp_dir}/${top_design}_yosys_memories.v
 yosys memory_map
 yosys opt -fast
 
@@ -99,20 +94,17 @@ yosys clean -purge
 
 yosys clean -purge
 yosys write_verilog -norename -noexpr ${tmp_dir}/${top_design}_yosys_abstract.v
-yosys tee -q -o "${rep_dir}/${top_design}_abstract.rpt" stat -tech cmos
+yosys tee -q -o "${rep_dir}/${top_design}_abstract.rpt" stat -width -tech cmos
 
 yosys techmap
-yosys write_verilog -norename -noexpr ${tmp_dir}/${top_design}_yosys_abstract3.v
 yosys opt -fast
 yosys clean -purge
 
 
 # -----------------------------------------------------------------------------
 yosys tee -q -o "${rep_dir}/${top_design}_generic.rpt" stat -tech cmos
-yosys tee -q -o "${rep_dir}/${top_design}_generic.json" stat -json -tech cmos
 
 # flatten all hierarchy except marked modules
-yosys write_verilog -norename ${tmp_dir}/${top_design}_yosys_abstract2.v
 yosys flatten
 yosys write_verilog -norename ${tmp_dir}/${top_design}_flatten.v
 # yosys opt_hier
@@ -135,7 +127,7 @@ yosys clean -purge
 # print paths to important instances (hierarchy and naming is final here)
 yosys select -write ${rep_dir}/${top_design}_registers.rpt t:*DFF*
 yosys tee -q -o ${rep_dir}/${top_design}_instances.rpt  select -list "t:RM_IHPSG13_*"
-yosys tee -q -a ${rep_dir}/${top_design}_instances.rpt  select -list "t:tc_clk*$*"
+yosys tee -q -a ${rep_dir}/${top_design}_instances.rpt  select -list "t:tc_sram_blackbox$*"
 
 
 # -----------------------------------------------------------------------------
