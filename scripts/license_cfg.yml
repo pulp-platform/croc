@@ -1,0 +1,61 @@
+# Copyright 2026 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
+# Authors:
+# - Thomas Benz <tbenz@iis.ee.ethz.ch>
+
+header-regex: >
+  (?:#\!/.*\n)*[/|#]+ Copyright (\(c\))* *([0-9]+) ETH Zurich and University of Bologna\.\n[/|#]+ (Solderpad Hardware License, Version 0\.51|Licensed under the Apache License, Version 2.0), see LICENSE for details\.\n[/|#]+ SPDX-License-Identifier: (SHL-0\.51|Apache-2.0)
+
+excludes:
+  - CHANGELOG.md
+  - LICENSE.md
+  - README.md
+  - vsim/transcript
+
+exclude-ext:
+  - aig
+  - fst
+  - html
+  - ini
+  - jpg
+  - json
+  - local
+  - lock
+  - log
+  - patched
+  - svg
+  - vcd
+  - wlf
+
+exclude-paths:
+  - artistic/artistic
+  - artistic/meerkat_work
+  - artistic/renderics
+  - ihp13/bondpad
+  - ihp13/patches
+  - ihp13/pdk
+  - klayout/out
+  - openroad/out
+  - openroad/reports
+  - openroad/save
+  - sw/bin
+  - verilator/obj_dir
+  - vsim/reports
+  - vsim/work
+  - xilinx/build
+  - xilinx/out
+  - yosys/out
+  - yosys/reports
+  - yosys/tmp
+
+
+allowed-years:
+  - 2020
+  - 2021
+  - 2022
+  - 2023
+  - 2024
+  - 2025
+  - 2026
