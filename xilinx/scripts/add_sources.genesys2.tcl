@@ -1,39 +1,15 @@
+# This script was generated automatically by bender.
 set ROOT "../../.."
-
-set_property verilog_define [list \
-    TARGET_GENESYS2 \
-    TARGET_SYNTHESIS \
-    TARGET_VIVADO \
-    COMMON_CELLS_ASSERTS_OFF \
-] [current_fileset]
-
-set_property verilog_define [list \
-    TARGET_GENESYS2 \
-    TARGET_SYNTHESIS \
-    TARGET_VIVADO \
-    COMMON_CELLS_ASSERTS_OFF \
-] [current_fileset -simset]
-
-set_property include_dirs [list \
-    $ROOT/rtl/apb/include \
-    $ROOT/rtl/common_cells/include \
-    $ROOT/rtl/cve2/include \
-    $ROOT/rtl/obi/include \
-] [current_fileset]
-
-set_property include_dirs [list \
-    $ROOT/rtl/apb/include \
-    $ROOT/rtl/common_cells/include \
-    $ROOT/rtl/cve2/include \
-    $ROOT/rtl/obi/include \
-] [current_fileset -simset]
-
 add_files -norecurse -fileset [current_fileset] [list \
     $ROOT/rtl/tech_cells_generic/fpga/pad_functional_xilinx.sv \
     $ROOT/rtl/tech_cells_generic/fpga/tc_clk_xilinx.sv \
     $ROOT/rtl/tech_cells_generic/fpga/tc_sram_xilinx.sv \
     $ROOT/rtl/tech_cells_generic/tc_sram_impl.sv \
+]
+add_files -norecurse -fileset [current_fileset] [list \
     $ROOT/rtl/common_cells/binary_to_gray.sv \
+]
+add_files -norecurse -fileset [current_fileset] [list \
     $ROOT/rtl/common_cells/cb_filter_pkg.sv \
     $ROOT/rtl/common_cells/cc_onehot.sv \
     $ROOT/rtl/common_cells/cdc_reset_ctrlr_pkg.sv \
@@ -86,6 +62,8 @@ add_files -norecurse -fileset [current_fileset] [list \
     $ROOT/rtl/common_cells/addr_decode.sv \
     $ROOT/rtl/common_cells/addr_decode_napot.sv \
     $ROOT/rtl/common_cells/multiaddr_decode.sv \
+]
+add_files -norecurse -fileset [current_fileset] [list \
     $ROOT/rtl/common_cells/cb_filter.sv \
     $ROOT/rtl/common_cells/cdc_fifo_2phase.sv \
     $ROOT/rtl/common_cells/clk_mux_glitch_free.sv \
@@ -116,6 +94,8 @@ add_files -norecurse -fileset [current_fileset] [list \
     $ROOT/rtl/common_cells/stream_arbiter.sv \
     $ROOT/rtl/common_cells/stream_omega_net.sv \
     $ROOT/rtl/common_cells/mem_to_banks.sv \
+]
+add_files -norecurse -fileset [current_fileset] [list \
     $ROOT/rtl/obi/obi_pkg.sv \
     $ROOT/rtl/obi/obi_intf.sv \
     $ROOT/rtl/obi/obi_rready_converter.sv \
@@ -128,7 +108,11 @@ add_files -norecurse -fileset [current_fileset] [list \
     $ROOT/rtl/obi/obi_mux.sv \
     $ROOT/rtl/obi/obi_sram_shim.sv \
     $ROOT/rtl/obi/obi_xbar.sv \
+]
+add_files -norecurse -fileset [current_fileset] [list \
     $ROOT/rtl/apb/apb_pkg.sv \
+]
+add_files -norecurse -fileset [current_fileset] [list \
     $ROOT/rtl/cve2/cve2_pkg.sv \
     $ROOT/rtl/cve2/cve2_alu.sv \
     $ROOT/rtl/cve2/cve2_branch_predict.sv \
@@ -150,6 +134,8 @@ add_files -norecurse -fileset [current_fileset] [list \
     $ROOT/rtl/cve2/cve2_prefetch_buffer.sv \
     $ROOT/rtl/cve2/cve2_if_stage.sv \
     $ROOT/rtl/cve2/cve2_core.sv \
+]
+add_files -norecurse -fileset [current_fileset] [list \
     $ROOT/rtl/obi_uart/obi_uart_pkg.sv \
     $ROOT/rtl/obi_uart/obi_uart_baudgen.sv \
     $ROOT/rtl/obi_uart/obi_uart_interrupts.sv \
@@ -158,23 +144,33 @@ add_files -norecurse -fileset [current_fileset] [list \
     $ROOT/rtl/obi_uart/obi_uart_tx.sv \
     $ROOT/rtl/obi_uart/obi_uart_register.sv \
     $ROOT/rtl/obi_uart/obi_uart.sv \
+]
+add_files -norecurse -fileset [current_fileset] [list \
     $ROOT/rtl/riscv-dbg/dm_pkg.sv \
     $ROOT/rtl/riscv-dbg/debug_rom/debug_rom.sv \
     $ROOT/rtl/riscv-dbg/debug_rom/debug_rom_one_scratch.sv \
     $ROOT/rtl/riscv-dbg/dm_csrs.sv \
     $ROOT/rtl/riscv-dbg/dm_mem.sv \
     $ROOT/rtl/riscv-dbg/dmi_cdc.sv \
+]
+add_files -norecurse -fileset [current_fileset] [list \
     $ROOT/rtl/riscv-dbg/dmi_jtag_tap.sv \
+]
+add_files -norecurse -fileset [current_fileset] [list \
     $ROOT/rtl/riscv-dbg/dm_sba.sv \
     $ROOT/rtl/riscv-dbg/dm_top.sv \
     $ROOT/rtl/riscv-dbg/dmi_jtag.sv \
     $ROOT/rtl/riscv-dbg/dm_obi_top.sv \
+]
+add_files -norecurse -fileset [current_fileset] [list \
     $ROOT/rtl/croc_pkg.sv \
     $ROOT/rtl/user_pkg.sv \
     $ROOT/rtl/soc_ctrl/soc_ctrl_regs_pkg.sv \
     $ROOT/rtl/gpio/gpio_reg_pkg.sv \
     $ROOT/rtl/clint/clint_reg_pkg.sv \
     $ROOT/rtl/obi_timer/obi_timer_reg_pkg.sv \
+]
+add_files -norecurse -fileset [current_fileset] [list \
     $ROOT/rtl/core_wrap.sv \
     $ROOT/rtl/soc_ctrl/soc_ctrl_regs.sv \
     $ROOT/rtl/gpio/gpio_reg_top.sv \
@@ -184,6 +180,41 @@ add_files -norecurse -fileset [current_fileset] [list \
     $ROOT/rtl/croc_domain.sv \
     $ROOT/rtl/user_domain.sv \
     $ROOT/rtl/croc_soc.sv \
+]
+add_files -norecurse -fileset [current_fileset] [list \
     $ROOT/xilinx/hw/croc_xilinx.sv \
     $ROOT/xilinx/hw/fan_ctrl.sv \
 ]
+
+set_property include_dirs [list \
+    $ROOT/rtl/apb/include \
+    $ROOT/rtl/common_cells/include \
+    $ROOT/rtl/cve2/include \
+    $ROOT/rtl/obi/include \
+] [current_fileset]
+
+set_property include_dirs [list \
+    $ROOT/rtl/apb/include \
+    $ROOT/rtl/common_cells/include \
+    $ROOT/rtl/cve2/include \
+    $ROOT/rtl/obi/include \
+] [current_fileset -simset]
+
+set_property verilog_define [list \
+    TARGET_FPGA \
+    TARGET_GENESYS2 \
+    TARGET_SYNTHESIS \
+    TARGET_VIVADO \
+    TARGET_XILINX \
+    COMMON_CELLS_ASSERTS_OFF=1 \
+] [current_fileset]
+
+set_property verilog_define [list \
+    TARGET_FPGA \
+    TARGET_GENESYS2 \
+    TARGET_SYNTHESIS \
+    TARGET_VIVADO \
+    TARGET_XILINX \
+    COMMON_CELLS_ASSERTS_OFF=1 \
+] [current_fileset -simset]
+
