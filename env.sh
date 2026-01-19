@@ -72,6 +72,8 @@ fi
 echo "[INFO][ENV] PDK root: $PDK_ROOT"
 echo "[INFO][ENV] KLayout path: $KLAYOUT_PATH"
 
+export PDK=ihp-sg13g2
+
 
 ######################
 # Project Settings
