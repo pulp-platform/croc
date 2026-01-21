@@ -58,17 +58,17 @@ utl::report "# 01-02: Core and Die Area"
 utl::report "###############################################################################"
 # Dimensions:                          [um]
 #   final chip size (4sqmm) 2000.0 x 2000.0
-#   seal ring thickness       35.0 ,   35.0 x2
+#   seal ring thickness       42.0 ,   42.0 x2
 #   bonding pad               70.0 ,   70.0 x2
 #   io cell depth            180.0 ,  180.0 x2
 #   ---------------------------------------
-#   -> OR die area          1930.0 x 1930.0
-#   -> OR core area         1430.0 x 1430.0
+#   -> OR die area          1916.0 x 1916.0
+#   -> OR core area         1416.0 x 1416.0
 # The sealring is added after OpenROAD
 # hence the OR die area is the final chip size minus the sealring thickness on each side
 
-set chipH    1930; # OR die height (top to bottom)
-set chipW    1930; # OR die width (left to right)
+set chipH    1916; # OR die height (top to bottom)
+set chipW    1916; # OR die width (left to right)
 set padD      180; # pad depth (edge to core)
 set padW       80; # pad width (beachfront)
 set padBond    70; # bonding pad size
