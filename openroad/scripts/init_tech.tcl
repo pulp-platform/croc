@@ -65,24 +65,31 @@ foreach file [glob -directory $pdk_sram_lef RM_IHPSG13*.lef] {
 	read_lef "$file"
 }
 
+# Set layers used for estimate_parasitics
+proc setDefaultParasitics {} {
+	set_wire_rc -clock -layer Metal3
+	set_wire_rc -signal -layer Metal3
+}
+
+# Tie cell pins
+set tieHiPin "TIEHI/Y"
+set tieLoPin "TIELO/Y"
+
+# Tap cell insertion
+proc insertTapCells {} {
+	# no tap cells in this PDK
+}
+
 set ctsBuf [ list sg13g2_buf_16 sg13g2_buf_8 sg13g2_buf_4 sg13g2_buf_2 ]
 set ctsBufRoot sg13g2_buf_8
 
+# disallow OR from inserting these cells
+set dont_use_cells [list sg13g2_IOPad* ]
+
 set stdfill [ list sg13g2_fill_8 sg13g2_fill_4 sg13g2_fill_2 sg13g2_fill_1 ]
+
 
 set iocorner sg13g2_Corner
 set iofill [ list sg13g2_Filler10000 sg13g2_Filler4000 sg13g2_Filler2000 sg13g2_Filler1000 sg13g2_Filler400 sg13g2_Filler200 ]
 
-# the repair_timing/repair_design commands may try to use IO cells as buffers
-set dont_use_cells sg13g2_IOPad*
-
-proc makeTracks {} {
-    utl::report "Metal Tracks"
-	make_tracks Metal1    -x_offset 0 -x_pitch 0.42 -y_offset 0 -y_pitch 0.42
-	make_tracks Metal2    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.48
-	make_tracks Metal3    -x_offset 0 -x_pitch 0.42 -y_offset 0 -y_pitch 0.42
-	make_tracks Metal4    -x_offset 0 -x_pitch 0.48 -y_offset 0 -y_pitch 0.48
-	make_tracks Metal5    -x_offset 0 -x_pitch 0.42 -y_offset 0 -y_pitch 0.42
-	make_tracks TopMetal1 -x_offset 1.64 -x_pitch 2.28 -y_offset 1.64 -y_pitch 2.28
-	make_tracks TopMetal2 -x_offset 2.00 -x_pitch 4.00 -y_offset 2.00 -y_pitch 4.00
-}
+set bondPadCell bondpad_70x70

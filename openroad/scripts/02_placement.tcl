@@ -30,8 +30,9 @@ source scripts/startup.tcl
 load_checkpoint 01_${proj_name}.floorplan
 
 # Set layers used for estimate_parasitics
-set_wire_rc -clock -layer Metal4
-set_wire_rc -signal -layer Metal4
+setDefaultParasitics
+set_dont_use $dont_use_cells
+
 
 utl::report "###############################################################################"
 utl::report "# Stage 02: PLACEMENT"
@@ -45,11 +46,10 @@ utl::report "###################################################################
 # which then prevents CTS from running
 set clock_nets [get_nets -of_objects [get_pins -of_objects "*_reg" -filter "name == CLK"]]
 set_dont_touch $clock_nets
-set_dont_use $dont_use_cells
 
 utl::report "Repair tie fanout"
-repair_tie_fanout sg13g2_tielo/L_LO
-repair_tie_fanout sg13g2_tiehi/L_HI
+repair_tie_fanout $tieHiPin 
+repair_tie_fanout $tieLoPin 
 
 utl::report "Remove buffers"
 remove_buffers
@@ -61,18 +61,12 @@ save_checkpoint 02-01_${proj_name}.pre_place
 
 
 utl::report "###############################################################################"
-utl::report "# 02-02: GLOBAL PLACEMENT"
+utl::report "# 02-02: Global Placement"
 utl::report "###############################################################################"
 
 set_thread_count 8
 
-# Placement density: 60% of area occupied by standard cells
-set GPL_ARGS {  -density 0.60 }
-
-set GPL2_ARGS { -density 0.60
-                -routability_driven
-                -routability_check_overflow 0.30
-                -timing_driven }
+# global_placement parameters:
 # density:            In every part of the chip, about N% of the area is occupied by standard cells
 # routability_driven: Reduce density target when there are a lot of wires in an area
 # check_overflow:     Higher means routability starts being considered earlier in placement
@@ -81,7 +75,7 @@ set GPL2_ARGS { -density 0.60
 
 # Rough placement to get parasitics from steiner-tree estimate so we can run repair_timing
 utl::report "Global Placement (1)"
-global_placement {*}$GPL_ARGS
+global_placement -density 0.60
 report_metrics "02-02_${proj_name}.gpl1"
 report_image "02-02_${proj_name}.gpl1" true true
 save_checkpoint 02-02_${proj_name}.gpl1
@@ -98,21 +92,22 @@ save_checkpoint 02-02_${proj_name}.gpl1_repaired
 
 # Actual global placement with routability and timing driven
 utl::report "Global Placement (2)"
-global_placement {*}$GPL2_ARGS
+global_placement -density 0.60 \
+                 -routability_driven \
+                 -routability_check_overflow 0.30 \
+                 -timing_driven
 report_metrics "02-02_${proj_name}.gpl2"
 report_image "02-02_${proj_name}.gpl2" true true
 save_checkpoint 02-02_${proj_name}.gpl2
 
 
 utl::report "###############################################################################"
-utl::report "# 02-03: DETAILED PLACEMENT"
+utl::report "# 02-03: Detailed Placement"
 utl::report "###############################################################################"
-
-set DPL_ARGS {}
 
 # Legalize overlapping cells
 utl::report "Detailed placement"
-detailed_placement {*}$DPL_ARGS
+detailed_placement
 
 utl::report "Optimize mirroring"
 optimize_mirroring

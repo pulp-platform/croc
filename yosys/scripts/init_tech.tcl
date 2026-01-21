@@ -44,3 +44,13 @@ set tech_cells_args [concat {*}$tech_cells_args_list]
 foreach file $lib_list {
 	yosys read_liberty -lib "$file"
 }
+
+set dont_use_list [list]
+set dont_use_args [list]
+
+foreach cell $dont_use_list {
+	#ENL function of clock gating cells do not work
+	lappend dont_use_args [concat "-dont_use " $cell]
+}
+
+set dont_use_args [concat {*}$dont_use_args]

@@ -31,8 +31,9 @@ source scripts/startup.tcl
 load_checkpoint 02_${proj_name}.placed
 
 # Set layers used for estimate_parasitics
-set_wire_rc -clock -layer Metal4
-set_wire_rc -signal -layer Metal4
+setDefaultParasitics
+set_dont_use $dont_use_cells
+
 
 utl::report "###############################################################################"
 utl::report "# Stage 03: CLOCK TREE SYNTHESIS"

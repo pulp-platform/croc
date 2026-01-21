@@ -30,8 +30,8 @@ source scripts/startup.tcl
 load_checkpoint 04_${proj_name}.routed
 
 # Set layers used for estimate_parasitics
-set_wire_rc -clock -layer Metal4
-set_wire_rc -signal -layer Metal4
+setDefaultParasitics
+set_dont_use $dont_use_cells
 
 
 utl::report "###############################################################################"

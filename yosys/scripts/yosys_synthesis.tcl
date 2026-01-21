@@ -142,7 +142,7 @@ set period_ps 10000
 # pre-process abc file (written to tmp directory)
 set abc_comb_script   [processAbcScript scripts/abc-opt.script]
 # call ABC
-yosys abc {*}$tech_cells_args -D $period_ps -script $abc_comb_script -constr src/abc.constr -showtmp
+yosys abc {*}$tech_cells_args -D $period_ps -script $abc_comb_script -constr src/abc.constr {*}$dont_use_args -showtmp
 
 yosys clean -purge
 

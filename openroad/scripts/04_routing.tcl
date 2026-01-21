@@ -31,24 +31,19 @@ source scripts/startup.tcl
 load_checkpoint 03_${proj_name}.cts
 
 # Set layers used for estimate_parasitics
-set_wire_rc -clock -layer Metal4
-set_wire_rc -signal -layer Metal4
+setDefaultParasitics
+set_dont_use $dont_use_cells
+
 
 utl::report "###############################################################################"
 utl::report "# Stage 04: ROUTING"
 utl::report "###############################################################################"
 
 utl::report "###############################################################################"
-utl::report "# 04-01: GLOBAL ROUTE"
+utl::report "# 04-01: Global Route"
 utl::report "###############################################################################"
 
-# Reduce routing resources (max utilization) of lower layers by 20%
-# to spread routing out a bit more to other layers
-# OpenRoad strongly prefers routing with M2/M3 first and then when it
-# eventually needs M4/M5 it may struggle with finding space
-# to place vias down to M2/M3 -> reserve some space on M2/M3
 # Reduce TM1 to avoid too much routing there (bigger tracks -> bad for routing)
-set_global_routing_layer_adjustment Metal2-Metal3 0.20
 set_global_routing_layer_adjustment TopMetal1 0.20
 set_routing_layers -signal Metal2-TopMetal1 -clock Metal2-TopMetal1
 
@@ -96,7 +91,7 @@ report_image "04-01_${proj_name}.grt_repaired" true true false true
 
 
 utl::report "###############################################################################"
-utl::report "# 04-02: DETAILED ROUTE"
+utl::report "# 04-02: Detailed Route"
 utl::report "###############################################################################"
 
 # Repair antennas (requires LEF cell with class 'CORE ANTENNACELL')
@@ -106,7 +101,6 @@ repair_antennas -ratio_margin 30 -iterations 5
 utl::report "Detailed route"
 set_thread_count 8
 detailed_route -output_drc ${report_dir}/04_${proj_name}_route_drc.rpt \
-               -droute_end_iter 30 \
                -drc_report_iter_step 5 \
                -save_guide_updates \
                -clean_patches \

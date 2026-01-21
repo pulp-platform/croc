@@ -114,8 +114,7 @@ set core_topY     [lindex $coreArea 3]
 ##########################################################################
 # We need to define the metal tracks 
 # (where the wires on each metal should go)
-# this function is defined in init_tech.tcl
-makeTracks
+make_tracks
 
 # the height of a standard cell, useful to align things
 set siteHeight        [ord::dbu_to_microns [[dpl::get_row_site] getHeight]]
@@ -130,8 +129,8 @@ source src/instances.tcl
 
 # Placing macros
 # use these for macro placement
-set floorPaddingX      20.0
-set floorPaddingY      20.0
+set floorPaddingX      10.0
+set floorPaddingY      10.0
 set floor_leftX       [expr $core_leftX + $floorPaddingX]
 set floor_bottomY     [expr $core_bottomY + $floorPaddingY]
 set floor_rightX      [expr $core_rightX - $floorPaddingX]
@@ -148,10 +147,14 @@ placeInstance $bank0_sram0 $X $Y R0
 
 # Bank1
 set X [expr $X]
-set Y [expr $Y - $RamSize256x64_H - 15]
-placeInstance $bank1_sram0 $X $Y R0
+set Y [expr $Y - $RamSize256x64_H - 55]
+placeInstance $bank1_sram0 $X $Y MX
 
-cut_rows -halo_width_x 2 -halo_width_y 1
+# defined in init_tech.tcl
+insertTapCells
+
+cut_rows -halo_width_x 1 -halo_width_y 1
+global_connect
 
 
 utl::report "###############################################################################"
