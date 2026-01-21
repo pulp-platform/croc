@@ -1,5 +1,6 @@
 *.log
 save
 reports
+logs
 out
 IHP_rcx_patterns.rules

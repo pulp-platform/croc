@@ -58,8 +58,8 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   // Fanout into more readable signals
   assign user_error_obi_req               = all_user_sbr_obi_req[UserError];
   assign all_user_sbr_obi_rsp[UserError]  = user_error_obi_rsp;
-  assign user_error_obi_req               = all_user_sbr_obi_req[UserDesign];
-  assign all_user_sbr_obi_rsp[UserDesign] = user_error_obi_rsp;
+  assign user_design_obi_req               = all_user_sbr_obi_req[UserDesign];
+  assign all_user_sbr_obi_rsp[UserDesign] = user_design_obi_rsp;
 
 
   //-----------------------------------------------------------------------------------------------

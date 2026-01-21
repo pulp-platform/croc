@@ -8,48 +8,36 @@
 # Preparation for the synthesis flow
 # A common setup to provide some functionality and define variables
 
-# list of global variables that may be used
+# set global variables
+set sv_flist   "src/croc.flist"
+set out_dir    out
+set tmp_dir    tmp
+set rep_dir    reports
+
+# global variables imported from environment variables (if set)
 # define with scheme: <local-var> { <ENVVAR>  <fallback> }
-set variables {
-    sv_flist    { SV_FLIST    "../croc.flist" }
-    top_design  { TOP_DESIGN  "croc_chip"     }
-    out_dir     { OUT         out             }
-    tmp_dir     { TMP         tmp             }
-    rep_dir     { REPORTS     reports         }
-}
+set proj_name  [expr {[info exists ::env(PROJ_NAME)]  ? $::env(PROJ_NAME)  : "croc"}]
+set top_design [expr {[info exists ::env(TOP_DESIGN)] ? $::env(TOP_DESIGN) : "croc_chip"}]
 
+file mkdir $out_dir
+file mkdir $tmp_dir
+file mkdir $rep_dir
 
-# check if an env-var exists and is non-empty
-proc envVarValid {var_name} {
-    if { [info exists ::env($var_name)]} {
-	    if {$::env($var_name) != "0" && $::env($var_name) ne ""} {
-            return 1
-        }
-    }
-    return 0
-}
-
-# If the ENVVAR is valid use it, otherwise use fallback
-foreach var [dict keys $variables] {  
-    set values [dict get $variables $var]
-    set env_var [lindex $values 0]
-    set fallback [lindex $values 1]
-
-    if {[envVarValid $env_var]} {
-        puts "using: $var= '$::env($env_var)'"
-        set $var $::env($env_var)
-    }
-}
+puts "using: sv_flist   = '$sv_flist'"
+puts "using: top_design = '$top_design'"
+puts "using: proj_name  = '$proj_name'"
+puts "using: out_dir    = '$out_dir'"
+puts "using: tmp_dir    = '$tmp_dir'"
+puts "using: rep_dir    = '$rep_dir'"
 
 # process ABC script and write to temporary directory
 proc processAbcScript {abc_script} {
     global tmp_dir
-    set src_dir [file join [file dirname [info script]] ../src]
     set abc_out_path $tmp_dir/[file tail $abc_script]
 
     # substitute {STRING} placeholders with their value
     set raw [read -nonewline [open $abc_script r]]
-    set abc_script_recaig [string map -nocase [list "{REC_AIG}" [subst "$src_dir/lazy_man_synth_library.aig"]] $raw]
+    set abc_script_recaig [string map -nocase [list "{REC_AIG}" [subst "src/lazy_man_synth_library.aig"]] $raw]
     set abc_out [open $abc_out_path w]
     puts -nonewline $abc_out $abc_script_recaig
 

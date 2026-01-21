@@ -11,8 +11,7 @@ if {[info script] ne ""} {
     cd "[file dirname [info script]]/../"
 }
 
-# Configuration variables are in yosys_commono
-# get environment variables
+# Configuration variables are in yosys_common
 source scripts/yosys_common.tcl
 
 # ABC logic optimization script
@@ -22,8 +21,8 @@ set abc_script [processAbcScript scripts/abc-opt.script]
 source scripts/init_tech.tcl
 
 yosys plugin -i slang.so
-# default from yosys_common.tcl: top_design=croc_chip; sv_flist=../croc.flist
-yosys read_slang --top $top_design -F $sv_flist \
+# default from yosys_common.tcl: top_design=croc_chip; sv_flist=./croc.flist
+yosys read_slang --top $top_design -f $sv_flist \
         --compat-mode --keep-hierarchy \
         --allow-use-before-declare --ignore-unknown-modules
 
@@ -69,27 +68,22 @@ yosys attrmvcp -copy -attr keep
 yosys hierarchy -top $top_design
 yosys check
 yosys proc
-yosys tee -q -o "${rep_dir}/${top_design}_elaborated.rpt" stat
-yosys write_verilog -norename -noexpr -attr2comment ${tmp_dir}/${top_design}_yosys_elaborated.v
+yosys tee -q -o "${rep_dir}/${proj_name}_elaborated.rpt" stat
+yosys write_verilog -norename -noexpr -attr2comment ${tmp_dir}/${proj_name}_yosys_elaborated.v
 
 # synth - coarse:
 # similar to yosys synth -run coarse -noalumacc
 yosys opt_expr
 yosys opt -noff
 yosys fsm
-yosys tee -q -o "${rep_dir}/${top_design}_initial_opt.rpt" stat
 yosys wreduce 
 yosys peepopt
 yosys opt_clean
-yosys write_verilog -norename -noexpr ${tmp_dir}/${top_design}_yosys_abstract4.v
 yosys opt -full
-yosys write_verilog -norename -noexpr ${tmp_dir}/${top_design}_yosys_abstract5.v
 yosys booth
 yosys share
 yosys opt
 yosys memory -nomap
-yosys tee -q -o "${rep_dir}/${top_design}_memories.rpt" stat
-yosys write_verilog -norename -noexpr -attr2comment ${tmp_dir}/${top_design}_yosys_memories.v
 yosys memory_map
 yosys opt -fast
 
@@ -99,23 +93,20 @@ yosys opt -full
 yosys clean -purge
 
 yosys clean -purge
-yosys write_verilog -norename -noexpr ${tmp_dir}/${top_design}_yosys_abstract.v
-yosys tee -q -o "${rep_dir}/${top_design}_abstract.rpt" stat -tech cmos
+yosys write_verilog -norename -noexpr ${tmp_dir}/${proj_name}_yosys_abstract.v
+yosys tee -q -o "${rep_dir}/${proj_name}_abstract.rpt" stat -width -tech cmos
 
 yosys techmap
-yosys write_verilog -norename -noexpr ${tmp_dir}/${top_design}_yosys_abstract3.v
 yosys opt -fast
 yosys clean -purge
 
 
 # -----------------------------------------------------------------------------
-yosys tee -q -o "${rep_dir}/${top_design}_generic.rpt" stat -tech cmos
-yosys tee -q -o "${rep_dir}/${top_design}_generic.json" stat -json -tech cmos
+yosys tee -q -o "${rep_dir}/${proj_name}_generic.rpt" stat -tech cmos
 
 # flatten all hierarchy except marked modules
-yosys write_verilog -norename ${tmp_dir}/${top_design}_yosys_abstract2.v
 yosys flatten
-yosys write_verilog -norename ${tmp_dir}/${top_design}_flatten.v
+yosys write_verilog -norename ${tmp_dir}/${proj_name}_flatten.v
 # yosys opt_hier
 
 yosys clean -purge
@@ -127,16 +118,16 @@ yosys clean -purge
 yosys splitnets -format __v
 # rename DFFs from the driven signal
 yosys rename -wire -suffix _reg t:*DFF*
-yosys write_verilog -norename ${tmp_dir}/${top_design}_yosys_rename.v
-yosys select -write ${rep_dir}/${top_design}_registers.rpt t:*DFF*
+yosys write_verilog -norename ${tmp_dir}/${proj_name}_yosys_rename.v
+yosys select -write ${rep_dir}/${proj_name}_registers.rpt t:*DFF*
 # rename all other cells
 yosys autoname t:*DFF* %n
 yosys clean -purge
 
 # print paths to important instances (hierarchy and naming is final here)
-yosys select -write ${rep_dir}/${top_design}_registers.rpt t:*DFF*
-yosys tee -q -o ${rep_dir}/${top_design}_instances.rpt  select -list "t:RM_IHPSG13_*"
-yosys tee -q -a ${rep_dir}/${top_design}_instances.rpt  select -list "t:tc_clk*$*"
+yosys select -write ${rep_dir}/${proj_name}_registers.rpt t:*DFF*
+yosys tee -q -o ${rep_dir}/${proj_name}_instances.rpt  select -list "t:RM_IHPSG13_*"
+yosys tee -q -a ${rep_dir}/${proj_name}_instances.rpt  select -list "t:tc_sram_blackbox$*"
 
 
 # -----------------------------------------------------------------------------
@@ -151,14 +142,14 @@ set period_ps 10000
 # pre-process abc file (written to tmp directory)
 set abc_comb_script   [processAbcScript scripts/abc-opt.script]
 # call ABC
-yosys abc {*}$tech_cells_args -D $period_ps -script $abc_comb_script -constr src/abc.constr -showtmp
+yosys abc {*}$tech_cells_args -D $period_ps -script $abc_comb_script -constr src/abc.constr {*}$dont_use_args -showtmp
 
 yosys clean -purge
 
 
 # -----------------------------------------------------------------------------
 # prep for openROAD
-yosys write_verilog -norename -noexpr -attr2comment ${out_dir}/${top_design}_yosys_debug.v
+yosys write_verilog -norename -noexpr -attr2comment ${out_dir}/netlist_debug.v
 
 yosys splitnets -ports -format __v
 yosys setundef -zero
@@ -167,10 +158,10 @@ yosys clean -purge
 yosys hilomap -singleton -hicell {*}$tech_cell_tiehi -locell {*}$tech_cell_tielo
 
 # final reports
-yosys tee -q -o "${rep_dir}/${top_design}_synth.rpt" check
-yosys tee -q -o "${rep_dir}/${top_design}_area.rpt" stat -top $top_design {*}$liberty_args
-yosys tee -q -o "${rep_dir}/${top_design}_area_logic.rpt" stat -top $top_design {*}$tech_cells_args
+yosys tee -q -o "${rep_dir}/${proj_name}_synth.rpt" check
+yosys tee -q -o "${rep_dir}/${proj_name}_area.rpt" stat -top $top_design {*}$liberty_args
+yosys tee -q -o "${rep_dir}/${proj_name}_area_logic.rpt" stat -top $top_design {*}$tech_cells_args
 
 # final netlist
-yosys write_verilog -noattr -noexpr -nohex -nodec ${out_dir}/${top_design}_yosys.v
+yosys write_verilog -noattr -noexpr -nohex -nodec ${out_dir}/${proj_name}_yosys.v
 
