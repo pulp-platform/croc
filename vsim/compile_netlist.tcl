@@ -1,3 +1,14 @@
+# Copyright (c) 2026 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Published with permission from Siemens. 
+# Siemens QuestaSim is available through EDA Higher Education Software Program
+# https://www.sw.siemens.com/en-US/academic/educators/eda-higher-education-software/
+#
+# Authors:
+# - Philippe Sauter <phsauter@iis.ee.ethz.ch>
+#
 # This script was generated automatically by bender.
 set ROOT ".."
 
@@ -386,7 +397,7 @@ if {[catch { vlog -incr -sv \
     "+incdir+$ROOT/rtl/apb/include" \
     "+incdir+$ROOT/rtl/common_cells/include" \
     "+incdir+$ROOT/rtl/obi/include" \
-    "$ROOT/yosys/out/croc_chip_yosys_debug.v" \
+    "$ROOT/yosys/out/netlist_debug.v" \
 }]} {return 1}
 
 if {[catch { vlog -incr -sv \
