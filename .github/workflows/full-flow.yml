@@ -38,6 +38,7 @@ jobs:
           name: croc-openroad-out
           path: |
             openroad/out
+            openroad/logs
             openroad/reports
         continue-on-error: true
       - name: Upload gds

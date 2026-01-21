@@ -37,6 +37,7 @@ Options:
     --run BINARY        Run binary in Verilator
 
 Example:
+    # Build and run RTL simulation with given binary
     ./run_verilator.sh --build --run ../sw/bin/helloworld.hex
 
 EOF
@@ -76,7 +77,8 @@ build_verilator() {
         --x-initial fast \
         -O3 \
         --top tb_croc_soc \
-        -f croc.f"
+        -f croc.f 2>&1 | \
+        tee ${PROJ_NAME}_build.log"
 }
 
 
@@ -99,7 +101,7 @@ generate_flist() {
 
 run_binary() {
     run_cmd "echo [INFO][Verilator] Running $1"
-    run_cmd "obj_dir/Vtb_croc_soc +binary="$1" | tee croc.log"
+    run_cmd "obj_dir/Vtb_croc_soc +binary="$1" | tee ${PROJ_NAME}.log"
 }
 
 

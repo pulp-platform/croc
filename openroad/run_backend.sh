@@ -56,7 +56,7 @@ Examples:
     ./run_backend.sh --floorplan
 
 Inputs:
-    - Synthesized netlist: ${NETLIST}
+    - Synthesized netlist: yosys/${PROJ_NAME}_yosys.v
     - Constraints: openroad/src/constraints.sdc
     - PDK libraries: Auto-discovered from ${PDK_ROOT}
 
@@ -80,16 +80,20 @@ run_cmd() {
 
 run_openroad_script() {
     run_cmd "echo [INFO][OpenROAD] Running $1"
+    run_cmd "mkdir -p logs"
+    logfile="logs/$(basename -s .tcl $1).log"
     run_cmd "openroad -exit $1 \
-        -log reports/$1.log \
-        2>&1 | TZ=UTC gawk '{ print strftime(\"[%Y-%m-%d %H:%M %Z]\"), \$0 }'"
+        -log $logfile \
+        2>&1 | TZ=UTC gawk '{ print strftime(\"[%H:%M %Z]\"), \$0 }'"
 }
 
 open_openroad_script() {
     run_cmd "echo [INFO][OpenROAD] Open the GUI and run $1"
+    run_cmd "mkdir -p logs"
+    logfile="logs/$(basename -s .tcl $1).log"
     run_cmd "openroad -gui $1 \
-        -log reports/$1.log \
-        2>&1 | TZ=UTC gawk '{ print strftime(\"[%Y-%m-%d %H:%M %Z]\"), \$0 }'"
+        -log $logfile \
+        2>&1 | TZ=UTC gawk '{ print strftime(\"[%H:%M %Z]\"), \$0 }'"
 }
 
 

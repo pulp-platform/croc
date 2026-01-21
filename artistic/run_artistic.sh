@@ -130,7 +130,7 @@ finish_render() {
 gen_outline() {
     run_cmd "echo [INFO][OutlineGen] Generate module outlines"
     run_cmd "python3 artistic/scripts/gen_outline.py \
-    -i ../openroad/out/croc.def \
+    -i ../openroad/out/${PROJ_NAME}.def \
     -o renderics/croc_modules.svg \
     -b renderics/croc_render.jpg \
     --lef_files ${PDK_DIR_LEF_SRAMS}/*.lef \

@@ -45,17 +45,17 @@ Inputs:
     - PDK Liberty files (auto-discovered)
 
 Outputs:
-    - Netlist: out/${TOP_DESIGN}_yosys.v
-    - Debug netlist: out/${TOP_DESIGN}_yosys_debug.v
+    - Netlist: out/${PROJ_NAME}_yosys.v
+    - Debug netlist: out/${PROJ_NAME}_yosys_debug.v
     - Reports: reports/*.rpt
-    - Log: ${TOP_DESIGN}.log
+    - Log: ${PROJ_NAME}.log
 
 Example:
-    # Basic run
+    # Basic synthesis run
     ./run_synthesis.sh --synth
 
-    # Override top module
-    TOP_DESIGN=my_chip ./run_synthesis.sh --synth
+    # Override name and top module
+    PROJ_NAME=test TOP_DESIGN=my_chip ./run_synthesis.sh --synth
 
 EOF
     exit 0
@@ -76,7 +76,7 @@ run_yosys() {
     run_cmd "yosys \
         -c scripts/yosys_synthesis.tcl 2>&1 | \
         TZ=UTC gawk '{ print strftime(\"[%Y-%m-%d %H:%M %Z]\"), \$0 }' | \
-        tee ${TOP_DESIGN}.log | \
+        tee ${PROJ_NAME}.log | \
         gawk -f scripts/filter_output.awk"
 }
 

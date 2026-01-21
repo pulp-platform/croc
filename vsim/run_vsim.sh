@@ -47,6 +47,7 @@ Options:
     --run-gui BINARY    Prepare running binary in VSIM, open GUI
 
 Example:
+    # Build and run RTL simulation with given binary (CLI mode)
     ./run_vsim.sh --build --run ../sw/bin/helloworld.hex
 
 EOF
@@ -166,7 +167,6 @@ run_vsim() {
         -c \
         tb_croc_soc \
         -t 1ns \
-        -voptargs=+acc \
         -suppress vsim-3009 \
         -suppress vsim-8683 \
         -suppress vsim-8386 \

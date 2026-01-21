@@ -19,6 +19,14 @@ fi
 echo "[INFO][ENV] Croc root: $CROC_ROOT"
 
 
+######################
+# Project Settings
+######################
+export PROJ_NAME="${PROJ_NAME:-croc}"
+export TOP_DESIGN="${TOP_DESIGN:-croc_chip}"
+export DUT_DESIGN="${DUT_DESIGN:-croc_soc}"
+
+
 ###################
 # PDK Discovery
 ###################
@@ -73,19 +81,4 @@ echo "[INFO][ENV] PDK root: $PDK_ROOT"
 echo "[INFO][ENV] KLayout path: $KLAYOUT_PATH"
 
 export PDK=ihp-sg13g2
-
-
-######################
-# Project Settings
-######################
-export PROJ_NAME="${PROJ_NAME:-croc}"
-export TOP_DESIGN="${TOP_DESIGN:-croc_chip}"
-export DUT_DESIGN="${DUT_DESIGN:-croc_soc}"
-
-
-###################
-# Netlist Paths
-###################
-export NETLIST="${CROC_ROOT}/yosys/${TOP_DESIGN}_yosys.v"
-export NETLIST_DEBUG="${CROC_ROOT}/yosys/${TOP_DESIGN}_yosys_debug.v"
 

@@ -68,8 +68,8 @@ yosys attrmvcp -copy -attr keep
 yosys hierarchy -top $top_design
 yosys check
 yosys proc
-yosys tee -q -o "${rep_dir}/${top_design}_elaborated.rpt" stat
-yosys write_verilog -norename -noexpr -attr2comment ${tmp_dir}/${top_design}_yosys_elaborated.v
+yosys tee -q -o "${rep_dir}/${proj_name}_elaborated.rpt" stat
+yosys write_verilog -norename -noexpr -attr2comment ${tmp_dir}/${proj_name}_yosys_elaborated.v
 
 # synth - coarse:
 # similar to yosys synth -run coarse -noalumacc
@@ -93,8 +93,8 @@ yosys opt -full
 yosys clean -purge
 
 yosys clean -purge
-yosys write_verilog -norename -noexpr ${tmp_dir}/${top_design}_yosys_abstract.v
-yosys tee -q -o "${rep_dir}/${top_design}_abstract.rpt" stat -width -tech cmos
+yosys write_verilog -norename -noexpr ${tmp_dir}/${proj_name}_yosys_abstract.v
+yosys tee -q -o "${rep_dir}/${proj_name}_abstract.rpt" stat -width -tech cmos
 
 yosys techmap
 yosys opt -fast
@@ -102,11 +102,11 @@ yosys clean -purge
 
 
 # -----------------------------------------------------------------------------
-yosys tee -q -o "${rep_dir}/${top_design}_generic.rpt" stat -tech cmos
+yosys tee -q -o "${rep_dir}/${proj_name}_generic.rpt" stat -tech cmos
 
 # flatten all hierarchy except marked modules
 yosys flatten
-yosys write_verilog -norename ${tmp_dir}/${top_design}_flatten.v
+yosys write_verilog -norename ${tmp_dir}/${proj_name}_flatten.v
 # yosys opt_hier
 
 yosys clean -purge
@@ -118,16 +118,16 @@ yosys clean -purge
 yosys splitnets -format __v
 # rename DFFs from the driven signal
 yosys rename -wire -suffix _reg t:*DFF*
-yosys write_verilog -norename ${tmp_dir}/${top_design}_yosys_rename.v
-yosys select -write ${rep_dir}/${top_design}_registers.rpt t:*DFF*
+yosys write_verilog -norename ${tmp_dir}/${proj_name}_yosys_rename.v
+yosys select -write ${rep_dir}/${proj_name}_registers.rpt t:*DFF*
 # rename all other cells
 yosys autoname t:*DFF* %n
 yosys clean -purge
 
 # print paths to important instances (hierarchy and naming is final here)
-yosys select -write ${rep_dir}/${top_design}_registers.rpt t:*DFF*
-yosys tee -q -o ${rep_dir}/${top_design}_instances.rpt  select -list "t:RM_IHPSG13_*"
-yosys tee -q -a ${rep_dir}/${top_design}_instances.rpt  select -list "t:tc_sram_blackbox$*"
+yosys select -write ${rep_dir}/${proj_name}_registers.rpt t:*DFF*
+yosys tee -q -o ${rep_dir}/${proj_name}_instances.rpt  select -list "t:RM_IHPSG13_*"
+yosys tee -q -a ${rep_dir}/${proj_name}_instances.rpt  select -list "t:tc_sram_blackbox$*"
 
 
 # -----------------------------------------------------------------------------
@@ -149,7 +149,7 @@ yosys clean -purge
 
 # -----------------------------------------------------------------------------
 # prep for openROAD
-yosys write_verilog -norename -noexpr -attr2comment ${out_dir}/${top_design}_yosys_debug.v
+yosys write_verilog -norename -noexpr -attr2comment ${out_dir}/netlist_debug.v
 
 yosys splitnets -ports -format __v
 yosys setundef -zero
@@ -158,10 +158,10 @@ yosys clean -purge
 yosys hilomap -singleton -hicell {*}$tech_cell_tiehi -locell {*}$tech_cell_tielo
 
 # final reports
-yosys tee -q -o "${rep_dir}/${top_design}_synth.rpt" check
-yosys tee -q -o "${rep_dir}/${top_design}_area.rpt" stat -top $top_design {*}$liberty_args
-yosys tee -q -o "${rep_dir}/${top_design}_area_logic.rpt" stat -top $top_design {*}$tech_cells_args
+yosys tee -q -o "${rep_dir}/${proj_name}_synth.rpt" check
+yosys tee -q -o "${rep_dir}/${proj_name}_area.rpt" stat -top $top_design {*}$liberty_args
+yosys tee -q -o "${rep_dir}/${proj_name}_area_logic.rpt" stat -top $top_design {*}$tech_cells_args
 
 # final netlist
-yosys write_verilog -noattr -noexpr -nohex -nodec ${out_dir}/${top_design}_yosys.v
+yosys write_verilog -noattr -noexpr -nohex -nodec ${out_dir}/${proj_name}_yosys.v
 

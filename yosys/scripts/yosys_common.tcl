@@ -10,10 +10,14 @@
 
 # set global variables
 set sv_flist   "src/croc.flist"
-set top_design "croc_chip"
 set out_dir    out
 set tmp_dir    tmp
 set rep_dir    reports
+
+# global variables imported from environment variables (if set)
+# define with scheme: <local-var> { <ENVVAR>  <fallback> }
+set proj_name  [expr {[info exists ::env(PROJ_NAME)]  ? $::env(PROJ_NAME)  : "croc"}]
+set top_design [expr {[info exists ::env(TOP_DESIGN)] ? $::env(TOP_DESIGN) : "croc_chip"}]
 
 file mkdir $out_dir
 file mkdir $tmp_dir
@@ -21,6 +25,7 @@ file mkdir $rep_dir
 
 puts "using: sv_flist   = '$sv_flist'"
 puts "using: top_design = '$top_design'"
+puts "using: proj_name  = '$proj_name'"
 puts "using: out_dir    = '$out_dir'"
 puts "using: tmp_dir    = '$tmp_dir'"
 puts "using: rep_dir    = '$rep_dir'"

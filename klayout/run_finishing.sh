@@ -84,11 +84,11 @@ def_to_gds() {
     run_cmd "klayout -zz \
         -rd gds_allow_empty=True \
         -rd design_name=\"$TOP_DESIGN\" \
-        -rd in_def=\"../openroad/out/croc.def\" \
+        -rd in_def=\"../openroad/out/${PROJ_NAME}.def\" \
         -rd layer_map=\"$KLAYOUT_PATH/tech/sg13g2.map\" \
         -rd lef_files=\"$lef_files\" \
         -rd gds_files=\"$gds_files\" \
-        -rd out_file=\"out/croc_chip.gds.gz\" \
+        -rd out_file=\"out/${PROJ_NAME}.gds.gz\" \
         -rm scripts/def2stream.py" \
         > out/def2stream.log
 }
@@ -96,12 +96,12 @@ def_to_gds() {
 
 gen_seal_ring() {
     run_cmd "echo [INFO][KLayout] Creating seal ring"
-    run_cmd "die_um=($(grep DIEAREA ../openroad/out/croc.def | grep -oE '[0-9]+' | tail -n 2 | xargs))"
+    run_cmd "die_um=($(grep DIEAREA ../openroad/out/${PROJ_NAME}.def | grep -oE '[0-9]+' | tail -n 2 | xargs))"
     run_cmd "die_width=$(( ${die_um[-2]} / 1000 ))"
     run_cmd "die_height=$(( ${die_um[-1]} / 1000 ))"
     run_cmd "seal_width=$(( $die_width + 2 * $SEAL_RING_SPACE ))"
     run_cmd "seal_height=$(( $die_width + 2 * $SEAL_RING_SPACE ))"
-    run_cmd "echo [INFO][KLayout] Read ../openroad/out/croc.def - die area: ${die_width} um x ${die_height} um"
+    run_cmd "echo [INFO][KLayout] Read ../openroad/out/${PROJ_NAME}.def - die area: ${die_width} um x ${die_height} um"
     run_cmd "echo [INFO][KLayout] Chip dimensions with seal: ${seal_width} um x ${seal_height} um"
     run_cmd "klayout -n sg13g2 -zz \
         -r $KLAYOUT_PATH/tech/scripts/sealring.py \
@@ -116,12 +116,12 @@ merge_seal_ring() {
     run_cmd "echo [INFO][KLayout] Merging seal ring"
     run_cmd "klayout -zz \
         -rm scripts/merge_sealring.py \
-        -rd chip_gds=out/croc_chip.gds.gz \
+        -rd chip_gds=out/${PROJ_NAME}.gds.gz \
         -rd seal_gds=out/seal_ring.gds.gz \
         -rd dx_um=$SEAL_RING_SPACE \
         -rd dy_um=$SEAL_RING_SPACE \
         -rd top_name=${TOP_DESIGN}_sealed \
-        -rd out_gds=out/croc_chip.sealed.gds.gz \
+        -rd out_gds=out/${PROJ_NAME}.sealed.gds.gz \
         > out/merge_seal.log"
 }
 
@@ -130,10 +130,10 @@ fill_metal() {
     run_cmd "echo [INFO][KLayout] Filling M1-M5 and TM1"
     run_cmd "klayout -n sg13g2 -zz \
         -r $KLAYOUT_PATH/tech/scripts/filler.py \
-        -rd output_file=out/croc_chip.metfilled.gds.gz \
+        -rd output_file=out/${PROJ_NAME}.metfilled.gds.gz \
         -rd no_topmetal_2 \
         -rd no_activ \
-        out/croc_chip.sealed.gds.gz \
+        out/${PROJ_NAME}.sealed.gds.gz \
         > out/merge_seal.log"
 }
 
@@ -142,11 +142,11 @@ fill_activ() {
     run_cmd "echo [INFO][KLayout] Filling M1-M5 and TM1"
     run_cmd "klayout -n sg13g2 -zz \
         -r $KLAYOUT_PATH/tech/scripts/filler.py \
-        -rd output_file=out/croc_chip.filled.gds.gz \
+        -rd output_file=out/${PROJ_NAME}.filled.gds.gz \
         -rd no_topmetal_2 \
         -rd no_topmetal_1 \
         -rd no_metal \
-        out/croc_chip.metfilled.gds.gz"
+        out/${PROJ_NAME}.metfilled.gds.gz"
 }
 
 
