@@ -20,10 +20,10 @@ package croc_pkg;
     bit [10:0]  manufacturer;
     bit         _one;
   } PulpJtagIdCode = '{
-    _one:         1'b1,     /* must be 1 */
+    _one:          1'b1,    /* must be 1 */
     manufacturer: 11'h6d9,  /* identify as PULP Platform chip */
     part_num:     16'hC0C5, /* default Croc part number */
-    version:      4'h0      /* version 0 */
+    version:       4'h01    /* version 1 (2026) */
   };
 
 
