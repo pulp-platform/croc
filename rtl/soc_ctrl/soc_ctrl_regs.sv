@@ -15,7 +15,6 @@ module soc_ctrl_regs #(
   input  obi_req_t         obi_req_i,
   output obi_rsp_t         obi_rsp_o,
   // To hardware
-  output logic      [31:0] boot_addr_o,
   output logic             fetch_en_o,
   output logic             sram_dly_o
 );
@@ -44,7 +43,6 @@ module soc_ctrl_regs #(
   assign obi_req_d = obi_req_i;
 
   // Output assignment
-  assign boot_addr_o = boot_addr_q;
   assign fetch_en_o  = fetch_en_q;
   assign sram_dly_o  = sram_dly_q;
 

@@ -134,11 +134,16 @@ module tb_croc_soc #(
 
     // write test value to sram
     i_vip.jtag_write_reg32(SramBaseAddr, 32'h1234_5678, 1'b1);
-    // load binary to sram
-    i_vip.jtag_load_hex(binary_path);
 
     $display("@%t | [CORE] Start fetching instructions", $time);
     fetch_en = 1'b1;
+
+    // load binary to sram
+    i_vip.jtag_load_hex(binary_path);
+
+    // wake core from WFI by writing to CLINT msip
+    $display("@%t | [CORE] Waking core via CLINT msip", $time);
+    i_vip.jtag_write_reg32(ClintBaseAddr, 32'h1);
 
     // halt core
     i_vip.jtag_halt();

@@ -50,7 +50,6 @@ module croc_domain import croc_pkg::*; #(
   logic sram_impl; // soc_ctrl -> SRAM config signals
   logic debug_req;
   logic fetch_enable;
-  logic [31:0] boot_addr;
 
   // interrupts (irqs)
   logic clint_timer_irq;
@@ -162,6 +161,10 @@ module croc_domain import croc_pkg::*; #(
   // CLINT bus
   sbr_obi_req_t clint_obi_req;
   sbr_obi_rsp_t clint_obi_rsp;
+
+  // Bootrom bus
+  sbr_obi_req_t bootrom_obi_req;
+  sbr_obi_rsp_t bootrom_obi_rsp;
   
   // Fanout to individual peripherals
   assign error_obi_req                     = all_periph_obi_req[PeriphError];
@@ -176,8 +179,10 @@ module croc_domain import croc_pkg::*; #(
   assign all_periph_obi_rsp[PeriphGpio]    = gpio_obi_rsp;
   assign timer_obi_req                     = all_periph_obi_req[PeriphTimer];
   assign all_periph_obi_rsp[PeriphTimer]   = timer_obi_rsp;
-  assign clint_obi_req                     = all_periph_obi_req[PeriphClint];
-  assign all_periph_obi_rsp[PeriphClint]   = clint_obi_rsp;
+  assign clint_obi_req                       = all_periph_obi_req[PeriphClint];
+  assign all_periph_obi_rsp[PeriphClint]     = clint_obi_rsp;
+  assign bootrom_obi_req                     = all_periph_obi_req[PeriphBootrom];
+  assign all_periph_obi_rsp[PeriphBootrom]   = bootrom_obi_rsp;
 
 
   // -----------------
@@ -194,7 +199,7 @@ module croc_domain import croc_pkg::*; #(
     .timer_irq_i      ( clint_timer_irq    ),
     .software_irq_i   ( clint_software_irq ),
 
-    .boot_addr_i      ( boot_addr   ),
+    .boot_addr_i      ( BootromAddr ),
 
     .instr_req_o      ( core_instr_obi_req.req     ),
     .instr_gnt_i      ( core_instr_obi_rsp.gnt     ),
@@ -477,7 +482,6 @@ module croc_domain import croc_pkg::*; #(
     .rst_ni,
     .obi_req_i     ( soc_ctrl_obi_req ),
     .obi_rsp_o     ( soc_ctrl_obi_rsp ),
-    .boot_addr_o   ( boot_addr        ),
     .fetch_en_o    ( fetch_en_reg     ),
     .sram_dly_o    ( sram_impl        )
   );
@@ -553,6 +557,18 @@ module croc_domain import croc_pkg::*; #(
     .obi_rsp_o  ( timer_obi_rsp ),
     .expired_o  ( obi_timer_irq ),
     .overflow_o ( ) // Not connected
+  );
+
+  // Bootrom
+  bootrom #(
+    .ObiCfg    ( SbrObiCfg     ),
+    .obi_req_t ( sbr_obi_req_t ),
+    .obi_rsp_t ( sbr_obi_rsp_t )
+  ) i_bootrom (
+    .clk_i,
+    .rst_ni,
+    .obi_req_i ( bootrom_obi_req ),
+    .obi_rsp_o ( bootrom_obi_rsp )
   );
 
   // Peripheral space error subordinate

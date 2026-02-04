@@ -8,7 +8,7 @@
 LOG_FILE=$1
 
 expected_lines=(
-  "\[CORE\] Start fetching instructions"
+  "\[CORE\] Waking core via CLINT msip"
   "\[JTAG\] Halting hart 0"
   "\[JTAG\] Resumed hart 0"
   "\[UART\] Hello World!"
