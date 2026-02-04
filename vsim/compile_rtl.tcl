@@ -350,6 +350,7 @@ if {[catch { vlog -incr -sv \
     "+incdir+$ROOT/rtl/common_cells/include" \
     "+incdir+$ROOT/rtl/obi/include" \
     "$ROOT/rtl/core_wrap.sv" \
+    "$ROOT/rtl/bootrom/bootrom.sv" \
     "$ROOT/rtl/soc_ctrl/soc_ctrl_regs.sv" \
     "$ROOT/rtl/gpio/gpio_reg_top.sv" \
     "$ROOT/rtl/gpio/gpio.sv" \
