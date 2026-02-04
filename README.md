@@ -54,6 +54,8 @@ The address map of the default configuration is as follows:
 | Start Address   | Stop Address    | Description                                |
 |-----------------|-----------------|--------------------------------------------|
 | `32'h0000_0000` | `32'h0004_0000` | Debug module (JTAG)                        |
+| `32'h0200_0000` | `32'h0200_4000` | Bootrom                                    |
+| `32'h0200_4000` | `32'h0200_8000` | CLINT peripheral                           |
 | `32'h0300_0000` | `32'h0300_1000` | SoC control/info registers                 |
 | `32'h0300_2000` | `32'h0300_3000` | UART peripheral                            |
 | `32'h0300_5000` | `32'h0300_6000` | GPIO peripheral                            |
@@ -61,7 +63,6 @@ The address map of the default configuration is as follows:
 | `32'h1000_0000` | `+SRAM_SIZE`    | Memory banks (SRAM)                        |
 | `32'h2000_0000` | `32'h8000_0000` | Passthrough to user domain                 |
 | `32'h2000_0000` | `32'h2000_1000` | reserved for string formatted user ROM*    |
-
 
 *If people modify Croc we suggest they add a ROM at this address containing additional information
 like the names of the developers, a project link or similar. This can then be written out via UART.  

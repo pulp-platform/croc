@@ -6,12 +6,12 @@
         "file"        : "../meerkat_work/croc_chip.gds.gz",
         "x_offset_um" : 0,
         "y_offset_um" : 0,
-        "width_um"    : 1930,
-        "height_um"   : 1930
+        "width_um"    : 2000,
+        "height_um"   : 2000
     },
     "image": {
-        "px_width"          : 965,
-        "px_height"         : 965,
+        "px_width"          : 1000,
+        "px_height"         : 1000,
         "overrender_factor" : 4,
         "num_segs_width"    : 1,
         "num_segs_height"   : 1,
