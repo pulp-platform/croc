@@ -15,7 +15,6 @@ add wave -noupdate -expand -group {Reset & Clocks}  -label rst_ni /tb_croc_soc/i
 add wave -noupdate -expand -group {Reset & Clocks}  -label clk_i /tb_croc_soc/i_croc_soc/clk_i
 add wave -noupdate -expand -group {Reset & Clocks}  -label ref_clk_i /tb_croc_soc/i_croc_soc/ref_clk_i
 add wave -noupdate -expand -group {Mode & Status}   -label testmode_i /tb_croc_soc/i_croc_soc/testmode_i
-add wave -noupdate -expand -group {Mode & Status}   -label fetch_en_i /tb_croc_soc/i_croc_soc/fetch_en_i
 add wave -noupdate -expand -group {Mode & Status}   -label status_o /tb_croc_soc/i_croc_soc/status_o
 add wave -noupdate -expand -group JTAG              -label jtag_tck_i /tb_croc_soc/i_croc_soc/jtag_tck_i
 add wave -noupdate -expand -group JTAG              -label jtag_tdi_i /tb_croc_soc/i_croc_soc/jtag_tdi_i

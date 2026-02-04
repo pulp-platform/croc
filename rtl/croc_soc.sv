@@ -12,7 +12,6 @@ module croc_soc import croc_pkg::*; #(
   input  logic rst_ni,
   input  logic ref_clk_i,
   input  logic testmode_i,
-  input  logic fetch_en_i,
   output logic status_o,
 
   input  logic jtag_tck_i,
@@ -29,7 +28,7 @@ module croc_soc import croc_pkg::*; #(
   output logic [GpioCount-1:0] gpio_out_en_o // Output enable signal; 0 -> input, 1 -> output
 );
 
-  logic synced_rst_n, synced_fetch_en;
+  logic synced_rst_n;
 
   rstgen i_rstgen (
     .clk_i,
@@ -38,16 +37,6 @@ module croc_soc import croc_pkg::*; #(
     .rst_no      ( synced_rst_n ),
     .init_no ( )
   );
-
-  sync #(
-      .STAGES     (    2 ),
-      .ResetValue ( 1'b0 )
-    ) i_ext_intr_sync (
-      .clk_i,
-      .rst_ni   ( synced_rst_n    ),
-      .serial_i ( fetch_en_i      ),
-      .serial_o ( synced_fetch_en )
-    );
 
 // Connection between Croc_domain and User_domain: User Sbr, Croc Mgr
 sbr_obi_req_t user_sbr_obi_req;
@@ -69,7 +58,6 @@ croc_domain #(
   .rst_ni ( synced_rst_n ),
   .ref_clk_i,
   .testmode_i,
-  .fetch_en_i ( synced_fetch_en ),
 
   .jtag_tck_i,
   .jtag_tdi_i,

@@ -37,7 +37,6 @@ module croc_xilinx import croc_pkg::*; #(
 `endif
 
 `ifdef USE_SWITCHES
-  input  logic fetch_en_i,             // switch 7
   input  logic [GpioCount-1:0] gpio_i, // switch 0-3
 `endif
 
@@ -107,10 +106,8 @@ module croc_xilinx import croc_pkg::*; #(
 
   // Tie off inputs of no switches
 `ifndef USE_SWITCHES
-  logic                 fetch_en_i;
   logic [GpioCount-2:0] gpio_i;
   assign test_mode_i = '0;
-  assign fetch_en_i  = '0;
   assign gpio_i      = '0;
 `endif
 
@@ -125,19 +122,17 @@ module croc_xilinx import croc_pkg::*; #(
   ////////////
   //  VIOs  //
   ////////////
-  logic       vio_reset, vio_fetch_en, vio_gpio;
+  logic       vio_reset, vio_gpio;
 
 `ifdef USE_VIO
   vio i_vio (
-    .clk        ( soc_clk      ),
-    .probe_out0 ( vio_reset    ),
-    .probe_out1 ( vio_fetch_en ),
-    .probe_out2 ( vio_gpio     )
+    .clk        ( soc_clk   ),
+    .probe_out0 ( vio_reset ),
+    .probe_out1 ( vio_gpio  )
   );
 `else
-  assign vio_reset    = '0;
-  assign vio_fetch_en = '0;
-  assign vio_gpio     = '0;
+  assign vio_reset = '0;
+  assign vio_gpio  = '0;
 `endif
 
 
@@ -145,11 +140,9 @@ module croc_xilinx import croc_pkg::*; #(
   //  SOC IO  //
   //////////////
 
-  logic  soc_fetch_en;
   logic  soc_rst_n;
 
-  assign soc_fetch_en = fetch_en_i | vio_fetch_en;
-  assign soc_rst      = ~sys_resetn | vio_reset;
+  assign soc_rst = ~sys_resetn | vio_reset;
 
   logic [GpioCount-1:0] soc_gpio_i;             
   logic [GpioCount-1:0] soc_gpio_o;            
@@ -251,7 +244,6 @@ module croc_xilinx import croc_pkg::*; #(
     .rst_ni          ( rst_n          ),
     .ref_clk_i       ( rtc_clk_q      ),
     .testmode_i      ( soc_testmode_i ),
-    .fetch_en_i      ( soc_fetch_en   ),
     .status_o        ( status_o       ),
 
     .jtag_tck_i      ( jtag_tck_i   ),

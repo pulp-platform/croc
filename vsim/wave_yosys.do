@@ -27,7 +27,6 @@ add wave -noupdate /tb_croc_soc/i_croc_soc/i_croc/i_core_wrap/data_req_o
 add wave -noupdate /tb_croc_soc/i_croc_soc/i_croc/i_core_wrap/data_rvalid_i
 add wave -noupdate /tb_croc_soc/i_croc_soc/i_croc/i_core_wrap/data_wdata_o
 add wave -noupdate /tb_croc_soc/i_croc_soc/i_croc/i_core_wrap/data_we_o
-add wave -noupdate /tb_croc_soc/i_croc_soc/i_croc/i_core_wrap/fetch_enable_i
 add wave -noupdate /tb_croc_soc/i_croc_soc/i_croc/i_core_wrap/instr_addr_o
 add wave -noupdate /tb_croc_soc/i_croc_soc/i_croc/i_core_wrap/instr_gnt_i
 add wave -noupdate /tb_croc_soc/i_croc_soc/i_croc/i_core_wrap/instr_rdata_i

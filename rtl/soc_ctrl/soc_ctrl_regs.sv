@@ -118,7 +118,7 @@ module soc_ctrl_regs #(
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (~rst_ni) begin
       boot_addr_q   <= BootAddrDefault;
-      fetch_en_q    <= '0;
+      fetch_en_q    <= '1;
       core_status_q <= '0;
       boot_mode_q   <= '0;
       sram_dly_q    <= '0;

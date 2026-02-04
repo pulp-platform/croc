@@ -12,7 +12,6 @@ module croc_vip #(
   output logic                 rst_no,
   output logic                 sys_clk_o,
   output logic                 ref_clk_o,
-  input  logic                 fetch_en_i,
   output logic                 jtag_tck_o,
   output logic                 jtag_trst_no,
   output logic                 jtag_tms_o,
@@ -334,7 +333,7 @@ module croc_vip #(
   initial begin
     static byte_bt uart_read_buf[$];
     byte_bt bite;
-    @(posedge fetch_en_i);
+    @(posedge rst_no);
     uart_read_buf.delete();
     forever begin
       uart_read_byte(bite);

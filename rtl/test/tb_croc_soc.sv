@@ -35,7 +35,6 @@ module tb_croc_soc #(
   logic [GpioCount-1:0] gpio_out_en;
 
   // Signals controlled by the testbench
-  logic fetch_en;
 
   /////////////////////////////
   //  Command Line Arguments //
@@ -73,7 +72,6 @@ module tb_croc_soc #(
     .rst_no        ( rst_n       ),
     .sys_clk_o     ( sys_clk     ),
     .ref_clk_o     ( ref_clk     ),
-    .fetch_en_i    ( fetch_en    ),
     .jtag_tck_o    ( jtag_tck    ),
     .jtag_trst_no  ( jtag_trst_n ),
     .jtag_tms_o    ( jtag_tms    ),
@@ -101,7 +99,6 @@ module tb_croc_soc #(
     .rst_ni        ( rst_n       ),
     .ref_clk_i     ( ref_clk     ),
     .testmode_i    ( 1'b0        ),
-    .fetch_en_i    ( fetch_en    ),
     .status_o      (             ),
     .jtag_tck_i    ( jtag_tck    ),
     .jtag_tdi_i    ( jtag_tdi    ),
@@ -124,8 +121,6 @@ module tb_croc_soc #(
   initial begin
     $timeformat(-9, 0, "ns", 12); // 1: scale (ns=-9), 2: decimals, 3: suffix, 4: print-field width
 
-    fetch_en = 1'b0;
-
     // wait for reset
     #ClkPeriodSys;
 
@@ -134,9 +129,6 @@ module tb_croc_soc #(
 
     // write test value to sram
     i_vip.jtag_write_reg32(SramBaseAddr, 32'h1234_5678, 1'b1);
-
-    $display("@%t | [CORE] Start fetching instructions", $time);
-    fetch_en = 1'b1;
 
     // load binary to sram
     i_vip.jtag_load_hex(binary_path);
