@@ -27,6 +27,10 @@
         "name": "GPIO",
         "color": "#43fdaa"
     },
+    "i_bootrom": {
+        "name": "ROM",
+        "color": "#8cf805"
+    },
     "gen_sram_bank": {
         "name": "SRAM",
         "color": "#39729f"

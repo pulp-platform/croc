@@ -4,8 +4,8 @@
     },
     "gds" : {
         "file"        : "../meerkat_work/croc_chip.gds.gz",
-        "x_offset_um" : -59,
-        "y_offset_um" : -59,
+        "x_offset_um" : -24,
+        "y_offset_um" : -24,
         "width_um"    : 2048,
         "height_um"   : 2048
     },

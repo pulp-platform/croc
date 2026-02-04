@@ -1,0 +1,4 @@
+bootrom.bin
+bootrom.dump
+bootrom.elf
+bootrom.o
