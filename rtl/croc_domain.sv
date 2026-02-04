@@ -13,7 +13,6 @@ module croc_domain import croc_pkg::*; #(
   input  logic      rst_ni,
   input  logic      ref_clk_i,
   input  logic      testmode_i,
-  input  logic      fetch_en_i,
 
   input  logic      jtag_tck_i,
   input  logic      jtag_tdi_i,
@@ -165,7 +164,7 @@ module croc_domain import croc_pkg::*; #(
   // Bootrom bus
   sbr_obi_req_t bootrom_obi_req;
   sbr_obi_rsp_t bootrom_obi_rsp;
-  
+
   // Fanout to individual peripherals
   assign error_obi_req                     = all_periph_obi_req[PeriphError];
   assign all_periph_obi_rsp[PeriphError]   = error_obi_rsp;
@@ -470,9 +469,6 @@ module croc_domain import croc_pkg::*; #(
   );
 
   // SoC Control
-  logic fetch_en_reg;
-  assign fetch_enable = fetch_en_i | fetch_en_reg;
-
   soc_ctrl_regs #(
     .obi_req_t       ( sbr_obi_req_t ),
     .obi_rsp_t       ( sbr_obi_rsp_t ),
@@ -482,7 +478,7 @@ module croc_domain import croc_pkg::*; #(
     .rst_ni,
     .obi_req_i     ( soc_ctrl_obi_req ),
     .obi_rsp_o     ( soc_ctrl_obi_rsp ),
-    .fetch_en_o    ( fetch_en_reg     ),
+    .fetch_en_o    ( fetch_enable     ),
     .sram_dly_o    ( sram_impl        )
   );
 

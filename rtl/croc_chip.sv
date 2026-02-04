@@ -19,7 +19,7 @@ module croc_chip import croc_pkg::*; #() (
   input  wire uart_rx_i,
   output wire uart_tx_o,
 
-  input  wire fetch_en_i,
+  input  wire testmode_i,
   output wire status_o,
 
   inout  wire gpio0_io,
@@ -67,7 +67,7 @@ module croc_chip import croc_pkg::*; #() (
     logic soc_clk_i;
     logic soc_rst_ni;
     logic soc_ref_clk_i;
-    logic soc_testmode;
+    logic soc_testmode_i;
 
     logic soc_jtag_tck_i;
     logic soc_jtag_trst_ni;
@@ -75,7 +75,6 @@ module croc_chip import croc_pkg::*; #() (
     logic soc_jtag_tdi_i;
     logic soc_jtag_tdo_o;
 
-    logic soc_fetch_en_i;
     logic soc_status_o;
 
     localparam int unsigned GpioCount = 32;
@@ -87,8 +86,6 @@ module croc_chip import croc_pkg::*; #() (
     sg13g2_IOPadIn        pad_clk_i        (.pad(clk_i),        .p2c(soc_clk_i));
     sg13g2_IOPadIn        pad_rst_ni       (.pad(rst_ni),       .p2c(soc_rst_ni));
     sg13g2_IOPadIn        pad_ref_clk_i    (.pad(ref_clk_i),    .p2c(soc_ref_clk_i));
-    assign soc_testmode_i = '0;
-
     sg13g2_IOPadIn        pad_jtag_tck_i   (.pad(jtag_tck_i),   .p2c(soc_jtag_tck_i));
     sg13g2_IOPadIn        pad_jtag_trst_ni (.pad(jtag_trst_ni), .p2c(soc_jtag_trst_ni));
     sg13g2_IOPadIn        pad_jtag_tms_i   (.pad(jtag_tms_i),   .p2c(soc_jtag_tms_i));
@@ -98,7 +95,7 @@ module croc_chip import croc_pkg::*; #() (
     sg13g2_IOPadIn        pad_uart_rx_i    (.pad(uart_rx_i),    .p2c(soc_uart_rx_i));
     sg13g2_IOPadOut16mA   pad_uart_tx_o    (.pad(uart_tx_o),    .c2p(soc_uart_tx_o));
 
-    sg13g2_IOPadIn        pad_fetch_en_i   (.pad(fetch_en_i),   .p2c(soc_fetch_en_i));
+    sg13g2_IOPadIn        pad_testmode_i   (.pad(testmode_i),   .p2c(soc_testmode_i));
     sg13g2_IOPadOut16mA   pad_status_o     (.pad(status_o),     .c2p(soc_status_o));
 
     sg13g2_IOPadInOut30mA pad_gpio0_io     (.pad(gpio0_io),     .c2p(soc_gpio_o[0]),  .p2c(soc_gpio_i[0]),   .c2p_en(soc_gpio_out_en_o[0]));
@@ -166,7 +163,6 @@ module croc_chip import croc_pkg::*; #() (
     .rst_ni         ( soc_rst_ni     ),
     .ref_clk_i      ( soc_ref_clk_i  ),
     .testmode_i     ( soc_testmode_i ),
-    .fetch_en_i     ( soc_fetch_en_i ),
     .status_o       ( soc_status_o   ),
 
     .jtag_tck_i     ( soc_jtag_tck_i   ),

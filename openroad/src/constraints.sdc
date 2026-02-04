@@ -83,9 +83,9 @@ set_max_delay 3.0 -from $JTAG_ASYNC_RSP_START -to $JTAG_ASYNC_RSP_END -ignore_cl
 puts "Input/Outputs..."
 
 # Reset should propagate to system domain within a clock cycle.
-set_input_delay -max [ expr $TCK_JTG * 0.10 ] [get_ports rst_ni]  
-set_false_path -hold   -from [get_ports rst_ni]
-set_max_delay $TCK_SYS -from [get_ports rst_ni]
+set_input_delay -max [ expr $TCK_JTG * 0.10 ] [get_ports {rst_ni testmode_i}]  
+set_false_path -hold   -from [get_ports {rst_ni testmode_i}]
+set_max_delay $TCK_SYS -from [get_ports {rst_ni testmode_i}]
 
 
 ##########
@@ -109,8 +109,8 @@ set_max_delay $TCK_JTG  -from [get_ports jtag_trst_ni]
 ##########
 puts "GPIO..."
 
-set_input_delay  -min -add_delay -clock clk_sys [ expr $TCK_SYS * 0.10 ] [get_ports {gpio* fetch_en_i}]
-set_input_delay  -max -add_delay -clock clk_sys [ expr $TCK_SYS * 0.30 ] [get_ports {gpio* fetch_en_i}]
+set_input_delay  -min -add_delay -clock clk_sys [ expr $TCK_SYS * 0.10 ] [get_ports {gpio*}]
+set_input_delay  -max -add_delay -clock clk_sys [ expr $TCK_SYS * 0.30 ] [get_ports {gpio*}]
 
 set_output_delay -min -add_delay -clock clk_sys [ expr $TCK_SYS * 0.10 ] [get_ports {gpio*}]
 set_output_delay -max -add_delay -clock clk_sys [ expr $TCK_SYS * 0.30 ] [get_ports {gpio*}]

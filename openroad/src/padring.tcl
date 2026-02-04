@@ -50,7 +50,7 @@ place_pad -row IO_WEST -location [expr {$westStart -  0*$westPitch}] "pad_vssio0
 place_pad -row IO_WEST -location [expr {$westStart -  1*$westPitch}] "pad_vddio0"       ; # pin no:  2
 place_pad -row IO_WEST -location [expr {$westStart -  2*$westPitch}] "pad_uart_rx_i"    ; # pin no:  3
 place_pad -row IO_WEST -location [expr {$westStart -  3*$westPitch}] "pad_uart_tx_o"    ; # pin no:  4
-place_pad -row IO_WEST -location [expr {$westStart -  4*$westPitch}] "pad_fetch_en_i"   ; # pin no:  5
+place_pad -row IO_WEST -location [expr {$westStart -  4*$westPitch}] "pad_testmode_i"   ; # pin no:  5
 place_pad -row IO_WEST -location [expr {$westStart -  5*$westPitch}] "pad_status_o"     ; # pin no:  6
 place_pad -row IO_WEST -location [expr {$westStart -  6*$westPitch}] "pad_clk_i"        ; # pin no:  7
 place_pad -row IO_WEST -location [expr {$westStart -  7*$westPitch}] "pad_ref_clk_i"    ; # pin no:  8
