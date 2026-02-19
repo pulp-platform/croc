@@ -109,21 +109,23 @@ module idma_obi_write #(
     // the main buffer is conditionally to the write mask popped
     assign buffer_out_ready_o = write_happening ? mask_out : '0;
 
-    // signal the bus that we are ready
-    assign write_req_o.req = ready_to_write;
-
     // connect data and strobe either directly or mask invalid data
-    if (MaskInvalidData) begin : gen_mask_invalid_data
-
-        // always_comb process implements masking of invalid data
-        always_comb begin : proc_mask
-            // defaults
+    always_comb begin : proc_mask
+        // defaults
+        write_req_o         = '0;
+        buffer_data_masked  = '0;
+        // create back pressure on the b channel if the higher parts of the DMA
+        // cannot accept more write responses
+        write_req_o.rready  = w_dp_ready_i;
+        
+        if (MaskInvalidData) begin : gen_mask_invalid_data
             write_req_o.a.addr  = aw_req_i.obi.a_chan.addr;
             write_req_o.a.aid   = aw_req_i.obi.a_chan.aid;
             write_req_o.a.we    = 1'b1;
             write_req_o.a.wdata = '0;
             write_req_o.a.be    = '0;
-            buffer_data_masked  = '0;
+            // signal the bus that we are ready
+            write_req_o.req = ready_to_write;
             // control the write to the bus apply data to the bus only if data should be written
             if (ready_to_write == 1'b1 & !dp_poison_i) begin
                 // assign data from buffers, mask non valid entries
@@ -135,18 +137,15 @@ module idma_obi_write #(
                 // assign the out mask to the strobe
                 write_req_o.a.be = mask_out;
             end
+        end else begin : gen_direct_connect
+            // assign meta data
+            write_req_o.a.addr  = aw_req_i.obi.a_chan.addr;
+            write_req_o.a.aid   = aw_req_i.obi.a_chan.aid;
+            write_req_o.a.we    = 1'b1;
+            // simpler: direct connection
+            write_req_o.a.wdata = buffer_out_i;
+            write_req_o.a.be    = dp_poison_i ? '0 : mask_out;
         end
-
-    end else begin : gen_direct_connect
-        // assign meta data
-        assign write_req_o.a.addr  = aw_req_i.obi.a_chan.addr;
-        assign write_req_o.a.aid   = aw_req_i.obi.a_chan.aid;
-        assign write_req_o.a.we    = 1'b1;
-        // not used signal
-        assign buffer_data_masked  = '0;
-        // simpler: direct connection
-        assign write_req_o.a.wdata = buffer_out_i;
-        assign write_req_o.a.be    = dp_poison_i ? '0 : mask_out;
     end
 
     // we are ready for the next transfer internally, once the w last signal is applied
@@ -161,9 +160,5 @@ module idma_obi_write #(
 
     // w_dp_valid_o is triggered once the write answer is here
     assign w_dp_valid_o = write_rsp_i.rvalid;
-
-    // create back pressure on the b channel if the higher parts of the DMA cannot accept more
-    // write responses
-    assign write_req_o.rready = w_dp_ready_i;
 
 endmodule
