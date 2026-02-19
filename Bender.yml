@@ -16,6 +16,7 @@ dependencies:
   apb:                  { git: "https://github.com/pulp-platform/apb.git",                  version: 0.2.4  }
   obi:                  { git: "https://github.com/pulp-platform/obi.git",                  rev: 6a724da    } # 0.1.7+
   obi_peripherals:      { git: "https://github.com/pulp-platform/obi_peripherals.git",      rev: 21ee04d    } # UART
+  idma:                 { git: "https://github.com/pulp-platform/idma.git",                 rev: 80fdfa9    } # TODO: update
   cve2:                 { path: "rtl/cve2" } # a vendor package (no Bender.yml), see below 
 
 
@@ -132,6 +133,29 @@ vendor_package:
       - { from: 'include/apb/',   to: 'include/apb/', patch_dir: 'include/' }
       - { from: 'Bender.yml',     to: 'Bender.yml',   patch_dir: '' }
       - { from: 'README.md',      to: 'README.md',    patch_dir: '' }
+
+#  - name: idma
+#    target_dir: rtl/idma
+#    upstream: { git: "https://github.com/pulp-platform/iDMA.git", rev: "80fdfa93cb56c092c829fd055dc9102a1c7070fa" } # TODO: fix once merged into master
+#    patch_dir: "rtl/.patches/idma"
+#    mapping:
+#      - { from: 'target/rtl/include/idma/tracer.svh', to: 'include/idma/tracer.svh',   patch_dir: 'include/idma' }
+#      - { from: 'target/rtl/idma_backend_rw_obi.sv', to: 'idma_backend_rw_obi.sv',   patch_dir: '' }
+#      - { from: 'target/rtl/idma_legalizer_rw_obi.sv', to: 'idma_legalizer_rw_obi.sv',   patch_dir: '' }
+#      - { from: 'src/backend/idma_legalizer_page_splitter.sv', to: 'idma_legalizer_page_splitter.sv',   patch_dir: '' }
+#      - { from: 'target/rtl/idma_transport_layer_rw_obi.sv', to: 'idma_transport_layer_rw_obi.sv',   patch_dir: '' }
+#      - { from: 'src/backend/idma_channel_coupler.sv', to: 'idma_channel_coupler.sv',   patch_dir: '' }
+#      - { from: 'src/backend/idma_dataflow_element.sv', to: 'idma_dataflow_element.sv',   patch_dir: '' }
+#      - { from: 'src/backend/idma_obi_read.sv', to: 'idma_obi_read.sv',   patch_dir: '' }
+#      - { from: 'src/backend/idma_obi_write.sv', to: 'idma_obi_write.sv',   patch_dir: '' }
+#      - { from: 'src/frontend/idma_transfer_id_gen.sv', to: 'idma_transfer_id_gen.sv',   patch_dir: '' }
+#      - { from: 'src/include/idma/guard.svh', to: 'include/idma/guard.svh',   patch_dir: 'include/idma' }
+#      - { from: 'src/include/idma/typedef.svh', to: 'include/idma/typedef.svh',   patch_dir: 'include/idma' }
+#      - { from: 'src/midend/idma_nd_midend.sv', to: 'idma_nd_midend.sv',   patch_dir: '' }
+#      - { from: 'src/idma_pkg.sv', to: 'idma_pkg.sv',   patch_dir: '' }
+#      - { from: 'Bender.yml', to: 'Bender.yml',   patch_dir: '' }
+#      - { from: 'README.md', to: 'README.md',   patch_dir: '' }
+#      - { from: 'CHANGELOG.md', to: 'CHANGELOG.md',   patch_dir: '' }
 
 
   ###############

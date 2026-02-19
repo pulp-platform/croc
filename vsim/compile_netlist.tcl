@@ -1,14 +1,3 @@
-# Copyright (c) 2026 ETH Zurich and University of Bologna.
-# Licensed under the Apache License, Version 2.0, see LICENSE for details.
-# SPDX-License-Identifier: Apache-2.0
-#
-# Published with permission from Siemens. 
-# Siemens QuestaSim is available through EDA Higher Education Software Program
-# https://www.sw.siemens.com/en-US/academic/educators/eda-higher-education-software/
-#
-# Authors:
-# - Philippe Sauter <phsauter@iis.ee.ethz.ch>
-#
 # This script was generated automatically by bender.
 set ROOT ".."
 
@@ -250,6 +239,32 @@ if {[catch { vlog -incr -sv \
     "+define+SYNTHESIS" \
     "+define+SIMULATION" \
     "+incdir+$ROOT/rtl/common_cells/include" \
+    "+incdir+$ROOT/rtl/idma/include" \
+    "+incdir+$ROOT/rtl/obi/include" \
+    "$ROOT/rtl/idma/idma_pkg.sv" \
+    "$ROOT/rtl/idma/idma_channel_coupler.sv" \
+    "$ROOT/rtl/idma/idma_dataflow_element.sv" \
+    "$ROOT/rtl/idma/idma_obi_read.sv" \
+    "$ROOT/rtl/idma/idma_obi_write.sv" \
+    "$ROOT/rtl/idma/idma_nd_midend.sv" \
+    "$ROOT/rtl/idma/idma_transfer_id_gen.sv" \
+    "$ROOT/rtl/idma/idma_legalizer_page_splitter.sv" \
+    "$ROOT/rtl/idma/idma_transport_layer_rw_obi.sv" \
+    "$ROOT/rtl/idma/idma_legalizer_rw_obi.sv" \
+    "$ROOT/rtl/idma/idma_backend_rw_obi.sv" \
+    "$ROOT/rtl/idma/croc_idma.sv" \
+}]} {return 1}
+
+if {[catch { vlog -incr -sv \
+    -svinputport=compat \
+    "+define+TARGET_IHP13" \
+    "+define+TARGET_NETLIST_YOSYS" \
+    "+define+TARGET_SIMULATION" \
+    "+define+TARGET_VERILATOR" \
+    "+define+TARGET_VSIM" \
+    "+define+SYNTHESIS" \
+    "+define+SIMULATION" \
+    "+incdir+$ROOT/rtl/common_cells/include" \
     "+incdir+$ROOT/rtl/obi/include" \
     "$ROOT/rtl/obi_uart/obi_uart_pkg.sv" \
     "$ROOT/rtl/obi_uart/obi_uart_baudgen.sv" \
@@ -345,6 +360,7 @@ if {[catch { vlog -incr -sv \
     "+define+SIMULATION" \
     "+incdir+$ROOT/rtl/apb/include" \
     "+incdir+$ROOT/rtl/common_cells/include" \
+    "+incdir+$ROOT/rtl/idma/include" \
     "+incdir+$ROOT/rtl/obi/include" \
     "$ROOT/ihp13/tc_clk.sv" \
     "$ROOT/ihp13/tc_sram_impl.sv" \
@@ -361,6 +377,7 @@ if {[catch { vlog -incr -sv \
     "+define+SIMULATION" \
     "+incdir+$ROOT/rtl/apb/include" \
     "+incdir+$ROOT/rtl/common_cells/include" \
+    "+incdir+$ROOT/rtl/idma/include" \
     "+incdir+$ROOT/rtl/obi/include" \
     "$ROOT/rtl/croc_pkg.sv" \
     "$ROOT/rtl/user_pkg.sv" \
@@ -381,6 +398,7 @@ if {[catch { vlog -incr -sv \
     "+define+SIMULATION" \
     "+incdir+$ROOT/rtl/apb/include" \
     "+incdir+$ROOT/rtl/common_cells/include" \
+    "+incdir+$ROOT/rtl/idma/include" \
     "+incdir+$ROOT/rtl/obi/include" \
     "$ROOT/rtl/croc_chip.sv" \
 }]} {return 1}
@@ -396,6 +414,7 @@ if {[catch { vlog -incr -sv \
     "+define+SIMULATION" \
     "+incdir+$ROOT/rtl/apb/include" \
     "+incdir+$ROOT/rtl/common_cells/include" \
+    "+incdir+$ROOT/rtl/idma/include" \
     "+incdir+$ROOT/rtl/obi/include" \
     "$ROOT/yosys/out/netlist_debug.v" \
 }]} {return 1}
@@ -411,6 +430,7 @@ if {[catch { vlog -incr -sv \
     "+define+SIMULATION" \
     "+incdir+$ROOT/rtl/apb/include" \
     "+incdir+$ROOT/rtl/common_cells/include" \
+    "+incdir+$ROOT/rtl/idma/include" \
     "+incdir+$ROOT/rtl/obi/include" \
     "$ROOT/rtl/test/tb_croc_pkg.sv" \
     "$ROOT/rtl/test/croc_vip.sv" \
