@@ -28,9 +28,9 @@ module croc_domain import croc_pkg::*; #(
   output logic [GpioCount-1:0] gpio_out_en_o, // Output enable signal; 0 -> input, 1 -> output
 
   output logic [GpioCount-1:0] gpio_in_sync_o, // synchronized GPIO inputs
-  
+
   /// User OBI interface
-  /// User as subordinate (from core to user module) 
+  /// User as subordinate (from core to user module)
   /// Address space 0x2000_0000 - 0x8000_0000
   output sbr_obi_req_t user_sbr_obi_req_o,
   input  sbr_obi_rsp_t user_sbr_obi_rsp_i,
@@ -431,7 +431,7 @@ module croc_domain import croc_pkg::*; #(
     .sbr_ports_req_i  ( xbar_mgr_obi_req ),
     .sbr_ports_rsp_o  ( xbar_mgr_obi_rsp ),
     // connections between crossbar and subordinates
-    .mgr_ports_req_o  ( all_sbr_obi_req ), 
+    .mgr_ports_req_o  ( all_sbr_obi_req ),
     .mgr_ports_rsp_i  ( all_sbr_obi_rsp ),
 
     .addr_map_i       ( croc_addr_map ),
@@ -578,11 +578,11 @@ module croc_domain import croc_pkg::*; #(
   ) i_uart (
     .clk_i,
     .rst_ni,
-   
+
     .obi_req_i ( uart_obi_req ),
     .obi_rsp_o ( uart_obi_rsp ),
-    .irq_o     ( uart_irq     ), 
-    .irq_no    ( ), 
+    .irq_o     ( uart_irq     ),
+    .irq_no    ( ),
 
     .rxd_i     ( uart_rx_i ),
     .txd_o     ( uart_tx_o ),
@@ -592,7 +592,7 @@ module croc_domain import croc_pkg::*; #(
     .dsr_ni    ( 1'b1 ),
     .ri_ni     ( 1'b1 ),
     .cd_ni     ( 1'b1 ),
-    .rts_no    ( ), 
+    .rts_no    ( ),
     .dtr_no    ( ),
     .out1_no   ( ),
     .out2_no   ( )
@@ -607,10 +607,10 @@ module croc_domain import croc_pkg::*; #(
   ) i_gpio (
     .clk_i,
     .rst_ni,
-    .gpio_i,                     
-    .gpio_o,                   
-    .gpio_out_en_o,          
-    .gpio_in_sync_o,       
+    .gpio_i,
+    .gpio_o,
+    .gpio_out_en_o,
+    .gpio_in_sync_o,
     .interrupt_o    ( gpio_irq     ),
     .obi_req_i      ( gpio_obi_req ),
     .obi_rsp_o      ( gpio_obi_rsp )

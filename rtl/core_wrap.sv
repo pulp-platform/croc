@@ -52,7 +52,7 @@ module core_wrap import croc_pkg::*; #() (
 
   // lowest 8 bits are ignored internally
   logic[31:0] ibex_boot_addr;
-  assign ibex_boot_addr = boot_addr_i & 32'hFFFFFF00; 
+  assign ibex_boot_addr = boot_addr_i & 32'hFFFFFF00;
 
   // CV-X-IF tie-offs (extension disabled)
   cve2_pkg::x_issue_resp_t x_issue_resp;
@@ -94,7 +94,7 @@ module core_wrap import croc_pkg::*; #() (
     .instr_err_i,
 
     // Data memory interface:
-    .data_req_o, 
+    .data_req_o,
     .data_gnt_i,
     .data_rvalid_i,
     .data_we_o,
@@ -129,7 +129,7 @@ module core_wrap import croc_pkg::*; #() (
     .dm_halt_addr_i      ( DebugHaltAddress      ),
     .dm_exception_addr_i ( DebugExceptionAddress ),
     .crash_dump_o        ( ),
-    
+
     .fetch_enable_i,
     .core_busy_o
   );

@@ -121,11 +121,11 @@ module tc_sram_impl #(
   // Generate desired cuts
   if (NumWords == 64 && DataWidth == 64 && P1L1) begin: gen_64x64xBx1
     logic [63:0] wdata64, rdata64, bm64;
-    
+
     assign rdata_o = rdata64;
     assign wdata64 = wdata_i;
     assign bm64    = bm;
-    
+
 
     RM_IHPSG13_1P_64x64_c2_bm_bist i_cut (
       .A_CLK   ( clk_i    ),
@@ -142,7 +142,7 @@ module tc_sram_impl #(
 
   end else if (NumWords == 256 & DataWidth == 64 & P1L1) begin : gen_256x64xBx1
     logic [63:0] wdata64, rdata64, bm64;
-    
+
     assign rdata_o = rdata64;
     assign wdata64 = wdata_i;
     assign bm64    = bm;
@@ -162,7 +162,7 @@ module tc_sram_impl #(
 
   end else if (NumWords == 512 & DataWidth == 64 & P1L1) begin : gen_512x64xBx1
     logic [63:0] wdata64, rdata64, bm64;
-    
+
     assign rdata_o = rdata64;
     assign wdata64 = wdata_i;
     assign bm64    = bm;
@@ -182,7 +182,7 @@ module tc_sram_impl #(
 
   end else if (NumWords == 1024 & DataWidth == 64 & P1L1) begin : gen_1024x64xBx1
     logic [63:0] wdata64, rdata64, bm64;
-    
+
     assign rdata_o = rdata64;
     assign wdata64 = wdata_i;
     assign bm64    = bm;
@@ -202,7 +202,7 @@ module tc_sram_impl #(
 
   end else if (NumWords == 2048 & DataWidth == 64 & P1L1) begin : gen_2048x64xBx1
     logic [63:0] wdata64, rdata64, bm64;
-    
+
     assign rdata_o = rdata64;
     assign wdata64 = wdata_i;
     assign bm64    = bm;
@@ -346,7 +346,7 @@ module tc_sram_impl #(
 
   end else if (NumWords == 2048 & DataWidth == 64 & P1L1) begin : gen_2048x64xBx1
     logic [63:0] wdata64, rdata64, bm64;
-    
+
     assign rdata_o = rdata64;
     assign wdata64 = wdata_i;
     assign bm64    = bm;

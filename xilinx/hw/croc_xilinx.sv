@@ -144,8 +144,8 @@ module croc_xilinx import croc_pkg::*; #(
 
   assign soc_rst = ~sys_resetn | vio_reset;
 
-  logic [GpioCount-1:0] soc_gpio_i;             
-  logic [GpioCount-1:0] soc_gpio_o;            
+  logic [GpioCount-1:0] soc_gpio_i;
+  logic [GpioCount-1:0] soc_gpio_o;
   logic [GpioCount-1:0] soc_gpio_out_en_o;
 
   for(genvar idx=0; idx<GpioCount; idx++) begin
@@ -255,9 +255,9 @@ module croc_xilinx import croc_pkg::*; #(
     .uart_rx_i       ( uart_rx_i ),
     .uart_tx_o       ( uart_tx_o ),
 
-    .gpio_i          ( soc_gpio_i        ),             
-    .gpio_o          ( soc_gpio_o        ),            
-    .gpio_out_en_o   ( soc_gpio_out_en_o ) 
+    .gpio_i          ( soc_gpio_i        ),
+    .gpio_o          ( soc_gpio_o        ),
+    .gpio_out_en_o   ( soc_gpio_out_en_o )
   );
 
 endmodule

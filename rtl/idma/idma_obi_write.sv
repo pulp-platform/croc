@@ -117,7 +117,7 @@ module idma_obi_write #(
         // create back pressure on the b channel if the higher parts of the DMA
         // cannot accept more write responses
         write_req_o.rready  = w_dp_ready_i;
-        
+
         if (MaskInvalidData) begin : gen_mask_invalid_data
             write_req_o.a.addr  = aw_req_i.obi.a_chan.addr;
             write_req_o.a.aid   = aw_req_i.obi.a_chan.aid;

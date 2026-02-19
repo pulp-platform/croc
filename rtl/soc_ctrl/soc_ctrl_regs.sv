@@ -48,7 +48,7 @@ module soc_ctrl_regs #(
 
   always_comb begin : obi_response
     obi_rsp_o         = '0;
-    obi_rsp_o.gnt     = 1'b1; 
+    obi_rsp_o.gnt     = 1'b1;
     obi_rsp_o.rvalid  = obi_req_q.req;
     obi_rsp_o.r.err   = err_q;
     obi_rsp_o.r.rid   = obi_req_q.a.aid;

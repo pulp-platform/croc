@@ -171,7 +171,7 @@ module croc_idma #(
         obi_cfg_rsp_o.r.rdata = reg_read_data;
         obi_cfg_rsp_o.rvalid  = req_q;
         obi_cfg_rsp_o.gnt     = word_addr_d == NEXT_ID_OFFSET ?
-                                obi_cfg_req_i.req & job_req_ready : obi_cfg_req_i.req; 
+                                obi_cfg_req_i.req & job_req_ready : obi_cfg_req_i.req;
     end
 
     // OBI Storage

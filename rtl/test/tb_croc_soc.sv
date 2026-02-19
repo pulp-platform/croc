@@ -55,7 +55,7 @@ module tb_croc_soc #(
   ////////////
   //  VIP   //
   ////////////
-  // Verification IP 
+  // Verification IP
   // - drives clocks and resets
   // - provides helper tasks and functions for JTAG, namely:
   //   - jtag_load_hex: loads a hex file into the DUT's memory
