@@ -67,7 +67,7 @@ module core_wrap import croc_pkg::*; #() (
 `else
   cve2_core #(
 `endif
-    .PMPEnable        ( 1'b0                ),
+    .PMPEnable        ( CorePMPEnable       ),
     .PMPGranularity   ( 0                   ),
     .PMPNumRegions    ( 4                   ),
     .MHPMCounterNum   ( 0                   ),
