@@ -129,8 +129,8 @@ source src/instances.tcl
 
 # Placing macros
 # use these for macro placement
-set floorPaddingX      10.0
-set floorPaddingY      10.0
+set floorPaddingX      12.0
+set floorPaddingY      12.0
 set floor_leftX       [expr $core_leftX + $floorPaddingX]
 set floor_bottomY     [expr $core_bottomY + $floorPaddingY]
 set floor_rightX      [expr $core_rightX - $floorPaddingX]
@@ -147,7 +147,7 @@ placeInstance $bank0_sram0 $X $Y R0
 
 # Bank1
 set X [expr $X]
-set Y [expr $Y - $RamSize256x64_H - 55]
+set Y [expr $floor_bottomY]
 placeInstance $bank1_sram0 $X $Y MX
 
 # defined in init_tech.tcl
