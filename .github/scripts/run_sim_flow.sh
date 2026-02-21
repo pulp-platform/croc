@@ -31,10 +31,12 @@ make -C sw
 cd verilator
 ./run_verilator.sh --build 
 ./run_verilator.sh --run ../sw/bin/helloworld.hex
-cd "$CROC_ROOT"
+grep -q "\[UART\] Hello World from Croc!" croc.log || exit 1
 
-# verify helloworld output
-"$SCRIPT_DIR/check_sim.sh" verilator/croc.log
+./run_verilator.sh --run ../sw/bin/print_config.hex
+"$SCRIPT_DIR/check_sim.sh" croc.log
+
+cd "$CROC_ROOT"
 
 echo ""
 echo "============================================="

@@ -59,7 +59,7 @@ for hex in "${hex_files[@]}"; do
     test_name=$(basename "$hex" .hex)
     log_file="${test_name}.log"
 
-    printf "Running %-30s ... " "$test_name"
+    printf "Running %-20s ... " "$test_name"
 
     # Run simulation with timeout, capture log, don't exit on failure
     if timeout "$TIMEOUT" "$SIM_BINARY" "+binary=$hex" > "$log_file" 2>&1; then
