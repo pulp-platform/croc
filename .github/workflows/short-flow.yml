@@ -22,10 +22,10 @@ jobs:
           submodules: true
       - name: Free disk space
         uses: ./.github/actions/free-space
-      - name: Run helloworld simulation in OSEDA
+      - name: Run simulation flow in OSEDA
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: "make -C sw && cd verilator && ./run_verilator.sh --build --run ../sw/bin/helloworld.hex"
+          cmd: ".github/scripts/run_sim_flow.sh"
       - name: Upload built software
         uses: actions/upload-artifact@v4
         with:
@@ -39,13 +39,6 @@ jobs:
             verilator/croc.fst
             verilator/croc.log
         continue-on-error: true
-      - name: Check simulation output
-        shell: bash
-        run: .github/scripts/check_sim.sh verilator/croc.log
-      - name: Run unit tests in OSEDA
-        uses: ./.github/actions/oseda-cmd
-        with:
-          cmd: "cd verilator && ../.github/scripts/run_tests.sh"
       - name: Upload test logs
         uses: actions/upload-artifact@v4
         with:
@@ -63,10 +56,10 @@ jobs:
           submodules: true
       - name: Free disk space
         uses: ./.github/actions/free-space
-      - name: Setup OSEDA container
+      - name: Run synthesis flow in OSEDA
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: "cd yosys && ./run_synthesis.sh --synth && tail -n 40 reports/*area.rpt"
+          cmd: ".github/scripts/run_synth_flow.sh"
       - name: Upload synthesis outputs
         uses: actions/upload-artifact@v4
         with:
@@ -75,4 +68,3 @@ jobs:
             yosys/reports
             yosys/out
         continue-on-error: true
-
