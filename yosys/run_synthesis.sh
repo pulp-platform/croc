@@ -11,6 +11,7 @@
 
 set -e  # Exit on error
 set -u  # Error on undefined vars
+set -o pipefail # Fail if any command fails
 
 ################
 # Setup
