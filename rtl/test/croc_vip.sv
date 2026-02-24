@@ -350,7 +350,7 @@ module croc_vip #(
         if (uart_read_buf.size() > 0) begin
           automatic string uart_str = "";
           foreach (uart_read_buf[i]) begin
-            uart_str = {uart_str, uart_read_buf[i]};
+            uart_str = {uart_str, string'(uart_read_buf[i])};
           end
           $display("@%t | [UART] %s", $time, uart_str);
           uart_read_buf.push_back(bite);
@@ -370,7 +370,7 @@ module croc_vip #(
     if (uart_read_buf.size() > 0) begin
       automatic string uart_str = "";
       foreach (uart_read_buf[i]) begin
-        uart_str = {uart_str, uart_read_buf[i]};
+        uart_str = {uart_str, string'(uart_read_buf[i])};
       end
       $display("@%t | [UART] %s", $time, uart_str);
     end
