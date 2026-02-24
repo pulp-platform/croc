@@ -10,3 +10,4 @@ compile_netlist*
 compile.log
 novas*
 transcript.log
+reports/
