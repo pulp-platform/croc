@@ -1,6 +1,7 @@
 +incdir+../rtl/apb/include
 +incdir+../rtl/common_cells/include
 +incdir+../rtl/cve2/include
++incdir+../rtl/idma/include
 +incdir+../rtl/obi/include
 +define+TARGET_FLIST
 +define+TARGET_RTL
@@ -129,6 +130,18 @@
 ../rtl/cve2/cve2_prefetch_buffer.sv
 ../rtl/cve2/cve2_if_stage.sv
 ../rtl/cve2/cve2_core.sv
+../rtl/idma/idma_pkg.sv
+../rtl/idma/idma_channel_coupler.sv
+../rtl/idma/idma_dataflow_element.sv
+../rtl/idma/idma_obi_read.sv
+../rtl/idma/idma_obi_write.sv
+../rtl/idma/idma_nd_midend.sv
+../rtl/idma/idma_transfer_id_gen.sv
+../rtl/idma/idma_legalizer_page_splitter.sv
+../rtl/idma/idma_transport_layer_rw_obi.sv
+../rtl/idma/idma_legalizer_rw_obi.sv
+../rtl/idma/idma_backend_rw_obi.sv
+../rtl/idma/croc_idma.sv
 ../rtl/obi_uart/obi_uart_pkg.sv
 ../rtl/obi_uart/obi_uart_baudgen.sv
 ../rtl/obi_uart/obi_uart_interrupts.sv

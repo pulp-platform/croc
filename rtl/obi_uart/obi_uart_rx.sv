@@ -202,13 +202,15 @@ module obi_uart_rx import obi_uart_pkg::*; #()
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // General Logic //
   ////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // Character is all zeros, parity and stop indicate break, current line is still 0 -> break
+  assign break_interrupt = (rsr_q == '0) & (break_q | break_d) & (~filtered_rxd_q);
+
   always_comb begin
 
     //--------------------------------------------------------------------------------------------
     // Defaults
     //--------------------------------------------------------------------------------------------
-    // Character is all zeros, parity and stop indicate break, current line is still 0 -> break
-    break_interrupt = (rsr_q == '0) & (break_q | break_d) & (~filtered_rxd_q);
 
     //--FIFO Combinational------------------------------------------------------------------------
     fifo_clear    = 1'b1; // Reset
@@ -221,9 +223,6 @@ module obi_uart_rx import obi_uart_pkg::*; #()
 
     timeout_count_d = timeout_count_q;
     timeout_o         = 1'b0; // timeout_o
-    // timeout_level = (character_length * 4) +1
-    character_length = (6'd02 +word_len_bits +reg_read_i.lcr.par_en +reg_read_i.lcr.stop_bits);
-    timeout_level = (character_length << 2) + 6'd01;
 
     fifo_error_index_d = fifo_error_index_q; // FIFO Error
 
@@ -264,6 +263,10 @@ module obi_uart_rx import obi_uart_pkg::*; #()
       2'b11: word_len_bits = 3'b111; // 8 Bits (7th index in rsr)
       default: word_len_bits = 3'b111;
     endcase
+
+    // timeout_level = (character_length * 4) +1
+    character_length = (6'd02 +word_len_bits +reg_read_i.lcr.par_en +reg_read_i.lcr.stop_bits);
+    timeout_level = (character_length << 2) + 6'd01;
 
     //--------------------------------------------------------------------------------------------
     // Clear RHR & LSR after OBI read

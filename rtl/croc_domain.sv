@@ -56,13 +56,15 @@ module croc_domain import croc_pkg::*; #(
   logic obi_timer_irq;
   logic uart_irq;
   logic gpio_irq;
+  logic idma_irq;
   logic [15:0] interrupts;
   always_comb begin
     interrupts    = '0;
     interrupts[0] = obi_timer_irq;
     interrupts[1] = uart_irq;
     interrupts[2] = gpio_irq;
-    interrupts[3+:NumExternalIrqs] = interrupts_i;
+    interrupts[3] = idma_irq;
+    interrupts[4+:NumExternalIrqs] = interrupts_i;
   end
 
   // ----------------------------
@@ -89,6 +91,28 @@ module croc_domain import croc_pkg::*; #(
   mgr_obi_rsp_t dbg_req_obi_rsp;
   assign dbg_req_obi_req.a.aid = '0;
   assign dbg_req_obi_req.a.a_optional = '0;
+
+  mgr_obi_req_t idma_obi_read_req;
+  mgr_obi_rsp_t idma_obi_read_rsp;
+  mgr_obi_req_t idma_obi_write_req;
+  mgr_obi_rsp_t idma_obi_write_rsp;
+
+  // xbar manager buses
+  mgr_obi_req_t [NumXbarManagers-1:0] xbar_mgr_obi_req;
+  mgr_obi_rsp_t [NumXbarManagers-1:0] xbar_mgr_obi_rsp;
+
+  // split out to individual manager buses
+  assign xbar_mgr_obi_req[0] = user_mgr_obi_req_i;
+  assign user_mgr_obi_rsp_o  = xbar_mgr_obi_rsp[0];
+
+  assign xbar_mgr_obi_req[1] = dbg_req_obi_req;
+  assign dbg_req_obi_rsp     = xbar_mgr_obi_rsp[1];
+
+  assign xbar_mgr_obi_req[2] = core_data_obi_req;
+  assign core_data_obi_rsp   = xbar_mgr_obi_rsp[2];
+  
+  assign xbar_mgr_obi_req[3] = core_instr_obi_req;
+  assign core_instr_obi_rsp  = xbar_mgr_obi_rsp[3];
 
   // ----------------------------------
   // Subordinate buses out of crossbar
@@ -157,6 +181,10 @@ module croc_domain import croc_pkg::*; #(
   sbr_obi_req_t timer_obi_req;
   sbr_obi_rsp_t timer_obi_rsp;
 
+  // iDMA periph bus
+  sbr_obi_req_t idma_obi_cfg_req;
+  sbr_obi_rsp_t idma_obi_cfg_rsp;
+
   // CLINT bus
   sbr_obi_req_t clint_obi_req;
   sbr_obi_rsp_t clint_obi_rsp;
@@ -178,10 +206,12 @@ module croc_domain import croc_pkg::*; #(
   assign all_periph_obi_rsp[PeriphGpio]    = gpio_obi_rsp;
   assign timer_obi_req                     = all_periph_obi_req[PeriphTimer];
   assign all_periph_obi_rsp[PeriphTimer]   = timer_obi_rsp;
-  assign clint_obi_req                       = all_periph_obi_req[PeriphClint];
-  assign all_periph_obi_rsp[PeriphClint]     = clint_obi_rsp;
-  assign bootrom_obi_req                     = all_periph_obi_req[PeriphBootrom];
-  assign all_periph_obi_rsp[PeriphBootrom]   = bootrom_obi_rsp;
+  assign idma_obi_cfg_req                  = all_periph_obi_req[PeriphiDMA];
+  assign all_periph_obi_rsp[PeriphiDMA]    = idma_obi_cfg_rsp;
+  assign clint_obi_req                     = all_periph_obi_req[PeriphClint];
+  assign all_periph_obi_rsp[PeriphClint]   = clint_obi_rsp;
+  assign bootrom_obi_req                   = all_periph_obi_req[PeriphBootrom];
+  assign all_periph_obi_rsp[PeriphBootrom] = bootrom_obi_rsp;
 
 
   // -----------------
@@ -222,6 +252,64 @@ module croc_domain import croc_pkg::*; #(
 
     .core_busy_o     ( core_busy_o )
   );
+
+  // -----------------
+  // iDMA
+  // -----------------
+  if (iDMAEnable) begin : gen_dma
+
+    // iDMA
+    croc_idma #(
+      .ObiMrgCfg        ( MgrObiCfg           ),
+      .ObiSbrCfg        ( SbrObiCfg           ),
+      .TFLenWidth       ( MgrObiCfg.AddrWidth ),
+      .obi_mrg_a_chan_t ( mgr_obi_a_chan_t    ),
+      .obi_mrg_r_chan_t ( mgr_obi_r_chan_t    ),
+      .obi_mrg_req_t    ( mgr_obi_req_t       ),
+      .obi_mrg_rsp_t    ( mgr_obi_rsp_t       ),
+      .obi_sbr_req_t    ( sbr_obi_req_t       ),
+      .obi_sbr_rsp_t    ( sbr_obi_rsp_t       )
+    ) i_croc_idma (
+      .clk_i,
+      .rst_ni,
+      .obi_cfg_req_i   ( idma_obi_cfg_req    ),
+      .obi_cfg_rsp_o   ( idma_obi_cfg_rsp    ),
+      .obi_read_req_o  ( idma_obi_read_req   ),
+      .obi_read_rsp_i  ( idma_obi_read_rsp   ),
+      .obi_write_req_o ( idma_obi_write_req  ),
+      .obi_write_rsp_i ( idma_obi_write_rsp  ),
+      .busy_o          ( /* NOT CONNECTED */ ),
+      .irq_o           ( idma_irq            )
+    );
+
+    // IDMA managers going into crossbar
+    assign xbar_mgr_obi_req[4] = idma_obi_write_req;
+    assign idma_obi_write_rsp  = xbar_mgr_obi_rsp[4];
+
+    assign xbar_mgr_obi_req[5] = idma_obi_read_req;
+    assign idma_obi_read_rsp   = xbar_mgr_obi_rsp[5];
+
+  end else begin : gen_no_dma
+
+    // tie-off unused signals
+    assign idma_irq = 1'b0;
+
+    // error for config
+    obi_err_sbr #(
+      .ObiCfg      ( SbrObiCfg     ),
+      .obi_req_t   ( sbr_obi_req_t ),
+      .obi_rsp_t   ( sbr_obi_rsp_t ),
+      .NumMaxTrans ( 1             ),
+      .RspData     ( 32'hBADCAB1E  )
+    ) i_obi_err_sbr_idma_cfg (
+      .clk_i,
+      .rst_ni,
+      .testmode_i,
+      .obi_req_i  ( idma_obi_cfg_req ),
+      .obi_rsp_o  ( idma_obi_cfg_rsp )
+    );
+  end
+
 
   // -----------------
   // Debug Module
@@ -333,15 +421,15 @@ module croc_domain import croc_pkg::*; #(
     .NumAddrRules       ( $size(croc_addr_map) ),
     .addr_map_rule_t    ( addr_map_rule_t      ),
     .UseIdForRouting    ( 1'b0                 ),
-    .Connectivity       ( '1                   )
+    .Connectivity       ( XbarConnectivity      )
   ) i_main_xbar (
     .clk_i,
     .rst_ni,
     .testmode_i,
 
     // connections between managers and crossbar
-    .sbr_ports_req_i  ( {core_instr_obi_req, core_data_obi_req, dbg_req_obi_req, user_mgr_obi_req_i } ),
-    .sbr_ports_rsp_o  ( {core_instr_obi_rsp, core_data_obi_rsp, dbg_req_obi_rsp, user_mgr_obi_rsp_o } ),
+    .sbr_ports_req_i  ( xbar_mgr_obi_req ),
+    .sbr_ports_rsp_o  ( xbar_mgr_obi_rsp ),
     // connections between crossbar and subordinates
     .mgr_ports_req_o  ( all_sbr_obi_req ), 
     .mgr_ports_rsp_i  ( all_sbr_obi_rsp ),
