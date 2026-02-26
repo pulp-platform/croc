@@ -12,7 +12,7 @@ package user_pkg;
   //////////////////
   // User Manager //
   //////////////////
-  
+
   // None
 
 
@@ -36,6 +36,6 @@ package user_pkg;
   // All addresses outside the defined address rules go to the error subordinate
 
   // +1 for additional OBI error
-  localparam int unsigned NumDemuxSbr = $size(user_addr_map) + 1; 
+  localparam int unsigned NumDemuxSbr = $size(user_addr_map) + 1;
 
 endpackage

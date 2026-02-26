@@ -26,6 +26,14 @@ packages:
     source:
       Path: rtl/cve2
     dependencies: []
+  idma:
+    revision: null
+    version: null
+    source:
+      Path: rtl/idma
+    dependencies:
+    - common_cells
+    - obi
   obi:
     revision: null
     version: null

@@ -13,7 +13,7 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   input  logic      ref_clk_i,
   input  logic      rst_ni,
   input  logic      testmode_i,
-  
+
   input  sbr_obi_req_t user_sbr_obi_req_i, // User Sbr (rsp_o), Croc Mgr (req_i)
   output sbr_obi_rsp_t user_sbr_obi_rsp_o,
 
@@ -24,7 +24,7 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   output logic [NumExternalIrqs-1:0] interrupts_o // interrupts to core
 );
 
-  assign interrupts_o = '0;  
+  assign interrupts_o = '0;
 
 
   //////////////////////
@@ -42,7 +42,7 @@ module user_domain import user_pkg::*; import croc_pkg::*; #(
   // ----------------------------------------------------------------------------------------------
   // User Subordinate Buses
   // ----------------------------------------------------------------------------------------------
-  
+
   // collection of signals from the demultiplexer
   sbr_obi_req_t [NumDemuxSbr-1:0] all_user_sbr_obi_req;
   sbr_obi_rsp_t [NumDemuxSbr-1:0] all_user_sbr_obi_rsp;

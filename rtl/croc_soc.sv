@@ -68,8 +68,8 @@ croc_domain #(
   .uart_rx_i,
   .uart_tx_o,
 
-  .gpio_i,             
-  .gpio_o,            
+  .gpio_i,
+  .gpio_o,
   .gpio_out_en_o,
 
   .gpio_in_sync_o ( gpio_in_sync ),

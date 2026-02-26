@@ -30,8 +30,9 @@ The main SoC configurations are in `rtl/croc_pkg.sv`:
 | Parameter           | Default          | Function                                              |
 |---------------------|------------------|-------------------------------------------------------|
 | `PulpJtagIdCode`    | `32'hED9_C0C50`  | Debug module ID code                                  |
-| `SramBankNumWords`  | `512`            | Number of 32bit words in a memory bank                |
+| `iDMAEnable`        | `0`              | Enable optional DMA (see `rtl/idma`)                  |
 | `NumSramBanks`      | `2`              | Number of memory banks                                |
+| `SramBankNumWords`  | `512`            | Number of 32bit words in a memory bank                |
 | `BootAddr`          | `32'h1000_0000`  | Default boot address set in 'soc_ctrl' register       |
 | `croc_addr_map`     | see 'Memory Map' | Routing rules used for the main crossbar              |
 | `periph_addr_map`   | see 'Memory Map' | Routing rules used for the peripheral demuliplexer    |
@@ -60,6 +61,7 @@ The address map of the default configuration is as follows:
 | `32'h0300_2000` | `32'h0300_3000` | UART peripheral                            |
 | `32'h0300_5000` | `32'h0300_6000` | GPIO peripheral                            |
 | `32'h0300_A000` | `32'h0300_B000` | Timer peripheral                           |
+| `32'h0300_B000` | `32'h0300_C000` | (optional) DMA configuration               |
 | `32'h1000_0000` | `+SRAM_SIZE`    | Memory banks (SRAM)                        |
 | `32'h2000_0000` | `32'h8000_0000` | Passthrough to user domain                 |
 | `32'h2000_0000` | `32'h2000_1000` | reserved for string formatted user ROM*    |
@@ -86,9 +88,8 @@ graph LR;
 Currently, the final GDS is still missing the following things:
 
 - metal density fill
-- sealring
 
-These can be added in KLayout, check the [IHP repository](https://github.com/IHP-GmbH/IHP-Open-PDK/tree/main) (possible the dev branch) for a reference script.
+These can be done in KLayout, check the [IHP repository](https://github.com/IHP-GmbH/IHP-Open-PDK/tree/main) for a reference script.
 
 ### Example Results
 

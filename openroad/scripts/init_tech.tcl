@@ -72,8 +72,8 @@ proc setDefaultParasitics {} {
 }
 
 # Tie cell pins
-set tieHiPin "TIEHI/Y"
-set tieLoPin "TIELO/Y"
+set tieHiPin "sg13g2_tiehi/L_HI"
+set tieLoPin "sg13g2_tielo/L_LO"
 
 # Tap cell insertion
 proc insertTapCells {} {

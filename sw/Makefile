@@ -47,6 +47,11 @@ TOP_BASENAMES := $(basename $(TOP_SOURCES))
 TOP_OBJS    := $(TOP_BASENAMES:=.o)
 ALL_TARGETS := $(TOP_BASENAMES:%=$(BINDIR)/%.elf) $(TOP_BASENAMES:%=$(BINDIR)/%.dump) $(TOP_BASENAMES:%=$(BINDIR)/%.hex)
 
+# Build test files from test/ subdirectory as separate binaries
+TEST_SOURCES  := $(wildcard test/*.[cS])
+TEST_BASENAMES := $(basename $(notdir $(TEST_SOURCES)))
+ALL_TARGETS   += $(TEST_BASENAMES:%=$(BINDIR)/%.elf) $(TEST_BASENAMES:%=$(BINDIR)/%.dump) $(TEST_BASENAMES:%=$(BINDIR)/%.hex)
+
 
 $(BINDIR):
 	mkdir -p $(BINDIR)
@@ -63,6 +68,9 @@ $(BINDIR)/%.elf: %.S.o $(CRT0).o $(LIB_OBJS) | $(BINDIR)
 $(BINDIR)/%.elf: %.c.o $(CRT0).o $(LIB_OBJS) | $(BINDIR)
 	$(RISCV_CC) -o $@ $^ $(RISCV_LDFLAGS) -T$(LINK)
 
+$(BINDIR)/%.elf: test/%.c.o $(CRT0).o $(LIB_OBJS) | $(BINDIR)
+	$(RISCV_CC) -o $@ $^ $(RISCV_LDFLAGS) -T$(LINK)
+
 $(BINDIR)/%.dump: $(BINDIR)/%.elf
 	$(RISCV_OBJDUMP) -D -s $< >$@
 
@@ -75,5 +83,6 @@ $(BINDIR)/%.hex: $(BINDIR)/%.elf
 clean:
 	rm -rf $(BINDIR)
 	rm -f *.o
+	rm -f test/*.o
 
 compile: $(BINDIR) $(ALL_TARGETS)

@@ -63,7 +63,7 @@ module croc_chip import croc_pkg::*; #() (
   inout wire VSS,
   inout wire VDDIO,
   inout wire VSSIO
-); 
+);
     logic soc_clk_i;
     logic soc_rst_ni;
     logic soc_ref_clk_i;
@@ -79,8 +79,8 @@ module croc_chip import croc_pkg::*; #() (
 
     localparam int unsigned GpioCount = 32;
 
-    logic [GpioCount-1:0] soc_gpio_i;             
-    logic [GpioCount-1:0] soc_gpio_o;            
+    logic [GpioCount-1:0] soc_gpio_i;
+    logic [GpioCount-1:0] soc_gpio_o;
     logic [GpioCount-1:0] soc_gpio_out_en_o; // Output enable signal; 0 -> input, 1 -> output
 
     sg13g2_IOPadIn        pad_clk_i        (.pad(clk_i),        .p2c(soc_clk_i));
@@ -174,8 +174,8 @@ module croc_chip import croc_pkg::*; #() (
     .uart_rx_i      ( soc_uart_rx_i ),
     .uart_tx_o      ( soc_uart_tx_o ),
 
-    .gpio_i         ( soc_gpio_i        ),             
-    .gpio_o         ( soc_gpio_o        ),            
+    .gpio_i         ( soc_gpio_i        ),
+    .gpio_o         ( soc_gpio_o        ),
     .gpio_out_en_o  ( soc_gpio_out_en_o )
   );
 
