@@ -73,6 +73,14 @@ sources:
       - xilinx/hw/croc_xilinx.sv
       - xilinx/hw/fan_ctrl.sv
 
+  - target: gatemate
+    files:
+      - nextpnr/gatemate_dev/src/croc_gm.sv
+
+  - target: ecp5
+    files:
+      - nextpnr/orangecrab/src/croc_ecp5.sv
+
 vendor_package:
   #################################
   # commonly used building blocks #
