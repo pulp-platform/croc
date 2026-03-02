@@ -1,0 +1,52 @@
+From 682f99705ec4082c50d93fe7e2c550373750a958 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Mon, 2 Mar 2026 18:18:11 +0100
+Subject: [PATCH] remove references to axi_pkg
+
+---
+ idma_pkg.sv | 27 +++++++++++++++++++++------
+ 1 file changed, 21 insertions(+), 6 deletions(-)
+
+diff --git a/idma_pkg.sv b/idma_pkg.sv
+index f302349..1ab06d7 100644
+--- a/idma_pkg.sv
++++ b/idma_pkg.sv
+@@ -57,14 +57,29 @@ package idma_pkg;
+         logic raw_coupler_busy;
+     } idma_busy_t;
+ 
++    /// AXI Transaction Burst Width.
++    typedef logic [1:0]  burst_t;
++    /// AXI Transaction Response Type.
++    typedef logic [1:0]   resp_t;
++    /// AXI Transaction Cacheability Type.
++    typedef logic [3:0]  cache_t;
++    /// AXI Transaction Protection Type.
++    typedef logic [2:0]   prot_t;
++    /// AXI Transaction Quality of Service Type.
++    typedef logic [3:0]    qos_t;
++    /// AXI Transaction Region Type.
++    typedef logic [3:0] region_t;
++    /// AXI Transaction Length Type.
++    typedef logic [7:0]    len_t;
++
+     /// AXI4 option type: contains the AXI4 options fields
+     typedef struct packed {
+-        axi_pkg::burst_t  burst;
+-        axi_pkg::cache_t  cache;
+-        logic             lock;
+-        axi_pkg::prot_t   prot;
+-        axi_pkg::qos_t    qos;
+-        axi_pkg::region_t region;
++        burst_t  burst;
++        cache_t  cache;
++        logic    lock;
++        prot_t   prot;
++        qos_t    qos;
++        region_t region;
+     } axi_options_t;
+ 
+     /// Backend option type:
+-- 
+2.43.5
+

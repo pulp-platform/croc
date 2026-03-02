@@ -26,11 +26,16 @@ package croc_pkg;
     version:      4'h0      /* version 0 */
   };
 
+  ////////////////////////
+  // iDMA Configuration //
+  ////////////////////////
+  localparam bit iDMAEnable = 1'b0;
+
 
   ////////////////////////
   // SRAM Configuration //
   ////////////////////////
-  // Check your target technology which SRAMs are available
+  // Check in your target technology which SRAMs are available
   // and then make sure it is implemented as an option in tc_sram_impl.sv
   
   /// Number of SRAM banks, each bank has its own OBI port (accessible in parallel)
@@ -57,8 +62,8 @@ package croc_pkg;
   // Main Crossbar Address Map ///
   ////////////////////////////////
   /// Number of manager ports into crossbar
-  /// Debug module, Core Instr, Core Data, User Domain
-  localparam int unsigned NumXbarManagers = 4;
+  /// User Domain, Debug module, Core Data, Core Instr; optionally iDMA Write and iDMA Read
+  localparam int unsigned NumXbarManagers = 4 + (iDMAEnable ? 2 : 0);
 
   /// Enum with crossbar subordinate idxs
   typedef enum int {
@@ -78,6 +83,17 @@ package croc_pkg;
 
   // +1 for additional OBI error
   localparam int unsigned NumXbarSubordinates = $size(croc_addr_map) + 1;
+
+  /// Connectivity matrix for the main crossbar [NumXbarManagers-1:0][NumXbarSubordinates-1:0]
+  /// Default is fully connected. If you use the iDMA you may want to reduce this
+  /// to reduce routing and improve timing for your specific application.
+  /// Eg. if you add something in the user_domain, you may not need connectivity to peripherals
+  function automatic logic [NumXbarManagers-1:0][NumXbarSubordinates-1:0] xbar_connectivity();
+    logic [NumXbarSubordinates-1:0] idma_mask;
+    xbar_connectivity = '1; // full connectivity for all by default
+  endfunction
+
+  localparam logic [NumXbarManagers-1:0][NumXbarSubordinates-1:0] XbarConnectivity = xbar_connectivity();
 
   /// Converts the bus idx enum for the main crossbar to start address of a subordinate
   /// Eg : get_croc_start_addr(XbarUser) returns the start address of the User region
@@ -104,23 +120,25 @@ package croc_pkg;
   typedef enum int {
     PeriphError    = 0,
     PeriphDebug    = 1,
-    PeriphSocCtrl  = 2,
-    PeriphUart     = 3,
-    PeriphGpio     = 4,
-    PeriphTimer    = 5,
-    PeriphBootrom  = 6,
-    PeriphClint    = 7
+    PeriphBootrom  = 2,
+    PeriphClint    = 3,
+    PeriphSocCtrl  = 4,
+    PeriphUart     = 5,
+    PeriphGpio     = 6,
+    PeriphTimer    = 7,
+    PeriphiDMA     = 8
   } periph_outputs_e;
 
   /// Address map given to the peripheral mux
-  localparam addr_map_rule_t [6:0] periph_addr_map = '{
+  localparam addr_map_rule_t [7:0] periph_addr_map = '{
     '{ idx: PeriphDebug,   start_addr: 32'h0000_0000, end_addr: 32'h0004_0000 },
+    '{ idx: PeriphBootrom, start_addr: 32'h0200_0000, end_addr: 32'h0200_4000 },
+    '{ idx: PeriphClint,   start_addr: 32'h0204_0000, end_addr: 32'h0208_0000 },
     '{ idx: PeriphSocCtrl, start_addr: 32'h0300_0000, end_addr: 32'h0300_1000 },
     '{ idx: PeriphUart,    start_addr: 32'h0300_2000, end_addr: 32'h0300_3000 },
     '{ idx: PeriphGpio,    start_addr: 32'h0300_5000, end_addr: 32'h0300_6000 },
     '{ idx: PeriphTimer,   start_addr: 32'h0300_A000, end_addr: 32'h0300_B000 },
-    '{ idx: PeriphBootrom, start_addr: 32'h0200_0000, end_addr: 32'h0200_4000 },
-    '{ idx: PeriphClint,   start_addr: 32'h0204_0000, end_addr: 32'h0208_0000 }
+    '{ idx: PeriphiDMA,    start_addr: 32'h0300_B000, end_addr: 32'h0300_C000 }
   };
 
   // +1 for additional OBI error

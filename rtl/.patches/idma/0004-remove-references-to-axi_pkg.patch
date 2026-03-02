@@ -1,0 +1,24 @@
+From f454cfac970ced5dfd060fa0b6125c9a4609e33b Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Mon, 2 Mar 2026 18:17:57 +0100
+Subject: [PATCH] remove references to axi_pkg
+
+---
+ idma_channel_coupler.sv | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/idma_channel_coupler.sv b/idma_channel_coupler.sv
+index 1491716..a16e8df 100644
+--- a/idma_channel_coupler.sv
++++ b/idma_channel_coupler.sv
+@@ -6,7 +6,6 @@
+ // - Thomas Benz <tbenz@iis.ee.ethz.ch>
+ 
+ `include "common_cells/registers.svh"
+-`include "axi/typedef.svh"
+ 
+ /// Couples the `R` to the `AW` channel by keeping writes back until the corresponding
+ /// reads arrive at the DMA. This reduces the congestion in the memory system.
+-- 
+2.43.5
+

@@ -1,0 +1,25 @@
+From 97a2d483dbe2197e5919d9869403eee03b6acc11 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Mon, 2 Mar 2026 18:22:29 +0100
+Subject: [PATCH] remove references to axi_pkg
+
+---
+ typedef.svh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/typedef.svh b/typedef.svh
+index d250ec1..a1e0d4a 100644
+--- a/typedef.svh
++++ b/typedef.svh
+@@ -30,7 +30,7 @@
+     } options_t;
+ `define IDMA_TYPEDEF_ERR_PAYLOAD_T(err_payload_t, axi_addr_t)            \
+     typedef struct packed {                                              \
+-        axi_pkg::resp_t      cause;                                      \
++        idma_pkg::resp_t      cause;                                      \
+         idma_pkg::err_type_t err_type;                                   \
+         axi_addr_t           burst_addr;                                 \
+     } err_payload_t;
+-- 
+2.43.5
+
