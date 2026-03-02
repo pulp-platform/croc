@@ -1,0 +1,55 @@
+From 926f7175f0eaaeaa8d0ddd383f555203f32d7343 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Mon, 2 Mar 2026 18:26:19 +0100
+Subject: [PATCH] linting declare after use
+
+---
+ obi_uart_rx.sv | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/obi_uart_rx.sv b/obi_uart_rx.sv
+index 2ef497f..71a9419 100644
+--- a/obi_uart_rx.sv
++++ b/obi_uart_rx.sv
+@@ -202,13 +202,15 @@ module obi_uart_rx import obi_uart_pkg::*; #()
+   ////////////////////////////////////////////////////////////////////////////////////////////////
+   // General Logic //
+   ////////////////////////////////////////////////////////////////////////////////////////////////
++
++  // Character is all zeros, parity and stop indicate break, current line is still 0 -> break
++  assign break_interrupt = (rsr_q == '0) & (break_q | break_d) & (~filtered_rxd_q);
++
+   always_comb begin
+ 
+     //--------------------------------------------------------------------------------------------
+     // Defaults
+     //--------------------------------------------------------------------------------------------
+-    // Character is all zeros, parity and stop indicate break, current line is still 0 -> break
+-    break_interrupt = (rsr_q == '0) & (break_q | break_d) & (~filtered_rxd_q);
+ 
+     //--FIFO Combinational------------------------------------------------------------------------
+     fifo_clear    = 1'b1; // Reset
+@@ -221,9 +223,6 @@ module obi_uart_rx import obi_uart_pkg::*; #()
+ 
+     timeout_count_d = timeout_count_q;
+     timeout_o         = 1'b0; // timeout_o
+-    // timeout_level = (character_length * 4) +1
+-    character_length = (6'd02 +word_len_bits +reg_read_i.lcr.par_en +reg_read_i.lcr.stop_bits);
+-    timeout_level = (character_length << 2) + 6'd01;
+ 
+     fifo_error_index_d = fifo_error_index_q; // FIFO Error
+ 
+@@ -265,6 +264,10 @@ module obi_uart_rx import obi_uart_pkg::*; #()
+       default: word_len_bits = 3'b111;
+     endcase
+ 
++    // timeout_level = (character_length * 4) +1
++    character_length = (6'd02 +word_len_bits +reg_read_i.lcr.par_en +reg_read_i.lcr.stop_bits);
++    timeout_level = (character_length << 2) + 6'd01;
++
+     //--------------------------------------------------------------------------------------------
+     // Clear RHR & LSR after OBI read
+     //--------------------------------------------------------------------------------------------
+-- 
+2.43.5
+
