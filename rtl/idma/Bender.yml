@@ -1,0 +1,43 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
+# Authors:
+# - Thomas Benz <tbenz@iis.ee.ethz.ch>
+
+package:
+  name: idma
+  authors:
+    - "Thomas Benz <tbenz@iis.ee.ethz.ch>" # current maintainer
+    - "Michael Rogenmoser <michaero@iis.ee.ethz.ch>"
+    - "Tobias Senti <tsenti@ethz.ch>"
+    - "Axel Vanoni <axvanoni@ethz.ch>"
+
+dependencies:
+  common_cells:        { git: "https://github.com/pulp-platform/common_cells.git", version: 1.39.0 }
+  obi:                 { git: "https://github.com/pulp-platform/obi.git",          rev: 6a724da    }
+
+export_include_dirs:
+  - include
+
+sources:
+  # Source files grouped in levels. Files in level 0 have no dependencies on files in this
+  # package. Files in level 1 only depend on files in level 0, files in level 2 on files in
+  # levels 1 and 0, etc. Files within a level are ordered alphabetically.
+  # Level 0
+  - idma_pkg.sv
+  # Level 1
+  - idma_channel_coupler.sv
+  - idma_dataflow_element.sv
+  - idma_obi_read.sv
+  - idma_obi_write.sv
+  - idma_nd_midend.sv
+  - idma_transfer_id_gen.sv
+  - idma_legalizer_page_splitter.sv
+  # Level 2
+  - idma_transport_layer_rw_obi.sv
+  - idma_legalizer_rw_obi.sv
+  # Level 3
+  - idma_backend_rw_obi.sv
+  # Level 4
+  - croc_idma.sv

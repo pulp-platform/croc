@@ -7,3 +7,4 @@ overrides:
   ibex: { path: "rtl/ibex" }
   obi: { path: "rtl/obi" }
   riscv-dbg: { path: "rtl/riscv-dbg" }
+  idma: { path: "rtl/idma" }

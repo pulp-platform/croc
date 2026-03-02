@@ -1,0 +1,60 @@
+From 32bca750f8fea3a2c9d6c44a5a7fbb9074e0e1c8 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Mon, 2 Mar 2026 18:17:26 +0100
+Subject: [PATCH] remove references to axi_pkg
+
+---
+ idma_backend_rw_obi.sv | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/idma_backend_rw_obi.sv b/idma_backend_rw_obi.sv
+index 424fe4c..0221bbc 100644
+--- a/idma_backend_rw_obi.sv
++++ b/idma_backend_rw_obi.sv
+@@ -6,7 +6,6 @@
+ // - Thomas Benz <tbenz@iis.ee.ethz.ch>
+ // - Tobias Senti <tsenti@ethz.ch>
+ 
+-`include "axi/typedef.svh"
+ `include "idma/guard.svh"
+ 
+ /// The iDMA backend implements an arbitrary 1D copy engine
+@@ -150,7 +149,7 @@ module idma_backend_rw_obi #(
+     /// - `last`: The last flag from the R channel of the AXI4 manager interface
+     /// - `first`: Is the current item first beat in the burst
+     typedef struct packed {
+-        axi_pkg::resp_t resp;
++        idma_pkg::resp_t resp;
+         logic           last;
+         logic           first;
+     } r_dp_rsp_t;
+@@ -168,7 +167,7 @@ module idma_backend_rw_obi #(
+         offset_t             offset;
+         offset_t             tailer;
+         offset_t             shift;
+-        axi_pkg::len_t       num_beats;
++        idma_pkg::len_t       num_beats;
+         logic                is_single;
+     } w_dp_req_t;
+ 
+@@ -176,7 +175,7 @@ module idma_backend_rw_obi #(
+     /// - `resp`: The response from the B channel of the AXI4 manager interface
+     /// - `user`: The user field from the B channel of the AXI4 manager interface
+     typedef struct packed {
+-        axi_pkg::resp_t resp;
++        idma_pkg::resp_t resp;
+         user_t          user;
+     } w_dp_rsp_t;
+ 
+@@ -375,7 +374,7 @@ module idma_backend_rw_obi #(
+         );
+ 
+         // local signal holding the length -> explicitly only doing the computation once
+-        axi_pkg::len_t len;
++        idma_pkg::len_t len;
+         assign len = ((idma_req_i.length + idma_req_i.src_addr[OffsetWidth-1:0] -
+                      'd1) >> OffsetWidth);
+ 
+-- 
+2.43.5
+

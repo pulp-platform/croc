@@ -1,0 +1,89 @@
+From dd30f55f480e3e2a9dd5a1ff5f883016c179d714 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Mon, 2 Mar 2026 18:06:38 +0100
+Subject: [PATCH] adjust readme paths
+
+---
+ README.md | 62 +++----------------------------------------------------
+ 1 file changed, 3 insertions(+), 59 deletions(-)
+
+diff --git a/README.md b/README.md
+index e615934..09a7f36 100644
+--- a/README.md
++++ b/README.md
+@@ -1,7 +1,7 @@
+ # iDMA
+ [![CI status](https://github.com/pulp-platform/idma/actions/workflows/gitlab-ci.yml/badge.svg?branch=master)](https://github.com/pulp-platform/idma/actions/workflows/gitlab-ci.yml?query=branch%3Amaster)
+ [![GitHub tag (latest SemVer)](https://img.shields.io/github/v/tag/pulp-platform/iDMA?color=blue&label=current&sort=semver)](CHANGELOG.md)
+-[![SHL-0.51 license](https://img.shields.io/badge/license-SHL--0.51-green)](LICENSE)
++[![SHL-0.51 license](https://img.shields.io/badge/license-SHL--0.51-green)](../../LICENSE.md)
+ 
+ Home of the iDMA - a modular, parametrizable, and highly flexible *Data Movement Accelerator (DMA)*
+ architecture targeting a wide range of platforms from ultra-low power edge nodes to high-performance
+@@ -450,61 +450,5 @@ The following systems/publications make use of iDMA:
+ 
+ 
+ ## License
+-iDMA is released under Solderpad v0.51 (SHL-0.51) see [`LICENSE`](LICENSE):
+-
+-## Contributing
+-We are happy to accept pull requests and issues from any contributors. See [`CONTRIBUTING.md`](CONTRIBUTING.md)
+-for additional information.
+-
+-## Getting Started
+-
+-### Prerequisites
+-iDMA can directly be integrated after cloning it from this repository. However, to regenerate
+-the configuration registers, build the documentation, and run various checks on the source code,
+-various tools are required.
+-
+-- [`bender >= v0.24.0`](https://github.com/pulp-platform/bender)
+-- [`morty >= v0.6.0`](https://github.com/zarubaf/morty)
+-- [`Verilator = v4.202`](https://www.veripool.org/verilator)
+-- [`Verible >= v0.0-1051-gd4cd328`](https://github.com/chipsalliance/verible)
+-- [`Python3 >= 3.8`](https://www.python.org/downloads/) including some the libraries listed
+-  in [`requirements.txt`](requirements.txt)
+-
+-### Building the Documentation
+-Use `make doc` to build the documentation. The output is located at `doc/build`.
+-
+-
+-### Simulation
+-We currently do not include any free and open-source simulation setup. However, if you have access to
+-[*Questa advanced simulator*](https://eda.sw.siemens.com/en-US/ic/questa/simulation/advanced-simulator/),
+-a simulation can be launched using:
+-
+-```bash
+-make idma_sim_all
+-cd target/sim/vsim
+-$VSIM -c -do "source compile.tcl; quit"
+-$VSIM -c -t 1ps -voptargs=+acc \
+-     +job_file=jobs/backend_rw_axi/simple.txt \
+-     -logfile rw_axi_simple.log \
+-     -wlf rw_axi_simple.wlf \
+-     tb_idma_backend_rw_axi \
+-     -do "source start.tcl; run -all"
+-```
+-with gui:
+-```bash
+-make idma_sim_all
+-cd target/sim/vsim
+-$VSIM -c -do "source compile.tcl; quit"
+-$VSIM -t 1ps -voptargs=+acc \
+-     +job_file=jobs/backend_rw_axi/simple.txt \
+-     -logfile rw_axi_simple.log \
+-     -wlf rw_axi_simple.wlf \
+-     tb_idma_backend_rw_axi \
+-     -do "source start.tcl; source wave/backend_rw_axi.do; run -all"
+-```
+-
+-Where:
+-- `job_file=jobs/backend_rw_axi/simple.txt` can point to any valid [job file](jobs/README.md)
+-- `-logfile rw_axi_simple.log` denotes the log file
+-- `-wlf rw_axi_simple.wlf` specifies a wave file
+-- `tb_idma_backend_rw_axi` can be any of the supplied testbenches
++iDMA is released under Solderpad v0.51 (SHL-0.51) see [`LICENSE`](../..LICENSE.md):
++
+-- 
+2.43.5
+
