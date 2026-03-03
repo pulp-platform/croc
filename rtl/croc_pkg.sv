@@ -24,7 +24,7 @@ package croc_pkg;
     _one:          1'b1,    /* must be 1 */
     manufacturer: 11'h6d9,  /* identify as PULP Platform chip */
     part_num:     16'hC0C5, /* default Croc part number */
-    version:       4'h1     /* version 1 (2026) */
+    version:       4'h1     /* 2nd version (2026) */
   };
 
   ////////////////////////

@@ -17,7 +17,7 @@ tcl_port disabled
 reset_config none
 
 set _CHIPNAME riscv
-jtag newtap $_CHIPNAME cpu -irlen ${irlen} -expected-id 0x0c0c5db3
+jtag newtap $_CHIPNAME cpu -irlen ${irlen} -expected-id 0x1c0c5db3
 
 set _TARGETNAME $_CHIPNAME.cpu
 target create $_TARGETNAME riscv -chain-position $_TARGETNAME -coreid 0
