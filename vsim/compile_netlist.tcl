@@ -1,6 +1,15 @@
+# Copyright (c) 2024 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Published with permission from Siemens. 
+# Siemens QuestaSim is available through EDA Higher Education Software Program
+# https://www.sw.siemens.com/en-US/academic/educators/eda-higher-education-software/
+#
 # This script was generated automatically by bender.
 set ROOT ".."
 
+# Package(common_verification) Target(any(simulation, verilator))
 if {[catch { vlog -incr -sv \
     -svinputport=compat \
     "+define+TARGET_IHP13" \
@@ -13,6 +22,7 @@ if {[catch { vlog -incr -sv \
     "$ROOT/rtl/common_verification/clk_rst_gen.sv" \
 }]} {return 1}
 
+# Package(tech_cells_generic) Target(all(any(tech_cells_generic_include_tc_sram, all(not(asic), not(fpga))), not(tech_cells_generic_exclude_tc_sram)))
 if {[catch { vlog -incr -sv \
     -svinputport=compat \
     "+define+TARGET_IHP13" \
@@ -26,6 +36,7 @@ if {[catch { vlog -incr -sv \
     "$ROOT/rtl/tech_cells_generic/tc_sram_impl.sv" \
 }]} {return 1}
 
+# Package(tech_cells_generic) Target(all(any(tech_cells_generic_include_tc_clk, all(not(asic), not(fpga))), not(tech_cells_generic_exclude_tc_clk)))
 if {[catch { vlog -incr -sv \
     -svinputport=compat \
     "+define+TARGET_IHP13" \
@@ -38,6 +49,7 @@ if {[catch { vlog -incr -sv \
     "$ROOT/rtl/tech_cells_generic/tc_clk.sv" \
 }]} {return 1}
 
+# Package(common_cells) Target(*)
 if {[catch { vlog -incr -sv \
     -svinputport=compat \
     "+define+TARGET_IHP13" \
@@ -51,6 +63,7 @@ if {[catch { vlog -incr -sv \
     "$ROOT/rtl/common_cells/binary_to_gray.sv" \
 }]} {return 1}
 
+# Package(common_cells) Target(not(all(vivado_ipx, xilinx)))
 if {[catch { vlog -incr -sv \
     -svinputport=compat \
     "+define+TARGET_IHP13" \
@@ -115,6 +128,7 @@ if {[catch { vlog -incr -sv \
     "$ROOT/rtl/common_cells/multiaddr_decode.sv" \
 }]} {return 1}
 
+# Package(common_cells) Target(not(all(vivado_ipx, xilinx)))
 if {[catch { vlog -incr -sv \
     -svinputport=compat \
     "+define+TARGET_IHP13" \
@@ -157,6 +171,7 @@ if {[catch { vlog -incr -sv \
     "$ROOT/rtl/common_cells/mem_to_banks.sv" \
 }]} {return 1}
 
+# Package(obi) Target(*)
 if {[catch { vlog -incr -sv \
     -svinputport=compat \
     "+define+TARGET_IHP13" \
@@ -182,6 +197,7 @@ if {[catch { vlog -incr -sv \
     "$ROOT/rtl/obi/obi_xbar.sv" \
 }]} {return 1}
 
+# Package(apb) Target(*)
 if {[catch { vlog -incr -sv \
     -svinputport=compat \
     "+define+TARGET_IHP13" \
@@ -196,6 +212,7 @@ if {[catch { vlog -incr -sv \
     "$ROOT/rtl/apb/apb_pkg.sv" \
 }]} {return 1}
 
+# Package(cve2) Target(*)
 if {[catch { vlog -incr -sv \
     -svinputport=compat \
     "+define+TARGET_IHP13" \
@@ -205,6 +222,7 @@ if {[catch { vlog -incr -sv \
     "+define+TARGET_VSIM" \
     "+define+SYNTHESIS" \
     "+define+SIMULATION" \
+    "+incdir+$ROOT/rtl/common_cells/include" \
     "+incdir+$ROOT/rtl/cve2/include" \
     "$ROOT/rtl/cve2/cve2_pkg.sv" \
     "$ROOT/rtl/cve2/cve2_alu.sv" \
@@ -229,6 +247,7 @@ if {[catch { vlog -incr -sv \
     "$ROOT/rtl/cve2/cve2_core.sv" \
 }]} {return 1}
 
+# Package(idma) Target(*)
 if {[catch { vlog -incr -sv \
     -svinputport=compat \
     "+define+TARGET_IHP13" \
@@ -255,6 +274,7 @@ if {[catch { vlog -incr -sv \
     "$ROOT/rtl/idma/croc_idma.sv" \
 }]} {return 1}
 
+# Package(obi_peripherals) Target(*)
 if {[catch { vlog -incr -sv \
     -svinputport=compat \
     "+define+TARGET_IHP13" \
@@ -276,6 +296,7 @@ if {[catch { vlog -incr -sv \
     "$ROOT/rtl/obi_uart/obi_uart.sv" \
 }]} {return 1}
 
+# Package(riscv-dbg) Target(*)
 if {[catch { vlog -incr -sv \
     -svinputport=compat \
     "+define+TARGET_IHP13" \
@@ -294,6 +315,7 @@ if {[catch { vlog -incr -sv \
     "$ROOT/rtl/riscv-dbg/dmi_cdc.sv" \
 }]} {return 1}
 
+# Package(riscv-dbg) Target(not(all(bscane, xilinx)))
 if {[catch { vlog -incr -sv \
     -svinputport=compat \
     "+define+TARGET_IHP13" \
@@ -307,6 +329,7 @@ if {[catch { vlog -incr -sv \
     "$ROOT/rtl/riscv-dbg/dmi_jtag_tap.sv" \
 }]} {return 1}
 
+# Package(riscv-dbg) Target(*)
 if {[catch { vlog -incr -sv \
     -svinputport=compat \
     "+define+TARGET_IHP13" \
@@ -323,6 +346,7 @@ if {[catch { vlog -incr -sv \
     "$ROOT/rtl/riscv-dbg/dm_obi_top.sv" \
 }]} {return 1}
 
+# Package(riscv-dbg) Target(simulation)
 if {[catch { vlog -incr -sv \
     -svinputport=compat \
     "+define+TARGET_IHP13" \
@@ -336,6 +360,7 @@ if {[catch { vlog -incr -sv \
     "$ROOT/rtl/riscv-dbg/dmi_test.sv" \
 }]} {return 1}
 
+# Package(riscv-dbg) Target(verilator)
 if {[catch { vlog -incr -sv \
     -svinputport=compat \
     "+define+TARGET_IHP13" \
@@ -349,6 +374,7 @@ if {[catch { vlog -incr -sv \
     "$ROOT/rtl/riscv-dbg/tb/jtag_test_simple.sv" \
 }]} {return 1}
 
+# Package(croc_soc) Target(ihp13)
 if {[catch { vlog -incr -sv \
     -svinputport=compat \
     "+define+TARGET_IHP13" \
@@ -366,6 +392,7 @@ if {[catch { vlog -incr -sv \
     "$ROOT/ihp13/tc_sram_impl.sv" \
 }]} {return 1}
 
+# Package(croc_soc) Target(*)
 if {[catch { vlog -incr -sv \
     -svinputport=compat \
     "+define+TARGET_IHP13" \
@@ -387,6 +414,7 @@ if {[catch { vlog -incr -sv \
     "$ROOT/rtl/obi_timer/obi_timer_reg_pkg.sv" \
 }]} {return 1}
 
+# Package(croc_soc) Target(not(fpga))
 if {[catch { vlog -incr -sv \
     -svinputport=compat \
     "+define+TARGET_IHP13" \
@@ -403,6 +431,7 @@ if {[catch { vlog -incr -sv \
     "$ROOT/rtl/croc_chip.sv" \
 }]} {return 1}
 
+# Package(croc_soc) Target(netlist_yosys)
 if {[catch { vlog -incr -sv \
     -svinputport=compat \
     "+define+TARGET_IHP13" \
@@ -419,6 +448,7 @@ if {[catch { vlog -incr -sv \
     "$ROOT/yosys/out/netlist_debug.v" \
 }]} {return 1}
 
+# Package(croc_soc) Target(any(simulation, verilator))
 if {[catch { vlog -incr -sv \
     -svinputport=compat \
     "+define+TARGET_IHP13" \

@@ -12,7 +12,7 @@
  * assertions only.
  */
 
-`include "lowrisc_prim/prim_assert.svh"
+`include "common_cells/assertions.svh"
 
 module cve2_decoder #(
   parameter bit RV32E               = 0,

@@ -11,7 +11,7 @@
  * the read instruction.
  */
 
-`include "lowrisc_prim/prim_assert.svh"
+`include "common_cells/assertions.svh"
 
 module cve2_if_stage import cve2_pkg::*; (
   input  logic                         clk_i,

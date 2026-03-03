@@ -5,6 +5,9 @@
 package:
   name: cve2
 
+dependencies:
+  common_cells: { git: "https://github.com/pulp-platform/common_cells.git", version: 1.39.0 }
+
 sources:
   - include_dirs:
     - include

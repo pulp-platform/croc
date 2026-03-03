@@ -11,7 +11,7 @@
  * Specification, draft version 1.11
  */
 
-`include "lowrisc_prim/prim_assert.svh"
+`include "common_cells/assertions.svh"
 
 module cve2_cs_registers #(
   parameter bit               DbgTriggerEn      = 0,

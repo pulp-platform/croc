@@ -10,7 +10,7 @@
  * a simple passthrough to write data direct to the register file.
  */
 
-`include "lowrisc_prim/prim_assert.svh"
+`include "common_cells/assertions.svh"
 
 module cve2_wb #(
 ) (

@@ -17,7 +17,7 @@ index 3e2a5965..a898379a 100644
 @@ -9,7 +9,6 @@
   */
  
- `include "lowrisc_prim/prim_assert.svh"
+ `include "common_cells/assertions.svh"
 -`include "dv_fcov_macros.svh"
  
  module cve2_controller #(
@@ -48,7 +48,7 @@ index 1e273124..5039c9d6 100644
 @@ -16,7 +16,6 @@
   */
  
- `include "lowrisc_prim/prim_assert.svh"
+ `include "common_cells/assertions.svh"
 -`include "dv_fcov_macros.svh"
  
  module cve2_id_stage #(
@@ -76,7 +76,7 @@ index 9f367ed5..5fe46ac8 100644
 @@ -13,7 +13,6 @@
   */
  
- `include "lowrisc_prim/prim_assert.svh"
+ `include "common_cells/assertions.svh"
 -`include "dv_fcov_macros.svh"
  
  module cve2_load_store_unit
@@ -102,7 +102,7 @@ index 50f61db3..ed93441f 100644
 @@ -11,7 +11,6 @@
   */
  
- `include "lowrisc_prim/prim_assert.svh"
+ `include "common_cells/assertions.svh"
 -`include "dv_fcov_macros.svh"
  
  module cve2_wb #(

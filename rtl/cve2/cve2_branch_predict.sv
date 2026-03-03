@@ -16,7 +16,7 @@
  * The predictor is entirely combinational but takes clk/rst_n signals for use by assertions.
  */
 
-`include "lowrisc_prim/prim_assert.svh"
+`include "common_cells/assertions.svh"
 
 module cve2_branch_predict (
   input  logic clk_i,

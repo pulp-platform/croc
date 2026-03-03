@@ -8,7 +8,7 @@
   `define RVFI
 `endif
 
-`include "lowrisc_prim/prim_assert.svh"
+`include "common_cells/assertions.svh"
 
 /**
  * Top level module of the CVE2 RISC-V core
