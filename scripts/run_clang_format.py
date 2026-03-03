@@ -98,11 +98,7 @@ def list_files(files, recursive=False, extensions=None, exclude=None):
                     # os.walk() supports trimming down the dnames list
                     # by modifying it in-place,
                     # to avoid unnecessary directory listings.
-                    dnames[:] = [
-                        x
-                        for x in dnames
-                        if not fnmatch.fnmatch(os.path.join(dirpath, x), pattern)
-                    ]
+                    dnames[:] = [x for x in dnames if not fnmatch.fnmatch(os.path.join(dirpath, x), pattern)]
                     fpaths = [x for x in fpaths if not fnmatch.fnmatch(x, pattern)]
                 for f in fpaths:
                     ext = os.path.splitext(f)[1][1:]
@@ -191,18 +187,10 @@ def run_clang_format_diff(args, file):
 
     try:
         proc = subprocess.Popen(
-            invocation,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            universal_newlines=True,
-            **encoding_py3
+            invocation, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, **encoding_py3
         )
     except OSError as exc:
-        raise DiffError(
-            "Command '{}' failed to start: {}".format(
-                subprocess.list2cmdline(invocation), exc
-            )
-        )
+        raise DiffError("Command '{}' failed to start: {}".format(subprocess.list2cmdline(invocation), exc))
     proc_stdout = proc.stdout
     proc_stderr = proc.stderr
     if sys.version_info[0] < 3:
@@ -283,9 +271,7 @@ def main():
     )
     parser.add_argument(
         "--extensions",
-        help="comma separated list of file extensions (default: {})".format(
-            DEFAULT_EXTENSIONS
-        ),
+        help="comma separated list of file extensions (default: {})".format(DEFAULT_EXTENSIONS),
         default=DEFAULT_EXTENSIONS,
     )
     parser.add_argument(
@@ -294,9 +280,7 @@ def main():
         action="store_true",
         help="run recursively over directories",
     )
-    parser.add_argument(
-        "-d", "--dry-run", action="store_true", help="just print the list of files"
-    )
+    parser.add_argument("-d", "--dry-run", action="store_true", help="just print the list of files")
     parser.add_argument(
         "-i",
         "--in-place",
@@ -329,8 +313,7 @@ def main():
         metavar="PATTERN",
         action="append",
         default=[],
-        help="exclude paths matching the given glob-like pattern(s)"
-        " from recursive search",
+        help="exclude paths matching the given glob-like pattern(s)" " from recursive search",
     )
     parser.add_argument(
         "--style",
@@ -368,9 +351,7 @@ def main():
     except OSError as e:
         print_trouble(
             parser.prog,
-            "Command '{}' failed to start: {}".format(
-                subprocess.list2cmdline(version_invocation), e
-            ),
+            "Command '{}' failed to start: {}".format(subprocess.list2cmdline(version_invocation), e),
             use_colors=colored_stderr,
         )
         return ExitStatus.TROUBLE

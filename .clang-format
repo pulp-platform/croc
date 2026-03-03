@@ -1,7 +1,36 @@
-IndentWidth: 4
+BasedOnStyle: LLVM
+
 ColumnLimit: 120
-AlignEscapedNewlines: DontAlign
+IndentWidth: 4
+ContinuationIndentWidth: 4
+InsertNewlineAtEOF: true
+MaxEmptyLinesToKeep: 4
+
 SortIncludes: false
+AlignEscapedNewlines: DontAlign
+ReflowComments: false
+
+DerivePointerAlignment: false
+PointerAlignment: Right
+
 AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: true
 AllowShortLoopsOnASingleLine: true
+
+AlignConsecutiveMacros:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: true
+
+AlignConsecutiveAssignments:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: true
+  AlignCompound: false
+  PadOperators: true
+
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 0
+
+AlignArrayOfStructures: Left

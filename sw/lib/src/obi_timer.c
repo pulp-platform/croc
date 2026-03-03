@@ -113,10 +113,10 @@ void obi_timer_set(uint32_t cycles) {
 // WARNING: make sure to have a proper interrupt
 //          handler for timer interrupts
 void obi_timer_sleep(uint32_t cycles) {
-    uint32_t mie_before = get_mie();
+    uint32_t mie_before     = get_mie();
     uint32_t mstatus_before = get_mstatus();
-    int timer_irq_enabled = (mie_before >> IRQ_OBI_TIMER) & 0x1;
-    int global_irq_enabled = (mstatus_before >> 3) & 0x1;
+    int timer_irq_enabled   = (mie_before >> IRQ_OBI_TIMER) & 0x1;
+    int global_irq_enabled  = (mstatus_before >> 3) & 0x1;
 
     obi_timer_set(cycles);
     set_interrupt_enable(1, IRQ_OBI_TIMER);

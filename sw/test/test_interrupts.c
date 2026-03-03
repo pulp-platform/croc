@@ -13,10 +13,10 @@
 #define BOOTROM_TRAP_HANDLER 0x02000200
 
 // SRAM vector table addresses (read by bootrom trap handler)
-#define SRAM_VEC_EXCEPTION 0x10000004
-#define SRAM_VEC_INTERRUPT 0x10000008
+#define SRAM_VEC_EXCEPTION   0x10000004
+#define SRAM_VEC_INTERRUPT   0x10000008
 
-static volatile int irq_fired = 0;
+static volatile int irq_fired      = 0;
 static volatile uint32_t irq_cause = 0;
 
 // Override weak default handler from crt0.S.

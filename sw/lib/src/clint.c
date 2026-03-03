@@ -17,10 +17,10 @@ uint64_t clint_get_mtime() {
 
 void clint_set_mtimecmp(uint64_t value) {
     // Avoid spurious interrupts by writing the high register first
-    uint32_t value_high = (uint32_t)(value >> 32);
-    uint32_t value_low = (uint32_t)(value);
+    uint32_t value_high                                      = (uint32_t)(value >> 32);
+    uint32_t value_low                                       = (uint32_t)(value);
     *reg32(CLINT_BASE_ADDR, CLINT_MTIMECMP_HIGH0_REG_OFFSET) = value_high;
-    *reg32(CLINT_BASE_ADDR, CLINT_MTIMECMP_LOW0_REG_OFFSET) = value_low;
+    *reg32(CLINT_BASE_ADDR, CLINT_MTIMECMP_LOW0_REG_OFFSET)  = value_low;
 }
 
 void clint_sleep_ticks(uint32_t ticks) {
@@ -28,10 +28,10 @@ void clint_sleep_ticks(uint32_t ticks) {
     clint_set_mtimecmp(value);
     fence();
     // Enable timer and global interrupts
-    uint32_t mie_before = get_mie();
+    uint32_t mie_before     = get_mie();
     uint32_t mstatus_before = get_mstatus();
-    int timer_irq_enabled = (mie_before >> IRQ_TIMER) & 0x1;
-    int global_irq_enabled = (mstatus_before >> 3) & 0x1;
+    int timer_irq_enabled   = (mie_before >> IRQ_TIMER) & 0x1;
+    int global_irq_enabled  = (mstatus_before >> 3) & 0x1;
 
     set_interrupt_enable(1, IRQ_TIMER);
     set_global_irq_enable(1);

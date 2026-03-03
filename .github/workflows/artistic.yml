@@ -81,7 +81,7 @@ jobs:
       - name: Create Logo
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: "cd artistic; ./run_artistic.sh --create-logo croc_chip.gds.gz"
+          cmd: "cd artistic; ./run_artistic.sh --create-logo croc.sealed.gds.gz"
 
       # Render Chip
       - name: Render RAW
@@ -112,7 +112,7 @@ jobs:
         with:
           name: croc-artistic
           path: |
-            artistic/meerkat_work/croc_chip.gds.gz
+            artistic/meerkat_work/croc.sealed.gds.gz
             artistic/meerkat_work/croc_logo.*
             artistic/meerkat_work/*.log
             artistic/renderics/croc_modules.*

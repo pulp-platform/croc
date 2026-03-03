@@ -31,7 +31,7 @@ jobs:
       - name: Run Yosys, OpenROAD and KLayout
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: "cd yosys && ./run_synthesis.sh --synth && cd ../openroad && QT_QPA_PLATFORM=offscreen ./run_backend.sh --all && cd ../klayout && ./run_finishing.sh --gds --seal"
+          cmd: ".github/scripts/run_full_flow.sh"
       - name: Upload openroad outputs
         uses: actions/upload-artifact@v4
         with:
@@ -45,10 +45,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: croc-gds
-          path: klayout/out/croc_chip.gds.gz
+          path: klayout/out/croc.gds.gz
       - name: Upload sealed gds
         uses: actions/upload-artifact@v4
         with:
           name: croc-gds-sealed
-          path: klayout/out/croc_chip_sealed.gds.gz
+          path: klayout/out/croc.sealed.gds.gz
         continue-on-error: true

@@ -10,7 +10,7 @@
 #include "config.h"
 
 void gpio_set_direction(uint32_t mask, uint32_t direction) {
-    uint32_t dir_old = *reg32(GPIO_BASE_ADDR, GPIO_DIR_REG_OFFSET);
+    uint32_t dir_old                            = *reg32(GPIO_BASE_ADDR, GPIO_DIR_REG_OFFSET);
     *reg32(GPIO_BASE_ADDR, GPIO_DIR_REG_OFFSET) = (dir_old & ~mask) | (direction & mask);
 }
 
