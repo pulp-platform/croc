@@ -182,7 +182,7 @@ module croc_vip #(
   endtask
 
   // Load the binary formatted as 32 bit hex file
-  task jtag_load_hex(input string filename);
+  task automatic jtag_load_hex(input string filename);
     int file;
     int status;
     string line;
@@ -274,7 +274,7 @@ module croc_vip #(
   ////////////
 
   typedef bit [7:0] byte_bt;
-  localparam int unsigned ClkFrequency     = 1s / ClkPeriodSys;
+  localparam int unsigned ClkFrequency     = int'(1s / ClkPeriodSys);
   localparam int unsigned UartDivisior     = ClkFrequency / (UartBaudRate*16);
   localparam int unsigned UartRealBaudRate = ClkFrequency / (UartDivisior*16);
   localparam realtime     UartBaudPeriod   = 1s / UartRealBaudRate;

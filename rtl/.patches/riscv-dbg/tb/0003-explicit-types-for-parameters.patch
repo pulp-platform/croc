@@ -1,0 +1,56 @@
+From 02d42b8afd6eb783beb0d252e5cc64e8d35720d7 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Wed, 4 Mar 2026 01:39:05 +0100
+Subject: [PATCH] explicit types for parameters
+
+---
+ jtag_test_simple.sv | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/jtag_test_simple.sv b/jtag_test_simple.sv
+index 576d448..d8b3572 100644
+--- a/jtag_test_simple.sv
++++ b/jtag_test_simple.sv
+@@ -10,7 +10,7 @@
+ 
+ module jtag_driver_simple #(
+   parameter int IrLength = 0,
+-  parameter IDCODE       = 'h1,
++  parameter logic [31:0] IDCODE = 'h1,
+   parameter time TA      = 0ns,  // stimuli application time
+   parameter time TT      = 0ns   // stimuli test time
+ ) (
+@@ -21,7 +21,7 @@ module jtag_driver_simple #(
+   input  logic jtag_tdo_i
+ );
+ 
+-  localparam DMIWidth = $bits(dm::dmi_req_t);
++  localparam int DMIWidth = $bits(dm::dmi_req_t);
+ 
+   // last IR register select
+   logic [IrLength-1:0] ir_select = 'h1;
+@@ -162,9 +162,9 @@ endmodule
+ // abstracts the debug module
+ module riscv_dbg_simple #(
+   parameter int IrLength = 5,
+-  parameter IDCODE    = 'h1,
+-  parameter DTMCSR    = 'h10,
+-  parameter DMIACCESS = 'h11,
++  parameter logic [31:0]         IDCODE    = 'h1,
++  parameter logic [IrLength-1:0] DTMCSR    = 'h10,
++  parameter logic [IrLength-1:0] DMIACCESS = 'h11,
+   parameter time TA = 0ns, // stimuli application time
+   parameter time TT = 0ns  // stimuli test time
+ ) (
+@@ -175,7 +175,7 @@ module riscv_dbg_simple #(
+   input  logic jtag_tdo_i
+ );
+ 
+-  localparam DMIWidth = $bits(dm::dmi_req_t);
++  localparam int DMIWidth = $bits(dm::dmi_req_t);
+ 
+   jtag_driver_simple #(
+     .IrLength ( IrLength ),
+-- 
+2.43.0
+

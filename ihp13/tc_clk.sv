@@ -68,7 +68,7 @@ module tc_clk_gating #(
     output logic clk_o
   );
 
-  if (IS_FUNCTIONAL || `ifdef USE_CLKGATE 1 `else 0 `endif) begin
+  if (IS_FUNCTIONAL || `ifdef USE_CLKGATE 1 `else 0 `endif) begin : gen_clkgate
     (* keep *)(* dont_touch = "true" *)
     sg13g2_slgcp_1 i_clkgate (
       .GATE ( en_i  ),
@@ -76,7 +76,7 @@ module tc_clk_gating #(
       .CLK  ( clk_i ),
       .GCLK ( clk_o )
     );
-  end else begin
+  end else begin : gen_no_clkgate
     assign clk_o = clk_i;
   end
 

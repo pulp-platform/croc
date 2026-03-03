@@ -1,0 +1,25 @@
+From 84c329b4553f0da7268a742c1daad4aba5caa82e Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Wed, 4 Mar 2026 09:08:10 +0100
+Subject: [PATCH] trailing whitespace
+
+---
+ idma_obi_write.sv | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/idma_obi_write.sv b/idma_obi_write.sv
+index 9d10f2e..0a97e6d 100644
+--- a/idma_obi_write.sv
++++ b/idma_obi_write.sv
+@@ -117,7 +117,7 @@ module idma_obi_write #(
+         // create back pressure on the b channel if the higher parts of the DMA
+         // cannot accept more write responses
+         write_req_o.rready  = w_dp_ready_i;
+-        
++  
+         if (MaskInvalidData) begin : gen_mask_invalid_data
+             write_req_o.a.addr  = aw_req_i.obi.a_chan.addr;
+             write_req_o.a.aid   = aw_req_i.obi.a_chan.aid;
+-- 
+2.43.0
+

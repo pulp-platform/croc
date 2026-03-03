@@ -21,7 +21,7 @@ module fan_ctrl (
 
         // divide clock by 49
         // At 50 MHz input clock this results in a 62.5 kHz
-        // PWM Signal 
+        // PWM Signal
         if (cycle_counter_q == 49) begin
             cycle_counter_d = 0;
             ms_clock_d = ms_clock_q + 1;

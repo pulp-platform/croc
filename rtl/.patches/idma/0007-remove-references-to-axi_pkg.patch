@@ -1,0 +1,32 @@
+From b9281e15e40e00485dd9c1175eb73d6002d4115c Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Tue, 3 Mar 2026 12:50:53 +0100
+Subject: [PATCH] remove references to axi_pkg
+
+---
+ idma_legalizer_rw_obi.sv | 10 ----------
+ 1 file changed, 10 deletions(-)
+
+diff --git a/idma_legalizer_rw_obi.sv b/idma_legalizer_rw_obi.sv
+index 3ee03e4..1feceae 100644
+--- a/idma_legalizer_rw_obi.sv
++++ b/idma_legalizer_rw_obi.sv
+@@ -400,15 +400,5 @@ module idma_legalizer_rw_obi #(
+     `FFL(r_tf_q,   r_tf_d,   r_tf_ena, '0, clk_i, rst_ni)
+     `FFL(w_tf_q,   w_tf_d,   w_tf_ena, '0, clk_i, rst_ni)
+ 
+-
+-    //--------------------------------------
+-    // Assertions
+-    //--------------------------------------
+-    // only support the decomposition of incremental bursts
+-    `ASSERT_NEVER(OnlyIncrementalBurstsSRC, (ready_o & valid_i &
+-                  req_i.opt.src.burst != axi_pkg::BURST_INCR), clk_i, !rst_ni)
+-    `ASSERT_NEVER(OnlyIncrementalBurstsDST, (ready_o & valid_i &
+-                  req_i.opt.dst.burst != axi_pkg::BURST_INCR), clk_i, !rst_ni)
+-
+ endmodule
+ 
+-- 
+2.43.5
+

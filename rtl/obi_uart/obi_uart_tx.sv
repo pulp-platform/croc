@@ -115,15 +115,14 @@ module obi_uart_tx #()
     //--------------------------------------------------------------------------------------------
     // Word Length
     //--------------------------------------------------------------------------------------------
-    case (reg_read_i.lcr.word_len)
+    unique case (reg_read_i.lcr.word_len)
       2'b00: word_len_bits = 3'b100; // 5 Bits (4th index in tsr)
       2'b01: word_len_bits = 3'b101; // 6 Bits (5th index in tsr)
       2'b10: word_len_bits = 3'b110; // 7 Bits (6th index in tsr)
       2'b11: word_len_bits = 3'b111; // 8 Bits (7th index in tsr)
-      default: word_len_bits = 3'b111;
     endcase
 
-    for (int i = 0; i <= word_len_bits; i = i + 1) begin
+    for (int unsigned i = 0; i <= word_len_bits; i = i + 1) begin
       word_len_mask[i] = 1'b1;
     end
 
@@ -202,12 +201,11 @@ module obi_uart_tx #()
       end
 
       TXPAR: begin
-        case (reg_read_i.lcr[5:4])// Read Parity Configuration
+        unique case (reg_read_i.lcr[5:4]) // Read Parity Configuration
           2'b00: txd_d = ~(^tsr_q); // Odd Parity
           2'b01: txd_d = ^tsr_q;    // Even Parity
           2'b10: txd_d = 1'b1;      // Forced 1
           2'b11: txd_d = 1'b0;      // Forced 0
-          default: txd_d = 1'b0;
         endcase
         if (baud_rate_edge_i) begin
           state_d = TXSTOP1;

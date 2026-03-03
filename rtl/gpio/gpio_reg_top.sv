@@ -104,7 +104,7 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
   // register signals
   gpio_reg_fields_t reg_d, reg_q;
   `FF(reg_q, reg_d, '0, clk_i, rst_ni)
-  
+
   gpio_reg_fields_t new_reg; // new value of regs if there is no OBI transaction
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -145,7 +145,7 @@ module gpio_reg_top import gpio_reg_pkg::*; #(
     // control logic interaction for each GPIO
     for(int unsigned idx=0; idx < GpioCount; idx++) begin
       new_reg.in[idx]     = hw2reg[idx].sync_in; // input is updated
-      new_reg.toggle[idx] = '0;                  // toggle clears itself 
+      new_reg.toggle[idx] = '0;                  // toggle clears itself
 
       // update OUT from hw2reg if set to valid
       new_reg.out[idx]    = hw2reg[idx].out_valid ? hw2reg[idx].out : reg_q.out[idx];

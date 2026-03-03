@@ -65,7 +65,7 @@ module soc_ctrl_regs #(
   `FF(core_status_q, core_status_d,          '0, clk_i, rst_ni)
   `FF(boot_mode_q, boot_mode_d,              '0, clk_i, rst_ni)
   `FF(sram_dly_q, sram_dly_d,                '0, clk_i, rst_ni)
-  
+
   // OBI handling, A-phase fields needed in the R-phase
   logic                               req_q;
   logic                               we_q;
