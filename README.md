@@ -6,7 +6,7 @@ As it is oriented towards education, it forgoes some configurability to increase
 
 Croc is developed as part of the PULP project, a joint effort between ETH Zurich and the University of Bologna.
 
-Croc was successfully taped out in Nov 2024. The chip is called [MLEM](http://asic.ee.ethz.ch/2024/MLEM.html), named after the sound Yoshi makes when eating a tasty fruit.
+Croc was successfully taped out in Nov 2024 in the chip [MLEM](http://asic.ee.ethz.ch/2024/MLEM.html), named after the sound Yoshi makes when eating a tasty fruit. MLEM's core functionality was verified on real silicon early 2026.  
 MLEM was designed and prepared for tapeout by ETHZ students as a bachelor project. The exact code and scripts used for the tapeout can be seen in the frozen [mlem-tapeout](https://github.com/pulp-platform/croc/tree/mlem-tapeout) branch.
 
 ## Architecture
@@ -15,13 +15,13 @@ MLEM was designed and prepared for tapeout by ETHZ students as a bachelor projec
 
 The SoC is composed of two main parts:
 
-- The `croc_domain` containing a CVE2 core (a fork of Ibex), SRAM, an OBI crossbar and a few simple peripherals
+- The `croc_domain` containing a CVE2 core (a more minimal fork of Ibex), SRAM, an OBI crossbar and a few simple peripherals
 - The `user_domain` where students are invited to add their own designs or other open-source designs (peripherals, accelerators...)
 
 The main interconnect is OBI, you can find [the spec online](https://github.com/openhwgroup/obi/blob/072d9173c1f2d79471d6f2a10eae59ee387d4c6f/OBI-v1.6.0.pdf).
 
 The various IPs of the SoC (UART, OBI, debug-module, timer...) come from other PULP repositories and are managed by [Bender](https://github.com/pulp-platform/bender).
-To make it easier to browse and understand, only the currently used files are included in `rtl/<IP>`. You may want to explore the repositories of the respective IPs to find their documentation or additional functionality, the urls are in `Bender.yml`.
+To make it easier to browse and understand, only used or important building blocks are included in `rtl/<IP>`. You may want to explore the repositories of the respective IPs to find their documentation or additional functionality, the urls are in `Bender.yml`.
 
 ## Configuration
 
@@ -29,13 +29,13 @@ The main SoC configurations are in `rtl/croc_pkg.sv`:
 
 | Parameter           | Default          | Function                                              |
 |---------------------|------------------|-------------------------------------------------------|
-| `PulpJtagIdCode`    | `32'hED9_C0C50`  | Debug module ID code                                  |
+| `PulpJtagIdCode`    | `32'h1C0C_5DB3`  | Debug module ID code                                  |
 | `iDMAEnable`        | `0`              | Enable optional DMA (see `rtl/idma`)                  |
 | `NumSramBanks`      | `2`              | Number of memory banks                                |
 | `SramBankNumWords`  | `512`            | Number of 32bit words in a memory bank                |
 | `BootAddr`          | `32'h1000_0000`  | Default boot address set in 'soc_ctrl' register       |
-| `croc_addr_map`     | see 'Memory Map' | Routing rules used for the main crossbar              |
-| `periph_addr_map`   | see 'Memory Map' | Routing rules used for the peripheral demuliplexer    |
+| `CrocAddrMap`       | see 'Memory Map' | Routing rules used for the main crossbar              |
+| `PeriphAddrMap`     | see 'Memory Map' | Routing rules used for the peripheral demuliplexer    |
 
 Further configurations can be made in `rtl/core_wrap.sv` (core specifics) and `rtl/croc_soc.sv` (connectivity between domains and to/from outside).
 
@@ -56,7 +56,7 @@ The address map of the default configuration is as follows:
 |-----------------|-----------------|--------------------------------------------|
 | `32'h0000_0000` | `32'h0004_0000` | Debug module (JTAG)                        |
 | `32'h0200_0000` | `32'h0200_4000` | Bootrom                                    |
-| `32'h0200_4000` | `32'h0200_8000` | CLINT peripheral                           |
+| `32'h0204_0000` | `32'h0208_0000` | CLINT peripheral                           |
 | `32'h0300_0000` | `32'h0300_1000` | SoC control/info registers                 |
 | `32'h0300_2000` | `32'h0300_3000` | UART peripheral                            |
 | `32'h0300_5000` | `32'h0300_6000` | GPIO peripheral                            |
@@ -64,12 +64,12 @@ The address map of the default configuration is as follows:
 | `32'h0300_B000` | `32'h0300_C000` | (optional) DMA configuration               |
 | `32'h1000_0000` | `+SRAM_SIZE`    | Memory banks (SRAM)                        |
 | `32'h2000_0000` | `32'h8000_0000` | Passthrough to user domain                 |
-| `32'h2000_0000` | `32'h2000_1000` | reserved for string formatted user ROM*    |
+| `32'h2000_0000` | `32'h2000_1000` | reserved for user ROM text*                |
 
 *If people modify Croc we suggest they add a ROM at this address containing additional information
 like the names of the developers, a project link or similar. This can then be written out via UART.  
 We ask people to format the ROM like a C string with zero termination and using ASCII encoding if feasible.  
-The [MLEM user ROM](https://github.com/pulp-platform/croc/blob/mlem-tapeout/rtl/user_domain/user_rom.sv) may serve as a reference implementation.
+The [MLEM user ROM](https://github.com/pulp-platform/croc/blob/mlem-tapeout/rtl/user_domain/user_rom.sv) may serve as one possible reference implementation.
 
 ## Flow
 
@@ -84,12 +84,6 @@ graph LR;
 2. Yosys parses, elaborates, optimizes and maps the design to the technology cells
 3. The netlist, constraints and floorplan are loaded into OpenRoad for Place&Route
 4. The design as def is read by klayout and the geometry of the cells and macros are merged
-
-Currently, the final GDS is still missing the following things:
-
-- metal density fill
-
-These can be done in KLayout, check the [IHP repository](https://github.com/IHP-GmbH/IHP-Open-PDK/tree/main) for a reference script.
 
 ### Example Results
 
@@ -115,13 +109,7 @@ icdesign ihp13 -nogui
 
 The setup is guided by the `.cockpitrc` configuration file. If you need different macros or another version of the standard cells you can change it accordingly.
 
-An environment setup for bash is provided to get easy access to the tools:
-
-```sh
-source ethz.env
-```
-
-Additionally you may prefer to just enter a shell in the pre-installed osic-tools container using:
+Yyou may prefer to just enter a shell in the pre-installed osic-tools container using:
 
 ```sh
 oseda bash
@@ -230,15 +218,14 @@ Running `bender update` on the other hand will resolve the entire tree again and
 
 ### Local Versions
 
-For this repository, we use a subcommand called `bendor vendor` together with the `vendor_package` section in `Bender.yml`.
-`bendor vendor` can be used to Benderize arbitrary repositories with RTL in it. The dependencies are already 'checked out' into `rtl/<IP>`. Each file or directory from the repository is mapped to a local path in this repo.
+For this repository, we use a subcommand called `bender vendor` together with the `vendor_package` section in `Bender.yml`.
+`bender vendor` can be used to Benderize arbitrary repositories with RTL in it. The dependencies are already 'checked out' into `rtl/<IP>`. Each file or directory from the repository is mapped to a local path in this repo.
 Fixes and changes to each IPs `rtl/<IP>/Bender.yml` are managed by `bender vendor` in `rtl/patches`.
 
 If you need to update a dependency or map another file you need to edit the coresponding `vendor_package` section in `Bender.yml` and then run `bender vendor init`. Then you might need to change `rtl/<IP>/Bender.yml` to list your new file in the sources. 
 To save a fix/change as a patch, stage it in git and then run `bender vendor patch`. When prompted, add a commit message (this is used as the patches file name). Finally, commit both the patch file and the new `rtl/<IP>`.
 
-**Note:** using `bender vendor` in this repository to change the local versions of the IPs requires an up-to-date version of Bender, specifically it needs to include [PR 179](https://github.com/pulp-platform/bender/pull/179).
-
+**Note:** using `bender vendor` in this repository to change the local versions of the IPs requires an up-to-date version of Bender. (v0.28.2 or newer)
 ### Targets
 
 Another thing we use are targets (in the `Bender.yml`), together they build different views/contexts of your RTL. For example without defining any targets the technology independent cells/memories are used (in `rtl/tech_cells_generic/`) but if we use the target `ihp13` then the same modules contain a technology-specific implementation (in `ihp13/`). Similar contexts are built for different simulators and other things.
