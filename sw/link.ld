@@ -10,39 +10,71 @@
 OUTPUT_ARCH("riscv")
 ENTRY(_start)
 
-MEMORY 
+MEMORY
 {
-   SRAM (rwxail) : ORIGIN = 0x10000000, LENGTH = 4K
+	/* unified on-chip SRAM region used for all code and data */
+	SRAM (rwxail) : ORIGIN = 0x10000000, LENGTH = 4K
+}
+
+PHDRS
+{
+	text PT_LOAD FLAGS(5); /* tag as: Read + Execute */
+	data PT_LOAD FLAGS(6); /* tag as: Read + Write */
 }
 
 SECTIONS
 {
-  /DISCARD/ : { *(.riscv.attributes) *(.comment) }
+    /* Drop metadata/debug sections, not needed */
+	/DISCARD/ :
+	{
+	*(.riscv.attributes)
+	*(.comment)
+	}
 
-  .vectors : ALIGN(4) {
-      *(.vectors)
-  } >SRAM
+    /* Start placing following sections at the SRAM base address */
+	. = ORIGIN(SRAM);
 
-  .text._start : {
-      *(.text._start)
-  } >SRAM
+    /* Interrupt vector table */
+	.vectors : ALIGN(4)
+	{
+	*(.vectors)
+	} > SRAM :text
 
-  .misc : ALIGN(4) {
-      *(.sdata)
-      *(.sbss)
-      *(.*data*)
-      *(.*bss*)
-      *(COMMON)
-  } >SRAM
+    /* Startup entry (first instructions executed after bootrom) */
+	.text._start : ALIGN(4)
+	{
+	*(.text._start)
+	} > SRAM :text
 
-  .text : ALIGN(4) {
-      *(.text)
-      *(.text.*)
-  } >SRAM
+    /* Main code (text) and read-only data (rodata) */
+	.text : ALIGN(4)
+	{
+	*(.text)
+	*(.text.*)
+	*(.rodata)
+	*(.rodata.*)
+	} > SRAM :text
+
+    /* Writable data (what people colloquially call RAM) */
+	.misc : ALIGN(4)
+	{
+	*(.sdata)
+	*(.sdata.*)
+	*(.data)
+	*(.data.*)
+	*(.sbss)
+	*(.sbss.*)
+	*(.bss)
+	*(.bss.*)
+	*(COMMON)
+	} > SRAM :data
 }
 
 /* Global absolute symbols */
-PROVIDE(__global_pointer$ = ADDR(.misc) + SIZEOF(.misc)/2);
+
+/* Place GP near the middle for efficient GP-relative access */
+PROVIDE(__global_pointer$ = ADDR(.misc) + SIZEOF(.misc) / 2);
+/* Initial stack pointer at the end of SRAM */
 PROVIDE(__stack_pointer$ = ORIGIN(SRAM) + LENGTH(SRAM));
 
 /* Bootrom symbols (fixed addresses) */
