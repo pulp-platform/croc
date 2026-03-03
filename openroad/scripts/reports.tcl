@@ -199,7 +199,6 @@ proc report_metrics { when {include_erc true} {include_clock_skew false} } {
 # and: https://github.com/The-OpenROAD-Project/OpenROAD/blob/master/src/gui/README.md
 proc report_image { report_name {full_die false} {place false} {cts false} {routing false} } {
   global report_dir
-
   set resolution  [ord::dbu_to_microns [[dpl::get_row_site] getHeight]]
   set area        [expr {$full_die ? [ord::get_die_area] : [ord::get_core_area]}]
 
@@ -217,29 +216,33 @@ proc report_image { report_name {full_die false} {place false} {cts false} {rout
   generate_image $area $resolution $controls $report_dir/${report_name}.png
 
   if { $place } {
-      # hierarchical placement view
-      set controls [default_view]
-      lappend controls [list "Layers/*"             false]
-      lappend controls [list "Instances/Physical/*" false]
-      lappend controls [list "Misc/Module view"     true ]
-      generate_image $area $resolution $controls $report_dir/${report_name}.place.png
-
       # placement density view
+      # divide core into 40-ish row-aligned squares per direction
+      set core [ord::get_core_area]
+      set siteHeight [ord::dbu_to_microns [[dpl::get_row_site] getHeight]]
+      set coreW [expr {[lindex $core 2] - [lindex $core 0]}]
+      set coreH [expr {[lindex $core 3] - [lindex $core 1]}]
+      set target [expr {(($coreW + $coreH) / 2.0) / 40.0}]
+
+      set res [expr {ceil($target / $siteHeight) * $siteHeight}]
+
+      gui::set_heatmap Placement GridX $res
+      gui::set_heatmap Placement GridY $res
       gui::set_heatmap Placement ShowLegend   1
-      gui::set_heatmap Placement DisplayMin   0
+      gui::set_heatmap Placement DisplayMin  20
       gui::set_heatmap Placement DisplayMax 100
       set controls [default_view]
       lappend controls [list "Layers/*"                    false]
       lappend controls [list "Instances/Physical/*"        false]
-      lappend controls [list "Heat Maps/Placement Density" false]
+      lappend controls [list "Heat Maps/Placement Density" true]
       generate_image $area $resolution $controls $report_dir/${report_name}.density.png
   }
 
   if { $routing } {
       # routing congestion view
-      gui::set_heatmap Placement ShowLegend   1
-      gui::set_heatmap Placement DisplayMin  50
-      gui::set_heatmap Placement DisplayMax 200
+      gui::set_heatmap Routing ShowLegend   1
+      gui::set_heatmap Routing DisplayMin  20
+      gui::set_heatmap Routing DisplayMax 100
       set controls [default_view]
       lappend controls [list "Nets/*"                       true ]
       lappend controls [list "Nets/Power"                   false]

@@ -19,6 +19,16 @@ set -u  # Error on undefined vars
 # Source environment
 source "../env.sh"
 
+if [ -z "${QT_QPA_PLATFORM+x}" ]; then
+  export QT_QPA_PLATFORM=offscreen
+fi
+
+if [ -z "${XDG_RUNTIME_DIR:-}" ]; then
+  export XDG_RUNTIME_DIR="/tmp/xdg-runtime-$(id -u)"
+  mkdir -p "$XDG_RUNTIME_DIR"
+  chmod 700 "$XDG_RUNTIME_DIR"
+fi
+
 
 ##############################
 # Helper Functions (inline)
