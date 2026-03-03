@@ -15,7 +15,7 @@
  * file.
  */
 
-`include "lowrisc_prim/prim_assert.svh"
+`include "common_cells/assertions.svh"
 
 module cve2_id_stage #(
   parameter bit               RV32E           = 0,

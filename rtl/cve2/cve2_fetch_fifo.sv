@@ -11,7 +11,7 @@
  * clear_i clears the FIFO for the following cycle, including any new request
  */
 
-`include "lowrisc_prim/prim_assert.svh"
+`include "common_cells/assertions.svh"
 
 module cve2_fetch_fifo #(
   parameter int unsigned NUM_REQS = 2

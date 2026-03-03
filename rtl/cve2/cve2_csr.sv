@@ -7,7 +7,7 @@
  * Control / status register primitive
  */
 
-`include "lowrisc_prim/prim_assert.svh"
+`include "common_cells/assertions.svh"
 
 module cve2_csr #(
   parameter int unsigned    Width      = 32,

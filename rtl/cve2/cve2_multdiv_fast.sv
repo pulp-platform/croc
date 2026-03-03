@@ -13,7 +13,7 @@
  * 16x16 kernel multiplier and Long Division
  */
 
-`include "lowrisc_prim/prim_assert.svh"
+`include "common_cells/assertions.svh"
 
 module cve2_multdiv_fast #(
   parameter cve2_pkg::rv32m_e RV32M = cve2_pkg::RV32MFast

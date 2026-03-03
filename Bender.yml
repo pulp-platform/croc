@@ -195,4 +195,3 @@ vendor_package:
       - { from: 'rtl/',                                            to: '',                      patch_dir: 'rtl/' }
       - { from: 'README.md',                                       to: 'README.md',             patch_dir: '' }
       - { from: 'doc/03_reference/images/blockdiagram.drawio.svg', to: 'blockdiagram.svg',      patch_dir: '' }
-      - { from: 'vendor/lowrisc_ip/ip/prim/rtl/',                  to: 'include/lowrisc_prim/', patch_dir: 'lowrisc_prim/' }

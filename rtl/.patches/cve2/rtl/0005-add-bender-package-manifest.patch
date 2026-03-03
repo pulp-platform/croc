@@ -13,13 +13,16 @@ new file mode 100644
 index 00000000..86a1556c
 --- /dev/null
 +++ b/Bender.yml
-@@ -0,0 +1,52 @@
+@@ -0,0 +1,55 @@
 +# Copyright 2024 ETH Zurich and University of Bologna
 +# Solderpad Hardware License, Version 0.51, see LICENSE for details.
 +# SPDX-License-Identifier: SHL-0.51
 +
 +package:
 +  name: cve2
++
++dependencies:
++  common_cells: { git: "https://github.com/pulp-platform/common_cells.git", version: 1.39.0 }
 +
 +sources:
 +  - include_dirs:

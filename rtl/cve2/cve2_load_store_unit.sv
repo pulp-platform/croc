@@ -12,7 +12,7 @@
  * and to align bytes and halfwords.
  */
 
-`include "lowrisc_prim/prim_assert.svh"
+`include "common_cells/assertions.svh"
 
 module cve2_load_store_unit
 (
