@@ -19,57 +19,6 @@ module tc_sram_blackbox #(
 ) ();
 endmodule
 
-// one tie-off per macro to avoid port size mismatch warnings
-`define IHP13_TC_SRAM_64x64_TIEOFF \
-  .A_BIST_CLK   (  1'b0 ), \
-  .A_BIST_ADDR  (  6'd0 ), \
-  .A_BIST_DIN   ( 64'd0 ), \
-  .A_BIST_BM    ( 64'd0 ), \
-  .A_BIST_MEN   (  1'b0 ), \
-  .A_BIST_WEN   (  1'b0 ), \
-  .A_BIST_REN   (  1'b0 ), \
-  .A_BIST_EN    (  1'b0 )
-
-`define IHP13_TC_SRAM_256x64_TIEOFF \
-  .A_BIST_CLK   (  1'b0 ), \
-  .A_BIST_ADDR  (  8'd0 ), \
-  .A_BIST_DIN   ( 64'd0 ), \
-  .A_BIST_BM    ( 64'd0 ), \
-  .A_BIST_MEN   (  1'b0 ), \
-  .A_BIST_WEN   (  1'b0 ), \
-  .A_BIST_REN   (  1'b0 ), \
-  .A_BIST_EN    (  1'b0 )
-
-`define IHP13_TC_SRAM_512x64_TIEOFF \
-  .A_BIST_CLK   (  1'b0 ), \
-  .A_BIST_ADDR  (  9'd0 ), \
-  .A_BIST_DIN   ( 64'd0 ), \
-  .A_BIST_BM    ( 64'd0 ), \
-  .A_BIST_MEN   (  1'b0 ), \
-  .A_BIST_WEN   (  1'b0 ), \
-  .A_BIST_REN   (  1'b0 ), \
-  .A_BIST_EN    (  1'b0 )
-
-`define IHP13_TC_SRAM_1024x64_TIEOFF \
-  .A_BIST_CLK   (  1'b0 ), \
-  .A_BIST_ADDR  ( 10'd0 ), \
-  .A_BIST_DIN   ( 64'd0 ), \
-  .A_BIST_BM    ( 64'd0 ), \
-  .A_BIST_MEN   (  1'b0 ), \
-  .A_BIST_WEN   (  1'b0 ), \
-  .A_BIST_REN   (  1'b0 ), \
-  .A_BIST_EN    (  1'b0 )
-
-`define IHP13_TC_SRAM_2048x64_TIEOFF \
-  .A_BIST_CLK   (  1'b0 ), \
-  .A_BIST_ADDR  ( 11'd0 ), \
-  .A_BIST_DIN   ( 64'd0 ), \
-  .A_BIST_BM    ( 64'd0 ), \
-  .A_BIST_MEN   (  1'b0 ), \
-  .A_BIST_WEN   (  1'b0 ), \
-  .A_BIST_REN   (  1'b0 ), \
-  .A_BIST_EN    (  1'b0 )
-
 module tc_sram_impl #(
   parameter int unsigned NumWords     = 32'd1024,
   parameter int unsigned DataWidth    = 32'd128,
@@ -81,7 +30,7 @@ module tc_sram_impl #(
   parameter              ImplKey      = "none",
   parameter type         impl_in_t    = logic,
   parameter type         impl_out_t   = logic,
-  parameter impl_out_t   ImplOutSim   = 'X,
+  parameter impl_out_t   ImplOutSim   = '0,
   // DEPENDENT PARAMETERS, DO NOT OVERWRITE!
   parameter int unsigned AddrWidth = (NumWords > 32'd1) ? $clog2(NumWords) : 32'd1,
   parameter int unsigned BeWidth   = (DataWidth + ByteWidth - 32'd1) / ByteWidth,
@@ -121,11 +70,11 @@ module tc_sram_impl #(
   // Generate desired cuts
   if (NumWords == 64 && DataWidth == 64 && P1L1) begin: gen_64x64xBx1
     logic [63:0] wdata64, rdata64, bm64;
-    
+
     assign rdata_o = rdata64;
     assign wdata64 = wdata_i;
     assign bm64    = bm;
-    
+
 
     RM_IHPSG13_1P_64x64_c2_bm_bist i_cut (
       .A_CLK   ( clk_i    ),
@@ -136,13 +85,20 @@ module tc_sram_impl #(
       .A_WEN   ( we_i     ),
       .A_REN   ( ~we_i    ),
       .A_DIN   ( wdata64  ),
-      .A_DOUT  ( rdata64  ),
-     `IHP13_TC_SRAM_64x64_TIEOFF
+      .A_DOUT       ( rdata64  ),
+      .A_BIST_CLK   (  1'b0 ),
+      .A_BIST_ADDR  (  6'd0 ),
+      .A_BIST_DIN   ( 64'd0 ),
+      .A_BIST_BM    ( 64'd0 ),
+      .A_BIST_MEN   (  1'b0 ),
+      .A_BIST_WEN   (  1'b0 ),
+      .A_BIST_REN   (  1'b0 ),
+      .A_BIST_EN    (  1'b0 )
     );
 
   end else if (NumWords == 256 & DataWidth == 64 & P1L1) begin : gen_256x64xBx1
     logic [63:0] wdata64, rdata64, bm64;
-    
+
     assign rdata_o = rdata64;
     assign wdata64 = wdata_i;
     assign bm64    = bm;
@@ -155,14 +111,21 @@ module tc_sram_impl #(
       .A_MEN   ( req_i    ),
       .A_WEN   ( we_i     ),
       .A_REN   ( ~we_i    ),
-      .A_DIN   ( wdata64  ),
-      .A_DOUT  ( rdata64  ),
-     `IHP13_TC_SRAM_256x64_TIEOFF
+      .A_DIN        ( wdata64  ),
+      .A_DOUT       ( rdata64  ),
+      .A_BIST_CLK   (  1'b0 ),
+      .A_BIST_ADDR  (  8'd0 ),
+      .A_BIST_DIN   ( 64'd0 ),
+      .A_BIST_BM    ( 64'd0 ),
+      .A_BIST_MEN   (  1'b0 ),
+      .A_BIST_WEN   (  1'b0 ),
+      .A_BIST_REN   (  1'b0 ),
+      .A_BIST_EN    (  1'b0 )
     );
 
   end else if (NumWords == 512 & DataWidth == 64 & P1L1) begin : gen_512x64xBx1
     logic [63:0] wdata64, rdata64, bm64;
-    
+
     assign rdata_o = rdata64;
     assign wdata64 = wdata_i;
     assign bm64    = bm;
@@ -175,14 +138,21 @@ module tc_sram_impl #(
       .A_MEN   ( req_i    ),
       .A_WEN   ( we_i     ),
       .A_REN   ( ~we_i    ),
-      .A_DIN   ( wdata64  ),
-      .A_DOUT  ( rdata64  ),
-     `IHP13_TC_SRAM_512x64_TIEOFF
+      .A_DIN        ( wdata64  ),
+      .A_DOUT       ( rdata64  ),
+      .A_BIST_CLK   (  1'b0 ),
+      .A_BIST_ADDR  (  9'd0 ),
+      .A_BIST_DIN   ( 64'd0 ),
+      .A_BIST_BM    ( 64'd0 ),
+      .A_BIST_MEN   (  1'b0 ),
+      .A_BIST_WEN   (  1'b0 ),
+      .A_BIST_REN   (  1'b0 ),
+      .A_BIST_EN    (  1'b0 )
     );
 
   end else if (NumWords == 1024 & DataWidth == 64 & P1L1) begin : gen_1024x64xBx1
     logic [63:0] wdata64, rdata64, bm64;
-    
+
     assign rdata_o = rdata64;
     assign wdata64 = wdata_i;
     assign bm64    = bm;
@@ -195,14 +165,21 @@ module tc_sram_impl #(
        .A_MEN   ( req_i    ),
        .A_WEN   ( we_i     ),
        .A_REN   ( ~we_i    ),
-       .A_DIN   ( wdata64  ),
-       .A_DOUT  ( rdata64  ),
-       `IHP13_TC_SRAM_1024x64_TIEOFF
+       .A_DIN        ( wdata64  ),
+       .A_DOUT       ( rdata64  ),
+       .A_BIST_CLK   (  1'b0 ),
+       .A_BIST_ADDR  ( 10'd0 ),
+       .A_BIST_DIN   ( 64'd0 ),
+       .A_BIST_BM    ( 64'd0 ),
+       .A_BIST_MEN   (  1'b0 ),
+       .A_BIST_WEN   (  1'b0 ),
+       .A_BIST_REN   (  1'b0 ),
+       .A_BIST_EN    (  1'b0 )
       );
 
   end else if (NumWords == 2048 & DataWidth == 64 & P1L1) begin : gen_2048x64xBx1
     logic [63:0] wdata64, rdata64, bm64;
-    
+
     assign rdata_o = rdata64;
     assign wdata64 = wdata_i;
     assign bm64    = bm;
@@ -215,9 +192,16 @@ module tc_sram_impl #(
        .A_MEN   ( req_i    ),
        .A_WEN   ( we_i     ),
        .A_REN   ( ~we_i    ),
-       .A_DIN   ( wdata64  ),
-       .A_DOUT  ( rdata64  ),
-       `IHP13_TC_SRAM_2048x64_TIEOFF
+       .A_DIN        ( wdata64  ),
+       .A_DOUT       ( rdata64  ),
+       .A_BIST_CLK   (  1'b0 ),
+       .A_BIST_ADDR  ( 11'd0 ),
+       .A_BIST_DIN   ( 64'd0 ),
+       .A_BIST_BM    ( 64'd0 ),
+       .A_BIST_MEN   (  1'b0 ),
+       .A_BIST_WEN   (  1'b0 ),
+       .A_BIST_REN   (  1'b0 ),
+       .A_BIST_EN    (  1'b0 )
       );
   end else if (NumWords == 512 && DataWidth == 32 && P1L1) begin: gen_512x32xBx1
     logic [63:0] wdata64, rdata64, bm64;
@@ -256,9 +240,16 @@ module tc_sram_impl #(
      .A_MEN   ( req_i   ),
      .A_WEN   ( we_i    ),
      .A_REN   ( ~we_i   ),
-     .A_DIN   ( wdata64 ),
-     .A_DOUT  ( rdata64 ),
-     `IHP13_TC_SRAM_256x64_TIEOFF
+     .A_DIN        ( wdata64 ),
+     .A_DOUT       ( rdata64 ),
+     .A_BIST_CLK   (  1'b0 ),
+     .A_BIST_ADDR  (  8'd0 ),
+     .A_BIST_DIN   ( 64'd0 ),
+     .A_BIST_BM    ( 64'd0 ),
+     .A_BIST_MEN   (  1'b0 ),
+     .A_BIST_WEN   (  1'b0 ),
+     .A_BIST_REN   (  1'b0 ),
+     .A_BIST_EN    (  1'b0 )
     );
 
   end else if (NumWords == 1024 && DataWidth == 32 && P1L1) begin: gen_1024x32xBx1
@@ -298,9 +289,16 @@ module tc_sram_impl #(
      .A_MEN   ( req_i   ),
      .A_WEN   ( we_i    ),
      .A_REN   ( ~we_i   ),
-     .A_DIN   ( wdata64 ),
-     .A_DOUT  ( rdata64 ),
-     `IHP13_TC_SRAM_512x64_TIEOFF
+     .A_DIN        ( wdata64 ),
+     .A_DOUT       ( rdata64 ),
+     .A_BIST_CLK   (  1'b0 ),
+     .A_BIST_ADDR  (  9'd0 ),
+     .A_BIST_DIN   ( 64'd0 ),
+     .A_BIST_BM    ( 64'd0 ),
+     .A_BIST_MEN   (  1'b0 ),
+     .A_BIST_WEN   (  1'b0 ),
+     .A_BIST_REN   (  1'b0 ),
+     .A_BIST_EN    (  1'b0 )
     );
   end else if (NumWords == 2048 && DataWidth == 32 && P1L1) begin: gen_2048x32xBx1
     logic [63:0] wdata64, rdata64, bm64;
@@ -339,14 +337,21 @@ module tc_sram_impl #(
      .A_MEN   ( req_i   ),
      .A_WEN   ( we_i    ),
      .A_REN   ( ~we_i   ),
-     .A_DIN   ( wdata64 ),
-     .A_DOUT  ( rdata64 ),
-     `IHP13_TC_SRAM_1024x64_TIEOFF
+     .A_DIN        ( wdata64 ),
+     .A_DOUT       ( rdata64 ),
+     .A_BIST_CLK   (  1'b0 ),
+     .A_BIST_ADDR  ( 10'd0 ),
+     .A_BIST_DIN   ( 64'd0 ),
+     .A_BIST_BM    ( 64'd0 ),
+     .A_BIST_MEN   (  1'b0 ),
+     .A_BIST_WEN   (  1'b0 ),
+     .A_BIST_REN   (  1'b0 ),
+     .A_BIST_EN    (  1'b0 )
     );
 
   end else if (NumWords == 2048 & DataWidth == 64 & P1L1) begin : gen_2048x64xBx1
     logic [63:0] wdata64, rdata64, bm64;
-    
+
     assign rdata_o = rdata64;
     assign wdata64 = wdata_i;
     assign bm64    = bm;
@@ -359,9 +364,16 @@ module tc_sram_impl #(
        .A_MEN   ( req_i    ),
        .A_WEN   ( we_i     ),
        .A_REN   ( ~we_i    ),
-       .A_DIN   ( wdata64  ),
-       .A_DOUT  ( rdata64  ),
-       `IHP13_TC_SRAM_2048x64_TIEOFF
+       .A_DIN        ( wdata64  ),
+       .A_DOUT       ( rdata64  ),
+       .A_BIST_CLK   (  1'b0 ),
+       .A_BIST_ADDR  ( 11'd0 ),
+       .A_BIST_DIN   ( 64'd0 ),
+       .A_BIST_BM    ( 64'd0 ),
+       .A_BIST_MEN   (  1'b0 ),
+       .A_BIST_WEN   (  1'b0 ),
+       .A_BIST_REN   (  1'b0 ),
+       .A_BIST_EN    (  1'b0 )
       );
 
   end else begin : gen_blackbox

@@ -57,15 +57,15 @@ module croc_idma #(
     typedef logic [8:0]                       word_addr_t;
 
     // Register offsets
-    localparam word_addr_t CONF_OFFSET         = 9'h 00;
-    localparam word_addr_t NEXT_ID_OFFSET      = 9'h 44;
-    localparam word_addr_t DONE_ID_OFFSET      = 9'h 84;
-    localparam word_addr_t DST_ADDR_OFFSET     = 9'h d0;
-    localparam word_addr_t SRC_ADDR_OFFSET     = 9'h d8;
-    localparam word_addr_t LENGTH_OFFSET       = 9'h e0;
-    localparam word_addr_t DST_STRIDE_2_OFFSET = 9'h e8;
-    localparam word_addr_t SRC_STRIDE_2_OFFSET = 9'h f0;
-    localparam word_addr_t REPS_2_OFFSET       = 9'h f8;
+    localparam word_addr_t ConfOffset         = 9'h 00;
+    localparam word_addr_t NextIdOffset      = 9'h 44;
+    localparam word_addr_t DoneIdOffset      = 9'h 84;
+    localparam word_addr_t DstAddrOffset     = 9'h d0;
+    localparam word_addr_t SrcAddrOffset     = 9'h d8;
+    localparam word_addr_t LengthOffset       = 9'h e0;
+    localparam word_addr_t DstStride2Offset = 9'h e8;
+    localparam word_addr_t SrcStride2Offset = 9'h f0;
+    localparam word_addr_t Reps2Offset       = 9'h f8;
 
     // iDMA request / response types
     localparam int unsigned NumDim = 32'd2;
@@ -170,8 +170,8 @@ module croc_idma #(
         obi_cfg_rsp_o.r.err   = (req_q & we_q) ? w_err_q : r_err;
         obi_cfg_rsp_o.r.rdata = reg_read_data;
         obi_cfg_rsp_o.rvalid  = req_q;
-        obi_cfg_rsp_o.gnt     = word_addr_d == NEXT_ID_OFFSET ?
-                                obi_cfg_req_i.req & job_req_ready : obi_cfg_req_i.req; 
+        obi_cfg_rsp_o.gnt     = word_addr_d == NextIdOffset ?
+                                obi_cfg_req_i.req & job_req_ready : obi_cfg_req_i.req;
     end
 
     // OBI Storage
@@ -209,31 +209,31 @@ module croc_idma #(
         if (obi_cfg_req_i.a.we & obi_cfg_req_i.req) begin
             case (word_addr_d)
 
-                CONF_OFFSET: begin
+                ConfOffset: begin
                     nd_ena_d = (~bmsk & nd_ena_q) | (bmsk[11] & obi_cfg_req_i.a.wdata[11]);
                 end
 
-                DST_ADDR_OFFSET: begin
+                DstAddrOffset: begin
                     dst_addr_d = (~bmsk & dst_addr_q) | (bmsk & obi_cfg_req_i.a.wdata);
                 end
 
-                SRC_ADDR_OFFSET: begin
+                SrcAddrOffset: begin
                     src_addr_d = (~bmsk & src_addr_q) | (bmsk & obi_cfg_req_i.a.wdata);
                 end
 
-                LENGTH_OFFSET: begin
+                LengthOffset: begin
                     tf_len_d = (~bmsk & tf_len_q) | (bmsk[TFLenWidth-1:0] & obi_cfg_req_i.a.wdata[TFLenWidth-1:0]);
                 end
 
-                DST_STRIDE_2_OFFSET: begin
+                DstStride2Offset: begin
                     dst_str_d = (~bmsk & dst_str_q) | (bmsk[TFLenWidth-1:0] & obi_cfg_req_i.a.wdata[TFLenWidth-1:0]);
                 end
 
-                SRC_STRIDE_2_OFFSET: begin
+                SrcStride2Offset: begin
                     src_str_d = (~bmsk & src_str_q) | (bmsk[TFLenWidth-1:0] & obi_cfg_req_i.a.wdata[TFLenWidth-1:0]);
                 end
 
-                REPS_2_OFFSET: begin
+                Reps2Offset: begin
                     num_rep_d = (~bmsk & num_rep_q) | (bmsk[TFLenWidth-1:0] & obi_cfg_req_i.a.wdata[TFLenWidth-1:0]);
                 end
 
@@ -257,40 +257,40 @@ module croc_idma #(
 
         if (~we_q & req_q) begin
             case (word_addr_q)
-                CONF_OFFSET: begin
+                ConfOffset: begin
                     reg_read_data = {ObiSbrCfg.DataWidth {1'b0}} | nd_ena_q << 11;
                 end
 
-                NEXT_ID_OFFSET: begin
+                NextIdOffset: begin
                     reg_read_data = next_job_id;
                     job_req_valid = 1'b1;
                 end
 
-                DONE_ID_OFFSET: begin
+                DoneIdOffset: begin
                     reg_read_data = complete_job_id;
                 end
 
-                DST_ADDR_OFFSET: begin
+                DstAddrOffset: begin
                     reg_read_data = dst_addr_q;
                 end
 
-                SRC_ADDR_OFFSET: begin
+                SrcAddrOffset: begin
                     reg_read_data = src_addr_q;
                 end
 
-                LENGTH_OFFSET: begin
+                LengthOffset: begin
                     reg_read_data = {ObiSbrCfg.DataWidth {1'b0}} | tf_len_q;
                 end
 
-                DST_STRIDE_2_OFFSET: begin
+                DstStride2Offset: begin
                     reg_read_data = {ObiSbrCfg.DataWidth {1'b0}} | dst_str_q;
                 end
 
-                SRC_STRIDE_2_OFFSET: begin
+                SrcStride2Offset: begin
                     reg_read_data = {ObiSbrCfg.DataWidth {1'b0}} | src_str_q;
                 end
 
-                REPS_2_OFFSET: begin
+                Reps2Offset: begin
                     reg_read_data = {ObiSbrCfg.DataWidth {1'b0}} | num_rep_q;
                 end
 

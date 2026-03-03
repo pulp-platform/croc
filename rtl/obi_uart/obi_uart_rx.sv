@@ -256,12 +256,11 @@ module obi_uart_rx import obi_uart_pkg::*; #()
     //--------------------------------------------------------------------------------------------
     // Word Length
     //--------------------------------------------------------------------------------------------
-    case (reg_read_i.lcr.word_len)
+    unique case (reg_read_i.lcr.word_len)
       2'b00: word_len_bits = 3'b100; // 5 Bits (4th index in rsr)
       2'b01: word_len_bits = 3'b101; // 6 Bits (5th index in rsr)
       2'b10: word_len_bits = 3'b110; // 7 Bits (6th index in rsr)
       2'b11: word_len_bits = 3'b111; // 8 Bits (7th index in rsr)
-      default: word_len_bits = 3'b111;
     endcase
 
     // timeout_level = (character_length * 4) +1
@@ -324,12 +323,11 @@ module obi_uart_rx import obi_uart_pkg::*; #()
       data_parity  = ^rsr_q; // XOR to compute parity of data bits
 
       if (timing_bit_center_edge) begin
-        case (reg_read_i.lcr[5:4]) // Read Parity Configuration
+        unique case (reg_read_i.lcr[5:4]) // Read Parity Configuration
           2'b00: parity_err_d = (data_parity == filtered_rxd_q); // Odd Parity
           2'b01: parity_err_d = (data_parity != filtered_rxd_q); // Even Parity
           2'b10: parity_err_d = (~filtered_rxd_q);               // Forced 1
           2'b11: parity_err_d = filtered_rxd_q;                  // Forced 0
-          default: parity_err_d = 1'b0;
         endcase
         break_d    = ~filtered_rxd_q;
         par_finish = 1'b1;
@@ -495,12 +493,11 @@ module obi_uart_rx import obi_uart_pkg::*; #()
       //------------------------------------------------------------------------------------------
       // FIFO trigger_o Output
       //------------------------------------------------------------------------------------------
-      case (reg_read_i.fcr.rx_fifo_tl)
+      unique case (reg_read_i.fcr.rx_fifo_tl)
         2'b00: tl_characters = 4'b0001; // 1 Character
         2'b01: tl_characters = 4'b0100; // 4 Characters
         2'b10: tl_characters = 4'b1000; // 8 Characters
         2'b11: tl_characters = 4'b1110; // 14 Characters
-        default: tl_characters = 4'b0001;
       endcase
 
       if (tl_characters <= fifo_usage) begin

@@ -1,0 +1,23 @@
+From 1f2b3f901e64fe142a1b6d58967fd8e336bb3d31 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Wed, 4 Mar 2026 00:58:29 +0100
+Subject: [PATCH] posix newline file ending
+
+---
+ dmi_test.sv | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/dmi_test.sv b/dmi_test.sv
+index 06fb8cc..82218d2 100644
+--- a/dmi_test.sv
++++ b/dmi_test.sv
+@@ -334,4 +334,4 @@ package dmi_test;
+     endtask
+   endclass
+ 
+-endpackage
+\ No newline at end of file
++endpackage
+-- 
+2.43.0
+

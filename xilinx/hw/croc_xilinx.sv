@@ -19,7 +19,7 @@
   `define USE_VIO
 `endif
 
-`define ila(__name, __signal)  \
+`define ILA(__name, __signal)  \
   (* dont_touch = "yes" *) (* mark_debug = "true" *) logic [$bits(__signal)-1:0] __name; \
   assign __name = __signal;
 
@@ -144,16 +144,16 @@ module croc_xilinx import croc_pkg::*; #(
 
   assign soc_rst = ~sys_resetn | vio_reset;
 
-  logic [GpioCount-1:0] soc_gpio_i;             
-  logic [GpioCount-1:0] soc_gpio_o;            
+  logic [GpioCount-1:0] soc_gpio_i;
+  logic [GpioCount-1:0] soc_gpio_o;
   logic [GpioCount-1:0] soc_gpio_out_en_o;
 
-  for(genvar idx=0; idx<GpioCount; idx++) begin
+  for(genvar idx=0; idx<GpioCount; idx++) begin : gen_gpio
     assign gpio_o[idx] = soc_gpio_out_en_o[idx] ? soc_gpio_o[idx] : '0;
 
-    if(idx == 0) begin
+    if(idx == 0) begin : gen_gpio_0
       assign soc_gpio_i[idx] = ~soc_gpio_out_en_o[idx] ? vio_gpio | gpio_i[0] : '0;
-    end else begin
+    end else begin : gen_gpio_n
       assign soc_gpio_i[idx] = ~soc_gpio_out_en_o[idx] ? gpio_i[idx] : '0;
     end
   end
@@ -255,9 +255,9 @@ module croc_xilinx import croc_pkg::*; #(
     .uart_rx_i       ( uart_rx_i ),
     .uart_tx_o       ( uart_tx_o ),
 
-    .gpio_i          ( soc_gpio_i        ),             
-    .gpio_o          ( soc_gpio_o        ),            
-    .gpio_out_en_o   ( soc_gpio_out_en_o ) 
+    .gpio_i          ( soc_gpio_i        ),
+    .gpio_o          ( soc_gpio_o        ),
+    .gpio_out_en_o   ( soc_gpio_out_en_o )
   );
 
 endmodule

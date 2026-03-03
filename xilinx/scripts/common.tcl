@@ -107,7 +107,7 @@ proc insert_ilas {clk_net_name} {
     # Create debug core only if there are probes
     if { ![llength $debug_nets] } { return }
     # Create and configure debug core
-    create_debug_core i_ila ila
+    create_debug_core i_ila ILA
     set_property -dict [list \
         ALL_PROBE_SAME_MU {true} ALL_PROBE_SAME_MU_CNT {4} C_ADV_TRIGGER {true} \
         C_DATA_DEPTH {16384} C_EN_STRG_QUAL {true} C_INPUT_PIPE_STAGES {0} \

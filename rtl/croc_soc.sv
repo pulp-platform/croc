@@ -35,7 +35,7 @@ module croc_soc import croc_pkg::*; #(
     .rst_ni,
     .test_mode_i ( testmode_i ),
     .rst_no      ( synced_rst_n ),
-    .init_no ( )
+    .init_no     ()
   );
 
 // Connection between Croc_domain and User_domain: User Sbr, Croc Mgr
@@ -68,8 +68,8 @@ croc_domain #(
   .uart_rx_i,
   .uart_tx_o,
 
-  .gpio_i,             
-  .gpio_o,            
+  .gpio_i,
+  .gpio_o,
   .gpio_out_en_o,
 
   .gpio_in_sync_o ( gpio_in_sync ),
@@ -80,8 +80,8 @@ croc_domain #(
   .user_mgr_obi_req_i  ( user_mgr_obi_req ),
   .user_mgr_obi_rsp_o  ( user_mgr_obi_rsp ),
 
-  .interrupts_i ( interrupts  ),
-  .core_busy_o  ( status_o    )
+  .interrupts_i ( interrupts ),
+  .core_busy_o  ( status_o   )
 );
 
 user_domain #(

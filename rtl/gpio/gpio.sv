@@ -34,7 +34,7 @@ module gpio #(
     /// the output enable of the corresponding IO Pad.
     /// 0 -> input, 1 -> output.
     output logic [GpioCount-1:0] gpio_out_en_o,
-    /// Synchronized GPIO input signals. 
+    /// Synchronized GPIO input signals.
     // Provides the gpio_i signal synchronized to clk_i to other modules.
     output logic [GpioCount-1:0] gpio_in_sync_o,
     /// GPIO interrupt line. The interrupt line is asserted for one clk_i

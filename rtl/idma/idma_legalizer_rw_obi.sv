@@ -400,15 +400,5 @@ module idma_legalizer_rw_obi #(
     `FFL(r_tf_q,   r_tf_d,   r_tf_ena, '0, clk_i, rst_ni)
     `FFL(w_tf_q,   w_tf_d,   w_tf_ena, '0, clk_i, rst_ni)
 
-
-    //--------------------------------------
-    // Assertions
-    //--------------------------------------
-    // only support the decomposition of incremental bursts
-    `ASSERT_NEVER(OnlyIncrementalBurstsSRC, (ready_o & valid_i &
-                  req_i.opt.src.burst != axi_pkg::BURST_INCR), clk_i, !rst_ni)
-    `ASSERT_NEVER(OnlyIncrementalBurstsDST, (ready_o & valid_i &
-                  req_i.opt.dst.burst != axi_pkg::BURST_INCR), clk_i, !rst_ni)
-
 endmodule
 

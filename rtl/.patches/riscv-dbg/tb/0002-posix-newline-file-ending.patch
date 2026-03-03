@@ -1,0 +1,23 @@
+From 2fa03cd4a8980e0eb5817a4a12bb5fdcfc6a2731 Mon Sep 17 00:00:00 2001
+From: Philippe Sauter <phsauter@iis.ee.ethz.ch>
+Date: Wed, 4 Mar 2026 00:58:09 +0100
+Subject: [PATCH] posix newline file ending
+
+---
+ jtag_test_simple.sv | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/jtag_test_simple.sv b/jtag_test_simple.sv
+index 2e8f703..576d448 100644
+--- a/jtag_test_simple.sv
++++ b/jtag_test_simple.sv
+@@ -377,4 +377,4 @@ module riscv_dbg_simple #(
+     end
+   endtask
+ 
+-endmodule
+\ No newline at end of file
++endmodule
+-- 
+2.43.0
+

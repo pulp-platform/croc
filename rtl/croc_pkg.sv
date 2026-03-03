@@ -14,16 +14,17 @@ package croc_pkg;
   // JTAG Info        //
   //////////////////////
   /// JTAG IDCODE for the Croc JTAG tap, used to identify the device
-  localparam struct packed {
+  typedef struct packed {
     bit [ 3:0]  version;
     bit [15:0]  part_num;
     bit [10:0]  manufacturer;
     bit         _one;
-  } PulpJtagIdCode = '{
+  } pulp_jtag_idcode_t;
+  localparam pulp_jtag_idcode_t PulpJtagIdCode = '{
     _one:          1'b1,    /* must be 1 */
     manufacturer: 11'h6d9,  /* identify as PULP Platform chip */
     part_num:     16'hC0C5, /* default Croc part number */
-    version:       4'h01    /* version 1 (2026) */
+    version:       4'h1     /* version 1 (2026) */
   };
 
   ////////////////////////
@@ -47,7 +48,7 @@ package croc_pkg;
   ////////////////////////
   // Check in your target technology which SRAMs are available
   // and then make sure it is implemented as an option in tc_sram_impl.sv
-  
+
   /// Number of SRAM banks, each bank has its own OBI port (accessible in parallel)
   localparam int unsigned NumSramBanks      = 32'd2;
   /// Number of 32-bit words per SRAM bank, determines the depth of each SRAM bank
@@ -62,7 +63,7 @@ package croc_pkg;
 
   /// Address map data type
   typedef struct packed {
-      logic [31:0] idx;
+      logic [ 3:0] idx;
       logic [31:0] start_addr;
       logic [31:0] end_addr;
   } addr_map_rule_t;
@@ -76,7 +77,7 @@ package croc_pkg;
   localparam int unsigned NumXbarManagers = 4 + (iDMAEnable ? 2 : 0);
 
   /// Enum with crossbar subordinate idxs
-  typedef enum int {
+  typedef enum bit [3:0] {
     XbarError  = 0,
     XbarPeriph = 1,
     XbarUser   = 2,
@@ -84,7 +85,7 @@ package croc_pkg;
   } croc_xbar_outputs_e;
 
   /// Address map given to the main crossbar
-  localparam addr_map_rule_t [3:0] croc_addr_map = '{
+  localparam addr_map_rule_t [3:0] CrocAddrMap = '{
     '{ idx: XbarPeriph,  start_addr: 32'h0000_0000, end_addr: 32'h1000_0000 },
     '{ idx: XbarUser,    start_addr: 32'h2000_0000, end_addr: 32'h8000_0000 },
     '{ idx: XbarBank0,   start_addr: 32'h1000_0000, end_addr: 32'h1000_0800 },
@@ -92,7 +93,7 @@ package croc_pkg;
   };
 
   // +1 for additional OBI error
-  localparam int unsigned NumXbarSubordinates = $size(croc_addr_map) + 1;
+  localparam int unsigned NumXbarSubordinates = $size(CrocAddrMap) + 1;
 
   /// Connectivity matrix for the main crossbar [NumXbarManagers-1:0][NumXbarSubordinates-1:0]
   /// Default is fully connected. If you use the iDMA you may want to reduce this
@@ -110,9 +111,9 @@ package croc_pkg;
   /// This is necesary because the idx do not directly correspond to the indices of the array
   function automatic bit [31:0] get_croc_start_addr(croc_xbar_outputs_e port);
     bit [31:0] addr = '0;
-    for (int unsigned i = 0; i < $size(croc_addr_map); i++) begin
-      if (croc_xbar_outputs_e'(croc_addr_map[i].idx) == port) begin
-        return croc_addr_map[i].start_addr;
+    for (int unsigned i = 0; i < $size(CrocAddrMap); i++) begin
+      if (croc_xbar_outputs_e'(CrocAddrMap[i].idx) == port) begin
+        return CrocAddrMap[i].start_addr;
       end
     end
     return addr;
@@ -127,7 +128,7 @@ package croc_pkg;
   // Peripheral Mux Address Map //
   ////////////////////////////////
   /// Enum with peripheral mux subordinate idxs
-  typedef enum int {
+  typedef enum bit [3:0] {
     PeriphError    = 0,
     PeriphDebug    = 1,
     PeriphBootrom  = 2,
@@ -140,7 +141,7 @@ package croc_pkg;
   } periph_outputs_e;
 
   /// Address map given to the peripheral mux
-  localparam addr_map_rule_t [7:0] periph_addr_map = '{
+  localparam addr_map_rule_t [7:0] PeriphAddrMap = '{
     '{ idx: PeriphDebug,   start_addr: 32'h0000_0000, end_addr: 32'h0004_0000 },
     '{ idx: PeriphBootrom, start_addr: 32'h0200_0000, end_addr: 32'h0200_4000 },
     '{ idx: PeriphClint,   start_addr: 32'h0204_0000, end_addr: 32'h0208_0000 },
@@ -152,16 +153,16 @@ package croc_pkg;
   };
 
   // +1 for additional OBI error
-  localparam int unsigned NumPeriphs = $size(periph_addr_map) + 1;
+  localparam int unsigned NumPeriphs = $size(PeriphAddrMap) + 1;
 
   /// Converts the bus indices enum for the peripheral mux to start address of a peripheral
   /// Eg : get_periph_start_addr(PeriphGpio) returns the start address of the GPIO peripheral
   /// This is necesary because the idx do not directly correspond to the indices of the array
   function automatic bit [31:0] get_periph_start_addr(periph_outputs_e port);
     bit [31:0] addr = '0;
-    for (int unsigned i = 0; i < $size(periph_addr_map); i++) begin
-      if (periph_outputs_e'(periph_addr_map[i].idx) == port) begin
-        return periph_addr_map[i].start_addr;
+    for (int unsigned i = 0; i < $size(PeriphAddrMap); i++) begin
+      if (periph_outputs_e'(PeriphAddrMap[i].idx) == port) begin
+        return PeriphAddrMap[i].start_addr;
       end
     end
     return addr;
@@ -266,16 +267,16 @@ package croc_pkg;
    * `OBI_TYPEDEF_DEFAULT_REQ_T(mgr_obi_req_t, mgr_obi_a_chan_t)
    * `OBI_TYPEDEF_R_CHAN_T(mgr_obi_r_chan_t, MgrObiCfg.DataWidth, MgrObiCfg.IdWidth, logic [0:0])
    * `OBI_TYPEDEF_RSP_T(mgr_obi_rsp_t, mgr_obi_r_chan_t)
-   * 
+   *
    * // Create types for OBI subordinates/slaves (out of the interconnect, into the device)
    * localparam obi_pkg::obi_cfg_t SbrObiCfg = obi_pkg::mux_grow_cfg(MgrObiCfg, NumManagers);
    * `OBI_TYPEDEF_A_CHAN_T(sbr_obi_a_chan_t, SbrObiCfg.AddrWidth, SbrObiCfg.DataWidth, SbrObiCfg.IdWidth, logic [0:0])
    * `OBI_TYPEDEF_DEFAULT_REQ_T(sbr_obi_req_t, sbr_obi_a_chan_t)
    * `OBI_TYPEDEF_R_CHAN_T(sbr_obi_r_chan_t, SbrObiCfg.DataWidth, SbrObiCfg.IdWidth, logic [0:0])
    * `OBI_TYPEDEF_RSP_T(sbr_obi_rsp_t, sbr_obi_r_chan_t)
-   * 
+   *
    * // Register Interface configured as 32 bit data, 32 bit address width (4 byte enable bits)
-   * `REG_BUS_TYPEDEF_ALL(reg, logic[31:0], logic[31:0], logic[3:0]); 
+   * `REG_BUS_TYPEDEF_ALL(reg, logic[31:0], logic[31:0], logic[3:0]);
    */
 
 endpackage

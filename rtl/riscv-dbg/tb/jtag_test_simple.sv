@@ -10,7 +10,7 @@
 
 module jtag_driver_simple #(
   parameter int IrLength = 0,
-  parameter IDCODE       = 'h1,
+  parameter logic [31:0] IDCODE = 'h1,
   parameter time TA      = 0ns,  // stimuli application time
   parameter time TT      = 0ns   // stimuli test time
 ) (
@@ -21,12 +21,12 @@ module jtag_driver_simple #(
   input  logic jtag_tdo_i
 );
 
-  localparam DMIWidth = $bits(dm::dmi_req_t);
+  localparam int DMIWidth = $bits(dm::dmi_req_t);
 
   // last IR register select
   logic [IrLength-1:0] ir_select = 'h1;
 
-  task reset_master;
+  task automatic reset_master;
     #TA;
     jtag_tms_o   = 1;
     jtag_tdi_o   = 0;
@@ -38,7 +38,7 @@ module jtag_driver_simple #(
     clock();
   endtask
 
-  task soft_reset();
+  task automatic soft_reset();
     #TA;
     jtag_tms_o = 1;
     jtag_tdi_o = 0;
@@ -52,7 +52,7 @@ module jtag_driver_simple #(
   endtask
 
   // Set IR, but only if it needs to be set.
-  task set_ir(input logic [IrLength-1:0] opcode);
+  task automatic set_ir(input logic [IrLength-1:0] opcode);
     logic opcode_unpacked [IrLength];
     // check whether IR is already set to the right value
     if (ir_select == opcode) return;
@@ -70,21 +70,21 @@ module jtag_driver_simple #(
     ir_select = opcode;
   endtask
   // Go from `run_test_idle` to `shift_dr`
-  task shift_dr();
+  task automatic shift_dr();
     write_tms(1); // select DR scan
     write_tms(0); // capture DR
     write_tms(0); // shift DR
   endtask
 
   // Go to `run_test_idle`
-  task update_dr(bit exit_1_dr);
+  task automatic update_dr(bit exit_1_dr);
     // depending on the state `exit_1_dr` is already reached when shifting data (`tms_on_last`).
     if (exit_1_dr) write_tms(1); // exi 1 DR
     write_tms(1); // update DR
     write_tms(0); // run test idle
   endtask
 
-  task write_bits_opcode(input logic wdata [IrLength], input logic tms_last);
+  task automatic write_bits_opcode(input logic wdata [IrLength], input logic tms_last);
     for (int i = 0; i < IrLength; i++) begin
       #TA;
       jtag_tdi_o = wdata[i];
@@ -93,7 +93,7 @@ module jtag_driver_simple #(
     end
   endtask
 
-  task write_bits_32(input logic wdata [32], input logic tms_last);
+  task automatic write_bits_32(input logic wdata [32], input logic tms_last);
     for (int i = 0; i < 32; i++) begin
       #TA;
       jtag_tdi_o = wdata[i];
@@ -102,7 +102,7 @@ module jtag_driver_simple #(
     end
   endtask
 
-  task write_bits_dmi(input logic wdata [DMIWidth], input logic tms_last);
+  task automatic write_bits_dmi(input logic wdata [DMIWidth], input logic tms_last);
     for (int i = 0; i < DMIWidth; i++) begin
       #TA;
       jtag_tdi_o = wdata[i];
@@ -112,7 +112,7 @@ module jtag_driver_simple #(
   endtask
 
   // Assumes JTAG FSM is already in shift DR state
-  task readwrite_bits_32(output logic rdata [32], input logic wdata [32], input logic tms_last);
+  task automatic readwrite_bits_32(output logic rdata [32], input logic wdata [32], input logic tms_last);
     for (int i = 0; i < 32; i++) begin
       #TA;
       jtag_tdi_o = wdata[i];
@@ -124,7 +124,7 @@ module jtag_driver_simple #(
   endtask
 
   // Assumes JTAG FSM is already in shift DR state
-  task readwrite_bits_dmi(output logic rdata [DMIWidth], input logic wdata [DMIWidth], input logic tms_last);
+  task automatic readwrite_bits_dmi(output logic rdata [DMIWidth], input logic wdata [DMIWidth], input logic tms_last);
     for (int i = 0; i < DMIWidth; i++) begin
       #TA;
       jtag_tdi_o = wdata[i];
@@ -135,25 +135,25 @@ module jtag_driver_simple #(
     end
   endtask
 
-  task wait_idle(int cycles);
+  task automatic wait_idle(int cycles);
     repeat(cycles) clock();
   endtask
 
-  task write_tms(input logic tms_val);
+  task automatic write_tms(input logic tms_val);
     #TA;
     jtag_tms_o = tms_val;
     cycle_end();
   endtask
 
-  task clock();
+  task automatic clock();
     cycle_start(); cycle_end();
   endtask
 
-  task cycle_start;
+  task automatic cycle_start;
     #(TT - TA);
   endtask
 
-  task cycle_end;
+  task automatic cycle_end;
     @(posedge jtag_tck_i);
   endtask
 endmodule
@@ -162,9 +162,9 @@ endmodule
 // abstracts the debug module
 module riscv_dbg_simple #(
   parameter int IrLength = 5,
-  parameter IDCODE    = 'h1,
-  parameter DTMCSR    = 'h10,
-  parameter DMIACCESS = 'h11,
+  parameter logic [31:0]         IDCODE    = 'h1,
+  parameter logic [IrLength-1:0] DTMCSR    = 'h10,
+  parameter logic [IrLength-1:0] DMIACCESS = 'h11,
   parameter time TA = 0ns, // stimuli application time
   parameter time TT = 0ns  // stimuli test time
 ) (
@@ -175,7 +175,7 @@ module riscv_dbg_simple #(
   input  logic jtag_tdo_i
 );
 
-  localparam DMIWidth = $bits(dm::dmi_req_t);
+  localparam int DMIWidth = $bits(dm::dmi_req_t);
 
   jtag_driver_simple #(
     .IrLength ( IrLength ),
@@ -189,16 +189,16 @@ module riscv_dbg_simple #(
     .jtag_tdo_i
   );
 
-  task reset_master();
+  task automatic reset_master();
     jtag.reset_master();
     jtag.soft_reset();
   endtask
 
-  task wait_idle(int cycles);
+  task automatic wait_idle(int cycles);
     jtag.wait_idle(cycles);
   endtask
 
-  task get_idcode(output logic [31:0] idcode);
+  task automatic get_idcode(output logic [31:0] idcode);
     logic read_data [32], write_data [32];
     write_data = '{default: 1'b0};
     jtag.set_ir(IDCODE);
@@ -211,7 +211,7 @@ module riscv_dbg_simple #(
     end
   endtask
 
-  task write_dtmcs(input logic [31:0] data);
+  task automatic write_dtmcs(input logic [31:0] data);
     logic write_data [32];
     logic [31:0] write_data_packed;
     write_data_packed = {data};
@@ -225,7 +225,7 @@ module riscv_dbg_simple #(
     jtag.update_dr(1'b0);
   endtask
 
-  task read_dtmcs(output dm::dtmcs_t data, input int wait_cycles = 10);
+  task automatic read_dtmcs(output dm::dtmcs_t data, input int wait_cycles = 10);
     logic read_data [32], write_data [32];
     jtag.set_ir(DTMCSR);
     jtag.shift_dr();
@@ -242,13 +242,13 @@ module riscv_dbg_simple #(
     end
   endtask
 
-  task reset_dmi();
+  task automatic reset_dmi();
     logic [31:0] dmireset;
     dmireset = 1 << 16;
     write_dtmcs(dmireset);
   endtask
 
-  task write_dmi(input dm::dm_csr_e address, input logic [31:0] data);
+  task automatic write_dmi(input dm::dm_csr_e address, input logic [31:0] data);
     logic write_data [DMIWidth];
     logic [DMIWidth-1:0] write_data_packed;
     write_data_packed = {address, data, dm::DTM_WRITE};
@@ -262,7 +262,7 @@ module riscv_dbg_simple #(
     jtag.update_dr(1'b0);
   endtask
 
-  task read_dmi(input dm::dm_csr_e address, output logic [31:0] data, input int wait_cycles = 10,
+  task automatic read_dmi(input dm::dm_csr_e address, output logic [31:0] data, input int wait_cycles = 10,
                 output dm::dtm_op_status_e op);
     logic read_data [DMIWidth], write_data [DMIWidth];
     automatic logic [DMIWidth-1:0] data_out = 0;
@@ -300,7 +300,7 @@ module riscv_dbg_simple #(
   // an exponential backoff scheme.
   // Note: read operations which have side-effects (e.g.
   // reading SBData0) should not use this function
-  task read_dmi_exp_backoff(input dm::dm_csr_e address, output logic [31:0] data);
+  task automatic read_dmi_exp_backoff(input dm::dm_csr_e address, output logic [31:0] data);
     logic read_data [DMIWidth], write_data [DMIWidth];
     logic [DMIWidth-1:0] write_data_packed;
     automatic logic [DMIWidth-1:0] data_out = 0;
@@ -320,7 +320,7 @@ module riscv_dbg_simple #(
     end while (op == dm::DTM_BUSY);
   endtask
 
-  task sba_read_double(input logic [31:0] address, output logic [63:0] data);
+  task automatic sba_read_double(input logic [31:0] address, output logic [63:0] data);
     // Attempt the access sequence. Two timing violations may
     // occur:
     // 1) an operation is attempted while a DMI request is still
