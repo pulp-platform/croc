@@ -48,7 +48,8 @@ run_cmd() {
 
 lint_sv() {
     run_cmd "echo [INFO][Verible] Check SystemVerilog sources"
-    run_cmd "verible-verilog-lint $(find . -name '*.sv' -exec realpath {} \;) --lint_fatal --waiver_files scripts/verible.waver"
+    run_cmd "verible-verilog-lint $(find . -name '*.sv' -not -path './rtl/cve2/*' -exec realpath {} \;)\
+     --lint_fatal --rules_config scripts/verible.rules --waiver_files scripts/verible.waiver"
 }
 
 

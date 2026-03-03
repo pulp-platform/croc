@@ -10,18 +10,18 @@
 #include <stdint.h>
 
 // Register offsets (from croc_idma.sv)
-#define IDMA_CONF_OFFSET 0x00
-#define IDMA_NEXT_ID_OFFSET 0x44
-#define IDMA_DONE_ID_OFFSET 0x84
-#define IDMA_DST_ADDR_OFFSET 0xd0
-#define IDMA_SRC_ADDR_OFFSET 0xd8
-#define IDMA_LENGTH_OFFSET 0xe0
+#define IDMA_CONF_OFFSET         0x00
+#define IDMA_NEXT_ID_OFFSET      0x44
+#define IDMA_DONE_ID_OFFSET      0x84
+#define IDMA_DST_ADDR_OFFSET     0xd0
+#define IDMA_SRC_ADDR_OFFSET     0xd8
+#define IDMA_LENGTH_OFFSET       0xe0
 #define IDMA_DST_STRIDE_2_OFFSET 0xe8
 #define IDMA_SRC_STRIDE_2_OFFSET 0xf0
-#define IDMA_REPS_2_OFFSET 0xf8
+#define IDMA_REPS_2_OFFSET       0xf8
 
 // Config register bits
-#define IDMA_CONF_ND_ENA_BIT 11
+#define IDMA_CONF_ND_ENA_BIT     11
 
 // Configure a simple 1D DMA transfer
 void idma_set_src_addr(uint32_t addr);

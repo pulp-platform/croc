@@ -1,0 +1,60 @@
+# Copyright (c) 2026 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Authors:
+# - Philippe Sauter <phsauter@iis.ee.ethz.ch>
+#
+# Verible lint rules configuration.
+# Reference: https://chipsalliance.github.io/verible/verilog_lint.html
+#
+# Syntax:
+#   +rule-name        enable rule
+#   -rule-name        disable rule
+#   rule-name=p:v     set parameter p to value v (enables rule implicitly)
+
+###########################
+# Arrays and Types
+###########################
+# Unpacked dimensions should be allowed to have explicit ordering given
+-unpacked-dimensions-range-ordering
+
+###########################
+# Case statements
+###########################
+# Every case statement must have a default branch (unless unique/priority)
++case-missing-default
+
+###########################
+# Naming conventions
+###########################
+# Relax interface naming scheme since we use _if and _intf
+-interface-name-style
+
+###########################
+# File structure
+###########################
+# One module definition per file (packages/interfaces may coexist)
+-one-module-per-file
+
+# Module name may not match the filename
+# eg for files implementing various options and managed via bender
+-module-filename
+
+###########################
+# Whitespace / Formatting
+###########################
+# No hard tabs — use spaces
++no-tabs
+
+# No trailing whitespace
++no-trailing-spaces
+
+# File must end with a newline (POSIX)
++posix-eof
+
+# Maximum line length; 140 chars is a reasonable limit for HDL
+line-length=length:140
+
+# Allow line continuation
+-forbid-line-continuations

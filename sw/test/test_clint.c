@@ -32,12 +32,12 @@ int main() {
 
     // Test MSIP register: write and readback
     *reg32(CLINT_BASE_ADDR, CLINT_MSIP_REG_OFFSET) = 0x1;
-    uint32_t msip = *reg32(CLINT_BASE_ADDR, CLINT_MSIP_REG_OFFSET);
+    uint32_t msip                                  = *reg32(CLINT_BASE_ADDR, CLINT_MSIP_REG_OFFSET);
     CHECK_ASSERT(6, msip & 0x1);
 
     // Clear MSIP
     *reg32(CLINT_BASE_ADDR, CLINT_MSIP_REG_OFFSET) = 0x0;
-    msip = *reg32(CLINT_BASE_ADDR, CLINT_MSIP_REG_OFFSET);
+    msip                                           = *reg32(CLINT_BASE_ADDR, CLINT_MSIP_REG_OFFSET);
     CHECK_ASSERT(7, (msip & 0x1) == 0);
 
     // Disable timer interrupt to avoid pending interrupt issues

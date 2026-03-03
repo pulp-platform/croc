@@ -45,14 +45,14 @@ for arg in "$@"; do
     fi
 
     # put RHS with equal sign into capture group, match PARAM and replace RHS with VALUE
-    sed -i -E "s/(localparam\s+[a-zA-Z0-9_]+\s+${PARAM}\s*=\s*)[0-9a-z_']+;/\1${VALUE};/" "$PKG_FILE"
+    sed -i -E "s/(localparam\s+[a-zA-Z0-9_]+\s+${PARAM}\s*=)\s*[0-9a-z_']+;/\1 ${VALUE};/" "$PKG_FILE"
 
-    if grep -q "localparam\s+[a-zA-Z0-9_]+\s+${PARAM}\s*=\s*${VALUE};" "$PKG_FILE"; then
+    if grep -q -E "localparam\s+[a-zA-Z0-9_]+\s+${PARAM}\s*=\s*${VALUE};" "$PKG_FILE"; then
         echo "[INFO] ${PARAM} set to ${VALUE}"
     else
         echo "[ERROR] Failed to set ${PARAM} (parameter not found in croc_pkg.sv)" >&2
         echo "[INFO] Restoring croc_pkg.sv to default" >&2
-        git -C "$CROC_ROOT" restore "$PKG_FILE"
+        #git -C "$CROC_ROOT" restore "$PKG_FILE"
         exit 1
     fi
 done

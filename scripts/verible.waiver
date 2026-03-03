@@ -4,3 +4,25 @@
 
 # Authors:
 # - Thomas Benz <tbenz@iis.ee.ethz.ch>
+
+# Annoying but required to allow for non-strict CamelCase use in iDMAEnable
+waive --rule=parameter-name-style --location="croc_pkg\.sv"
+
+# Intentional blocking assignments in clock divider cell
+waive --rule=always-ff-non-blocking --location="clk_int_div\.sv"
+
+# Intentional placeholder signals for vendor specific types
+waive --rule=explicit-parameter-storage-type --location="tc_sram.*\.sv"
+
+# Required for legacy support
+waive --rule=explicit-parameter-storage-type --location="stream_arbiter.*\.sv"
+
+# Not that important and easier than creating patches for each
+waive --rule=generate-label --location="tech_cells_generic/.*tc_sram.*\.sv"
+
+# Good use to define defaults in parameter list where typedef won't work
+waive --rule=typedef-structs-unions --location="common_cells/ecc_.*code\.sv"
+
+# Not actually used in Croc and just included for easy integration of APB
+waive --rule=explicit-parameter-storage-type --location="apb/apb_pkg\.sv"
+waive --rule=parameter-name-style            --location="apb/apb_pkg\.sv"

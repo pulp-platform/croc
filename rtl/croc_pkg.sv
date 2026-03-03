@@ -32,6 +32,16 @@ package croc_pkg;
   localparam bit iDMAEnable = 1'b0;
 
 
+  //////////////////////////
+  // Core Configuration   //
+  //////////////////////////
+  /// Physical Memory Protection enable
+  localparam bit          CorePMPEnable = 1'b0;
+  /// Core type identifier reported in the SoC info register:
+  /// 3'b000=CVE2, 3'b001=Ibex, 3'b111=custom, others are reserved
+  localparam int unsigned CoreId        = 0;
+
+
   ////////////////////////
   // SRAM Configuration //
   ////////////////////////

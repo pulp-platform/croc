@@ -26,16 +26,16 @@ int main() {
 
     // Test BOOTADDR register: write and readback
     *reg32(SOCCTRL_BASE_ADDR, SOC_CTRL_BOOTADDR_REG_OFFSET) = 0xDEAD0000;
-    val = *reg32(SOCCTRL_BASE_ADDR, SOC_CTRL_BOOTADDR_REG_OFFSET);
+    val                                                     = *reg32(SOCCTRL_BASE_ADDR, SOC_CTRL_BOOTADDR_REG_OFFSET);
     CHECK_ASSERT(1, val == 0xDEAD0000);
 
     *reg32(SOCCTRL_BASE_ADDR, SOC_CTRL_BOOTADDR_REG_OFFSET) = 0x10000000;
-    val = *reg32(SOCCTRL_BASE_ADDR, SOC_CTRL_BOOTADDR_REG_OFFSET);
+    val                                                     = *reg32(SOCCTRL_BASE_ADDR, SOC_CTRL_BOOTADDR_REG_OFFSET);
     CHECK_ASSERT(2, val == 0x10000000);
 
     // Test FETCHEN register: write and readback
     *reg32(SOCCTRL_BASE_ADDR, SOC_CTRL_FETCHEN_REG_OFFSET) = 0x1;
-    val = *reg32(SOCCTRL_BASE_ADDR, SOC_CTRL_FETCHEN_REG_OFFSET);
+    val                                                    = *reg32(SOCCTRL_BASE_ADDR, SOC_CTRL_FETCHEN_REG_OFFSET);
     CHECK_ASSERT(3, val == 0x1);
 
     // Test CORESTATUS register: write and readback

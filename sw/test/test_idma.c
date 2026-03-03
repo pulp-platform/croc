@@ -14,8 +14,8 @@ static volatile uint32_t src_buf[4] = {0xCAFE0001, 0xCAFE0002, 0xCAFE0003, 0xCAF
 static volatile uint32_t dst_buf[4] = {0};
 
 // 2D test buffers: 2 rows of 2 words each
-static volatile uint32_t src_2d[4] = {0xAA, 0xBB, 0xCC, 0xDD};
-static volatile uint32_t dst_2d[4] = {0};
+static volatile uint32_t src_2d[4]  = {0xAA, 0xBB, 0xCC, 0xDD};
+static volatile uint32_t dst_2d[4]  = {0};
 
 int main() {
     // Test register write/readback
