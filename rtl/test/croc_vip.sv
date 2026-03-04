@@ -330,8 +330,8 @@ module croc_vip #(
 
   // Continually read characters and print lines
   // TODO: we should be able to support CR properly, but buffers are hard to deal with...
+  byte_bt uart_read_buf[$];
   initial begin
-    static byte_bt uart_read_buf[$];
     byte_bt bite;
     @(posedge rst_no);
     uart_read_buf.delete();
@@ -353,6 +353,17 @@ module croc_vip #(
       end else begin
         uart_read_buf.push_back(bite);
       end
+    end
+  end
+
+    // Flush remaining buffer at end of simulation
+  final begin
+    if (uart_read_buf.size() > 0) begin
+      automatic string uart_str = "";
+      foreach (uart_read_buf[i]) begin
+        uart_str = {uart_str, uart_read_buf[i]};
+      end
+      $display("@%t | [UART] %s", $time, uart_str);
     end
   end
 
