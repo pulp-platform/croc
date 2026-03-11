@@ -34,25 +34,14 @@ jobs:
           submodules: recursive
       - name: Free disk space
         uses: ./.github/actions/free-space
-      - name: Get run ID of "Full Flow" workflow
-        id: get-run-id
-        run: |
-            OTHER_REPO="${{ github.repository }}"
-            WF_NAME="Full Flow"
-            RUN_ID=$(gh run --repo "${OTHER_REPO}" list --workflow "${WF_NAME}" --json databaseId --jq '.[0].databaseId')
-            echo "Detected latest run id ${RUN_ID} for workflow ${WF_NAME}"
-            echo "run-id=${RUN_ID}" >> "$GITHUB_OUTPUT"
-        env:
-            GH_TOKEN: ${{ github.token }}
-
       # Restore previous artifacts (GDS and DEF)
       - name: Download GDS artifact from "Full Flow" workflow
         uses: actions/download-artifact@v4
         with:
-          name: croc-gds
+          name: croc-gds-sealed
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
-          run-id: ${{ steps.get-run-id.outputs.run-id }}
+          run-id: ${{ github.event.workflow_run.id }}
           path: klayout/out
       - name: Download DEF artifact from "Full Flow" workflow
         uses: actions/download-artifact@v4
@@ -60,7 +49,7 @@ jobs:
           name: croc-openroad-out
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
-          run-id: ${{ steps.get-run-id.outputs.run-id }}
+          run-id: ${{ github.event.workflow_run.id }}
           path: openroad
 
       # Install dependencies
