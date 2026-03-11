@@ -144,7 +144,9 @@ This should connect you to the VNC server, the password is `abc123`, then test b
 You should see the files in this repository again.
 
 Now you should be in an Ubuntu environment with all tools pre-installed for you.  
-If something does not work, refer to the upstream [IIC-OSIC-Tools](https://github.com/iic-jku/IIC-OSIC-TOOLS/tree/main)
+If something does not work, refer to the upstream [IIC-OSIC-Tools](https://github.com/iic-jku/IIC-OSIC-TOOLS/tree/main).
+
+To stop the VNC server, run the start script again and then select between stopping or stop and remove the running docker container.
 
 #### Native install (hard)
 

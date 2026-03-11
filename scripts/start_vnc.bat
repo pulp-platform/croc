@@ -19,7 +19,7 @@ REM ========================================================================
 
 SETLOCAL
 
-SET DESIGNS=%~dp0
+SET DESIGNS=%~dp0..
 REM Convert Windows path to Unix style for Docker compatibility
 FOR /f "tokens=1,* delims=:" %%A IN ("%DESIGNS%") DO (
     SET DRIVE_LETTER=%%A
