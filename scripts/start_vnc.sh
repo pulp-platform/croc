@@ -25,7 +25,7 @@ if [ -n "${DRY_RUN}" ]; then
 fi
 
 # SET YOUR DESIGN PATH RIGHT!
-DESIGNS="$(realpath $(dirname "${BASH_SOURCE[0]}"))"
+DESIGNS="$(realpath "$(dirname "${BASH_SOURCE[0]}")/..")"
 
 if [ -z ${DESIGNS+z} ]; then
 	DESIGNS=$HOME/eda/designs
