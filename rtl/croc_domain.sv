@@ -221,7 +221,6 @@ module croc_domain import croc_pkg::*; #(
   ) i_core_wrap (
     .clk_i,
     .rst_ni,
-    .ref_clk_i,
     .test_enable_i  ( testmode_i  ),
 
     .irqs_i         ( interrupts         ),
