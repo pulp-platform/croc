@@ -131,7 +131,7 @@ place_pad -row IO_NORTH -location [expr {$northStart -  9*$northPitch}] "pad_gpi
 place_pad -row IO_NORTH -location [expr {$northStart - 10*$northPitch}] "pad_unused0_o"       ; # pin no: 11
 place_pad -row IO_NORTH -location [expr {$northStart - 11*$northPitch}] "pad_unused1_o"       ; # pin no: 12
 place_pad -row IO_NORTH -location [expr {$northStart - 12*$northPitch}] "pad_unused2_o"       ; # pin no: 13
-place_pad -row IO_NORTH -location [expr {$northStart - 13*$northPitch}] "pad_unused3_o"       ; # pin no: 14
+place_pad -row IO_NORTH -location [expr {$northStart - 13*$northPitch}] "pad_scan_en_i"       ; # pin no: 14
 place_pad -row IO_NORTH -location [expr {$northStart - 14*$northPitch}] "pad_vss3"            ; # pin no: 15
 place_pad -row IO_NORTH -location [expr {$northStart - 15*$northPitch}] "pad_vdd3"            ; # pin no: 16
 
