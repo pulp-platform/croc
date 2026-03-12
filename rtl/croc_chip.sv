@@ -57,7 +57,7 @@ module croc_chip import croc_pkg::*; #() (
   output wire unused0_o,
   output wire unused1_o,
   output wire unused2_o,
-  output wire unused3_o,
+  input  wire scan_en_i,
 
   inout wire VDD,
   inout wire VSS,
@@ -77,6 +77,12 @@ module croc_chip import croc_pkg::*; #() (
 
     logic soc_status_o;
 
+    logic soc_scan_en_i;
+    logic scan_in_0;
+    logic scan_in_1;
+    logic soc_uart_tx_scan_out_0;
+    logic soc_jtag_tdo_scan_out_1;
+
     localparam int unsigned GpioCount = 32;
 
     logic [GpioCount-1:0] soc_gpio_i;
@@ -89,11 +95,11 @@ module croc_chip import croc_pkg::*; #() (
     sg13g2_IOPadIn        pad_jtag_tck_i   (.pad(jtag_tck_i),   .p2c(soc_jtag_tck_i));
     sg13g2_IOPadIn        pad_jtag_trst_ni (.pad(jtag_trst_ni), .p2c(soc_jtag_trst_ni));
     sg13g2_IOPadIn        pad_jtag_tms_i   (.pad(jtag_tms_i),   .p2c(soc_jtag_tms_i));
-    sg13g2_IOPadIn        pad_jtag_tdi_i   (.pad(jtag_tdi_i),   .p2c(soc_jtag_tdi_i));
-    sg13g2_IOPadOut16mA   pad_jtag_tdo_o   (.pad(jtag_tdo_o),   .c2p(soc_jtag_tdo_o));
+    sg13g2_IOPadIn        pad_jtag_tdi_i   (.pad(jtag_tdi_i),   .p2c(soc_jtag_tdi_i));          // jtag_tck_i Scan chain 1 input
+    sg13g2_IOPadOut16mA   pad_jtag_tdo_o   (.pad(jtag_tdo_o),   .c2p(soc_jtag_tdo_scan_out_1)); // jtag_tck_i Scan chain 1 output
 
-    sg13g2_IOPadIn        pad_uart_rx_i    (.pad(uart_rx_i),  .p2c(soc_uart_rx_i));
-    sg13g2_IOPadOut16mA   pad_uart_tx_o    (.pad(uart_tx_o),  .c2p(soc_uart_tx_o));
+    sg13g2_IOPadIn        pad_uart_rx_i    (.pad(uart_rx_i),  .p2c(soc_uart_rx_i));          // clk_i Scan chain 0 input
+    sg13g2_IOPadOut16mA   pad_uart_tx_o    (.pad(uart_tx_o),  .c2p(soc_uart_tx_scan_out_0)); // clk_i Scan chain 0 output
 
     sg13g2_IOPadIn        pad_testmode_i   (.pad(testmode_i), .p2c(soc_testmode_i));
     sg13g2_IOPadOut16mA   pad_status_o     (.pad(status_o),   .c2p(soc_status_o));
@@ -133,7 +139,14 @@ module croc_chip import croc_pkg::*; #() (
     sg13g2_IOPadOut16mA   pad_unused0_o    (.pad(unused0_o), .c2p(soc_status_o));
     sg13g2_IOPadOut16mA   pad_unused1_o    (.pad(unused1_o), .c2p(soc_status_o));
     sg13g2_IOPadOut16mA   pad_unused2_o    (.pad(unused2_o), .c2p(soc_status_o));
-    sg13g2_IOPadOut16mA   pad_unused3_o    (.pad(unused3_o), .c2p(soc_status_o));
+
+    (* dont_touch = "true" *)sg13g2_IOPadIn pad_scan_en_i (.pad(scan_en_i), .p2c(soc_scan_en_i));
+
+    (* dont_touch = "true" *)sg13g2_buf_1 i_scan_in_buf_0 (.A(soc_uart_rx_i),  .X(scan_in_0)); // clk_i      Scan chain 0 input buffer
+    (* dont_touch = "true" *)sg13g2_buf_1 i_scan_in_buf_1 (.A(soc_jtag_tdi_i), .X(scan_in_1)); // jtag_tck_i Scan chain 1 input buffer
+
+    (* dont_touch = "true" *)sg13g2_mux2_1 i_scan_out_mux_0 (.A0(soc_uart_tx_o),  .A1(soc_uart_tx_o),  .S(soc_scan_en_i), .X(soc_uart_tx_scan_out_0));
+    (* dont_touch = "true" *)sg13g2_mux2_1 i_scan_out_mux_1 (.A0(soc_jtag_tdo_o), .A1(soc_jtag_tdo_o), .S(soc_scan_en_i), .X(soc_jtag_tdo_scan_out_1));
 
     (* dont_touch = "true" *)sg13g2_IOPadVdd pad_vdd0();
     (* dont_touch = "true" *)sg13g2_IOPadVdd pad_vdd1();
