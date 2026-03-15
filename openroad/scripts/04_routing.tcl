@@ -106,7 +106,7 @@ detailed_route -output_drc ${report_dir}/04_${proj_name}_route_drc.rpt \
                -clean_patches \
                -verbose 1
 
-utl::report "Post-route antenan repair..."
+utl::report "Post-route antenna repair..."
 source scripts/post_route_antenna_repair.tcl
 
 utl::report "Saving detailed route"
