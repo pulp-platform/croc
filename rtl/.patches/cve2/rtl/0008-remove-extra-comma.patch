@@ -1,0 +1,25 @@
+From 60dad32eb261829383fd2ca9c04d030b2dfdf464 Mon Sep 17 00:00:00 2001
+From: Enrico Zelioli <ezelioli@iis.ee.ethz.ch>
+Date: Mon, 16 Mar 2026 09:44:18 +0100
+Subject: [PATCH] remove-extra-comma
+
+---
+ cve2_core_tracing.sv | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cve2_core_tracing.sv b/cve2_core_tracing.sv
+index f4a124de..5429684d 100644
+--- a/cve2_core_tracing.sv
++++ b/cve2_core_tracing.sv
+@@ -84,7 +84,7 @@ module cve2_core_tracing import cve2_pkg::*; #(
+ 
+   // CPU Control Signals
+   input  logic                         fetch_enable_i,
+-  output logic                         core_busy_o,
++  output logic                         core_busy_o
+ 
+ );
+ 
+-- 
+2.43.5
+
