@@ -84,7 +84,7 @@ module cve2_core_tracing import cve2_pkg::*; #(
 
   // CPU Control Signals
   input  logic                         fetch_enable_i,
-  output logic                         core_busy_o,
+  output logic                         core_busy_o
 
 );
 
