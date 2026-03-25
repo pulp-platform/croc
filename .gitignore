@@ -1,3 +1,4 @@
 .bender
 tmp
 *.log
+*.so

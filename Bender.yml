@@ -69,6 +69,14 @@ sources:
       - rtl/test/croc_vip.sv
       - rtl/test/tb_croc_soc.sv
 
+  - target: any(simulation, verilator)
+    files:
+      - rtl/obi/test/obi_sim_mem.sv
+      - rtl/test/idma/tb_croc_idma_pkg.sv
+      - rtl/test/idma/croc_idma_drv_if.sv
+      - rtl/test/idma/croc_idma_base.sv
+      - rtl/test/idma/tb_croc_idma.sv
+
   - target: genesys2
     files:
       - xilinx/hw/croc_xilinx.sv
@@ -117,9 +125,14 @@ vendor_package:
     upstream: { git: "https://github.com/pulp-platform/obi.git", rev: "6a724da5c8d6412b88b6948746e04c1adf39d017" } # newest (0.1.7+)
     patch_dir: "rtl/.patches/obi"
     exclude_from_upstream:
-      - "src/test"
+      - "src/test/obi_test.sv"
+      - "src/test/obi_asserter.sv"
+      - "src/test/tb_obi_xbar.sv"
+      - "src/test/tb_obi_atop_resolver.sv"
+      - "src/test/atop_golden_mem_pkg.sv"
     mapping:
       - { from: 'src/',        to: '',            patch_dir: 'src/' }
+      - { from: 'src/test/obi_sim_mem.sv', to: 'test/obi_sim_mem.sv', patch_dir: 'test/' }
       - { from: 'include/obi', to: 'include/obi', patch_dir: 'include/' }
       - { from: 'Bender.yml',  to: 'Bender.yml',  patch_dir: '' }
       - { from: 'Readme.md',   to: 'Readme.md',   patch_dir: '' }

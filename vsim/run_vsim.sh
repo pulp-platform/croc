@@ -43,12 +43,16 @@ Options:
     --flist             Regenerate compile script reading sources (compile_rtl.tcl, compile_netlist.tcl)
     --build             Compile Croc RTL in VSIM
     --build-netlist     Compile Croc post-synthesis netlist in VSIM
+    --top MODULE        Set top-level module (default: tb_croc_soc)
     --run BINARY        Run binary in VSIM
     --run-gui BINARY    Prepare running binary in VSIM, open GUI
 
 Example:
     # Build and run RTL simulation with given binary (CLI mode)
     ./run_vsim.sh --build --run ../sw/bin/helloworld.hex
+
+    # Run standalone iDMA testbench (no binary needed)
+    ./run_vsim.sh --build --top tb_croc_idma --run none
 
 EOF
     exit 0
@@ -162,10 +166,14 @@ compile_netlist() {
 
 
 run_vsim() {
+    local binary_arg=""
+    if [ -n "${1:-}" ] && [ "$1" != "none" ]; then
+        binary_arg="+binary=$1"
+    fi
     run_cmd "${VSIM} \
-        +binary=$1 \
+        ${binary_arg} \
         -c \
-        tb_croc_soc \
+        ${TOPLEVEL} \
         -t 1ns \
         -suppress vsim-3009 \
         -suppress vsim-8683 \
@@ -175,10 +183,14 @@ run_vsim() {
 
 
 run_vsim_gui() {
+    local binary_arg=""
+    if [ -n "${1:-}" ] && [ "$1" != "none" ]; then
+        binary_arg="+binary=$1"
+    fi
     run_cmd "${VSIM} \
-        +binary=$1 \
+        ${binary_arg} \
         -gui \
-        tb_croc_soc \
+        ${TOPLEVEL} \
         -t 1ns \
         -voptargs=+acc \
         -suppress vsim-3009 \
@@ -192,6 +204,7 @@ run_vsim_gui() {
 ####################
 
 DRYRUN=0
+TOPLEVEL=tb_croc_soc
 
 # default action if no argument is given
 if [ $# -eq 0 ]; then
@@ -218,6 +231,10 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         # script-specific commands
+        --top)
+            TOPLEVEL=$2
+            shift 2
+            ;;
         --flist)
             generate_rtl_flist
             generate_netlist_flist

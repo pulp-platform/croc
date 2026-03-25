@@ -5,7 +5,105 @@
 
 Home of the iDMA - a modular, parametrizable, and highly flexible *Data Movement Accelerator (DMA)*
 architecture targeting a wide range of platforms from ultra-low power edge nodes to high-performance
-computing systems. iDMA is part of the [PULP (Parallel Ultra-Low-Power) platform](https://pulp-platform.org/),
+computing systems.
+
+---
+
+## Croc iDMA Standalone Testbench
+
+The `croc_idma` wrapper (`croc_idma.sv`) can be tested standalone, without running the full Croc SoC.
+The testbench uses DPI-C to bridge the **same C HAL functions** used by the software SDK
+(`sw/lib/src/idma.c`) into SystemVerilog, driving real OBI bus transactions on the DUT.
+
+### Prerequisites
+
+- QuestaSim (tested with 2025.3)
+- GCC (host compiler, for DPI shared library)
+- [Bender](https://github.com/pulp-platform/bender) (dependency manager)
+
+### Quick Start
+
+From the repository root:
+
+```sh
+# 1. Compile all RTL
+cd vsim
+./run_vsim.sh --flist
+./run_vsim.sh --build
+
+# 2. Build the DPI shared library
+gcc -shared -fPIC -o dpi_idma.so \
+    -I$(questa-2025.3 vsim -version 2>&1 | head -1 > /dev/null; echo /usr/pack/questa-2025.3-dz/questasim/include) \
+    -I../rtl/test/idma/dpi \
+    ../rtl/test/idma/dpi/idma_hal_dpi.c \
+    ../rtl/test/idma/dpi/test_idma_dpi.c
+
+# 3. Run the standalone iDMA testbench
+questa-2025.3 vsim -c tb_croc_idma -t 1ns \
+    -sv_lib ./dpi_idma \
+    -suppress vsim-3009 -suppress vsim-8683 -suppress vsim-8386 \
+    -do "run -a; quit"
+```
+
+If `QUESTA_HOME` is set, replace the `-I` path with `-I${QUESTA_HOME}/include`.
+
+### What the Tests Cover
+
+| # | Test | Description |
+|---|------|-------------|
+| 1 | Register read/write | Write and readback all DMA config registers + ND enable bit |
+| 2 | 1D memcpy (16B) | Basic 4-word copy, matches `sw/test/test_idma.c` |
+| 3 | 2D transfer | 2 rows of 8 bytes, equal strides |
+| 4 | Large 1D memcpy (256B) | Exercises burst/legalizer paths |
+| 5 | Back-to-back transfers | Two sequential transfers, verifies job ID increment |
+| 6 | Non-aligned length (7B) | Odd byte count through the hardware legalizer |
+| 7 | 2D scatter/gather | Different src/dst strides (32 vs 8), 4 rows |
+| 8 | IRQ / busy signals | Verifies `busy_o` asserted during transfer, deasserted after |
+
+### Architecture
+
+```
+test_idma_dpi.c        C test (8 test cases)
+       |
+idma_hal_dpi.c         C HAL (same API as sw/lib/src/idma.c)
+       |
+dpi_bridge.h           reg_write32/reg_read32 wrappers
+       |               (DPI export tasks)
+tb_croc_idma.sv        SV top: DPI exports → OBI driver → DUT
+       |
+croc_idma_base.sv      Base harness: clock, reset, DUT, 2x obi_sim_mem
+```
+
+### File Overview
+
+```
+rtl/test/idma/
+├── tb_croc_idma_pkg.sv       Timing params, register offsets, memory base addresses
+├── croc_idma_drv_if.sv       OBI config port driver (procedural tasks)
+├── croc_idma_base.sv         Base harness (clock, DUT, read/write sim memories)
+├── tb_croc_idma.sv           Top-level TB with DPI imports/exports
+└── dpi/
+    ├── dpi_bridge.h          DPI-C function declarations + convenience wrappers
+    ├── idma_hal_dpi.c        iDMA HAL using DPI MMIO (replaces sw/lib/src/idma.c)
+    └── test_idma_dpi.c       Test entry point called from SV
+```
+
+### Adding New Tests
+
+Add new test functions in `test_idma_dpi.c` following the existing pattern:
+1. Pre-load source memory with `dpi_src_mem_write8()` / `dpi_src_mem_write32()`
+2. Call HAL functions (`idma_memcpy`, `idma_memcpy_2d`, or individual register setters)
+3. Verify destination memory with `dpi_dst_mem_read8()` / `dpi_dst_mem_read32()`
+4. Use `CHECK_ASSERT(id, condition)` for pass/fail — the assert ID is the return code on failure
+5. Register the new test in `run_idma_test()`
+
+Rebuild only the DPI library after changing C files (no SV recompile needed):
+```sh
+gcc -shared -fPIC -o dpi_idma.so -I${QUESTA_HOME}/include -I../rtl/test/idma/dpi \
+    ../rtl/test/idma/dpi/idma_hal_dpi.c ../rtl/test/idma/dpi/test_idma_dpi.c
+```
+
+--- iDMA is part of the [PULP (Parallel Ultra-Low-Power) platform](https://pulp-platform.org/),
 where it is used as a cluster level DMA in the [Snitch Cluster](https://github.com/pulp-platform/snitch)
 and in the [PULP Cluster](https://github.com/pulp-platform/pulp).
 
