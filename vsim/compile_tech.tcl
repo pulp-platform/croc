@@ -21,7 +21,6 @@ if {[catch { vlog -incr -sv \
     "$ROOT/ihp13/pdk/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_1024x64_c2_bm_bist.v" \
     "$ROOT/ihp13/pdk/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_2048x64_c2_bm_bist.v" \
     "$ROOT/ihp13/pdk/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_256x48_c2_bm_bist.v" \
-    "$ROOT/ihp13/pdk/ihp-sg13g2/libs.ref/sg13g2_sram/verilog/RM_IHPSG13_1P_256x48_c2_bm_bist.v" \
     "$ROOT/ihp13/tc_sram_impl.sv" \
     "$ROOT/ihp13/tc_clk.sv" \
 }]} {return 1}

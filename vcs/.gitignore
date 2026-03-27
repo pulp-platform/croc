@@ -1,0 +1,13 @@
+AN.DB
+work.lib++
+tb_croc_soc*
+vc_hdrs.h
+csrc
+ucli.key
+croc.fst
+compile_rtl.sh
+compile_netlist*
+compile.log
+novas*
+transcript.log
+reports/
