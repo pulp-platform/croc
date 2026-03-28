@@ -1,0 +1,17 @@
+# Copyright (c) 2025 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Authors:
+# - Thomas Benz <tbenz@iis.ee.ethz.ch>
+
+# read IO module first, as yosys-slang will not know Trellis_IO
+read_verilog -sv src/croc_ecp5_io.sv
+
+plugin -i slang.so
+read_slang --top croc_ecp5 -F croc_ecp5.flist --compat-mode --keep-hierarchy --allow-use-before-declare --ignore-unknown-modules
+
+synth_ecp5 -top croc_ecp5
+
+write_verilog out/croc_yosys_ecp5.v
+write_json out/croc_yosys_ecp5.json

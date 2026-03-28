@@ -1,0 +1,14 @@
+# Copyright (c) 2025 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Authors:
+# - Thomas Benz <tbenz@iis.ee.ethz.ch>
+
+plugin -i slang.so
+read_slang --top croc_gm -F croc_gm.flist --compat-mode --keep-hierarchy --allow-use-before-declare --ignore-unknown-modules
+
+synth_gatemate -luttree -nomx8 -top croc_gm
+
+write_verilog out/croc_yosys_gm.v
+write_json out/croc_yosys_gm.json
