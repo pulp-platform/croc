@@ -38,6 +38,7 @@ SECTIONS
 	.vectors : ALIGN(4)
 	{
 	*(.vectors)
+	KEEP(*(.vectors))
 	} > SRAM :text
 
     /* Startup entry (first instructions executed after bootrom) */
