@@ -83,10 +83,13 @@ set_max_delay 3.0 -from $JTAG_ASYNC_RSP_START -to $JTAG_ASYNC_RSP_END -ignore_cl
 puts "Input/Outputs..."
 
 # Reset should propagate to system domain within a clock cycle.
-set_input_delay -max [ expr $TCK_JTG * 0.10 ] [get_ports {rst_ni testmode_i}]  
-set_false_path -hold   -from [get_ports {rst_ni testmode_i}]
+set_input_delay -max [ expr $TCK_JTG * 0.10 ] [get_ports {rst_ni testmode_i scan_en_i}]  
+set_false_path -hold   -from [get_ports {rst_ni testmode_i scan_en_i}]
 set_max_delay $TCK_SYS -from [get_ports {rst_ni testmode_i}]
 
+set_max_delay $TCK_SYS -from [get_ports scan_en_i] -to [get_pins */SCE]
+set_max_delay $TCK_SYS -from [get_ports scan_en_i] -to [get_ports uart_tx_o]
+set_max_delay $TCK_JTG -from [get_ports scan_en_i] -to [get_ports jtag_tdo_o]
 
 ##########
 ## JTAG ##
