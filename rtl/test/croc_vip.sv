@@ -236,14 +236,6 @@ module croc_vip #(
         // remove the byte from the line (2 numbers + 1 space)
         line = line.substr(3, line.len()-1);
 
-        // Pad the word with 0s if the line ended between word boundaries
-        if (line.len() < 3) begin
-            for (int unsigned cb = byte_count; cb < 4; cb++) begin
-                data = {8'h00, data[31:8]};
-                byte_count++;
-            end
-        end
-
         // write a complete word via jtag
         if (byte_count == 4) begin
           jtag_write(dm::SBData0, data);
@@ -251,6 +243,15 @@ module croc_vip #(
           data = 32'h0;
           byte_count = 0;
         end
+      end
+
+      // Flush any remaining bytes
+      if (byte_count != 0) begin
+        data >>= 8 * (4 - byte_count); // zero-pad remaining bytes
+        jtag_write(dm::SBData0, data);
+        addr += 4;
+        byte_count = 0;
+        data = 32'h0;
       end
     end
     jtag_dbg.write_dmi(dm::SBCS, JtagInitSbcs);
