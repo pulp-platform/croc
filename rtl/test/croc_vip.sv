@@ -244,6 +244,15 @@ module croc_vip #(
           byte_count = 0;
         end
       end
+
+      // Flush any remaining bytes
+      if (byte_count != 0) begin
+        data >>= 8 * (4 - byte_count); // zero-pad remaining bytes
+        jtag_write(dm::SBData0, data);
+        addr += 4;
+        byte_count = 0;
+        data = 32'h0;
+      end
     end
     jtag_dbg.write_dmi(dm::SBCS, JtagInitSbcs);
     $fclose(file);
