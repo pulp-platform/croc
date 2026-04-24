@@ -38,14 +38,14 @@ proc load_checkpoint {{checkpoint ""}} {
     # if no arg or the literal "latest", pick the most-recent .zip
     if {$checkpoint eq "" || $checkpoint eq "latest"} {
         set zips [lsort -decreasing -index 0 [glob -nocomplain -directory $save_dir -types f *.zip]]
-        if {![llength $zips]} {utl::error "No checkpoint .zip found in $save_dir"; return}
+        if {![llength $zips]} {utl::report "No checkpoint .zip found in $save_dir"; return}
         set checkpoint [file rootname [file tail [lindex $zips 0]]]
     }
     utl::report "Loading checkpoint $checkpoint"
 
     # glob search for the checkpoint inside save_dir
     set candidates [glob -nocomplain -directory $save_dir -types f "*${checkpoint}*"]
-    if {![llength $candidates]} {utl::error "No checkpoint found matching: $checkpoint (.zip/.odb)"; return}
+    if {![llength $candidates]} {utl::report "No checkpoint found matching: $checkpoint (.zip/.odb)"; return}
     set ext [file extension [lindex $candidates 0]]
     set name [lindex $candidates 0]
 
@@ -63,7 +63,7 @@ proc load_checkpoint {{checkpoint ""}} {
         read_db $name
         set sdc [file rootname $name].sdc
         if {[file exists $sdc]} {read_sdc $sdc}
-    } else {utl::error "Unsupported checkpoint type: $ext"}
+    } else {utl::report "Unsupported checkpoint type: $ext"}
 }
 
 proc load_checkpoint_def { checkpoint_name } {
