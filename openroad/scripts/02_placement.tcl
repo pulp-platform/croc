@@ -47,6 +47,11 @@ utl::report "###################################################################
 set clock_nets [get_nets -of_objects [get_pins -of_objects "*_reg" -filter "name == CLK"]]
 set_dont_touch $clock_nets
 
+# Prevent scan input buffers from being optimized away
+set scan_in_buf_cells [get_cells *i_scan_in_buf_*]
+puts "Scan input buffers: $scan_in_buf_cells"
+set_dont_touch $scan_in_buf_cells
+
 utl::report "Repair tie fanout"
 repair_tie_fanout $tieHiPin 
 repair_tie_fanout $tieLoPin 
@@ -111,6 +116,13 @@ detailed_placement
 
 utl::report "Optimize mirroring"
 optimize_mirroring
+
+utl::report "Read DFT configuration"
+source src/dft_config.tcl
+
+utl::report "Stitch Scan Chain"
+execute_dft_plan
+unset_dont_touch $scan_in_buf_cells
 
 utl::report "Estimate parasitics"
 estimate_parasitics -placement
