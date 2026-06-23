@@ -348,6 +348,8 @@ module croc_idma #(
         idma_job_req.burst_req.dst_addr         = dst_addr_q;
         idma_job_req.burst_req.opt.src_protocol = idma_pkg::OBI;
         idma_job_req.burst_req.opt.dst_protocol = idma_pkg::OBI;
+        idma_job_req.burst_req.opt.src.burst    = axi_pkg::BURST_INCR;
+        idma_job_req.burst_req.opt.dst.burst    = axi_pkg::BURST_INCR;
         if (nd_ena_q) begin
             idma_job_req.d_req[0].reps              = num_rep_q;
             idma_job_req.d_req[0].src_strides       = src_str_q;

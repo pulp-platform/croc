@@ -8,21 +8,19 @@ package:
     - "Philippe Sauter <phsauter@iis.ee.ethz.ch>"
 
 dependencies:
-  # IMPORTANT: see vendor_package at the bottom
-  common_cells:         { git: "https://github.com/pulp-platform/common_cells.git",         version: 1.39.0 }
-  common_verification:  { git: "https://github.com/pulp-platform/common_verification.git",  rev: 5fd30c1    } # 0.2.5+
+  common_cells:         { git: "https://github.com/pulp-platform/common_cells.git",        version: 1.39.0 }
+  common_verification:  { git: "https://github.com/pulp-platform/common_verification.git", version: 0.2.5  } # rev 5fd30c1 conflicts with transitive ^0.2 ranges
   riscv-dbg:
     git: "https://github.com/pulp-platform/riscv-dbg.git"
     rev: "verilator-phsauter"
     pass_targets:
       - { target: basys3, pass: bscane }
-  tech_cells_generic:   { git: "https://github.com/pulp-platform/tech_cells_generic.git",   rev: fca524a    } # 0.2.13+
-  apb:                  { git: "https://github.com/pulp-platform/apb.git",                  version: 0.2.4  }
-  obi:                  { git: "https://github.com/pulp-platform/obi.git",                  rev: 6a724da    } # 0.1.7+
-  obi_peripherals:      { git: "https://github.com/pulp-platform/obi_peripherals.git",      rev: 21ee04d    } # UART
-  idma:                 { git: "https://github.com/pulp-platform/idma.git",                 rev: "__deploy__e618e4d__master" } # master with generated files
-  cve2:                 { path: "rtl/cve2" } # a vendor package (no Bender.yml), see below 
-
+  tech_cells_generic:   { git: "https://github.com/pulp-platform/tech_cells_generic.git",  version: 0.2.14 }
+  apb:                  { git: "https://github.com/pulp-platform/apb.git",                 version: 0.2.4  }
+  obi:                  { git: "https://github.com/pulp-platform/obi.git",                 version: 0.1.7  } # rev 6a724da (obi_to_apb) conflicts with transitive ^0.1 ranges; unused by croc
+  obi_peripherals:      { git: "https://github.com/pulp-platform/obi_peripherals.git",     rev: 21ee04d    } # UART
+  idma:                 { git: "https://github.com/pulp-platform/iDMA.git",                version: 0.6.5  } # croc adds rw_obi backend in rtl/idma
+  cve2:                 { path: "rtl/cve2" } # vendored: upstream CVE2 has no Bender.yml
 
 sources:
   # Level 0
@@ -39,10 +37,12 @@ sources:
   - rtl/obi_timer/obi_timer_reg_pkg.sv
   # add your design files containing anything but modules (packages) here
 
-    # RTL
+  # RTL
   - target: not(netlist_yosys)
     files:
       # Level 1
+      - rtl/idma/idma_rw_obi.sv
+      - rtl/croc_idma.sv
       - rtl/core_wrap.sv
       - rtl/bootrom/bootrom.sv
       - rtl/soc_ctrl/soc_ctrl_regs.sv
@@ -61,7 +61,7 @@ sources:
     files:
       # Level 0
       - rtl/croc_chip.sv
-  
+
   # netlist for simulation
   - target: netlist_yosys
     files:
@@ -79,123 +79,11 @@ sources:
       - xilinx/hw/fan_ctrl.sv
 
 vendor_package:
-  #################################
-  # commonly used building blocks #
-  #################################
-  - name: common_cells
-    target_dir: rtl/common_cells
-    upstream: { git: "https://github.com/pulp-platform/common_cells.git", rev: "9ca8a7655f741e7dd5736669a20a301325194c28" } # v1.39.0
-    patch_dir: "rtl/.patches/common_cells"
-    exclude_from_upstream:
-      - "src/deprecated"
-    mapping:
-      - { from: 'src/',                      to: '',                      patch_dir: 'src/' }
-      - { from: 'include/common_cells/',     to: 'include/common_cells/', patch_dir: 'include/' }
-      - { from: 'README.md',                 to: 'README.md',             patch_dir: '' }
-      - { from: 'Bender.yml',                to: 'Bender.yml',            patch_dir: '' }
-
-  - name: common_verification
-    target_dir: rtl/common_verification
-    upstream: { git: "https://github.com/pulp-platform/common_verification.git", rev: "5fd30c18a6be6f664d1ef9e44d04956fb4e3364e" } # newest (0.2.5+)
-    patch_dir: "rtl/.patches/common_verification"
-    mapping:
-      - { from: 'src/clk_rst_gen.sv', to: 'clk_rst_gen.sv', patch_dir: 'src/' }
-      - { from: 'Bender.yml',         to: 'Bender.yml',     patch_dir: '' }
-
-  - name: tech_cells_generic
-    target_dir: rtl/tech_cells_generic
-    upstream: { git: "https://github.com/pulp-platform/tech_cells_generic.git", rev: "fca524a1174f6363ba0e778f37b9f398257d4b8f" } # newest (v0.2.13+)
-    patch_dir: "rtl/.patches/tech_cells_generic"
-    mapping:
-      - { from: 'src/rtl/',   to: '',           patch_dir: 'rtl/' }
-      - { from: 'src/fpga/',  to: 'fpga/',      patch_dir: 'fpga/' }
-      - { from: 'Bender.yml', to: 'Bender.yml', patch_dir: '' }
-      - { from: 'README.md',  to: 'README.md',  patch_dir: '' }
-
-
-  #############################
-  # interconnects / protocols #
-  #############################
-  - name: obi
-    target_dir: rtl/obi
-    upstream: { git: "https://github.com/pulp-platform/obi.git", rev: "6a724da5c8d6412b88b6948746e04c1adf39d017" } # newest (0.1.7+)
-    patch_dir: "rtl/.patches/obi"
-    exclude_from_upstream:
-      - "src/test"
-    mapping:
-      - { from: 'src/',        to: '',            patch_dir: 'src/' }
-      - { from: 'include/obi', to: 'include/obi', patch_dir: 'include/' }
-      - { from: 'Bender.yml',  to: 'Bender.yml',  patch_dir: '' }
-      - { from: 'Readme.md',   to: 'Readme.md',   patch_dir: '' }
-
-  - name: apb
-    target_dir: rtl/apb
-    upstream: { git: "https://github.com/pulp-platform/apb.git", rev: "77ddf073f194d44b9119949d2421be59789e69ae" } # v0.2.4
-    patch_dir: "rtl/.patches/apb"
-    mapping:
-      - { from: 'src/apb_pkg.sv', to: 'apb_pkg.sv',   patch_dir: 'src/' }
-      - { from: 'include/apb/',   to: 'include/apb/', patch_dir: 'include/' }
-      - { from: 'Bender.yml',     to: 'Bender.yml',   patch_dir: '' }
-      - { from: 'README.md',      to: 'README.md',    patch_dir: '' }
-
-  - name: idma
-    target_dir: rtl/idma
-    upstream: { git: "https://github.com/pulp-platform/iDMA.git", rev: "9623b2602f23c924eabd910008ecada9ad2869b5" } # __deploy__e618e4d__master
-    patch_dir: "rtl/.patches/idma"
-    mapping:
-      - { from: 'target/rtl/include/idma/tracer.svh', to: 'include/idma/tracer.svh',   patch_dir: 'include/idma' }
-      - { from: 'target/rtl/idma_backend_rw_obi.sv', to: 'idma_backend_rw_obi.sv',   patch_dir: '' }
-      - { from: 'target/rtl/idma_legalizer_rw_obi.sv', to: 'idma_legalizer_rw_obi.sv',   patch_dir: '' }
-      - { from: 'src/backend/idma_legalizer_page_splitter.sv', to: 'idma_legalizer_page_splitter.sv',   patch_dir: '' }
-      - { from: 'target/rtl/idma_transport_layer_rw_obi.sv', to: 'idma_transport_layer_rw_obi.sv',   patch_dir: '' }
-      - { from: 'src/backend/idma_channel_coupler.sv', to: 'idma_channel_coupler.sv',   patch_dir: '' }
-      - { from: 'src/backend/idma_dataflow_element.sv', to: 'idma_dataflow_element.sv',   patch_dir: '' }
-      - { from: 'src/backend/idma_obi_read.sv', to: 'idma_obi_read.sv',   patch_dir: '' }
-      - { from: 'src/backend/idma_obi_write.sv', to: 'idma_obi_write.sv',   patch_dir: '' }
-      - { from: 'src/frontend/idma_transfer_id_gen.sv', to: 'idma_transfer_id_gen.sv',   patch_dir: '' }
-      - { from: 'src/include/idma/guard.svh', to: 'include/idma/guard.svh',   patch_dir: 'include/idma' }
-      - { from: 'src/include/idma/typedef.svh', to: 'include/idma/typedef.svh',   patch_dir: 'include/idma' }
-      - { from: 'src/midend/idma_nd_midend.sv', to: 'idma_nd_midend.sv',   patch_dir: '' }
-      - { from: 'src/idma_pkg.sv', to: 'idma_pkg.sv',   patch_dir: '' }
-      - { from: 'Bender.yml', to: 'Bender.yml',   patch_dir: '' }
-      - { from: 'README.md', to: 'README.md',   patch_dir: '' }
-      - { from: 'CHANGELOG.md', to: 'CHANGELOG.md',   patch_dir: '' }
-
-
-  ###############
-  # peripherals #
-  ###############
-  - name: riscv-dbg
-    target_dir: rtl/riscv-dbg
-    upstream: { git: "https://github.com/pulp-platform/riscv-dbg.git", rev: "13835b1d45f013a0760ecebd744fee6cf2e3b96a" } # branch verilator-phsauter
-    patch_dir: "rtl/.patches/riscv-dbg"
-    mapping:
-      - { from: 'src/',                               to: '',                                   patch_dir: 'src/' }
-      - { from: 'debug_rom/debug_rom.sv',             to: 'debug_rom/debug_rom.sv',             patch_dir: 'debug_rom/' }
-      - { from: 'debug_rom/debug_rom_one_scratch.sv', to: 'debug_rom/debug_rom_one_scratch.sv', patch_dir: 'debug_rom/' }
-      - { from: 'tb/jtag_dmi/jtag_test_simple.sv',    to: 'tb/jtag_test_simple.sv',             patch_dir: 'tb/' }
-      - { from: 'Bender.yml',                         to: 'Bender.yml',                         patch_dir: '' }
-      - { from: 'README.md',                          to: 'README.md',                          patch_dir: '' }
-
-
-  - name: obi_peripherals
-    target_dir: rtl/obi_uart
-    upstream: { git: "https://github.com/pulp-platform/obi_peripherals.git", rev: "21ee04d267025f6ea3d2faa462272287ddcb9bbb"  } # newest
-    patch_dir: "rtl/.patches/obi_uart"
-    mapping:
-      - { from: 'hw/obi_uart/', to: '',            patch_dir: 'hw/' }
-      - { from: 'Bender.yml',   to: 'Bender.yml',  patch_dir: '' }
-
-
-  #########
-  # core  #
-  #########
-  # CVE2
   - name: cve2
     target_dir: rtl/cve2
-    upstream: { git: "https://github.com/openhwgroup/cve2.git", rev: "53076d64c97685b1d2f5d07cd7f5cc439cf1f351" } # newest
+    upstream: { git: "https://github.com/openhwgroup/cve2.git", rev: "53076d64c97685b1d2f5d07cd7f5cc439cf1f351" }
     patch_dir: "rtl/.patches/cve2"
     mapping:
-      - { from: 'rtl/',                                            to: '',                      patch_dir: 'rtl/' }
-      - { from: 'README.md',                                       to: 'README.md',             patch_dir: '' }
-      - { from: 'doc/03_reference/images/blockdiagram.drawio.svg', to: 'blockdiagram.svg',      patch_dir: '' }
+      - { from: 'rtl/',                                            to: '',                 patch_dir: 'rtl/' }
+      - { from: 'README.md',                                       to: 'README.md',        patch_dir: '' }
+      - { from: 'doc/03_reference/images/blockdiagram.drawio.svg', to: 'blockdiagram.svg', patch_dir: '' }
