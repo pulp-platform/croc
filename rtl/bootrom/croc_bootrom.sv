@@ -16,7 +16,7 @@
 /// 5. On main() return: _eoc packs retval, writes CORESTATUS, halts
 /// Trap handler dispatches to SRAM function pointer table at 0x1000_0000.
 /// Source: bootrom.S
-module bootrom #(
+module croc_bootrom #(
     /// The OBI configuration for all ports.
     parameter obi_pkg::obi_cfg_t ObiCfg = obi_pkg::ObiDefaultConfig,
     /// OBI request type

@@ -218,7 +218,7 @@ add_files -norecurse -fileset [current_fileset] [list \
 # Package(croc_soc) Target(not(netlist_yosys))
 add_files -norecurse -fileset [current_fileset] [list \
     $ROOT/rtl/core_wrap.sv \
-    $ROOT/rtl/bootrom/bootrom.sv \
+    $ROOT/rtl/bootrom/croc_bootrom.sv \
     $ROOT/rtl/soc_ctrl/soc_ctrl_regs.sv \
     $ROOT/rtl/gpio/gpio_reg_top.sv \
     $ROOT/rtl/gpio/gpio.sv \

@@ -708,7 +708,7 @@ module croc_domain import croc_pkg::*; #(
   );
 
   // Bootrom
-  bootrom #(
+  croc_bootrom #(
     .ObiCfg    ( SbrObiCfg     ),
     .obi_req_t ( sbr_obi_req_t ),
     .obi_rsp_t ( sbr_obi_rsp_t )
