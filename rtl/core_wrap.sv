@@ -37,7 +37,10 @@
 //   Do not route CV-X-IF through the SoC hierarchy; the types are CVE2-specific and the tight
 //   coupling belongs at the core boundary, not in user_domain.
 
-module core_wrap import croc_pkg::*; #() (
+module core_wrap import croc_pkg::*; #(
+  /// Physical Memory Protection enable
+  parameter bit PMPEnable = CrocDefaultCfg.CorePMPEnable
+) (
   input  logic clk_i,
   input  logic rst_ni,
   input  logic test_enable_i,
@@ -108,7 +111,7 @@ module core_wrap import croc_pkg::*; #() (
 `else
   cve2_core #(
 `endif
-    .PMPEnable        ( CorePMPEnable       ),
+    .PMPEnable        ( PMPEnable           ),
     .PMPGranularity   ( 0                   ),
     .PMPNumRegions    ( 4                   ),
     .MHPMCounterNum   ( 0                   ),

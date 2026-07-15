@@ -8,6 +8,7 @@
 `include "common_cells/registers.svh"
 
 module soc_ctrl_regs #(
+  parameter croc_pkg::croc_cfg_t     Cfg = croc_pkg::CrocDefaultCfg,
   parameter type               obi_req_t = logic,
   parameter type               obi_rsp_t = logic,
   parameter int unsigned BootAddrDefault = 32'h0
@@ -29,27 +30,27 @@ module soc_ctrl_regs #(
   //
   // Field layout (MSB first):
   //   --- SoC ---
-  //   [31:28] version         Croc SoC major version (croc_pkg::PulpJtagIdCode.version + 1)
-  //   [27]    idma_present    iDMA enabled (croc_pkg::iDMAEnable)
+  //   [31:28] version         Croc SoC major version (Cfg.JtagIdCode.version + 1)
+  //   [27]    idma_present    iDMA enabled (Cfg.iDMAEnable)
   //   [26:24] reserved        0  (reserved for future SoC-level features)
   //   --- Core ---
-  //   [23:21] core_id         Core type: 000=CVE2, 001=Ibex, 111=custom, others are reserved (croc_pkg::CoreId)
-  //   [20]    pmp_enable      Core specifics, for CVE2: PMP enabled (croc_pkg::CorePMPEnable)
+  //   [23:21] core_id         Core type: 000=CVE2, 001=Ibex, 111=custom, others are reserved (Cfg.CoreId)
+  //   [20]    pmp_enable      Core specifics, for CVE2: PMP enabled (Cfg.CorePMPEnable)
   //   [19:16] reserved        0  (reserved for future core-level features)
   //   --- Memory ---
-  //   [15:13] sram_banks      Number of SRAM banks (croc_pkg::NumSramBanks)
-  //   [12:5]  sram_bank_words Words per SRAM bank / 64 (croc_pkg::SramBankNumWords)
+  //   [15:13] sram_banks      Number of SRAM banks (Cfg.NumSramBanks)
+  //   [12:5]  sram_bank_words Words per SRAM bank / 64 (Cfg.SramBankNumWords)
   //   [4:0]   reserved        0 (reserved for future memory config details)
 
   localparam logic [31:0] HwInfoWord = {
-    4'(PulpJtagIdCode.version),        // [31:28] version
-    1'(iDMAEnable),                    // [27]    idma_present
+    4'(Cfg.JtagIdCode.version),        // [31:28] version
+    1'(Cfg.iDMAEnable),                // [27]    idma_present
     3'b0,                              // [26:24] reserved (SoC features)
-    3'(CoreId),                        // [23:21] core_id
-    1'(CorePMPEnable),                 // [20]    pmp_enable
+    3'(Cfg.CoreId),                    // [23:21] core_id
+    1'(Cfg.CorePMPEnable),             // [20]    pmp_enable
     4'b0,                              // [19:16] reserved (core features)
-    3'(NumSramBanks),                  // [15:12] sram_banks
-    8'(SramBankNumWords / 64),         // [11:5]  sram_bank_words (in units of 64 words)
+    3'(Cfg.NumSramBanks),              // [15:12] sram_banks
+    8'(Cfg.SramBankNumWords / 64),     // [11:5]  sram_bank_words (in units of 64 words)
     5'b0                               // [4:0]   reserved
   };
 

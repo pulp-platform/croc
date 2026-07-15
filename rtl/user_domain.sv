@@ -5,24 +5,36 @@
 // Authors:
 // - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
+`include "obi/typedef.svh"
+
 module user_domain import user_pkg::*; import croc_pkg::*; #(
+  parameter croc_cfg_t Cfg = CrocDefaultCfg,
   parameter int unsigned GpioCount = 16,
-  parameter int unsigned NumExternalIrqs = 4
+  parameter int unsigned NumExternalIrqs = 4,
+  /// OBI types of the user ports, built from Cfg (see croc_pkg)
+  parameter type user_sbr_obi_req_t = logic,
+  parameter type user_sbr_obi_rsp_t = logic,
+  parameter type user_mgr_obi_req_t = logic,
+  parameter type user_mgr_obi_rsp_t = logic
 ) (
   input  logic      clk_i,
   input  logic      ref_clk_i,
   input  logic      rst_ni,
   input  logic      testmode_i,
 
-  input  sbr_obi_req_t user_sbr_obi_req_i, // User Sbr (rsp_o), Croc Mgr (req_i)
-  output sbr_obi_rsp_t user_sbr_obi_rsp_o,
+  input  user_sbr_obi_req_t user_sbr_obi_req_i, // User Sbr (rsp_o), Croc Mgr (req_i)
+  output user_sbr_obi_rsp_t user_sbr_obi_rsp_o,
 
-  output mgr_obi_req_t user_mgr_obi_req_o, // User Mgr (req_o), Croc Sbr (rsp_i)
-  input  mgr_obi_rsp_t user_mgr_obi_rsp_i,
+  output user_mgr_obi_req_t user_mgr_obi_req_o, // User Mgr (req_o), Croc Sbr (rsp_i)
+  input  user_mgr_obi_rsp_t user_mgr_obi_rsp_i,
 
   input  logic [      GpioCount-1:0] gpio_in_sync_i, // synchronized GPIO inputs
   output logic [NumExternalIrqs-1:0] interrupts_o    // interrupts to core
 );
+
+  // OBI configuration and types for this Cfg (see croc_pkg)
+  localparam obi_pkg::obi_cfg_t SbrObiCfg = croc_sbr_obi_cfg(Cfg);
+  `OBI_TYPEDEF_DEFAULT_ALL(sbr_obi, SbrObiCfg)
 
   assign interrupts_o = '0;
 

@@ -5,9 +5,21 @@
 // Authors:
 // - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
+`include "obi/typedef.svh"
+
 module croc_domain import croc_pkg::*; #(
+  parameter croc_cfg_t Cfg = CrocDefaultCfg,
   parameter int unsigned GpioCount = 16,
-  parameter int unsigned NumExternalIrqs = 4
+  parameter int unsigned NumExternalIrqs = 4,
+  /// OBI types of the user ports. Must be built from Cfg with the
+  /// obi/typedef.svh macros (see croc_pkg):
+  ///   sbr: `OBI_TYPEDEF_DEFAULT_ALL with croc_sbr_obi_cfg(Cfg)
+  ///   mgr: `OBI_TYPEDEF_DEFAULT_ALL with MgrObiCfg
+  /// Checked against the internally derived types at elaboration.
+  parameter type user_sbr_obi_req_t = logic,
+  parameter type user_sbr_obi_rsp_t = logic,
+  parameter type user_mgr_obi_req_t = logic,
+  parameter type user_mgr_obi_rsp_t = logic
 ) (
   input  logic      clk_i,
   input  logic      rst_ni,
@@ -31,17 +43,69 @@ module croc_domain import croc_pkg::*; #(
 
   /// User OBI interface
   /// User as subordinate (from core to user module)
-  /// Address space 0x2000_0000 - 0x8000_0000
-  output sbr_obi_req_t user_sbr_obi_req_o,
-  input  sbr_obi_rsp_t user_sbr_obi_rsp_i,
+  /// Address space [Cfg.UserStartAddr, Cfg.UserEndAddr)
+  output user_sbr_obi_req_t user_sbr_obi_req_o,
+  input  user_sbr_obi_rsp_t user_sbr_obi_rsp_i,
 
   /// User as manager (from user module to SRAM/peripherals)
-  input  mgr_obi_req_t user_mgr_obi_req_i,
-  output mgr_obi_rsp_t user_mgr_obi_rsp_o,
+  input  user_mgr_obi_req_t user_mgr_obi_req_i,
+  output user_mgr_obi_rsp_t user_mgr_obi_rsp_o,
 
   input  logic [NumExternalIrqs-1:0] interrupts_i,
   output logic core_busy_o
 );
+
+  // -------------------------
+  // Derived Configuration
+  // -------------------------
+
+  /// Manager ports into the crossbar:
+  /// User Domain, Debug module, Core Data, Core Instr; optionally iDMA Write and iDMA Read
+  localparam int unsigned NumXbarMgrPorts = croc_num_xbar_managers(Cfg);
+  /// Subordinate ports out of the crossbar: error, peripherals, user + SRAM banks
+  localparam int unsigned NumXbarSbrPorts = 3 + Cfg.NumSramBanks;
+
+  /// OBI configuration and types of this instance
+  localparam obi_pkg::obi_cfg_t SbrObiCfg = croc_sbr_obi_cfg(Cfg);
+  `OBI_TYPEDEF_DEFAULT_ALL(mgr_obi, MgrObiCfg)
+  `OBI_TYPEDEF_DEFAULT_ALL(sbr_obi, SbrObiCfg)
+
+  // The user port types are provided by the integrator and must match the
+  // types derived from Cfg (packed structs connect by width, so an
+  // inconsistent Cfg would silently misalign fields).
+`ifndef SYNTHESIS
+  initial begin
+    assert ($bits(user_sbr_obi_req_t) == $bits(sbr_obi_req_t)
+            && $bits(user_sbr_obi_rsp_t) == $bits(sbr_obi_rsp_t)
+            && $bits(user_mgr_obi_req_t) == $bits(mgr_obi_req_t)
+            && $bits(user_mgr_obi_rsp_t) == $bits(mgr_obi_rsp_t))
+    else $fatal(1, "user OBI port types do not match the types derived from Cfg");
+  end
+`endif
+
+  /// Address map of the main crossbar, built from the configured regions.
+  /// The peripheral region is fixed (PeriphAddrMap holds absolute addresses).
+  localparam int unsigned NumXbarRules = 2 + Cfg.NumSramBanks;
+  function automatic addr_map_rule_t [NumXbarRules-1:0] gen_croc_addr_map();
+    addr_map_rule_t [NumXbarRules-1:0] ret;
+    ret[0] = '{idx: XbarPeriph, start_addr: PeriphBaseAddr, end_addr: PeriphEndAddr};
+    ret[1] = '{idx: XbarUser, start_addr: Cfg.UserStartAddr, end_addr: Cfg.UserEndAddr};
+    for (int unsigned i = 0; i < Cfg.NumSramBanks; i++) begin
+      ret[2+i] = '{
+        idx:        4'(XbarBank0 + i),
+        start_addr: Cfg.SramStartAddr + i * Cfg.SramBankNumWords * 4,
+        end_addr:   Cfg.SramStartAddr + (i + 1) * Cfg.SramBankNumWords * 4
+      };
+    end
+    return ret;
+  endfunction
+  localparam addr_map_rule_t [NumXbarRules-1:0] CrocAddrMap = gen_croc_addr_map();
+
+  /// Connectivity matrix for the main crossbar, fully connected by default.
+  /// If you use the iDMA you may want to reduce this to reduce routing and
+  /// improve timing for your specific application. Eg. if you add something
+  /// in the user_domain, you may not need connectivity to peripherals.
+  localparam logic [NumXbarMgrPorts-1:0][NumXbarSbrPorts-1:0] XbarConnectivity = '1;
 
   // -----------------
   // Control Signals
@@ -98,8 +162,8 @@ module croc_domain import croc_pkg::*; #(
   mgr_obi_rsp_t idma_obi_write_rsp;
 
   // xbar manager buses
-  mgr_obi_req_t [NumXbarManagers-1:0] xbar_mgr_obi_req;
-  mgr_obi_rsp_t [NumXbarManagers-1:0] xbar_mgr_obi_rsp;
+  mgr_obi_req_t [NumXbarMgrPorts-1:0] xbar_mgr_obi_req;
+  mgr_obi_rsp_t [NumXbarMgrPorts-1:0] xbar_mgr_obi_rsp;
 
   // split out to individual manager buses
   assign xbar_mgr_obi_req[0] = user_mgr_obi_req_i;
@@ -118,14 +182,14 @@ module croc_domain import croc_pkg::*; #(
   // Subordinate buses out of crossbar
   // ----------------------------------
   // Main xbar subordinate buses, must align with addr map indices!
-  sbr_obi_req_t [NumXbarSubordinates-1:0] all_sbr_obi_req;
-  sbr_obi_rsp_t [NumXbarSubordinates-1:0] all_sbr_obi_rsp;
+  sbr_obi_req_t [NumXbarSbrPorts-1:0] all_sbr_obi_req;
+  sbr_obi_rsp_t [NumXbarSbrPorts-1:0] all_sbr_obi_rsp;
 
   // user bus defined in module port
 
   // mem bank buses
-  sbr_obi_req_t [NumSramBanks-1:0] xbar_mem_bank_obi_req;
-  sbr_obi_rsp_t [NumSramBanks-1:0] xbar_mem_bank_obi_rsp;
+  sbr_obi_req_t [Cfg.NumSramBanks-1:0] xbar_mem_bank_obi_req;
+  sbr_obi_rsp_t [Cfg.NumSramBanks-1:0] xbar_mem_bank_obi_rsp;
 
   // periph bus
   sbr_obi_req_t xbar_periph_obi_req;
@@ -141,7 +205,7 @@ module croc_domain import croc_pkg::*; #(
   assign xbar_periph_obi_req         = all_sbr_obi_req[XbarPeriph];
   assign all_sbr_obi_rsp[XbarPeriph] = xbar_periph_obi_rsp;
 
-  for (genvar i = 0; i < NumSramBanks; i++) begin : gen_xbar_sbr_connect
+  for (genvar i = 0; i < Cfg.NumSramBanks; i++) begin : gen_xbar_sbr_connect
     assign xbar_mem_bank_obi_req[i]     = all_sbr_obi_req[XbarBank0+i];
     assign all_sbr_obi_rsp[XbarBank0+i] = xbar_mem_bank_obi_rsp[i];
   end
@@ -218,6 +282,7 @@ module croc_domain import croc_pkg::*; #(
   // Core
   // -----------------
   core_wrap #(
+    .PMPEnable ( Cfg.CorePMPEnable )
   ) i_core_wrap (
     .clk_i,
     .rst_ni,
@@ -254,7 +319,7 @@ module croc_domain import croc_pkg::*; #(
   // -----------------
   // iDMA
   // -----------------
-  if (iDMAEnable) begin : gen_dma
+  if (Cfg.iDMAEnable) begin : gen_dma
 
     // iDMA
     croc_idma #(
@@ -329,7 +394,7 @@ module croc_domain import croc_pkg::*; #(
   dm::dmi_resp_t dmi_resp;
 
   dmi_jtag #(
-    .IdcodeValue ( PulpJtagIdCode )
+    .IdcodeValue ( Cfg.JtagIdCode )
   ) i_dmi_jtag (
     .clk_i,
     .rst_ni,
@@ -413,10 +478,10 @@ module croc_domain import croc_pkg::*; #(
     .sbr_port_r_chan_t  ( mgr_obi_r_chan_t     ),
     .mgr_port_obi_req_t ( sbr_obi_req_t        ),
     .mgr_port_obi_rsp_t ( sbr_obi_rsp_t        ),
-    .NumSbrPorts        ( NumXbarManagers      ),
-    .NumMgrPorts        ( NumXbarSubordinates  ),
+    .NumSbrPorts        ( NumXbarMgrPorts      ),
+    .NumMgrPorts        ( NumXbarSbrPorts      ),
     .NumMaxTrans        ( 2                    ),
-    .NumAddrRules       ( $size(CrocAddrMap)   ),
+    .NumAddrRules       ( NumXbarRules         ),
     .addr_map_rule_t    ( addr_map_rule_t      ),
     .UseIdForRouting    ( 1'b0                 ),
     .Connectivity       ( XbarConnectivity     )
@@ -440,9 +505,9 @@ module croc_domain import croc_pkg::*; #(
   // -----------------
   // Memories
   // -----------------
-  localparam int unsigned SramBankAddrWidth = cf_math_pkg::idx_width(SramBankNumWords);
+  localparam int unsigned SramBankAddrWidth = cf_math_pkg::idx_width(Cfg.SramBankNumWords);
 
-  for (genvar i = 0; i < NumSramBanks; i++) begin : gen_sram_bank
+  for (genvar i = 0; i < Cfg.NumSramBanks; i++) begin : gen_sram_bank
     logic bank_req, bank_we, bank_gnt, bank_single_err;
     logic [SbrObiCfg.AddrWidth-1:0] bank_byte_addr;
     logic [SramBankAddrWidth-1:0] bank_word_addr;
@@ -473,7 +538,7 @@ module croc_domain import croc_pkg::*; #(
     assign bank_word_addr = bank_byte_addr[SbrObiCfg.AddrWidth-1:2];
 
     tc_sram_impl #(
-      .NumWords  ( SramBankNumWords ),
+      .NumWords  ( Cfg.SramBankNumWords ),
       .DataWidth ( 32 ),
       .NumPorts  (  1 ),
       .Latency   (  1 )
@@ -556,9 +621,10 @@ module croc_domain import croc_pkg::*; #(
 
   // SoC Control
   soc_ctrl_regs #(
-    .obi_req_t       ( sbr_obi_req_t ),
-    .obi_rsp_t       ( sbr_obi_rsp_t ),
-    .BootAddrDefault ( BootAddr      )
+    .Cfg             ( Cfg               ),
+    .obi_req_t       ( sbr_obi_req_t     ),
+    .obi_rsp_t       ( sbr_obi_rsp_t     ),
+    .BootAddrDefault ( Cfg.SramStartAddr )
   ) i_soc_ctrl (
     .clk_i,
     .rst_ni,

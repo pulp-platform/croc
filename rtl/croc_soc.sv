@@ -5,7 +5,11 @@
 // Authors:
 // - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
+`include "obi/typedef.svh"
+
 module croc_soc import croc_pkg::*; #(
+  /// SoC configuration, passed through to croc_domain
+  parameter croc_cfg_t Cfg = CrocDefaultCfg,
   parameter int unsigned GpioCount = 16
 ) (
   input  logic clk_i,
@@ -38,6 +42,11 @@ module croc_soc import croc_pkg::*; #(
     .init_no     ()
   );
 
+// OBI configuration and types for this Cfg (see croc_pkg)
+localparam obi_pkg::obi_cfg_t SbrObiCfg = croc_sbr_obi_cfg(Cfg);
+`OBI_TYPEDEF_DEFAULT_ALL(mgr_obi, MgrObiCfg)
+`OBI_TYPEDEF_DEFAULT_ALL(sbr_obi, SbrObiCfg)
+
 // Connection between Croc_domain and User_domain: User Sbr, Croc Mgr
 sbr_obi_req_t user_sbr_obi_req;
 sbr_obi_rsp_t user_sbr_obi_rsp;
@@ -51,8 +60,13 @@ logic [NumExternalIrqs-1:0] interrupts;
 logic [      GpioCount-1:0] gpio_in_sync;
 
 croc_domain #(
-  .GpioCount       ( GpioCount       ),
-  .NumExternalIrqs ( NumExternalIrqs )
+  .Cfg                ( Cfg             ),
+  .GpioCount          ( GpioCount       ),
+  .NumExternalIrqs    ( NumExternalIrqs ),
+  .user_sbr_obi_req_t ( sbr_obi_req_t   ),
+  .user_sbr_obi_rsp_t ( sbr_obi_rsp_t   ),
+  .user_mgr_obi_req_t ( mgr_obi_req_t   ),
+  .user_mgr_obi_rsp_t ( mgr_obi_rsp_t   )
 ) i_croc (
   .clk_i,
   .rst_ni ( synced_rst_n ),
@@ -85,8 +99,13 @@ croc_domain #(
 );
 
 user_domain #(
-  .GpioCount       ( GpioCount       ),
-  .NumExternalIrqs ( NumExternalIrqs )
+  .Cfg                ( Cfg             ),
+  .GpioCount          ( GpioCount       ),
+  .NumExternalIrqs    ( NumExternalIrqs ),
+  .user_sbr_obi_req_t ( sbr_obi_req_t   ),
+  .user_sbr_obi_rsp_t ( sbr_obi_rsp_t   ),
+  .user_mgr_obi_req_t ( mgr_obi_req_t   ),
+  .user_mgr_obi_rsp_t ( mgr_obi_rsp_t   )
 ) i_user (
   .clk_i,
   .rst_ni ( synced_rst_n ),
