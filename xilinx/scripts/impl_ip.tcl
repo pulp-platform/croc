@@ -15,22 +15,43 @@ init_impl $xilinx_root $argc $argv
 switch $proj {
 
     clkwiz {
-        set prim_in_freq [expr { $board eq "basys3" ? "100.000" : "200.000" }]
         create_ip -name clk_wiz -vendor xilinx.com -library ip -version 6.0 -module_name $proj
-        set_property -dict [list \
-            CONFIG.PRIM_SOURCE {No_buffer} \
-            CONFIG.PRIM_IN_FREQ $prim_in_freq \
-            CONFIG.CLKOUT1_USED {true} \
-            CONFIG.CLK_OUT1_PORT {clk_20} \
-            CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {20.000} \
-            CONFIG.CLKIN1_JITTER_PS {50.0} \
-            CONFIG.MMCM_CLKFBOUT_MULT_F {6.000} \
-            CONFIG.MMCM_CLKIN1_PERIOD {5.000} \
-            CONFIG.MMCM_CLKOUT1_DIVIDE {60} \
-            CONFIG.NUM_OUT_CLKS {1} \
-            CONFIG.CLKOUT1_JITTER {155.330} \
-            CONFIG.CLKOUT1_PHASE_ERROR {89.971} \
-            ] [get_ips $proj]
+        switch $board {
+            genesys2 {
+                set_property -dict [list \
+                    CONFIG.PRIM_SOURCE {No_buffer} \
+                    CONFIG.PRIM_IN_FREQ {200.000} \
+                    CONFIG.CLKOUT1_USED {true} \
+                    CONFIG.CLK_OUT1_PORT {clk_20} \
+                    CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {20.000} \
+                    CONFIG.CLKIN1_JITTER_PS {50.0} \
+                    CONFIG.MMCM_CLKFBOUT_MULT_F {6.000} \
+                    CONFIG.MMCM_CLKIN1_PERIOD {5.000} \
+                    CONFIG.MMCM_CLKOUT1_DIVIDE {60} \
+                    CONFIG.NUM_OUT_CLKS {1} \
+                    CONFIG.CLKOUT1_JITTER {155.330} \
+                    CONFIG.CLKOUT1_PHASE_ERROR {89.971} \
+                    ] [get_ips $proj]
+            }
+            basys3 {
+                set_property -dict [list \
+                    CONFIG.PRIM_SOURCE {No_buffer} \
+                    CONFIG.PRIM_IN_FREQ {100.000} \
+                    CONFIG.CLKOUT1_USED {true} \
+                    CONFIG.CLK_OUT1_PORT {clk_20} \
+                    CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {20.000} \
+                    CONFIG.CLKIN1_JITTER_PS {50.0} \
+                    CONFIG.MMCM_CLKIN1_PERIOD {10.000} \
+                    CONFIG.MMCM_DIVCLK_DIVIDE {1} \
+                    CONFIG.MMCM_CLKFBOUT_MULT_F {8.500} \
+                    CONFIG.MMCM_CLKOUT0_DIVIDE_F {42.500} \
+                    CONFIG.NUM_OUT_CLKS {1} \
+                    CONFIG.CLKOUT1_JITTER {193.154} \
+                    CONFIG.CLKOUT1_PHASE_ERROR {109.126} \
+                    ] [get_ips $proj]
+            }
+            default { no_cfg_exit $proj $board }
+        }
     }
 
     vio {

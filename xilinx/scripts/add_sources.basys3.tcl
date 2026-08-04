@@ -238,6 +238,7 @@ set_property verilog_define [list \
     TARGET_SYNTHESIS \
     TARGET_VIVADO \
     TARGET_XILINX \
+    TARGET_BSCANE \
     COMMON_CELLS_ASSERTS_OFF=1 \
 ] [current_fileset]
 
@@ -247,6 +248,7 @@ set_property verilog_define [list \
     TARGET_SYNTHESIS \
     TARGET_VIVADO \
     TARGET_XILINX \
+    TARGET_BSCANE \
     COMMON_CELLS_ASSERTS_OFF=1 \
 ] [current_fileset -simset]
 
