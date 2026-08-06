@@ -11,7 +11,11 @@ dependencies:
   # IMPORTANT: see vendor_package at the bottom
   common_cells:         { git: "https://github.com/pulp-platform/common_cells.git",         version: 1.39.0 }
   common_verification:  { git: "https://github.com/pulp-platform/common_verification.git",  rev: 5fd30c1    } # 0.2.5+
-  riscv-dbg:            { git: "https://github.com/pulp-platform/riscv-dbg.git",            rev: "verilator-phsauter" }
+  riscv-dbg:
+    git: "https://github.com/pulp-platform/riscv-dbg.git"
+    rev: "verilator-phsauter"
+    pass_targets:
+      - { target: basys3, pass: bscane }
   tech_cells_generic:   { git: "https://github.com/pulp-platform/tech_cells_generic.git",   rev: fca524a    } # 0.2.13+
   apb:                  { git: "https://github.com/pulp-platform/apb.git",                  version: 0.2.4  }
   obi:                  { git: "https://github.com/pulp-platform/obi.git",                  rev: 6a724da    } # 0.1.7+
@@ -69,7 +73,7 @@ sources:
       - rtl/test/croc_vip.sv
       - rtl/test/tb_croc_soc.sv
 
-  - target: genesys2
+  - target: any(genesys2, basys3)
     files:
       - xilinx/hw/croc_xilinx.sv
       - xilinx/hw/fan_ctrl.sv

@@ -25,7 +25,8 @@ packages:
     version: null
     source:
       Path: rtl/cve2
-    dependencies: []
+    dependencies:
+    - common_cells
   idma:
     revision: null
     version: null

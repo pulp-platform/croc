@@ -9,6 +9,12 @@ set bpart(genesys2) "digilentinc.com:genesys2:part0:1.1"
 set fpart(genesys2) "xc7k325tffg900-2"
 set hwdev(genesys2) "xc7k325t_0"
 
+# basys3 board params
+set bpart(basys3) "digilentinc.com:basys3:part0:1.2"
+set fpart(basys3) "xc7a35tcpg236-1"
+set hwdev(basys3) "xc7a35t_0"
+set cfgmp(basys3) "s25fl032p-spi-x1_x2_x4"
+
 # vcu128 board params
 set bpart(vcu128) "xilinx.com:vcu128:part0:1.0"
 set fpart(vcu128) "xcvu37p-fsvh2892-2L-e"
