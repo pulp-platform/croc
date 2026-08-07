@@ -41,6 +41,12 @@ utl::report "Read netlist: ${netlist}"
 read_verilog $netlist
 link_design $top_design
 
+utl::report "Read DFT configuration"
+source src/dft_config.tcl
+
+utl::report "Insert scan flip-flops"
+scan_replace
+
 utl::report "Read constraints"
 read_sdc src/constraints.sdc
 

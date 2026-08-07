@@ -11,7 +11,6 @@ module croc_chip import croc_pkg::*; #() (
   input  wire ref_clk_i,
 
   input  wire jtag_tck_i,
-  input  wire jtag_trst_ni,
   input  wire jtag_tms_i,
   input  wire jtag_tdi_i,
   output wire jtag_tdo_o,
@@ -19,6 +18,7 @@ module croc_chip import croc_pkg::*; #() (
   input  wire uart_rx_i,
   output wire uart_tx_o,
 
+  input  wire bootmode_scan_en_i,
   input  wire testmode_i,
   output wire status_o,
 
@@ -68,6 +68,8 @@ module croc_chip import croc_pkg::*; #() (
     logic soc_rst_ni;
     logic soc_ref_clk_i;
     logic soc_testmode_i;
+    // logic soc_bootmode_i; // Currently unused
+    logic soc_bootmode_scan_en_i;
 
     logic soc_jtag_tck_i;
     logic soc_jtag_trst_ni;
@@ -76,6 +78,12 @@ module croc_chip import croc_pkg::*; #() (
     logic soc_jtag_tdo_o;
 
     logic soc_status_o;
+
+    logic soc_scan_en_i;
+    logic scan_in_0;
+    logic scan_in_1;
+    logic soc_uart_tx_scan_out_0;
+    logic soc_jtag_tdo_scan_out_1;
 
     localparam int unsigned GpioCount = 32;
 
@@ -87,16 +95,16 @@ module croc_chip import croc_pkg::*; #() (
     sg13g2_IOPadIn        pad_rst_ni       (.pad(rst_ni),       .p2c(soc_rst_ni));
     sg13g2_IOPadIn        pad_ref_clk_i    (.pad(ref_clk_i),    .p2c(soc_ref_clk_i));
     sg13g2_IOPadIn        pad_jtag_tck_i   (.pad(jtag_tck_i),   .p2c(soc_jtag_tck_i));
-    sg13g2_IOPadIn        pad_jtag_trst_ni (.pad(jtag_trst_ni), .p2c(soc_jtag_trst_ni));
     sg13g2_IOPadIn        pad_jtag_tms_i   (.pad(jtag_tms_i),   .p2c(soc_jtag_tms_i));
-    sg13g2_IOPadIn        pad_jtag_tdi_i   (.pad(jtag_tdi_i),   .p2c(soc_jtag_tdi_i));
-    sg13g2_IOPadOut16mA   pad_jtag_tdo_o   (.pad(jtag_tdo_o),   .c2p(soc_jtag_tdo_o));
+    sg13g2_IOPadIn        pad_jtag_tdi_i   (.pad(jtag_tdi_i),   .p2c(soc_jtag_tdi_i));          // jtag_tck_i Scan chain 1 input
+    sg13g2_IOPadOut16mA   pad_jtag_tdo_o   (.pad(jtag_tdo_o),   .c2p(soc_jtag_tdo_scan_out_1)); // jtag_tck_i Scan chain 1 output
 
-    sg13g2_IOPadIn        pad_uart_rx_i    (.pad(uart_rx_i),  .p2c(soc_uart_rx_i));
-    sg13g2_IOPadOut16mA   pad_uart_tx_o    (.pad(uart_tx_o),  .c2p(soc_uart_tx_o));
+    sg13g2_IOPadIn        pad_uart_rx_i    (.pad(uart_rx_i),  .p2c(soc_uart_rx_i));          // clk_i Scan chain 0 input
+    sg13g2_IOPadOut16mA   pad_uart_tx_o    (.pad(uart_tx_o),  .c2p(soc_uart_tx_scan_out_0)); // clk_i Scan chain 0 output
 
-    sg13g2_IOPadIn        pad_testmode_i   (.pad(testmode_i), .p2c(soc_testmode_i));
-    sg13g2_IOPadOut16mA   pad_status_o     (.pad(status_o),   .c2p(soc_status_o));
+    sg13g2_IOPadIn        pad_testmode_i         (.pad(testmode_i),         .p2c(soc_testmode_i));
+    sg13g2_IOPadIn        pad_bootmode_scan_en_i (.pad(bootmode_scan_en_i), .p2c(soc_bootmode_scan_en_i));
+    sg13g2_IOPadOut16mA   pad_status_o           (.pad(status_o),           .c2p(soc_status_o));
 
     sg13g2_IOPadInOut30mA pad_gpio0_io     (.pad(gpio0_io),  .c2p(soc_gpio_o[0]),  .p2c(soc_gpio_i[0]),  .c2p_en(soc_gpio_out_en_o[0]));
     sg13g2_IOPadInOut30mA pad_gpio1_io     (.pad(gpio1_io),  .c2p(soc_gpio_o[1]),  .p2c(soc_gpio_i[1]),  .c2p_en(soc_gpio_out_en_o[1]));
@@ -134,6 +142,21 @@ module croc_chip import croc_pkg::*; #() (
     sg13g2_IOPadOut16mA   pad_unused1_o    (.pad(unused1_o), .c2p(soc_status_o));
     sg13g2_IOPadOut16mA   pad_unused2_o    (.pad(unused2_o), .c2p(soc_status_o));
     sg13g2_IOPadOut16mA   pad_unused3_o    (.pad(unused3_o), .c2p(soc_status_o));
+
+    // During normal operation connect jtag reset with system reset, inactivate in testmode
+    assign soc_jtag_trst_ni = soc_testmode_i ? 1'b1 : soc_rst_ni;
+    // assign soc_bootmode_i = soc_testmode_i ? 1'b0 : soc_bootmode_scan_en_i; // Currently unused
+
+    // Scan enable only active in testmode
+    (* dont_touch = "true" *)sg13g2_and2_1 i_scan_en_gate (.A(soc_testmode_i), .B(soc_bootmode_scan_en_i), .X(soc_scan_en_i));
+
+    (* dont_touch = "true" *)sg13g2_buf_1 i_scan_in_buf_0 (.A(soc_uart_rx_i),  .X(scan_in_0)); // clk_i      Scan chain 0 input buffer
+    (* dont_touch = "true" *)sg13g2_buf_1 i_scan_in_buf_1 (.A(soc_jtag_tdi_i), .X(scan_in_1)); // jtag_tck_i Scan chain 1 input buffer
+
+    (* dont_touch = "true" *)sg13g2_mux2_1 i_scan_out_mux_0 (.A0(soc_uart_tx_o),  .A1(soc_uart_tx_o),
+                                                             .S(soc_scan_en_i),   .X(soc_uart_tx_scan_out_0));
+    (* dont_touch = "true" *)sg13g2_mux2_1 i_scan_out_mux_1 (.A0(soc_jtag_tdo_o), .A1(soc_jtag_tdo_o),
+                                                             .S(soc_scan_en_i),   .X(soc_jtag_tdo_scan_out_1));
 
     (* dont_touch = "true" *)sg13g2_IOPadVdd pad_vdd0();
     (* dont_touch = "true" *)sg13g2_IOPadVdd pad_vdd1();

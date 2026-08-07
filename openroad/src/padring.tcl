@@ -46,22 +46,22 @@ set westSpan  [expr {$chipH - 2*$cornerToPad - $padW}]; # -padW because we place
 set westPitch [expr {floor($westSpan / double($numPadsPerEdge - 1))}]
 set westStart [expr {$chipH - $cornerToPad - $padW}]
 
-place_pad -row IO_WEST -location [expr {$westStart -  0*$westPitch}] "pad_vssio0"       ; # pin no:  1
-place_pad -row IO_WEST -location [expr {$westStart -  1*$westPitch}] "pad_vddio0"       ; # pin no:  2
-place_pad -row IO_WEST -location [expr {$westStart -  2*$westPitch}] "pad_uart_rx_i"    ; # pin no:  3
-place_pad -row IO_WEST -location [expr {$westStart -  3*$westPitch}] "pad_uart_tx_o"    ; # pin no:  4
-place_pad -row IO_WEST -location [expr {$westStart -  4*$westPitch}] "pad_testmode_i"   ; # pin no:  5
-place_pad -row IO_WEST -location [expr {$westStart -  5*$westPitch}] "pad_status_o"     ; # pin no:  6
-place_pad -row IO_WEST -location [expr {$westStart -  6*$westPitch}] "pad_clk_i"        ; # pin no:  7
-place_pad -row IO_WEST -location [expr {$westStart -  7*$westPitch}] "pad_ref_clk_i"    ; # pin no:  8
-place_pad -row IO_WEST -location [expr {$westStart -  8*$westPitch}] "pad_rst_ni"       ; # pin no:  9
-place_pad -row IO_WEST -location [expr {$westStart -  9*$westPitch}] "pad_jtag_tck_i"   ; # pin no: 10
-place_pad -row IO_WEST -location [expr {$westStart - 10*$westPitch}] "pad_jtag_trst_ni" ; # pin no: 11
-place_pad -row IO_WEST -location [expr {$westStart - 11*$westPitch}] "pad_jtag_tms_i"   ; # pin no: 12
-place_pad -row IO_WEST -location [expr {$westStart - 12*$westPitch}] "pad_jtag_tdi_i"   ; # pin no: 13
-place_pad -row IO_WEST -location [expr {$westStart - 13*$westPitch}] "pad_jtag_tdo_o"   ; # pin no: 14
-place_pad -row IO_WEST -location [expr {$westStart - 14*$westPitch}] "pad_vss0"         ; # pin no: 15
-place_pad -row IO_WEST -location [expr {$westStart - 15*$westPitch}] "pad_vdd0"         ; # pin no: 16
+place_pad -row IO_WEST -location [expr {$westStart -  0*$westPitch}] "pad_vssio0"             ; # pin no:  1
+place_pad -row IO_WEST -location [expr {$westStart -  1*$westPitch}] "pad_vddio0"             ; # pin no:  2
+place_pad -row IO_WEST -location [expr {$westStart -  2*$westPitch}] "pad_uart_rx_i"          ; # pin no:  3
+place_pad -row IO_WEST -location [expr {$westStart -  3*$westPitch}] "pad_uart_tx_o"          ; # pin no:  4
+place_pad -row IO_WEST -location [expr {$westStart -  4*$westPitch}] "pad_testmode_i"         ; # pin no:  5
+place_pad -row IO_WEST -location [expr {$westStart -  5*$westPitch}] "pad_status_o"           ; # pin no:  6
+place_pad -row IO_WEST -location [expr {$westStart -  6*$westPitch}] "pad_clk_i"              ; # pin no:  7
+place_pad -row IO_WEST -location [expr {$westStart -  7*$westPitch}] "pad_ref_clk_i"          ; # pin no:  8
+place_pad -row IO_WEST -location [expr {$westStart -  8*$westPitch}] "pad_rst_ni"             ; # pin no:  9
+place_pad -row IO_WEST -location [expr {$westStart -  9*$westPitch}] "pad_jtag_tck_i"         ; # pin no: 10
+place_pad -row IO_WEST -location [expr {$westStart - 10*$westPitch}] "pad_bootmode_scan_en_i" ; # pin no: 11 TODO: Adjust this
+place_pad -row IO_WEST -location [expr {$westStart - 11*$westPitch}] "pad_jtag_tms_i"         ; # pin no: 12
+place_pad -row IO_WEST -location [expr {$westStart - 12*$westPitch}] "pad_jtag_tdi_i"         ; # pin no: 13
+place_pad -row IO_WEST -location [expr {$westStart - 13*$westPitch}] "pad_jtag_tdo_o"         ; # pin no: 14
+place_pad -row IO_WEST -location [expr {$westStart - 14*$westPitch}] "pad_vss0"               ; # pin no: 15
+place_pad -row IO_WEST -location [expr {$westStart - 15*$westPitch}] "pad_vdd0"               ; # pin no: 16
 
 ##########################################################################
 # Edge: BOTTOM (left to right)                                           #
