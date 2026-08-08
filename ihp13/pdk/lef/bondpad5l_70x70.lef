@@ -1,0 +1,40 @@
+# Copyright (c) 2024-2026 ETH Zurich and University of Bologna.
+# Solderpad Hardware License, Version 0.51, see LICENSE.md for details.
+# SPDX-License-Identifier: SHL-0.51
+
+VERSION 5.8 ;
+
+MACRO bondpad5l_70x70
+  CLASS COVER ;
+  ORIGIN 0 0 ;
+  FOREIGN bondpad5l_70x70 0 0 ;
+  SIZE 70.0 BY 70.0 ;
+  SYMMETRY X Y R90 ;
+  SITE sg13cmos5l_ioSite ;
+  PIN pad
+    USE SIGNAL ;
+    PORT
+      LAYER Metal2 ;
+        RECT 0 0 70.0 70.0 ;
+      LAYER Metal3 ;
+        RECT 0 0 70.0 70.0 ;
+      LAYER Metal4 ;
+        RECT 0 0 70.0 70.0 ;
+      LAYER TopMetal1 ;
+        RECT 0 0 70.0 70.0 ;
+    END
+  END pad
+
+  OBS
+    LAYER Metal1 ;
+      RECT 0 0 70.0 70.0 ;
+    LAYER Metal2 ;
+      RECT 0 0 70.0 70.0 ;
+    LAYER Metal3 ;
+      RECT 0 0 70.0 70.0 ;
+    LAYER Metal4 ;
+      RECT 0 0 70.0 70.0 ;
+    LAYER TopMetal1 ;
+      RECT 0 0 70.0 70.0 ;
+  END
+END bondpad5l_70x70

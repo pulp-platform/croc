@@ -1,3 +1,0 @@
-.SUBCKT bondpad_70x70 pad
-*.PININFO pad:B
-.ENDS
