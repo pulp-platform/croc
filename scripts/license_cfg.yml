@@ -33,7 +33,6 @@ exclude-paths:
   - artistic/artistic
   - artistic/meerkat_work
   - artistic/renderics
-  - ihp13/bondpad
   - ihp13/patches
   - ihp13/pdk
   - klayout/out

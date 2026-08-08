@@ -57,7 +57,7 @@ sources:
       # Level 3
       - rtl/croc_soc.sv
 
-  - target: not(fpga)
+  - target: all(not(fpga), not(netlist_yosys))
     files:
       # Level 0
       - rtl/croc_chip.sv

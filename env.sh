@@ -25,60 +25,135 @@ echo "[INFO][ENV] Croc root: $CROC_ROOT"
 export PROJ_NAME="${PROJ_NAME:-croc}"
 export TOP_DESIGN="${TOP_DESIGN:-croc_chip}"
 export DUT_DESIGN="${DUT_DESIGN:-croc_soc}"
+if [[ -z "${CROC_PDK:-}" ]]; then
+    if [[ "${PDK:-}" == "sg13g2" || "${PDK:-}" == "sg13cmos5l" ]]; then
+        echo "[WARNING][ENV] Ignoring PDK=$PDK. Use CROC_PDK to select the Croc PDK."
+    fi
+    export CROC_PDK="sg13cmos5l"
+fi
+
+# Explicit file basenames used by downstream scripts. Directory/source
+# selection lives below; cell names and basenames stay spelled out here.
+export PDK_STDCELL_LEF_FILE="sg13g2_stdcell.lef"
+export PDK_STDCELL_GDS_FILE="sg13g2_stdcell.gds"
+export PDK_STDCELL_LIB_TT_FILE="sg13g2_stdcell_typ_1p20V_25C.lib"
+export PDK_STDCELL_LIB_FF_FILE="sg13g2_stdcell_fast_1p32V_m40C.lib"
+export PDK_TECH_LEF_FILE="sg13cmos5l_tech.lef"
+export PDK_IO_LEF_FILE="sg13cmos5l_io.lef"
+export PDK_IO_GDS_FILE="sg13cmos5l_io.gds"
+export PDK_IO_LIB_TT_FILE="sg13cmos5l_io_typ_1p2V_3p3V_25C.lib"
+export PDK_IO_LIB_FF_FILE="sg13cmos5l_io_fast_1p32V_3p6V_m40C.lib"
+export PDK_LAYER_MAP_FILE=""
+export CROC_TECHNOLOGY_VIEW=""
+export PDK_BONDPAD_CELL="bondpad_70x70"
+export PDK_BONDPAD_LEF="bondpad_70x70.lef"
+export PDK_BONDPAD_GDS="bondpad_70x70.gds"
+
+if [[ "$CROC_PDK" == "sg13cmos5l" ]]; then
+    export BENDER_PDK_ARGS="-D IHP_SG13CMOS5L=1"
+else
+    export BENDER_PDK_ARGS=""
+fi
 
 
 ###################
 # PDK Discovery
 ###################
-# priority: technology/ over ihp13/pdk/
+# `technology/` is the active PDK directory. It contains Liberty, LEF,
+# Verilog, and GDS files. Cockpit provides it on ETH systems; elsewhere,
+# env.sh creates a link to ihp13/pdk.
 
-if [[ -d "${CROC_ROOT}/technology" ]]; then
+PUBLIC_PDK_ROOT="$CROC_ROOT/ihp13/pdk"
+if [[ "${CROC_SKIP_TECH_SETUP:-0}" != "1" ]]; then
+    if ! "$CROC_ROOT/scripts/setup_technology.sh" --quiet; then
+        return 1 2>/dev/null || exit 1
+    fi
+else
+    echo "[INFO][ENV] Skipping technology setup"
+fi
 
-    echo "[INFO][ENV] Init tech from ETHZ DZ cockpit"
-    export PDK_ROOT="$CROC_ROOT/technology"
-    export KLAYOUT_PATH="$CROC_ROOT/klayout/.klayout"
+if [[ -e "${CROC_ROOT}/technology" || ( "${CROC_SKIP_TECH_SETUP:-0}" == "1" && -d "$PUBLIC_PDK_ROOT" ) ]]; then
+
+    if [[ -e "${CROC_ROOT}/technology" ]]; then
+        export PDK_ROOT="$CROC_ROOT/technology"
+    else
+        # Dry runs use the public mirror directly without creating technology/.
+        export PDK_ROOT="$PUBLIC_PDK_ROOT"
+    fi
+    export PDK_TECH_HOME="$PDK_ROOT"
+    export PDK_STD_HOME="$PDK_ROOT"
+    export PDK_SRAM_HOME="$PDK_ROOT"
+    export PDK_IO_HOME="$PDK_ROOT"
+
+    public_pdk_realpath="$(realpath -m "$PUBLIC_PDK_ROOT")"
+    technology_realpath="$(realpath -m "$PDK_ROOT")"
+    if [[ "$technology_realpath" == "$public_pdk_realpath" ]]; then
+        export CROC_TECHNOLOGY_VIEW="public mirror"
+    else
+        export CROC_TECHNOLOGY_VIEW="local technology directory"
+    fi
+
     export PDK_DIR_LEF_TECH="$PDK_ROOT/lef"
     export PDK_DIR_LEF_CELLS="$PDK_ROOT/lef"
     export PDK_DIR_LEF_SRAMS="$PDK_ROOT/lef"
     export PDK_DIR_LEF_IOS="$PDK_ROOT/lef"
-    export PDK_DIR_LEF_BOND="$CROC_ROOT/ihp13/bondpad/lef"
+    export PDK_DIR_LEF_BOND="$PDK_ROOT/lef"
+    export PDK_DIR_LIB_CELLS="$PDK_ROOT/lib"
+    export PDK_DIR_LIB_SRAMS="$PDK_ROOT/lib"
+    export PDK_DIR_LIB_IOS="$PDK_ROOT/lib"
     export PDK_DIR_GDS_CELLS="$PDK_ROOT/gds"
     export PDK_DIR_GDS_SRAMS="$PDK_ROOT/gds"
     export PDK_DIR_GDS_IOS="$PDK_ROOT/gds"
-    export PDK_DIR_GDS_BOND="$CROC_ROOT/ihp13/bondpad/gds"
+    export PDK_DIR_GDS_BOND="$PDK_ROOT/gds"
 
-elif [[ -d "${CROC_ROOT}/ihp13/pdk" ]]; then
+    if [[ "$CROC_PDK" == "sg13cmos5l" ]]; then
+        export PDK_BONDPAD_CELL="bondpad5l_70x70"
+        export PDK_BONDPAD_GDS="bondpad5l_70x70.gds"
+        export PDK_TECH_LEF_FILE="sg13cmos5l_tech.lef"
+        export PDK_IO_LEF_FILE="sg13cmos5l_io.lef"
+        export PDK_IO_GDS_FILE="sg13cmos5l_io.gds"
+        export PDK_IO_LIB_TT_FILE="sg13cmos5l_io_typ_1p2V_3p3V_25C.lib"
+        export PDK_IO_LIB_FF_FILE="sg13cmos5l_io_fast_1p32V_3p6V_m40C.lib"
+        export PDK_BONDPAD_LEF="bondpad5l_70x70.lef"
 
-    echo "[INFO][ENV] Init tech from Github PDK"
-    export PDK_ROOT="$CROC_ROOT/ihp13/pdk"
-    export KLAYOUT_PATH="$PDK_ROOT/ihp-sg13g2/libs.tech/klayout"
-    export PDK_DIR_LEF_TECH="$PDK_ROOT/ihp-sg13g2/libs.ref/sg13g2_stdcell/lef"
-    export PDK_DIR_LEF_CELLS="$PDK_ROOT/ihp-sg13g2/libs.ref/sg13g2_stdcell/lef"
-    export PDK_DIR_LEF_SRAMS="$PDK_ROOT/ihp-sg13g2/libs.ref/sg13g2_sram/lef"
-    export PDK_DIR_LEF_IOS="$PDK_ROOT/ihp-sg13g2/libs.ref/sg13g2_io/lef"
-    export PDK_DIR_LEF_BOND="$CROC_ROOT/ihp13/bondpad/lef"
-    export PDK_DIR_GDS_CELLS="$PDK_ROOT/ihp-sg13g2/libs.ref/sg13g2_stdcell/gds"
-    export PDK_DIR_GDS_SRAMS="$PDK_ROOT/ihp-sg13g2/libs.ref/sg13g2_sram/gds"
-    export PDK_DIR_GDS_IOS="$PDK_ROOT/ihp-sg13g2/libs.ref/sg13g2_io/gds"
-    export PDK_DIR_GDS_BOND="$CROC_ROOT/ihp13/bondpad/gds"
-
-    # Apply PDK patches required for filling
-    if [ ! -f ${CROC_ROOT}/ihp13/pdk.patched ]; then
-        git -C ${PDK_ROOT} apply ../patches/0001-Filling-improvements.patch
-        touch ${CROC_ROOT}/ihp13/pdk.patched
-        echo "[INFO][ENV] Applied all PDK patches"
+        # KLayout needs separate tool files. Cockpit takes precedence.
+        export KLAYOUT_PATH="$CROC_ROOT/ihp13/sg13cmos5l/libs.tech/klayout"
+        if [[ -d "/usr/pack/ihp-sg13-kgf/open_ihp_sg13cmos5l/sg13cmos5l_tech/v0.2/klayout" ]]; then
+            export KLAYOUT_PATH="/usr/pack/ihp-sg13-kgf/open_ihp_sg13cmos5l/sg13cmos5l_tech/v0.2/klayout"
+        fi
+    elif [[ "$CROC_PDK" == "sg13g2" ]]; then
+        export PDK_TECH_LEF_FILE="sg13g2_tech.lef"
+        export PDK_IO_LEF_FILE="sg13g2_io.lef"
+        export PDK_IO_GDS_FILE="sg13g2_io.gds"
+        export PDK_IO_LIB_TT_FILE="sg13g2_io_typ_1p2V_3p3V_25C.lib"
+        export PDK_IO_LIB_FF_FILE="sg13g2_io_fast_1p32V_3p6V_m40C.lib"
+        export PDK_BONDPAD_CELL="bondpad_70x70"
+        export PDK_BONDPAD_LEF="bondpad_70x70.lef"
+        export PDK_BONDPAD_GDS="bondpad_70x70.gds"
+        export KLAYOUT_PATH="$CROC_ROOT/ihp13/sg13g2/ihp-sg13g2/libs.tech/klayout"
     else
-        echo "[INFO][ENV] PDK patches already applied"
+        echo "[ERROR][ENV] Unknown CROC_PDK '$CROC_PDK'"
+        exit 1
     fi
 
 else
-    echo "[WARNING][ENV] PDK not found. Set PDK_ROOT and KLAYOUT_PATH or ensure ihp13/pdk/ exists"
+    echo "[WARNING][ENV] PDK not found. Initialize cockpit or ensure ihp13/pdk exists"
     export PDK_ROOT=""  # Set to empty to avoid unbound variable error
     export KLAYOUT_PATH="" # Set to empty to avoid unbound variable error
 fi
 
 echo "[INFO][ENV] PDK root: $PDK_ROOT"
+echo "[INFO][ENV] Croc PDK: $CROC_PDK"
+echo "[INFO][ENV] Active technology view: ${CROC_TECHNOLOGY_VIEW:-<none>}"
 echo "[INFO][ENV] KLayout path: $KLAYOUT_PATH"
-
-export PDK=ihp-sg13g2
-
+echo "[INFO][ENV] Bender PDK args: ${BENDER_PDK_ARGS:-<none>}"
+echo "[INFO][ENV] Tech LEF: $PDK_TECH_LEF_FILE"
+echo "[INFO][ENV] IO LEF/GDS: $PDK_IO_LEF_FILE/$PDK_IO_GDS_FILE"
+echo "[INFO][ENV] IO Liberty tt/ff: $PDK_IO_LIB_TT_FILE/$PDK_IO_LIB_FF_FILE"
+echo "[INFO][ENV] Bondpad cell: $PDK_BONDPAD_CELL ($PDK_BONDPAD_LEF/$PDK_BONDPAD_GDS)"
+export KLAYOUT_TECH="$CROC_PDK"
+if [[ -f "$PDK_ROOT/SG13G2_streamout.map" ]]; then
+    export PDK_LAYER_MAP_FILE="$PDK_ROOT/SG13G2_streamout.map"
+else
+    export PDK_LAYER_MAP_FILE="$KLAYOUT_PATH/tech/${CROC_PDK}.map"
+fi
