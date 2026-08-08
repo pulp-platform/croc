@@ -1,6 +1,9 @@
-[submodule "ihp13/pdk"]
-	path = ihp13/pdk
-	url = https://github.com/IHP-GmbH/IHP-Open-PDK
 [submodule "artistic/artistic"]
 	path = artistic/artistic
 	url = git@github.com:pulp-platform/artistic.git
+[submodule "ihp13/sg13cmos5l"]
+	path = ihp13/sg13cmos5l
+	url = https://github.com/IHP-GmbH/ihp-sg13cmos5l
+[submodule "ihp13/sg13g2"]
+	path = ihp13/sg13g2
+	url = https://github.com/IHP-GmbH/IHP-Open-PDK

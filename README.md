@@ -27,15 +27,15 @@ To make it easier to browse and understand, only used or important building bloc
 
 The main SoC configurations are in `rtl/croc_pkg.sv`:
 
-| Parameter           | Default          | Function                                              |
-|---------------------|------------------|-------------------------------------------------------|
-| `PulpJtagIdCode`    | `32'h1C0C_5DB3`  | Debug module ID code                                  |
-| `iDMAEnable`        | `0`              | Enable optional DMA (see `rtl/idma`)                  |
-| `NumSramBanks`      | `2`              | Number of memory banks                                |
-| `SramBankNumWords`  | `512`            | Number of 32bit words in a memory bank                |
-| `BootAddr`          | `32'h1000_0000`  | Default boot address set in 'soc_ctrl' register       |
-| `CrocAddrMap`       | see 'Memory Map' | Routing rules used for the main crossbar              |
-| `PeriphAddrMap`     | see 'Memory Map' | Routing rules used for the peripheral demuliplexer    |
+| Parameter          | Default          | Function                                           |
+| ------------------ | ---------------- | -------------------------------------------------- |
+| `PulpJtagIdCode`   | `32'h1C0C_5DB3`  | Debug module ID code                               |
+| `iDMAEnable`       | `0`              | Enable optional DMA (see `rtl/idma`)               |
+| `NumSramBanks`     | `2`              | Number of memory banks                             |
+| `SramBankNumWords` | `512`            | Number of 32bit words in a memory bank             |
+| `BootAddr`         | `32'h1000_0000`  | Default boot address set in 'soc_ctrl' register    |
+| `CrocAddrMap`      | see 'Memory Map' | Routing rules used for the main crossbar           |
+| `PeriphAddrMap`    | see 'Memory Map' | Routing rules used for the peripheral demuliplexer |
 
 Further configurations can be made in `rtl/core_wrap.sv` (core specifics) and `rtl/croc_soc.sv` (connectivity between domains and to/from outside).
 
@@ -52,21 +52,21 @@ Further each new subordinate should occupy multiples of 4KB of the address space
 
 The address map of the default configuration is as follows:
 
-| Start Address   | Stop Address    | Description                                |
-|-----------------|-----------------|--------------------------------------------|
-| `32'h0000_0000` | `32'h0004_0000` | Debug module (JTAG)                        |
-| `32'h0200_0000` | `32'h0200_4000` | Bootrom                                    |
-| `32'h0204_0000` | `32'h0208_0000` | CLINT peripheral                           |
-| `32'h0300_0000` | `32'h0300_1000` | SoC control/info registers                 |
-| `32'h0300_2000` | `32'h0300_3000` | UART peripheral                            |
-| `32'h0300_5000` | `32'h0300_6000` | GPIO peripheral                            |
-| `32'h0300_A000` | `32'h0300_B000` | Timer peripheral                           |
-| `32'h0300_B000` | `32'h0300_C000` | (optional) DMA configuration               |
-| `32'h1000_0000` | `+SRAM_SIZE`    | Memory banks (SRAM)                        |
-| `32'h2000_0000` | `32'h8000_0000` | Passthrough to user domain                 |
-| `32'h2000_0000` | `32'h2000_1000` | reserved for user ROM text*                |
+| Start Address   | Stop Address    | Description                  |
+| --------------- | --------------- | ---------------------------- |
+| `32'h0000_0000` | `32'h0004_0000` | Debug module (JTAG)          |
+| `32'h0200_0000` | `32'h0200_4000` | Bootrom                      |
+| `32'h0204_0000` | `32'h0208_0000` | CLINT peripheral             |
+| `32'h0300_0000` | `32'h0300_1000` | SoC control/info registers   |
+| `32'h0300_2000` | `32'h0300_3000` | UART peripheral              |
+| `32'h0300_5000` | `32'h0300_6000` | GPIO peripheral              |
+| `32'h0300_A000` | `32'h0300_B000` | Timer peripheral             |
+| `32'h0300_B000` | `32'h0300_C000` | (optional) DMA configuration |
+| `32'h1000_0000` | `+SRAM_SIZE`    | Memory banks (SRAM)          |
+| `32'h2000_0000` | `32'h8000_0000` | Passthrough to user domain   |
+| `32'h2000_0000` | `32'h2000_1000` | reserved for user ROM text\* |
 
-*If people modify Croc we suggest they add a ROM at this address containing additional information
+\*If people modify Croc we suggest they add a ROM at this address containing additional information
 like the names of the developers, a project link or similar. This can then be written out via UART.  
 We ask people to format the ROM like a C string with zero termination and using ASCII encoding if feasible.  
 The [MLEM user ROM](https://github.com/pulp-platform/croc/blob/mlem-tapeout/rtl/user_domain/user_rom.sv) may serve as one possible reference implementation.
@@ -87,9 +87,9 @@ graph LR;
 
 ### Example Results
 
-|Cell/Module placement                      |  Routing                             |
-|:-----------------------------------------:|:------------------------------------:|
-|![Chip module view](doc/croc_modules.jpg)  |  ![Chip routed](doc/croc_routed.jpg) |
+|           Cell/Module placement           |               Routing               |
+| :---------------------------------------: | :---------------------------------: |
+| ![Chip module view](doc/croc_modules.jpg) | ![Chip routed](doc/croc_routed.jpg) |
 
 ## Requirements
 
@@ -98,18 +98,18 @@ The current supported version is 2025.12, no other version is officially support
 
 ### ETHZ systems
 
-ETHZ Design Center maintains an internal version of the IHP PDK, with integrations into all tools we have access to. For this reason if you work on the ETH systems it is recommended to use the `icdesign` tool (cockpit) instead of the liked Github repo.  
-You can directly create a cockpit directory inside the croc directory:
+ETHZ Design Center maintains an internal version of the IHP PDK, with integrations into all tools we have access to. For this reason if you work on the ETH systems, it is recommended to use the `icdesign` tool (cockpit) instead of the linked GitHub PDK repositories.
+You can directly create a cockpit `technology/` directory inside the Croc repository:
 
 ```sh
 # Make sure you are in <somedir>/croc
 # the checked-out repository
-icdesign ihp13 -nogui
+icdesign ihp13 -update all -nogui
 ```
 
 The setup is guided by the `.cockpitrc` configuration file. If you need different macros or another version of the standard cells you can change it accordingly.
 
-Yyou may prefer to just enter a shell in the pre-installed osic-tools container using:
+You may want to start a shell in the pre-installed osic-tools container using:
 
 ```sh
 oseda bash
@@ -124,7 +124,7 @@ oseda bash
 
 There are two possible ways, the easiest way is to install docker and work in the docker container, you can follow the install guides on the [Docker Website](https://docs.docker.com/desktop/).  
 You do not need to manually download the container image, this will be done when running the script.
-If you do not have `git` installed on your system, you also need to install [Github Desktop](https://desktop.github.com/download/) and then clone this git repository.  
+If you do not have `git` installed on your system, you also need to install [Github Desktop](https://desktop.github.com/download/) and then clone this git repository.
 
 It is a good idea to grant non-root (`sudo`) users access to docker, this is decribed in the [Docker Article](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user).
 
@@ -140,8 +140,7 @@ scripts/start_vnc.bat
 ```
 
 If you use the VNC option, open a browser and type `localhost` in the address bar.
-This should connect you to the VNC server, the password is `abc123`, then test by right-clicking somewhere, starting the terminal and typing `ls`.  
-You should see the files in this repository again.
+This should connect you to the VNC server, the password is `abc123`, then test by right-clicking somewhere, starting the terminal and typing `ls`. You should see the files in this repository again.
 
 Now you should be in an Ubuntu environment with all tools pre-installed for you.  
 If something does not work, refer to the upstream [IIC-OSIC-Tools](https://github.com/iic-jku/IIC-OSIC-TOOLS/tree/main).
@@ -159,9 +158,49 @@ You need to build/install the required tools manually:
 - (Optional) [Verilator](https://github.com/verilator/verilator): Simulator
 - (Optional) Questasim/Modelsim: Simulator
 
+### PDK versions and sources
+
+The ASIC flow supports two IHP PDKs selected via the `CROC_PDK` environmental variable:
+
+- `sg13cmos5l`: the default 5-metal CMOS5L option.
+- `sg13g2`: the original SG13G2 7-metal option.
+
+`CROC_PDK` is the only PDK setting users select. There is one active view used by synthesis, place and route, simulation, and DEF-to-GDS conversion:
+
+- `technology/`: Liberty, LEF, Verilog models, and GDS files for the selected PDK.
+
+On ETH systems, the `technology/` directory is set up by the ETHZ Design Center cockpit and takes priority.
+Outside ETH, `env.sh` creates `technology -> ihp13/pdk` symbolic link on demand if `technology/` does not already exist.
+The committed `ihp13/pdk` mirror contains the Apache-2.0 Liberty, LEF, and Verilog files needed by the flow.
+The two Croc bondpad GDS files are committed in `ihp13/pdk/gds`; IHP GDS files are kept out of git and can be downloaded with:
+
+```sh
+scripts/download_gds.sh
+```
+
+Maintainers can update the pinned PDK mirror with `scripts/update_pdk.sh`.
+`ihp13/pdk/pdk_manifest.csv` records the source and digest of every mirrored PDK file and supports both direct GitHub files and archive-based deliveries.
+
+You can also run `scripts/setup_technology.sh` manually to print the active technology view. `env.sh` runs the same setup quietly before the ASIC scripts use the PDK.
+
+KLayout needs technology scripts, filling rules, and layer properties in addition to the files mentioned above.
+On ETH systems, the installed CMOS5L KLayout support package takes priority when available.
+Otherwise, the appropriate submodule, either `ihp13/sg13cmos5l` or `ihp13/sg13g2`, is required for the KLayout setup.
+
+The OSIC/oseda container also contains a PDK under `/foss/pdks`, but Croc does not currently use it.
+
 ## Getting started
 
 The SoC is fully functional as-is and a simple software example is provided for simulation.
+
+On ETH systems, create or update `technology/` with cockpit first.
+
+```sh
+icdesign ihp13 -update all -nogui
+```
+
+For external machines the committed `ihp13/pdk` fallback is used automatically.
+
 To run the synthesis and place & route flow execute:
 
 ```sh
@@ -171,11 +210,21 @@ cd ../openroad && ./run_backend.sh --all
 cd ../klayout && ./run_finishing.sh --gds
 ```
 
+The ASIC flow defaults to `CROC_PDK=sg13cmos5l`.
+To switch back to the original metal stack, export `CROC_PDK=sg13g2` before running the scripts.
+
 To simulate you can use:
 
 ```sh
 cd sw && make all
 cd ../verilator && ./run_verilator.sh --build --run ../sw/bin/helloworld.hex
+```
+
+To simulate the post-Yosys netlist with Verilator instead, first generate the netlist and then use the explicit netlist commands:
+
+```sh
+cd yosys && ./run_synthesis.sh --synth
+cd ../verilator && ./run_verilator.sh --build-netlist --run-netlist ../sw/bin/helloworld.hex
 ```
 
 If you have Questasim/Modelsim, you can also run:
@@ -224,10 +273,11 @@ For this repository, we use a subcommand called `bender vendor` together with th
 `bender vendor` can be used to Benderize arbitrary repositories with RTL in it. The dependencies are already 'checked out' into `rtl/<IP>`. Each file or directory from the repository is mapped to a local path in this repo.
 Fixes and changes to each IPs `rtl/<IP>/Bender.yml` are managed by `bender vendor` in `rtl/patches`.
 
-If you need to update a dependency or map another file you need to edit the coresponding `vendor_package` section in `Bender.yml` and then run `bender vendor init`. Then you might need to change `rtl/<IP>/Bender.yml` to list your new file in the sources. 
+If you need to update a dependency or map another file you need to edit the coresponding `vendor_package` section in `Bender.yml` and then run `bender vendor init`. Then you might need to change `rtl/<IP>/Bender.yml` to list your new file in the sources.
 To save a fix/change as a patch, stage it in git and then run `bender vendor patch`. When prompted, add a commit message (this is used as the patches file name). Finally, commit both the patch file and the new `rtl/<IP>`.
 
 **Note:** using `bender vendor` in this repository to change the local versions of the IPs requires an up-to-date version of Bender. (v0.28.2 or newer)
+
 ### Targets
 
 Another thing we use are targets (in the `Bender.yml`), together they build different views/contexts of your RTL. For example without defining any targets the technology independent cells/memories are used (in `rtl/tech_cells_generic/`) but if we use the target `ihp13` then the same modules contain a technology-specific implementation (in `ihp13/`). Similar contexts are built for different simulators and other things.

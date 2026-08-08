@@ -1,0 +1,592 @@
+--- a/ihp-sg13g2/libs.ref/sg13g2_stdcell/verilog/sg13g2_stdcell.v
++++ b/ihp-sg13g2/libs.ref/sg13g2_stdcell/verilog/sg13g2_stdcell.v
+@@ -12,6 +12,10 @@
+ // See the License for the specific language governing permissions and
+ // limitations under the License.
+ 
++// Modified for Croc by Philippe Sauter for Verilator compatibility.
++// Copyright (c) 2026 ETH Zurich and University of Bologna.
++// SPDX-License-Identifier: Apache-2.0
++
+ // type: a21o 
+ `timescale 1ns/10ps
+ `celldefine
+@@ -827,15 +831,35 @@
+ 	output Q, Q_N;
+ 	input CLK, D, RESET_B;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RESET_B = RESET_B, delayed_CLK = CLK;
++`else
+ 	wire delayed_D, delayed_RESET_B, delayed_CLK;
++`endif
+ 
+ 	// Function
+-	wire int_fwire_IQ, int_fwire_IQN, int_fwire_r;
++	`ifdef VERILATOR
++	reg int_fwire_IQ;
++	reg int_fwire_prev_clk;
++	`else
++	wire int_fwire_IQ;
++	`endif
++	wire int_fwire_IQN, int_fwire_r;
+ 	wire xcr_0;
+ 
+ 	not (int_fwire_r, delayed_RESET_B);
+ 	buf (xcr_0, 0);
++	`ifdef VERILATOR
++	always @(delayed_CLK or int_fwire_r) begin
++		if (int_fwire_r)
++			int_fwire_IQ <= 1'b0;
++		else if (delayed_CLK && !int_fwire_prev_clk)
++			int_fwire_IQ <= delayed_D;
++		int_fwire_prev_clk = delayed_CLK;
++	end
++	`else
+ 	ihp_dff_r (int_fwire_IQ, notifier, delayed_CLK, delayed_D, int_fwire_r, xcr_0);
++	`endif
+ 	buf (Q, int_fwire_IQ);
+ 	not (int_fwire_IQN, int_fwire_IQ);
+ 	buf (Q_N, int_fwire_IQN);
+@@ -874,15 +898,35 @@
+ 	output Q, Q_N;
+ 	input CLK, D, RESET_B;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RESET_B = RESET_B, delayed_CLK = CLK;
++`else
+ 	wire delayed_D, delayed_RESET_B, delayed_CLK;
++`endif
+ 
+ 	// Function
+-	wire int_fwire_IQ, int_fwire_IQN, int_fwire_r;
++	`ifdef VERILATOR
++	reg int_fwire_IQ;
++	reg int_fwire_prev_clk;
++	`else
++	wire int_fwire_IQ;
++	`endif
++	wire int_fwire_IQN, int_fwire_r;
+ 	wire xcr_0;
+ 
+ 	not (int_fwire_r, delayed_RESET_B);
+ 	buf (xcr_0, 0);
++	`ifdef VERILATOR
++	always @(delayed_CLK or int_fwire_r) begin
++		if (int_fwire_r)
++			int_fwire_IQ <= 1'b0;
++		else if (delayed_CLK && !int_fwire_prev_clk)
++			int_fwire_IQ <= delayed_D;
++		int_fwire_prev_clk = delayed_CLK;
++	end
++	`else
+ 	ihp_dff_r (int_fwire_IQ, notifier, delayed_CLK, delayed_D, int_fwire_r, xcr_0);
++	`endif
+ 	buf (Q, int_fwire_IQ);
+ 	not (int_fwire_IQN, int_fwire_IQ);
+ 	buf (Q_N, int_fwire_IQN);
+@@ -921,14 +965,34 @@
+ 	output Q;
+ 	input CLK, D, RESET_B;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RESET_B = RESET_B, delayed_CLK = CLK;
++`else
+ 	wire delayed_D, delayed_RESET_B, delayed_CLK;
++`endif
+ 
+ 	// Function
+-	wire int_fwire_IQ, int_fwire_r, xcr_0;
++`ifdef VERILATOR
++	reg int_fwire_IQ;
++	reg int_fwire_prev_clk;
++`else
++	wire int_fwire_IQ;
++`endif
++	wire int_fwire_r, xcr_0;
+ 
+ 	not (int_fwire_r, delayed_RESET_B);
+ 	buf (xcr_0, 0);
++`ifdef VERILATOR
++	always @(delayed_CLK or int_fwire_r) begin
++		if (int_fwire_r)
++			int_fwire_IQ <= 1'b0;
++		else if (delayed_CLK && !int_fwire_prev_clk)
++			int_fwire_IQ <= delayed_D;
++		int_fwire_prev_clk = delayed_CLK;
++	end
++`else
+ 	ihp_dff_r (int_fwire_IQ, notifier, delayed_CLK, delayed_D, int_fwire_r, xcr_0);
++`endif
+ 	buf (Q, int_fwire_IQ);
+ 
+         // Timing
+@@ -962,14 +1026,34 @@
+ 	output Q;
+ 	input CLK, D, RESET_B;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RESET_B = RESET_B, delayed_CLK = CLK;
++`else
+ 	wire delayed_D, delayed_RESET_B, delayed_CLK;
++`endif
+ 
+ 	// Function
+-	wire int_fwire_IQ, int_fwire_r, xcr_0;
++	`ifdef VERILATOR
++	reg int_fwire_IQ;
++	reg int_fwire_prev_clk;
++	`else
++	wire int_fwire_IQ;
++	`endif
++	wire int_fwire_r, xcr_0;
+ 
+ 	not (int_fwire_r, delayed_RESET_B);
+ 	buf (xcr_0, 0);
++	`ifdef VERILATOR
++	always @(delayed_CLK or int_fwire_r) begin
++		if (int_fwire_r)
++			int_fwire_IQ <= 1'b0;
++		else if (delayed_CLK && !int_fwire_prev_clk)
++			int_fwire_IQ <= delayed_D;
++		int_fwire_prev_clk = delayed_CLK;
++	end
++	`else
+ 	ihp_dff_r (int_fwire_IQ, notifier, delayed_CLK, delayed_D, int_fwire_r, xcr_0);
++	`endif
+ 	buf (Q, int_fwire_IQ);
+ 
+         // Timing
+@@ -1003,13 +1087,28 @@
+ 	output Q;
+ 	input D, GATE;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_GATE = GATE;
++`else
+ 	wire delayed_D, delayed_GATE;
++`endif
+ 
+ 	// Function
+ 
++	`ifdef VERILATOR
++	reg int_fwire_IQ;
++	`else
+ 	wire int_fwire_IQ;
++	`endif
+ 
++	`ifdef VERILATOR
++	always @(delayed_D or delayed_GATE) begin
++		if (delayed_GATE)
++			int_fwire_IQ <= delayed_D;
++	end
++	`else
+ 	ihp_latch (int_fwire_IQ, notifier, delayed_GATE, delayed_D);
++	`endif
+ 	buf (Q, int_fwire_IQ);
+ 
+         // Timing
+@@ -1041,14 +1140,32 @@
+ 	output Q, Q_N;
+ 	input D, GATE, RESET_B;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RESET_B = RESET_B, delayed_GATE = GATE;
++`else
+ 	wire delayed_D, delayed_RESET_B, delayed_GATE;
++`endif
+ 
+ 	// Function
+ 
+-	wire int_fwire_IQ, int_fwire_IQN, int_fwire_r;
++	`ifdef VERILATOR
++	reg int_fwire_IQ;
++	`else
++	wire int_fwire_IQ;
++	`endif
++	wire int_fwire_IQN, int_fwire_r;
+ 
+ 	not (int_fwire_r, delayed_RESET_B);
++	`ifdef VERILATOR
++	always @(delayed_D or delayed_GATE or int_fwire_r) begin
++		if (int_fwire_r)
++			int_fwire_IQ <= 1'b0;
++		else if (delayed_GATE)
++			int_fwire_IQ <= delayed_D;
++	end
++	`else
+ 	ihp_latch_r (int_fwire_IQ, notifier, delayed_GATE, delayed_D, int_fwire_r);
++	`endif
+ 	buf (Q, int_fwire_IQ);
+ 	not (int_fwire_IQN, int_fwire_IQ);
+ 	buf (Q_N, int_fwire_IQN);
+@@ -1091,14 +1208,32 @@
+ 	output Q;
+ 	input D, GATE, RESET_B;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RESET_B = RESET_B, delayed_GATE = GATE;
++`else
+ 	wire delayed_D, delayed_RESET_B, delayed_GATE;
++`endif
+ 
+ 	// Function
+ 
+-	wire int_fwire_IQ, int_fwire_r;
++	`ifdef VERILATOR
++	reg int_fwire_IQ;
++	`else
++	wire int_fwire_IQ;
++	`endif
++	wire int_fwire_r;
+ 
+ 	not (int_fwire_r, delayed_RESET_B);
++	`ifdef VERILATOR
++	always @(delayed_D or delayed_GATE or int_fwire_r) begin
++		if (int_fwire_r)
++			int_fwire_IQ <= 1'b0;
++		else if (delayed_GATE)
++			int_fwire_IQ <= delayed_D;
++	end
++	`else
+ 	ihp_latch_r (int_fwire_IQ, notifier, delayed_GATE, delayed_D, int_fwire_r);
++	`endif
+ 	buf (Q, int_fwire_IQ);
+ 
+         // Timing
+@@ -1134,16 +1269,35 @@
+ 	output Q, Q_N;
+ 	input D, GATE_N, RESET_B;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RESET_B = RESET_B, delayed_GATE_N = GATE_N;
++`else
+ 	wire delayed_D, delayed_RESET_B, delayed_GATE_N;
++`endif
+ 
+ 	// Function
+ 
+-	wire int_fwire_clk, int_fwire_IQ, int_fwire_IQN;
++	wire int_fwire_clk;
++	`ifdef VERILATOR
++	reg int_fwire_IQ;
++	`else
++	wire int_fwire_IQ;
++	`endif
++	wire int_fwire_IQN;
+ 	wire int_fwire_r;
+ 
+ 	not (int_fwire_clk, delayed_GATE_N);
+ 	not (int_fwire_r, delayed_RESET_B);
++	`ifdef VERILATOR
++	always @(delayed_D or int_fwire_clk or int_fwire_r) begin
++		if (int_fwire_r)
++			int_fwire_IQ <= 1'b0;
++		else if (int_fwire_clk)
++			int_fwire_IQ <= delayed_D;
++	end
++	`else
+ 	ihp_latch_r (int_fwire_IQ, notifier, int_fwire_clk, delayed_D, int_fwire_r);
++	`endif
+ 	buf (Q, int_fwire_IQ);
+ 	not (int_fwire_IQN, int_fwire_IQ);
+ 	buf (Q_N, int_fwire_IQN);
+@@ -1186,15 +1340,34 @@
+ 	output Q;
+ 	input D, GATE_N, RESET_B;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RESET_B = RESET_B, delayed_GATE_N = GATE_N;
++`else
+ 	wire delayed_D, delayed_RESET_B, delayed_GATE_N;
++`endif
+ 
+ 	// Function
+ 
+-	wire int_fwire_clk, int_fwire_IQ, int_fwire_r;
++	wire int_fwire_clk;
++	`ifdef VERILATOR
++	reg int_fwire_IQ;
++	`else
++	wire int_fwire_IQ;
++	`endif
++	wire int_fwire_r;
+ 
+ 	not (int_fwire_clk, delayed_GATE_N);
+ 	not (int_fwire_r, delayed_RESET_B);
++	`ifdef VERILATOR
++	always @(delayed_D or int_fwire_clk or int_fwire_r) begin
++		if (int_fwire_r)
++			int_fwire_IQ <= 1'b0;
++		else if (int_fwire_clk)
++			int_fwire_IQ <= delayed_D;
++	end
++	`else
+ 	ihp_latch_r (int_fwire_IQ, notifier, int_fwire_clk, delayed_D, int_fwire_r);
++	`endif
+ 	buf (Q, int_fwire_IQ);
+ 
+         // Timing
+@@ -1729,14 +1902,30 @@
+ 	output GCLK;
+ 	input CLK, GATE;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_GATE = GATE, delayed_CLK = CLK;
++`else
+ 	wire delayed_GATE, delayed_CLK;
++`endif
+ 
+ 	// Function
+ 
+-	wire int_fwire_clk, int_fwire_int_GATE;
++	wire int_fwire_clk;
++	`ifdef VERILATOR
++	reg int_fwire_int_GATE;
++	`else
++	wire int_fwire_int_GATE;
++	`endif
+ 
+ 	not (int_fwire_clk, delayed_CLK);
++	`ifdef VERILATOR
++	always @(delayed_GATE or int_fwire_clk) begin
++		if (int_fwire_clk)
++			int_fwire_int_GATE <= delayed_GATE;
++	end
++	`else
+ 	ihp_latch (int_fwire_int_GATE, notifier, int_fwire_clk, delayed_GATE);
++	`endif
+ 	and (GCLK, delayed_CLK, int_fwire_int_GATE);
+ 
+         // Timing
+@@ -2706,17 +2895,40 @@
+ 	output Q, Q_N;
+ 	input CLK, D, RESET_B, SCD, SCE, SET_B;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_SCD = SCD, delayed_SCE = SCE, delayed_RESET_B = RESET_B, delayed_SET_B = SET_B, delayed_CLK = CLK;
++`else
+ 	wire delayed_D, delayed_SCD, delayed_SCE, delayed_RESET_B, delayed_SET_B, delayed_CLK;
++`endif
+ 
+ 	// Function
+-	wire int_fwire_d, int_fwire_IQ, int_fwire_IQN;
++	wire int_fwire_d;
++	`ifdef VERILATOR
++	reg int_fwire_IQ;
++	reg int_fwire_prev_clk;
++	`else
++	wire int_fwire_IQ;
++	`endif
++	wire int_fwire_IQN;
+ 	wire int_fwire_r, int_fwire_s, xcr_0;
+ 
+ 	ihp_mux2 (int_fwire_d, delayed_D, delayed_SCD, delayed_SCE);
+ 	not (int_fwire_s, delayed_SET_B);
+ 	not (int_fwire_r, delayed_RESET_B);
+ 	buf (xcr_0, 0);
++	`ifdef VERILATOR
++	always @(delayed_CLK or int_fwire_s or int_fwire_r) begin
++		if (int_fwire_s)
++			int_fwire_IQ <= 1'b1;
++		else if (int_fwire_r)
++			int_fwire_IQ <= 1'b0;
++		else if (delayed_CLK && !int_fwire_prev_clk)
++			int_fwire_IQ <= int_fwire_d;
++		int_fwire_prev_clk = delayed_CLK;
++	end
++	`else
+ 	ihp_dff_sr_1 (int_fwire_IQ, notifier, delayed_CLK, int_fwire_d, int_fwire_s, int_fwire_r, xcr_0);
++	`endif
+ 	buf (Q, int_fwire_IQ);
+ 	not (int_fwire_IQN, int_fwire_IQ);
+ 	buf (Q_N, int_fwire_IQN);
+@@ -2777,16 +2989,37 @@
+ 	output Q, Q_N;
+ 	input CLK, D, RESET_B, SCD, SCE;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_SCD = SCD, delayed_SCE = SCE, delayed_RESET_B = RESET_B, delayed_CLK = CLK;
++`else
+ 	wire delayed_D, delayed_SCD, delayed_SCE, delayed_RESET_B, delayed_CLK;
++`endif
+ 
+ 	// Function
+-	wire int_fwire_d, int_fwire_IQ, int_fwire_IQN;
++	wire int_fwire_d;
++	`ifdef VERILATOR
++	reg int_fwire_IQ;
++	reg int_fwire_prev_clk;
++	`else
++	wire int_fwire_IQ;
++	`endif
++	wire int_fwire_IQN;
+ 	wire int_fwire_r, xcr_0;
+ 
+ 	ihp_mux2 (int_fwire_d, delayed_D, delayed_SCD, delayed_SCE);
+ 	not (int_fwire_r, delayed_RESET_B);
+ 	buf (xcr_0, 0);
++	`ifdef VERILATOR
++	always @(delayed_CLK or int_fwire_r) begin
++		if (int_fwire_r)
++			int_fwire_IQ <= 1'b0;
++		else if (delayed_CLK && !int_fwire_prev_clk)
++			int_fwire_IQ <= int_fwire_d;
++		int_fwire_prev_clk = delayed_CLK;
++	end
++	`else
+ 	ihp_dff_r (int_fwire_IQ, notifier, delayed_CLK, int_fwire_d, int_fwire_r, xcr_0);
++	`endif
+ 	buf (Q, int_fwire_IQ);
+ 	not (int_fwire_IQN, int_fwire_IQ);
+ 	buf (Q_N, int_fwire_IQN);
+@@ -2841,16 +3074,37 @@
+ 	output Q, Q_N;
+ 	input CLK, D, RESET_B, SCD, SCE;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_SCD = SCD, delayed_SCE = SCE, delayed_RESET_B = RESET_B, delayed_CLK = CLK;
++`else
+ 	wire delayed_D, delayed_SCD, delayed_SCE, delayed_RESET_B, delayed_CLK;
++`endif
+ 
+ 	// Function
+-	wire int_fwire_d, int_fwire_IQ, int_fwire_IQN;
++	wire int_fwire_d;
++	`ifdef VERILATOR
++	reg int_fwire_IQ;
++	reg int_fwire_prev_clk;
++	`else
++	wire int_fwire_IQ;
++	`endif
++	wire int_fwire_IQN;
+ 	wire int_fwire_r, xcr_0;
+ 
+ 	ihp_mux2 (int_fwire_d, delayed_D, delayed_SCD, delayed_SCE);
+ 	not (int_fwire_r, delayed_RESET_B);
+ 	buf (xcr_0, 0);
++	`ifdef VERILATOR
++	always @(delayed_CLK or int_fwire_r) begin
++		if (int_fwire_r)
++			int_fwire_IQ <= 1'b0;
++		else if (delayed_CLK && !int_fwire_prev_clk)
++			int_fwire_IQ <= int_fwire_d;
++		int_fwire_prev_clk = delayed_CLK;
++	end
++	`else
+ 	ihp_dff_r (int_fwire_IQ, notifier, delayed_CLK, int_fwire_d, int_fwire_r, xcr_0);
++	`endif
+ 	buf (Q, int_fwire_IQ);
+ 	not (int_fwire_IQN, int_fwire_IQ);
+ 	buf (Q_N, int_fwire_IQN);
+@@ -2905,16 +3159,37 @@
+ 	output Q;
+ 	input CLK, D, RESET_B, SCD, SCE;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_SCD = SCD, delayed_SCE = SCE, delayed_RESET_B = RESET_B, delayed_CLK = CLK;
++`else
+ 	wire delayed_D, delayed_SCD, delayed_SCE, delayed_RESET_B, delayed_CLK;
++`endif
+ 
+ 	// Function
+-	wire int_fwire_d, int_fwire_IQ, int_fwire_r;
++	wire int_fwire_d;
++	`ifdef VERILATOR
++	reg int_fwire_IQ;
++	reg int_fwire_prev_clk;
++	`else
++	wire int_fwire_IQ;
++	`endif
++	wire int_fwire_r;
+ 	wire xcr_0;
+ 
+ 	ihp_mux2 (int_fwire_d, delayed_D, delayed_SCD, delayed_SCE);
+ 	not (int_fwire_r, delayed_RESET_B);
+ 	buf (xcr_0, 0);
++	`ifdef VERILATOR
++	always @(delayed_CLK or int_fwire_r) begin
++		if (int_fwire_r)
++			int_fwire_IQ <= 1'b0;
++		else if (delayed_CLK && !int_fwire_prev_clk)
++			int_fwire_IQ <= int_fwire_d;
++		int_fwire_prev_clk = delayed_CLK;
++	end
++	`else
+ 	ihp_dff_r (int_fwire_IQ, notifier, delayed_CLK, int_fwire_d, int_fwire_r, xcr_0);
++	`endif
+ 	buf (Q, int_fwire_IQ);
+ 
+         // Timing
+@@ -2963,16 +3238,37 @@
+ 	output Q;
+ 	input CLK, D, RESET_B, SCD, SCE;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_SCD = SCD, delayed_SCE = SCE, delayed_RESET_B = RESET_B, delayed_CLK = CLK;
++`else
+ 	wire delayed_D, delayed_SCD, delayed_SCE, delayed_RESET_B, delayed_CLK;
++`endif
+ 
+ 	// Function
+-	wire int_fwire_d, int_fwire_IQ, int_fwire_r;
++	wire int_fwire_d;
++	`ifdef VERILATOR
++	reg int_fwire_IQ;
++	reg int_fwire_prev_clk;
++	`else
++	wire int_fwire_IQ;
++	`endif
++	wire int_fwire_r;
+ 	wire xcr_0;
+ 
+ 	ihp_mux2 (int_fwire_d, delayed_D, delayed_SCD, delayed_SCE);
+ 	not (int_fwire_r, delayed_RESET_B);
+ 	buf (xcr_0, 0);
++	`ifdef VERILATOR
++	always @(delayed_CLK or int_fwire_r) begin
++		if (int_fwire_r)
++			int_fwire_IQ <= 1'b0;
++		else if (delayed_CLK && !int_fwire_prev_clk)
++			int_fwire_IQ <= int_fwire_d;
++		int_fwire_prev_clk = delayed_CLK;
++	end
++	`else
+ 	ihp_dff_r (int_fwire_IQ, notifier, delayed_CLK, int_fwire_d, int_fwire_r, xcr_0);
++	`endif
+ 	buf (Q, int_fwire_IQ);
+ 
+         // Timing
+@@ -3021,15 +3317,31 @@
+ 	output GCLK;
+ 	input GATE, CLK, SCE;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_GATE = GATE, delayed_SCE = SCE, delayed_CLK = CLK;
++`else
+ 	wire delayed_GATE, delayed_SCE, delayed_CLK;
++`endif
+ 
+ 	// Function
+ 
+-	wire int_fwire_clk, int_fwire_int_GATE, int_fwire_test;
++	wire int_fwire_clk, int_fwire_test;
++	`ifdef VERILATOR
++	reg int_fwire_int_GATE;
++	`else
++	wire int_fwire_int_GATE;
++	`endif
+ 
+ 	not (int_fwire_clk, delayed_CLK);
+ 	or (int_fwire_test, delayed_GATE, delayed_SCE);
++	`ifdef VERILATOR
++	always @(int_fwire_test or int_fwire_clk) begin
++		if (int_fwire_clk)
++			int_fwire_int_GATE <= int_fwire_test;
++	end
++	`else
+ 	ihp_latch (int_fwire_int_GATE, notifier, int_fwire_clk, int_fwire_test);
++	`endif
+ 	and (GCLK, delayed_CLK, int_fwire_int_GATE);
+ 
+         // Timing
