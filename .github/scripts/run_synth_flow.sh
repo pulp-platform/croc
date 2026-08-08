@@ -26,6 +26,7 @@ echo "============================================="
 
 cd yosys
 ./run_synthesis.sh --synth
+cp out/netlist_debug.v out/croc_yosys_debug.v
 
 echo ""
 tail -n 40 reports/croc_area.rpt
@@ -42,6 +43,7 @@ echo "============================================="
 
 cd yosys
 PROJ_NAME=croc_idma ./run_synthesis.sh --synth
+cp out/netlist_debug.v out/croc_idma_yosys_debug.v
 
 echo ""
 tail -n 40 reports/croc_idma_area.rpt
