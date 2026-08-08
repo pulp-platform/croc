@@ -15,6 +15,15 @@ set -e  # Exit on error
 set -u  # Error on undefined vars
 
 
+DRYRUN=0
+for arg in "$@"; do
+    [[ "$arg" == -n || "$arg" == --dry-run ]] && DRYRUN=1
+done
+
+if [[ "$DRYRUN" -eq 1 ]]; then
+    export CROC_SKIP_TECH_SETUP=1
+fi
+
 ################
 # Setup
 ################
@@ -72,9 +81,10 @@ generate_rtl_flist() {
         -t vsim \
         -t simulation \
         -t verilator \
+        ${BENDER_PDK_ARGS} \
         -DSYNTHESIS \
         -DSIMULATION \
-        --vlog-arg="-svinputport=compat"
+        --vlog-arg=\"-svinputport=compat\" \
         > compile_rtl.tcl"
 
     run_cmd "echo [INFO][Bender] Remove absolute paths"
@@ -93,9 +103,10 @@ generate_netlist_flist() {
         -t simulation \
         -t verilator \
         -t netlist_yosys \
+        ${BENDER_PDK_ARGS} \
         -DSYNTHESIS \
         -DSIMULATION \
-        --vlog-arg="-svinputport=compat"
+        --vlog-arg=\"-svinputport=compat\" \
         > compile_netlist.tcl"
 
     run_cmd "echo [INFO][Bender] Remove absolute paths"
@@ -121,13 +132,13 @@ compile_rtl() {
     run_cmd "echo Warnings:                            >> reports/compile_rtl.rpt"
     run_cmd "grep Warning: reports/compile_rtl.log     >> reports/compile_rtl.rpt || true"
 
-    run_cmd "NUM_ERRORS=$(cat reports/compile_rtl.rpt | grep Error: | wc -l)"
-    run_cmd "NUM_WARNINGS=$(cat reports/compile_rtl.rpt | grep Warning: | wc -l)"
+    run_cmd "NUM_ERRORS=\$(grep -c Error: reports/compile_rtl.rpt || true)"
+    run_cmd "NUM_WARNINGS=\$(grep -c Warning: reports/compile_rtl.rpt || true)"
     run_cmd "echo \"#######################################################\""
     run_cmd "echo \"############### Compilation report ####################\""
     run_cmd "echo \"#######################################################\""
-    run_cmd "echo  Errors   : ${NUM_ERRORS}"
-    run_cmd "echo  Warnings : ${NUM_WARNINGS}"
+    run_cmd "echo  Errors   : \${NUM_ERRORS}"
+    run_cmd "echo  Warnings : \${NUM_WARNINGS}"
     run_cmd "echo See 'reports/compile_rtl.rpt' for more info"
     run_cmd "echo \"#######################################################\""
 }
@@ -137,7 +148,7 @@ compile_netlist() {
     run_cmd "echo [INFO][VSIM] Compile post-synthesis netlist"
     run_cmd "${VSIM} \
         -c \
-        -do \"source compile_netlist.tcl; source compile_tech.tcl; exit\" \
+        -do \"source compile_netlist_with_tech.tcl\" \
         > reports/compile_netlist.log"
 
     # Collect errors and warnings from compilation log and print summary
@@ -149,15 +160,16 @@ compile_netlist() {
     run_cmd "echo Warnings:                            >> reports/compile_netlist.rpt"
     run_cmd "grep Warning: reports/compile_netlist.log     >> reports/compile_netlist.rpt || true"
 
-    run_cmd "NUM_ERRORS=$(cat reports/compile_netlist.rpt | grep Error: | wc -l)"
-    run_cmd "NUM_WARNINGS=$(cat reports/compile_netlist.rpt | grep Warning: | wc -l)"
+    run_cmd "NUM_ERRORS=\$(grep -c Error: reports/compile_netlist.rpt || true)"
+    run_cmd "NUM_WARNINGS=\$(grep -c Warning: reports/compile_netlist.rpt || true)"
     run_cmd "echo \"#######################################################\""
     run_cmd "echo \"############### Compilation report ####################\""
     run_cmd "echo \"#######################################################\""
-    run_cmd "echo  Errors   : ${NUM_ERRORS}"
-    run_cmd "echo  Warnings : ${NUM_WARNINGS}"
+    run_cmd "echo  Errors   : \${NUM_ERRORS}"
+    run_cmd "echo  Warnings : \${NUM_WARNINGS}"
     run_cmd "echo See 'reports/compile_netlist.rpt' for more info"
     run_cmd "echo \"#######################################################\""
+    run_cmd "test \${NUM_ERRORS} -eq 0"
 }
 
 
@@ -190,8 +202,6 @@ run_vsim_gui() {
 ####################
 # Parse Arguments
 ####################
-
-DRYRUN=0
 
 # default action if no argument is given
 if [ $# -eq 0 ]; then

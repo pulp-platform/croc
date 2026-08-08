@@ -1,4 +1,6 @@
-obj_dir
+obj_dir*
+croc_rtl.f
+croc_netlist_yosys.f
 *.vcd
 *.fst
 *.fst.hier
