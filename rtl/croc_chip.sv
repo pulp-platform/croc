@@ -5,6 +5,24 @@
 // Authors:
 // - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
+`ifdef IHP_SG13CMOS5L
+  `define IHP_IOPAD_IN      sg13cmos5l_IOPadIn
+  `define IHP_IOPAD_OUT16   sg13cmos5l_IOPadOut16mA
+  `define IHP_IOPAD_INOUT30 sg13cmos5l_IOPadInOut30mA
+  `define IHP_IOPAD_VDD     sg13cmos5l_IOPadVdd
+  `define IHP_IOPAD_VSS     sg13cmos5l_IOPadVss
+  `define IHP_IOPAD_IOVDD   sg13cmos5l_IOPadIOVdd
+  `define IHP_IOPAD_IOVSS   sg13cmos5l_IOPadIOVss
+`else
+  `define IHP_IOPAD_IN      sg13g2_IOPadIn
+  `define IHP_IOPAD_OUT16   sg13g2_IOPadOut16mA
+  `define IHP_IOPAD_INOUT30 sg13g2_IOPadInOut30mA
+  `define IHP_IOPAD_VDD     sg13g2_IOPadVdd
+  `define IHP_IOPAD_VSS     sg13g2_IOPadVss
+  `define IHP_IOPAD_IOVDD   sg13g2_IOPadIOVdd
+  `define IHP_IOPAD_IOVSS   sg13g2_IOPadIOVss
+`endif
+
 module croc_chip import croc_pkg::*; #() (
   input  wire clk_i,
   input  wire rst_ni,
@@ -83,77 +101,77 @@ module croc_chip import croc_pkg::*; #() (
     logic [GpioCount-1:0] soc_gpio_o;
     logic [GpioCount-1:0] soc_gpio_out_en_o; // Output enable signal; 0 -> input, 1 -> output
 
-    sg13g2_IOPadIn        pad_clk_i        (.pad(clk_i),        .p2c(soc_clk_i));
-    sg13g2_IOPadIn        pad_rst_ni       (.pad(rst_ni),       .p2c(soc_rst_ni));
-    sg13g2_IOPadIn        pad_ref_clk_i    (.pad(ref_clk_i),    .p2c(soc_ref_clk_i));
-    sg13g2_IOPadIn        pad_jtag_tck_i   (.pad(jtag_tck_i),   .p2c(soc_jtag_tck_i));
-    sg13g2_IOPadIn        pad_jtag_trst_ni (.pad(jtag_trst_ni), .p2c(soc_jtag_trst_ni));
-    sg13g2_IOPadIn        pad_jtag_tms_i   (.pad(jtag_tms_i),   .p2c(soc_jtag_tms_i));
-    sg13g2_IOPadIn        pad_jtag_tdi_i   (.pad(jtag_tdi_i),   .p2c(soc_jtag_tdi_i));
-    sg13g2_IOPadOut16mA   pad_jtag_tdo_o   (.pad(jtag_tdo_o),   .c2p(soc_jtag_tdo_o));
+    `IHP_IOPAD_IN      pad_clk_i        (.pad(clk_i),        .p2c(soc_clk_i));
+    `IHP_IOPAD_IN      pad_rst_ni       (.pad(rst_ni),       .p2c(soc_rst_ni));
+    `IHP_IOPAD_IN      pad_ref_clk_i    (.pad(ref_clk_i),    .p2c(soc_ref_clk_i));
+    `IHP_IOPAD_IN      pad_jtag_tck_i   (.pad(jtag_tck_i),   .p2c(soc_jtag_tck_i));
+    `IHP_IOPAD_IN      pad_jtag_trst_ni (.pad(jtag_trst_ni), .p2c(soc_jtag_trst_ni));
+    `IHP_IOPAD_IN      pad_jtag_tms_i   (.pad(jtag_tms_i),   .p2c(soc_jtag_tms_i));
+    `IHP_IOPAD_IN      pad_jtag_tdi_i   (.pad(jtag_tdi_i),   .p2c(soc_jtag_tdi_i));
+    `IHP_IOPAD_OUT16   pad_jtag_tdo_o   (.pad(jtag_tdo_o),   .c2p(soc_jtag_tdo_o));
 
-    sg13g2_IOPadIn        pad_uart_rx_i    (.pad(uart_rx_i),  .p2c(soc_uart_rx_i));
-    sg13g2_IOPadOut16mA   pad_uart_tx_o    (.pad(uart_tx_o),  .c2p(soc_uart_tx_o));
+    `IHP_IOPAD_IN      pad_uart_rx_i    (.pad(uart_rx_i),  .p2c(soc_uart_rx_i));
+    `IHP_IOPAD_OUT16   pad_uart_tx_o    (.pad(uart_tx_o),  .c2p(soc_uart_tx_o));
 
-    sg13g2_IOPadIn        pad_testmode_i   (.pad(testmode_i), .p2c(soc_testmode_i));
-    sg13g2_IOPadOut16mA   pad_status_o     (.pad(status_o),   .c2p(soc_status_o));
+    `IHP_IOPAD_IN      pad_testmode_i   (.pad(testmode_i), .p2c(soc_testmode_i));
+    `IHP_IOPAD_OUT16   pad_status_o     (.pad(status_o),   .c2p(soc_status_o));
 
-    sg13g2_IOPadInOut30mA pad_gpio0_io     (.pad(gpio0_io),  .c2p(soc_gpio_o[0]),  .p2c(soc_gpio_i[0]),  .c2p_en(soc_gpio_out_en_o[0]));
-    sg13g2_IOPadInOut30mA pad_gpio1_io     (.pad(gpio1_io),  .c2p(soc_gpio_o[1]),  .p2c(soc_gpio_i[1]),  .c2p_en(soc_gpio_out_en_o[1]));
-    sg13g2_IOPadInOut30mA pad_gpio2_io     (.pad(gpio2_io),  .c2p(soc_gpio_o[2]),  .p2c(soc_gpio_i[2]),  .c2p_en(soc_gpio_out_en_o[2]));
-    sg13g2_IOPadInOut30mA pad_gpio3_io     (.pad(gpio3_io),  .c2p(soc_gpio_o[3]),  .p2c(soc_gpio_i[3]),  .c2p_en(soc_gpio_out_en_o[3]));
-    sg13g2_IOPadInOut30mA pad_gpio4_io     (.pad(gpio4_io),  .c2p(soc_gpio_o[4]),  .p2c(soc_gpio_i[4]),  .c2p_en(soc_gpio_out_en_o[4]));
-    sg13g2_IOPadInOut30mA pad_gpio5_io     (.pad(gpio5_io),  .c2p(soc_gpio_o[5]),  .p2c(soc_gpio_i[5]),  .c2p_en(soc_gpio_out_en_o[5]));
-    sg13g2_IOPadInOut30mA pad_gpio6_io     (.pad(gpio6_io),  .c2p(soc_gpio_o[6]),  .p2c(soc_gpio_i[6]),  .c2p_en(soc_gpio_out_en_o[6]));
-    sg13g2_IOPadInOut30mA pad_gpio7_io     (.pad(gpio7_io),  .c2p(soc_gpio_o[7]),  .p2c(soc_gpio_i[7]),  .c2p_en(soc_gpio_out_en_o[7]));
-    sg13g2_IOPadInOut30mA pad_gpio8_io     (.pad(gpio8_io),  .c2p(soc_gpio_o[8]),  .p2c(soc_gpio_i[8]),  .c2p_en(soc_gpio_out_en_o[8]));
-    sg13g2_IOPadInOut30mA pad_gpio9_io     (.pad(gpio9_io),  .c2p(soc_gpio_o[9]),  .p2c(soc_gpio_i[9]),  .c2p_en(soc_gpio_out_en_o[9]));
-    sg13g2_IOPadInOut30mA pad_gpio10_io    (.pad(gpio10_io), .c2p(soc_gpio_o[10]), .p2c(soc_gpio_i[10]), .c2p_en(soc_gpio_out_en_o[10]));
-    sg13g2_IOPadInOut30mA pad_gpio11_io    (.pad(gpio11_io), .c2p(soc_gpio_o[11]), .p2c(soc_gpio_i[11]), .c2p_en(soc_gpio_out_en_o[11]));
-    sg13g2_IOPadInOut30mA pad_gpio12_io    (.pad(gpio12_io), .c2p(soc_gpio_o[12]), .p2c(soc_gpio_i[12]), .c2p_en(soc_gpio_out_en_o[12]));
-    sg13g2_IOPadInOut30mA pad_gpio13_io    (.pad(gpio13_io), .c2p(soc_gpio_o[13]), .p2c(soc_gpio_i[13]), .c2p_en(soc_gpio_out_en_o[13]));
-    sg13g2_IOPadInOut30mA pad_gpio14_io    (.pad(gpio14_io), .c2p(soc_gpio_o[14]), .p2c(soc_gpio_i[14]), .c2p_en(soc_gpio_out_en_o[14]));
-    sg13g2_IOPadInOut30mA pad_gpio15_io    (.pad(gpio15_io), .c2p(soc_gpio_o[15]), .p2c(soc_gpio_i[15]), .c2p_en(soc_gpio_out_en_o[15]));
-    sg13g2_IOPadInOut30mA pad_gpio16_io    (.pad(gpio16_io), .c2p(soc_gpio_o[16]), .p2c(soc_gpio_i[16]), .c2p_en(soc_gpio_out_en_o[16]));
-    sg13g2_IOPadInOut30mA pad_gpio17_io    (.pad(gpio17_io), .c2p(soc_gpio_o[17]), .p2c(soc_gpio_i[17]), .c2p_en(soc_gpio_out_en_o[17]));
-    sg13g2_IOPadInOut30mA pad_gpio18_io    (.pad(gpio18_io), .c2p(soc_gpio_o[18]), .p2c(soc_gpio_i[18]), .c2p_en(soc_gpio_out_en_o[18]));
-    sg13g2_IOPadInOut30mA pad_gpio19_io    (.pad(gpio19_io), .c2p(soc_gpio_o[19]), .p2c(soc_gpio_i[19]), .c2p_en(soc_gpio_out_en_o[19]));
-    sg13g2_IOPadInOut30mA pad_gpio20_io    (.pad(gpio20_io), .c2p(soc_gpio_o[20]), .p2c(soc_gpio_i[20]), .c2p_en(soc_gpio_out_en_o[20]));
-    sg13g2_IOPadInOut30mA pad_gpio21_io    (.pad(gpio21_io), .c2p(soc_gpio_o[21]), .p2c(soc_gpio_i[21]), .c2p_en(soc_gpio_out_en_o[21]));
-    sg13g2_IOPadInOut30mA pad_gpio22_io    (.pad(gpio22_io), .c2p(soc_gpio_o[22]), .p2c(soc_gpio_i[22]), .c2p_en(soc_gpio_out_en_o[22]));
-    sg13g2_IOPadInOut30mA pad_gpio23_io    (.pad(gpio23_io), .c2p(soc_gpio_o[23]), .p2c(soc_gpio_i[23]), .c2p_en(soc_gpio_out_en_o[23]));
-    sg13g2_IOPadInOut30mA pad_gpio24_io    (.pad(gpio24_io), .c2p(soc_gpio_o[24]), .p2c(soc_gpio_i[24]), .c2p_en(soc_gpio_out_en_o[24]));
-    sg13g2_IOPadInOut30mA pad_gpio25_io    (.pad(gpio25_io), .c2p(soc_gpio_o[25]), .p2c(soc_gpio_i[25]), .c2p_en(soc_gpio_out_en_o[25]));
-    sg13g2_IOPadInOut30mA pad_gpio26_io    (.pad(gpio26_io), .c2p(soc_gpio_o[26]), .p2c(soc_gpio_i[26]), .c2p_en(soc_gpio_out_en_o[26]));
-    sg13g2_IOPadInOut30mA pad_gpio27_io    (.pad(gpio27_io), .c2p(soc_gpio_o[27]), .p2c(soc_gpio_i[27]), .c2p_en(soc_gpio_out_en_o[27]));
-    sg13g2_IOPadInOut30mA pad_gpio28_io    (.pad(gpio28_io), .c2p(soc_gpio_o[28]), .p2c(soc_gpio_i[28]), .c2p_en(soc_gpio_out_en_o[28]));
-    sg13g2_IOPadInOut30mA pad_gpio29_io    (.pad(gpio29_io), .c2p(soc_gpio_o[29]), .p2c(soc_gpio_i[29]), .c2p_en(soc_gpio_out_en_o[29]));
-    sg13g2_IOPadInOut30mA pad_gpio30_io    (.pad(gpio30_io), .c2p(soc_gpio_o[30]), .p2c(soc_gpio_i[30]), .c2p_en(soc_gpio_out_en_o[30]));
-    sg13g2_IOPadInOut30mA pad_gpio31_io    (.pad(gpio31_io), .c2p(soc_gpio_o[31]), .p2c(soc_gpio_i[31]), .c2p_en(soc_gpio_out_en_o[31]));
-    sg13g2_IOPadOut16mA   pad_unused0_o    (.pad(unused0_o), .c2p(soc_status_o));
-    sg13g2_IOPadOut16mA   pad_unused1_o    (.pad(unused1_o), .c2p(soc_status_o));
-    sg13g2_IOPadOut16mA   pad_unused2_o    (.pad(unused2_o), .c2p(soc_status_o));
-    sg13g2_IOPadOut16mA   pad_unused3_o    (.pad(unused3_o), .c2p(soc_status_o));
+    `IHP_IOPAD_INOUT30 pad_gpio0_io     (.pad(gpio0_io),  .c2p(soc_gpio_o[0]),  .p2c(soc_gpio_i[0]),  .c2p_en(soc_gpio_out_en_o[0]));
+    `IHP_IOPAD_INOUT30 pad_gpio1_io     (.pad(gpio1_io),  .c2p(soc_gpio_o[1]),  .p2c(soc_gpio_i[1]),  .c2p_en(soc_gpio_out_en_o[1]));
+    `IHP_IOPAD_INOUT30 pad_gpio2_io     (.pad(gpio2_io),  .c2p(soc_gpio_o[2]),  .p2c(soc_gpio_i[2]),  .c2p_en(soc_gpio_out_en_o[2]));
+    `IHP_IOPAD_INOUT30 pad_gpio3_io     (.pad(gpio3_io),  .c2p(soc_gpio_o[3]),  .p2c(soc_gpio_i[3]),  .c2p_en(soc_gpio_out_en_o[3]));
+    `IHP_IOPAD_INOUT30 pad_gpio4_io     (.pad(gpio4_io),  .c2p(soc_gpio_o[4]),  .p2c(soc_gpio_i[4]),  .c2p_en(soc_gpio_out_en_o[4]));
+    `IHP_IOPAD_INOUT30 pad_gpio5_io     (.pad(gpio5_io),  .c2p(soc_gpio_o[5]),  .p2c(soc_gpio_i[5]),  .c2p_en(soc_gpio_out_en_o[5]));
+    `IHP_IOPAD_INOUT30 pad_gpio6_io     (.pad(gpio6_io),  .c2p(soc_gpio_o[6]),  .p2c(soc_gpio_i[6]),  .c2p_en(soc_gpio_out_en_o[6]));
+    `IHP_IOPAD_INOUT30 pad_gpio7_io     (.pad(gpio7_io),  .c2p(soc_gpio_o[7]),  .p2c(soc_gpio_i[7]),  .c2p_en(soc_gpio_out_en_o[7]));
+    `IHP_IOPAD_INOUT30 pad_gpio8_io     (.pad(gpio8_io),  .c2p(soc_gpio_o[8]),  .p2c(soc_gpio_i[8]),  .c2p_en(soc_gpio_out_en_o[8]));
+    `IHP_IOPAD_INOUT30 pad_gpio9_io     (.pad(gpio9_io),  .c2p(soc_gpio_o[9]),  .p2c(soc_gpio_i[9]),  .c2p_en(soc_gpio_out_en_o[9]));
+    `IHP_IOPAD_INOUT30 pad_gpio10_io    (.pad(gpio10_io), .c2p(soc_gpio_o[10]), .p2c(soc_gpio_i[10]), .c2p_en(soc_gpio_out_en_o[10]));
+    `IHP_IOPAD_INOUT30 pad_gpio11_io    (.pad(gpio11_io), .c2p(soc_gpio_o[11]), .p2c(soc_gpio_i[11]), .c2p_en(soc_gpio_out_en_o[11]));
+    `IHP_IOPAD_INOUT30 pad_gpio12_io    (.pad(gpio12_io), .c2p(soc_gpio_o[12]), .p2c(soc_gpio_i[12]), .c2p_en(soc_gpio_out_en_o[12]));
+    `IHP_IOPAD_INOUT30 pad_gpio13_io    (.pad(gpio13_io), .c2p(soc_gpio_o[13]), .p2c(soc_gpio_i[13]), .c2p_en(soc_gpio_out_en_o[13]));
+    `IHP_IOPAD_INOUT30 pad_gpio14_io    (.pad(gpio14_io), .c2p(soc_gpio_o[14]), .p2c(soc_gpio_i[14]), .c2p_en(soc_gpio_out_en_o[14]));
+    `IHP_IOPAD_INOUT30 pad_gpio15_io    (.pad(gpio15_io), .c2p(soc_gpio_o[15]), .p2c(soc_gpio_i[15]), .c2p_en(soc_gpio_out_en_o[15]));
+    `IHP_IOPAD_INOUT30 pad_gpio16_io    (.pad(gpio16_io), .c2p(soc_gpio_o[16]), .p2c(soc_gpio_i[16]), .c2p_en(soc_gpio_out_en_o[16]));
+    `IHP_IOPAD_INOUT30 pad_gpio17_io    (.pad(gpio17_io), .c2p(soc_gpio_o[17]), .p2c(soc_gpio_i[17]), .c2p_en(soc_gpio_out_en_o[17]));
+    `IHP_IOPAD_INOUT30 pad_gpio18_io    (.pad(gpio18_io), .c2p(soc_gpio_o[18]), .p2c(soc_gpio_i[18]), .c2p_en(soc_gpio_out_en_o[18]));
+    `IHP_IOPAD_INOUT30 pad_gpio19_io    (.pad(gpio19_io), .c2p(soc_gpio_o[19]), .p2c(soc_gpio_i[19]), .c2p_en(soc_gpio_out_en_o[19]));
+    `IHP_IOPAD_INOUT30 pad_gpio20_io    (.pad(gpio20_io), .c2p(soc_gpio_o[20]), .p2c(soc_gpio_i[20]), .c2p_en(soc_gpio_out_en_o[20]));
+    `IHP_IOPAD_INOUT30 pad_gpio21_io    (.pad(gpio21_io), .c2p(soc_gpio_o[21]), .p2c(soc_gpio_i[21]), .c2p_en(soc_gpio_out_en_o[21]));
+    `IHP_IOPAD_INOUT30 pad_gpio22_io    (.pad(gpio22_io), .c2p(soc_gpio_o[22]), .p2c(soc_gpio_i[22]), .c2p_en(soc_gpio_out_en_o[22]));
+    `IHP_IOPAD_INOUT30 pad_gpio23_io    (.pad(gpio23_io), .c2p(soc_gpio_o[23]), .p2c(soc_gpio_i[23]), .c2p_en(soc_gpio_out_en_o[23]));
+    `IHP_IOPAD_INOUT30 pad_gpio24_io    (.pad(gpio24_io), .c2p(soc_gpio_o[24]), .p2c(soc_gpio_i[24]), .c2p_en(soc_gpio_out_en_o[24]));
+    `IHP_IOPAD_INOUT30 pad_gpio25_io    (.pad(gpio25_io), .c2p(soc_gpio_o[25]), .p2c(soc_gpio_i[25]), .c2p_en(soc_gpio_out_en_o[25]));
+    `IHP_IOPAD_INOUT30 pad_gpio26_io    (.pad(gpio26_io), .c2p(soc_gpio_o[26]), .p2c(soc_gpio_i[26]), .c2p_en(soc_gpio_out_en_o[26]));
+    `IHP_IOPAD_INOUT30 pad_gpio27_io    (.pad(gpio27_io), .c2p(soc_gpio_o[27]), .p2c(soc_gpio_i[27]), .c2p_en(soc_gpio_out_en_o[27]));
+    `IHP_IOPAD_INOUT30 pad_gpio28_io    (.pad(gpio28_io), .c2p(soc_gpio_o[28]), .p2c(soc_gpio_i[28]), .c2p_en(soc_gpio_out_en_o[28]));
+    `IHP_IOPAD_INOUT30 pad_gpio29_io    (.pad(gpio29_io), .c2p(soc_gpio_o[29]), .p2c(soc_gpio_i[29]), .c2p_en(soc_gpio_out_en_o[29]));
+    `IHP_IOPAD_INOUT30 pad_gpio30_io    (.pad(gpio30_io), .c2p(soc_gpio_o[30]), .p2c(soc_gpio_i[30]), .c2p_en(soc_gpio_out_en_o[30]));
+    `IHP_IOPAD_INOUT30 pad_gpio31_io    (.pad(gpio31_io), .c2p(soc_gpio_o[31]), .p2c(soc_gpio_i[31]), .c2p_en(soc_gpio_out_en_o[31]));
+    `IHP_IOPAD_OUT16   pad_unused0_o    (.pad(unused0_o), .c2p(soc_status_o));
+    `IHP_IOPAD_OUT16   pad_unused1_o    (.pad(unused1_o), .c2p(soc_status_o));
+    `IHP_IOPAD_OUT16   pad_unused2_o    (.pad(unused2_o), .c2p(soc_status_o));
+    `IHP_IOPAD_OUT16   pad_unused3_o    (.pad(unused3_o), .c2p(soc_status_o));
 
-    (* dont_touch = "true" *)sg13g2_IOPadVdd pad_vdd0();
-    (* dont_touch = "true" *)sg13g2_IOPadVdd pad_vdd1();
-    (* dont_touch = "true" *)sg13g2_IOPadVdd pad_vdd2();
-    (* dont_touch = "true" *)sg13g2_IOPadVdd pad_vdd3();
+    (* dont_touch = "true" *) `IHP_IOPAD_VDD   pad_vdd0();
+    (* dont_touch = "true" *) `IHP_IOPAD_VDD   pad_vdd1();
+    (* dont_touch = "true" *) `IHP_IOPAD_VDD   pad_vdd2();
+    (* dont_touch = "true" *) `IHP_IOPAD_VDD   pad_vdd3();
 
-    (* dont_touch = "true" *)sg13g2_IOPadVss pad_vss0();
-    (* dont_touch = "true" *)sg13g2_IOPadVss pad_vss1();
-    (* dont_touch = "true" *)sg13g2_IOPadVss pad_vss2();
-    (* dont_touch = "true" *)sg13g2_IOPadVss pad_vss3();
+    (* dont_touch = "true" *) `IHP_IOPAD_VSS   pad_vss0();
+    (* dont_touch = "true" *) `IHP_IOPAD_VSS   pad_vss1();
+    (* dont_touch = "true" *) `IHP_IOPAD_VSS   pad_vss2();
+    (* dont_touch = "true" *) `IHP_IOPAD_VSS   pad_vss3();
 
-    (* dont_touch = "true" *)sg13g2_IOPadIOVdd pad_vddio0();
-    (* dont_touch = "true" *)sg13g2_IOPadIOVdd pad_vddio1();
-    (* dont_touch = "true" *)sg13g2_IOPadIOVdd pad_vddio2();
-    (* dont_touch = "true" *)sg13g2_IOPadIOVdd pad_vddio3();
+    (* dont_touch = "true" *) `IHP_IOPAD_IOVDD pad_vddio0();
+    (* dont_touch = "true" *) `IHP_IOPAD_IOVDD pad_vddio1();
+    (* dont_touch = "true" *) `IHP_IOPAD_IOVDD pad_vddio2();
+    (* dont_touch = "true" *) `IHP_IOPAD_IOVDD pad_vddio3();
 
-    (* dont_touch = "true" *)sg13g2_IOPadIOVss pad_vssio0();
-    (* dont_touch = "true" *)sg13g2_IOPadIOVss pad_vssio1();
-    (* dont_touch = "true" *)sg13g2_IOPadIOVss pad_vssio2();
-    (* dont_touch = "true" *)sg13g2_IOPadIOVss pad_vssio3();
+    (* dont_touch = "true" *) `IHP_IOPAD_IOVSS pad_vssio0();
+    (* dont_touch = "true" *) `IHP_IOPAD_IOVSS pad_vssio1();
+    (* dont_touch = "true" *) `IHP_IOPAD_IOVSS pad_vssio2();
+    (* dont_touch = "true" *) `IHP_IOPAD_IOVSS pad_vssio3();
 
   croc_soc #(
     .GpioCount( GpioCount )
@@ -180,3 +198,11 @@ module croc_chip import croc_pkg::*; #() (
   );
 
 endmodule
+
+`undef IHP_IOPAD_IN
+`undef IHP_IOPAD_OUT16
+`undef IHP_IOPAD_INOUT30
+`undef IHP_IOPAD_VDD
+`undef IHP_IOPAD_VSS
+`undef IHP_IOPAD_IOVDD
+`undef IHP_IOPAD_IOVSS

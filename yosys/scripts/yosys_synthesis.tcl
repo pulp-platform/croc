@@ -18,11 +18,13 @@ source scripts/yosys_common.tcl
 set abc_script [processAbcScript scripts/abc-opt.script]
 
 # read liberty files and prepare some variables
-source scripts/init_tech.tcl
+set pdk_name [expr {[info exists ::env(CROC_PDK)] ? $::env(CROC_PDK) : "sg13cmos5l"}]
+source scripts/init_tech_${pdk_name}.tcl
 
 yosys plugin -i slang.so
 # default from yosys_common.tcl: top_design=croc_chip; sv_flist=./croc.flist
 yosys read_slang --top $top_design -f $sv_flist \
+        --cmd-rename +define,+define \
         --compat-mode --keep-hierarchy \
         --allow-use-before-declare --ignore-unknown-modules
 
@@ -166,4 +168,3 @@ yosys tee -q -o "${rep_dir}/${proj_name}_area_logic.rpt" stat -top $top_design {
 
 # final netlist
 yosys write_verilog -noattr -noexpr -nohex -nodec ${out_dir}/${proj_name}_yosys.v
-

@@ -93,9 +93,9 @@ source src/padring.tcl
 ##########################################################################
 # RAM sizes
 ##########################################################################
-set RamMaster256x64   [[ord::get_db] findMaster "RM_IHPSG13_1P_256x64_c2_bm_bist"]
-set RamSize256x64_W   [ord::dbu_to_microns [$RamMaster256x64 getWidth]]
-set RamSize256x64_H   [ord::dbu_to_microns [$RamMaster256x64 getHeight]]
+set RamMaster512x32   [[ord::get_db] findMaster "RM_IHPSG13_1P_512x32_c2_bm_bist"]
+set RamSize512x32_W   [ord::dbu_to_microns [$RamMaster512x32 getWidth]]
+set RamSize512x32_H   [ord::dbu_to_microns [$RamMaster512x32 getHeight]]
 
 
 ##########################################################################
@@ -129,38 +129,50 @@ source src/instances.tcl
 
 # Placing macros
 # use these for macro placement
-set floorPaddingX      12.0
-set floorPaddingY      12.0
+set floorPaddingX      20.0
+set floorPaddingY      20.0
 set floor_leftX       [expr $core_leftX + $floorPaddingX]
 set floor_bottomY     [expr $core_bottomY + $floorPaddingY]
 set floor_rightX      [expr $core_rightX - $floorPaddingX]
 set floor_topY        [expr $core_topY - $floorPaddingY]
 set floor_midpointX   [expr $floor_leftX + ($floor_rightX - $floor_leftX)/2]
 set floor_midpointY   [expr $floor_bottomY + ($floor_topY - $floor_bottomY)/2]
+set sramHaloX          10.0
+set sramHaloY          10.0
 
 utl::report "Place Macros"
 
-# Bank0
-set X [expr $floor_midpointX - $RamSize256x64_W/2]
-set Y [expr $floor_topY - $RamSize256x64_H]
-placeInstance $bank0_sram0 $X $Y R0
+# Bank0: top-left, pins facing down
+set bank0X $floor_leftX
+set bankY [expr $floor_topY - $RamSize512x32_H]
+placeInstance $bank0_sram0 $bank0X $bankY R0
 
-# Bank1
-set X [expr $X]
-set Y [expr $floor_bottomY]
-placeInstance $bank1_sram0 $X $Y MX
+# Bank1: top-right, pins facing down
+set bank1X [expr $floor_rightX - $RamSize512x32_W]
+placeInstance $bank1_sram0 $bank1X $bankY R0
+
+utl::report "SRAM macro box: width ${RamSize512x32_W} height ${RamSize512x32_H}"
+utl::report "SRAM bank0 bbox: ($bank0X, $bankY) - ([expr {$bank0X + $RamSize512x32_W}], [expr {$bankY + $RamSize512x32_H}]) R0"
+utl::report "SRAM bank1 bbox: ($bank1X, $bankY) - ([expr {$bank1X + $RamSize512x32_W}], [expr {$bankY + $RamSize512x32_H}]) R0"
+utl::report "SRAM horizontal gaps to core boundary: left [expr {$bank0X - $core_leftX}] between [expr {$bank1X - ($bank0X + $RamSize512x32_W)}] right [expr {$core_rightX - ($bank1X + $RamSize512x32_W)}]"
+utl::report "SRAM vertical gap to core boundary: top [expr {$core_topY - ($bankY + $RamSize512x32_H)}]"
+utl::report "SRAM row-cut halo: x $sramHaloX y $sramHaloY"
 
 # defined in init_tech.tcl
 insertTapCells
 
-cut_rows -halo_width_x 1 -halo_width_y 1
+cut_rows -halo_width_x $sramHaloX -halo_width_y $sramHaloY
 global_connect
 
+# Save an image before PDN insertion. PDN channel-repair failures are easier to
+# debug from the pure floorplan with rows already cut around fixed macros.
+report_image "01-04_${proj_name}.pre_pdn" true
+
 
 utl::report "###############################################################################"
-utl::report "# 01-04: Power Grid"
+utl::report "# 01-05: Power Grid"
 utl::report "###############################################################################"
-source scripts/power_grid.tcl
+source scripts/power_grid_${pdk_name}.tcl
 
 # Save checkpoint
 save_checkpoint 01_${proj_name}.floorplan
@@ -169,4 +181,3 @@ report_image "01_${proj_name}.floorplan" true
 utl::report "###############################################################################"
 utl::report "# Stage 01 complete: Checkpoint saved to ${save_dir}/01_${proj_name}.floorplan.zip"
 utl::report "###############################################################################"
-
