@@ -25,7 +25,7 @@ jobs:
       - name: Run simulation flow in OSEDA
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: ".github/scripts/run_sim_flow.sh"
+          cmd: ".github/scripts/run_sim_flow.sh --rtl"
       - name: Upload built software
         uses: actions/upload-artifact@v4
         with:
@@ -37,14 +37,12 @@ jobs:
           name: simulation-output
           path: |
             verilator/croc.fst
-            verilator/croc.log
-        continue-on-error: true
+            verilator/croc_rtl.log
       - name: Upload test logs
         uses: actions/upload-artifact@v4
         with:
           name: test-logs
           path: verilator/test_*.log
-        continue-on-error: true
 
   synthesis:
     runs-on: ubuntu-latest
@@ -67,4 +65,36 @@ jobs:
           path: |
             yosys/reports
             yosys/out
-        continue-on-error: true
+
+  netlist-simulation:
+    needs: [simulation, synthesis]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Free disk space
+        uses: ./.github/actions/free-space
+      - name: Download built software
+        uses: actions/download-artifact@v4
+        with:
+          name: croc-sw
+          path: sw/bin
+      - name: Download synthesis outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: croc-synth-reports
+          path: yosys
+      - name: Run CMOS5L netlist simulation suite in OSEDA
+        uses: ./.github/actions/oseda-cmd
+        with:
+          cmd: ".github/scripts/run_sim_flow.sh --netlist"
+      - name: Upload netlist simulation logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: netlist-simulation-logs
+          path: |
+            verilator/croc_netlist_yosys.log
+            verilator/test_*.log
