@@ -12,6 +12,16 @@
 
 set -e  # Exit on error
 set -u  # Error on undefined vars
+set -o pipefail
+
+DRYRUN=0
+for arg in "$@"; do
+    [[ "$arg" == -n || "$arg" == --dry-run ]] && DRYRUN=1
+done
+
+if [[ "$DRYRUN" -eq 1 ]]; then
+    export CROC_SKIP_TECH_SETUP=1
+fi
 
 ################
 # Setup
@@ -23,7 +33,7 @@ if [ -z "${QT_QPA_PLATFORM+x}" ]; then
   export QT_QPA_PLATFORM=offscreen
 fi
 
-if [ -z "${XDG_RUNTIME_DIR:-}" ]; then
+if [[ "$DRYRUN" -eq 0 && -z "${XDG_RUNTIME_DIR:-}" ]]; then
   export XDG_RUNTIME_DIR="/tmp/xdg-runtime-$(id -u)"
   mkdir -p "$XDG_RUNTIME_DIR"
   chmod 700 "$XDG_RUNTIME_DIR"
@@ -110,8 +120,6 @@ open_openroad_script() {
 ####################
 # Parse Arguments
 ####################
-
-DRYRUN=0
 
 # default action if no argument is given
 if [ $# -eq 0 ]; then

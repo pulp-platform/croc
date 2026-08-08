@@ -13,6 +13,15 @@ set -e  # Exit on error
 set -u  # Error on undefined vars
 set -o pipefail # Fail if any command fails
 
+DRYRUN=0
+for arg in "$@"; do
+    [[ "$arg" == -n || "$arg" == --dry-run ]] && DRYRUN=1
+done
+
+if [[ "$DRYRUN" -eq 1 ]]; then
+    export CROC_SKIP_TECH_SETUP=1
+fi
+
 ################
 # Setup
 ################
@@ -96,6 +105,7 @@ generate_flist() {
         -t ihp13 \
         -t rtl \
         -t synthesis \
+        ${BENDER_PDK_ARGS} \
         -D VERILATOR=1 \
         -D SYNTHESIS=1 \
         -D COMMON_CELLS_ASSERTS_OFF=1 \
@@ -111,8 +121,6 @@ generate_flist() {
 ####################
 # Parse Arguments
 ####################
-
-DRYRUN=0
 
 # default action if no argument is given
 if [ $# -eq 0 ]; then
@@ -144,6 +152,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --synth)
+            generate_flist
             run_yosys
             shift
             ;;
