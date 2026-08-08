@@ -18,6 +18,9 @@
 #   Pad  ground         -     4
 #
 # pad pitch (min)    90.0  90.0
+# This example floorplan currently computes a slightly smaller die pad pitch
+# from the 2 mm outline below. A real package/tapeout setup should use at
+# least 90 um to avoid extra packaging cost.
 #
 # Chip geometry comes from floorplan.tcl
 # Keep only the pad positioning/spacing here
@@ -31,9 +34,9 @@ set numPadsPerEdge 16
 # corner width is equal to padD, bondpad outside
 set cornerToPad [expr {$padBond + $padD}]
 
-make_io_sites -horizontal_site sg13g2_ioSite \
-    -vertical_site sg13g2_ioSite \
-    -corner_site sg13g2_ioSite \
+make_io_sites -horizontal_site $iosite \
+    -vertical_site $iosite \
+    -corner_site $iocornersite \
     -offset $padBond \
     -rotation_horizontal R0 \
     -rotation_vertical R0 \

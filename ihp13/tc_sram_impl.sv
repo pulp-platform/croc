@@ -204,48 +204,26 @@ module tc_sram_impl #(
        .A_BIST_EN    (  1'b0 )
       );
   end else if (NumWords == 512 && DataWidth == 32 && P1L1) begin: gen_512x32xBx1
-    logic [63:0] wdata64, rdata64, bm64;
-    logic sel_d, sel_q;
+    logic [31:0] wdata32, rdata32, bm32;
 
-    // muxing neighboring bits instead of upper/lower 32bit reduces routing
-    always_comb begin : gen_bit_interleaving
-      for (int i = 0; i < 32; i++) begin
-          // duplicate each bit
-          wdata64[2*i]   = wdata_i[0][i]; // even bits (active if addr LSB is 0)
-          bm64[2*i]      = bm[0][i] & ~addr_i[0][0];
-          wdata64[2*i+1] = wdata_i[0][i]; // odd bits  (active if addr LSB is 1)
-          bm64[2*i+1]    = bm[0][i] & addr_i[0][0];
+    assign rdata_o = rdata32;
+    assign wdata32 = wdata_i;
+    assign bm32    = bm;
 
-          if(~sel_q) begin
-            rdata_o[0][i] = rdata64[2*i];   // even bits
-          end else begin
-            rdata_o[0][i] = rdata64[2*i+1]; // odd bitss
-          end
-      end
-    end
-
-    // LSB needed for read in next cycle
-    assign sel_d = addr_i[0][0];
-
-    always_ff @(posedge clk_i or negedge rst_ni) begin : proc_mem_sel_q
-      if(~rst_ni)             sel_q <= '0;
-      else if (req_i & ~we_i) sel_q <= sel_d;
-    end
-
-    RM_IHPSG13_1P_256x64_c2_bm_bist i_cut (
+    RM_IHPSG13_1P_512x32_c2_bm_bist i_cut (
      .A_CLK   ( clk_i   ),
      .A_DLY   ( impl_i  ),
-     .A_ADDR  ( addr_i [0][8:1] ),
-     .A_BM    ( bm64    ),
+     .A_ADDR  ( addr_i [0][8:0] ),
+     .A_BM    ( bm32    ),
      .A_MEN   ( req_i   ),
      .A_WEN   ( we_i    ),
      .A_REN   ( ~we_i   ),
-     .A_DIN        ( wdata64 ),
-     .A_DOUT       ( rdata64 ),
+     .A_DIN        ( wdata32 ),
+     .A_DOUT       ( rdata32 ),
      .A_BIST_CLK   (  1'b0 ),
-     .A_BIST_ADDR  (  8'd0 ),
-     .A_BIST_DIN   ( 64'd0 ),
-     .A_BIST_BM    ( 64'd0 ),
+     .A_BIST_ADDR  (  9'd0 ),
+     .A_BIST_DIN   ( 32'd0 ),
+     .A_BIST_BM    ( 32'd0 ),
      .A_BIST_MEN   (  1'b0 ),
      .A_BIST_WEN   (  1'b0 ),
      .A_BIST_REN   (  1'b0 ),

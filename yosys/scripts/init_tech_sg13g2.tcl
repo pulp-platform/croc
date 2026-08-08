@@ -6,30 +6,19 @@
 # - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
 # All paths relative to yosys/
+# PDK: sg13g2
 
-if {[file exists "../technology"]} {
-	puts "0. Executing init_tech: load technology from ETHZ DZ cockpit"
-	set pdk_dir "../technology"
-	set pdk_cells_lib ${pdk_dir}/lib
-	set pdk_sram_lib  ${pdk_dir}/lib
-	set pdk_io_lib    ${pdk_dir}/lib
-} else {
-	puts "0. Executing init_tech: load technology from Github PDK"
-	if {![info exists pdk_dir]} {
-		set pdk_dir "../ihp13/pdk"
-	}
-	set pdk_cells_lib ${pdk_dir}/ihp-sg13g2/libs.ref/sg13g2_stdcell/lib
-	set pdk_sram_lib  ${pdk_dir}/ihp-sg13g2/libs.ref/sg13g2_sram/lib
-	set pdk_io_lib    ${pdk_dir}/ihp-sg13g2/libs.ref/sg13g2_io/lib
-}
+set pdk_cells_lib $::env(PDK_DIR_LIB_CELLS)
+set pdk_sram_lib  $::env(PDK_DIR_LIB_SRAMS)
+set pdk_io_lib    $::env(PDK_DIR_LIB_IOS)
 
-set tech_cells [list "$pdk_cells_lib/sg13g2_stdcell_typ_1p20V_25C.lib"]
-set tech_macros [glob -directory $pdk_sram_lib *_typ_1p20V_25C.lib]
-lappend tech_macros "$pdk_io_lib/sg13g2_io_typ_1p2V_3p3V_25C.lib"
+set tech_cells [list "$pdk_cells_lib/$::env(PDK_STDCELL_LIB_TT_FILE)"]
+set tech_macros [glob -directory $pdk_sram_lib RM_IHPSG13*_typ_1p20V_25C.lib]
+lappend tech_macros "$pdk_io_lib/$::env(PDK_IO_LIB_TT_FILE)"
 
 # for hilomap
-set tech_cell_tiehi {sg13g2_tiehi L_HI}
-set tech_cell_tielo {sg13g2_tielo L_LO}
+set tech_cell_tiehi [list sg13g2_tiehi L_HI]
+set tech_cell_tielo [list sg13g2_tielo L_LO]
 
 # pre-formated for easier use in yosys commands
 # all liberty files

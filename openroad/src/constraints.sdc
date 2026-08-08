@@ -21,7 +21,7 @@ source src/instances.tcl
 # As a default, drive multiple GPIO pads and be driven by one.
 # accomodate for driving up to 2 74HC pads plus a 5pF trace
 set_load [expr 2 * 5.0 + 5.0] [all_outputs]
-set_driving_cell [all_inputs] -lib_cell sg13g2_IOPadOut16mA -pin pad
+set_driving_cell [all_inputs] -lib_cell $ioDrivingCell -pin pad
 
 
 ##################
