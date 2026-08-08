@@ -19,6 +19,11 @@ CROC_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$CROC_ROOT"
 
 echo "============================================="
+echo " Preparing public PDK GDS"
+echo "============================================="
+scripts/download_gds.sh
+
+echo "============================================="
 echo " Step 1: Yosys synthesis"
 echo "============================================="
 cd yosys
