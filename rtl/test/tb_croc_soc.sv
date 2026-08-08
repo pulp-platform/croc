@@ -124,6 +124,11 @@ module tb_croc_soc #(
     // wait for reset
     #ClkPeriodSys;
 
+    #1us;
+    if ($isunknown(jtag_tdo)) begin
+      $fatal(1, "[JTAG] Output is unknown (X) after reset");
+    end
+
     // init jtag
     i_vip.jtag_init();
 
