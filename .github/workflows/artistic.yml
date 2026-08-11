@@ -9,6 +9,11 @@ name: ArtistIC Render
 
 on:
     workflow_dispatch:
+      inputs:
+        run_id:
+          description: Full Flow run containing the GDS and OpenROAD artifacts
+          required: true
+          type: string
     workflow_run:
       workflows: ["Full Flow"]
       types: [completed]
@@ -17,7 +22,7 @@ on:
 jobs:
   artistic:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     timeout-minutes: 60
     permissions:
       pages: write
@@ -41,7 +46,7 @@ jobs:
           name: croc-gds-sealed
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
-          run-id: ${{ github.event.workflow_run.id }}
+          run-id: ${{ github.event.workflow_run.id || inputs.run_id }}
           path: klayout/out
       - name: Download DEF artifact from "Full Flow" workflow
         uses: actions/download-artifact@v4
@@ -49,51 +54,58 @@ jobs:
           name: croc-openroad-out
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
-          run-id: ${{ github.event.workflow_run.id }}
+          run-id: ${{ github.event.workflow_run.id || inputs.run_id }}
           path: openroad
 
       # Install dependencies
-      - name: Update package lists and install Inkscape, img2pdf, Magick, potrace, Pillow
+      - name: Install host image tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y inkscape img2pdf imagemagick potrace
+          sudo apt-get install -y inkscape imagemagick potrace
           pip install --break-system-packages svgpathtools Pillow
-      - name: Install packages in OSEDA
-        uses: ./.github/actions/oseda-cmd
-        with:
-          cmd: "pip install --break-system-packages gdspy"
 
-      # Prepare and create logo
+      # Logo
       - name: Prepare logo
-        run: |
-          cd artistic; ./run_artistic.sh --prepare-logo
-      - name: Create Logo
+        run: make -C artistic/artistic PROJECT=../croc.toml logo-prepare
+      - name: Merge logo into GDS
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: "cd artistic; ./run_artistic.sh --create-logo croc.sealed.gds.gz"
+          cmd: "source env.sh; make -C artistic/artistic PROJECT=../croc.toml logo-merge"
 
-      # Render Chip
-      - name: Render RAW
+      # Render
+      - name: Generate render layer images
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: "cd artistic; ./run_artistic.sh --render-raw"
-      - name: Render PDF
-        run: |
-          cd artistic; ./run_artistic.sh --render-pdf
+          cmd: "source env.sh; make -C artistic/artistic PROJECT=../croc.toml render-generate"
+      - name: Compose render
+        run: make -C artistic/artistic PROJECT=../croc.toml render-compose
 
-      # Render Outlines
-      - name: Create annotated outlines SVG
+      # Optional module annotation
+      - name: Create annotated render
         run: |
-          cd artistic; ./run_artistic.sh --outline
+          source env.sh
+          python3 artistic/artistic/scripts/gen_outline.py \
+            -i "openroad/out/${PROJ_NAME}.def" \
+            -o artistic/work/croc_modules.svg \
+            -b artistic/work/croc_render.jpg \
+            --lef_files "${PDK_DIR_LEF_SRAMS}/*.lef" \
+            --px_scale 15000 \
+            --module_json artistic/src/croc_modules.json \
+            --opacity 0.65 \
+            --font_size 35 \
+            --luminosity 0.85 \
+            --scale 2.0
+          inkscape artistic/work/croc_modules.svg -o artistic/work/croc_modules.png
+          inkscape artistic/work/croc_modules.svg -o artistic/work/croc_modules.pdf
+          convert artistic/work/croc_modules.png artistic/work/croc_modules.jpg
 
-      # Render Map
-      - name: Render map RAW
+      # Map
+      - name: Generate map layer images
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: "cd artistic; ./run_artistic.sh --render-map-raw"
-      - name: Render map DB
-        run: |
-          cd artistic; ./run_artistic.sh --render-map-db
+          cmd: "source env.sh; make -C artistic/artistic PROJECT=../croc.toml map-generate"
+      - name: Build map
+        run: make -C artistic/artistic PROJECT=../croc.toml map-build
 
       # Upload artifacts
       - name: Upload ArtistIC artifacts
@@ -101,26 +113,23 @@ jobs:
         with:
           name: croc-artistic
           path: |
-            artistic/meerkat_work/croc.sealed.gds.gz
-            artistic/meerkat_work/croc_logo.*
-            artistic/meerkat_work/*.log
-            artistic/renderics/croc_modules.*
-            artistic/renderics/croc_render.*
-            artistic/renderics/croc_colors.svg
-            artistic/renderics/*.log
-        continue-on-error: true
+            artistic/work/croc_chip.gds.gz
+            artistic/work/croc_logo.*
+            artistic/work/croc_modules.*
+            artistic/work/croc_render.*
+            artistic/work/manifest.json
 
       # Deploy
       - name: Copy files to be deployed
         run: |
-          cp openroad/reports/04_croc.routed.png artistic/mapify/croc_routed.png
-          cp artistic/meerkat_work/croc_logo.gds artistic/mapify/croc_logo.gds
-          cp artistic/renderics/croc_modules.jpg artistic/mapify/croc_modules.jpg
-          cp artistic/renderics/croc_render.jpg artistic/mapify/croc_render.jpg
+          cp openroad/reports/04_croc.routed.png artistic/work/map/croc_routed.png
+          cp artistic/work/croc_logo.gds artistic/work/map/croc_logo.gds
+          cp artistic/work/croc_modules.jpg artistic/work/map/croc_modules.jpg
+          cp artistic/work/croc_render.jpg artistic/work/map/croc_render.jpg
       - name: Upload OpenStreetMap DB to pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: artistic/mapify
+          path: artistic/work/map
       - name: Deploy pages
         if: github.ref == 'refs/heads/main'
         id: deployment

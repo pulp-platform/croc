@@ -213,6 +213,21 @@ cd ../klayout && ./run_finishing.sh --gds
 The ASIC flow defaults to `CROC_PDK=sg13cmos5l`.
 To switch back to the original metal stack, export `CROC_PDK=sg13g2` before running the scripts.
 
+ArtistIC generates the optional top-metal logo, layout render, and zoomable
+layer map from [`artistic/croc.toml`](artistic/croc.toml). Run image processing
+on the host and the GDS stages in OSEDA:
+
+```sh
+make -C artistic/artistic PROJECT=../croc.toml logo-prepare
+oseda sh -c 'source env.sh; make -C artistic/artistic PROJECT=../croc.toml logo-merge render-generate map-generate'
+make -C artistic/artistic PROJECT=../croc.toml render-compose map-build
+```
+
+The project file contains the logo placement, selected routing layers, image
+sizes, map settings, and color theme. ArtistIC derives the GDS bounds, layer
+numbers, routing stack, and terminal metal from the layout and active KLayout
+technology.
+
 To simulate you can use:
 
 ```sh
