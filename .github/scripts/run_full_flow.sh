@@ -9,7 +9,7 @@
 # Full backend flow: 
 # - Yosys synthesis
 # - OpenROAD P&R
-# - KLayout GDS export
+# - KLayout GDS export, sealing, and minimal DRC
 
 set -euo pipefail
 
@@ -63,6 +63,13 @@ echo " Step 3: KLayout GDS export"
 echo "============================================="
 cd klayout
 ./run_finishing.sh --gds --seal
+
+echo ""
+echo "============================================="
+echo " Step 4: KLayout minimal DRC"
+echo "============================================="
+./run_drc.sh --minimal --jobs 1
+
 cd "$CROC_ROOT"
 
 echo ""

@@ -33,6 +33,7 @@ jobs:
         with:
           cmd: ".github/scripts/run_full_flow.sh"
       - name: Upload openroad outputs
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: croc-openroad-out
@@ -40,15 +41,25 @@ jobs:
             openroad/out
             openroad/logs
             openroad/reports
-        continue-on-error: true
+          if-no-files-found: ignore
       - name: Upload gds
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: croc-gds
           path: klayout/out/croc.gds.gz
+          if-no-files-found: ignore
       - name: Upload sealed gds
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: croc-gds-sealed
           path: klayout/out/croc.sealed.gds.gz
-        continue-on-error: true
+          if-no-files-found: ignore
+      - name: Upload DRC results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: croc-drc
+          path: klayout/drc-minimal
+          if-no-files-found: ignore
