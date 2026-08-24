@@ -184,8 +184,8 @@ Maintainers can update the pinned PDK mirror with `scripts/update_pdk.sh`.
 You can also run `scripts/setup_technology.sh` manually to print the active technology view. `env.sh` runs the same setup quietly before the ASIC scripts use the PDK.
 
 KLayout needs technology scripts, filling rules, and layer properties in addition to the files mentioned above.
-On ETH systems, the installed CMOS5L KLayout support package takes priority when available.
-Otherwise, the appropriate submodule, either `ihp13/sg13cmos5l` or `ihp13/sg13g2`, is required for the KLayout setup.
+KLayout tool files are always taken from the pinned PDK submodule, either
+`ihp13/sg13cmos5l` or `ihp13/sg13g2`.
 
 The OSIC/oseda container also contains a PDK under `/foss/pdks`, but Croc does not currently use it.
 
@@ -207,8 +207,19 @@ To run the synthesis and place & route flow execute:
 git submodule update --init --recursive
 cd yosys && ./run_synthesis.sh --synth
 cd ../openroad && ./run_backend.sh --all
-cd ../klayout && ./run_finishing.sh --gds
+cd ../klayout && ./run_finishing.sh --gds --seal
+./run_drc.sh --minimal
 ```
+
+Use `./run_drc.sh --minimal` after OpenROAD and during layout iteration. It
+checks the interconnect and top-level layout produced by the implementation
+flow while skipping transistor layers inside library cells. This keeps it
+quick enough for regular CI and layout iteration. It is not a tapeout signoff
+check.
+
+Use `./run_drc.sh --full` when reviewing the final layout before tapeout. It
+runs the slower and stricter checks across all layers. Full DRC is the default
+when no mode is specified.
 
 The ASIC flow defaults to `CROC_PDK=sg13cmos5l`.
 To switch back to the original metal stack, export `CROC_PDK=sg13g2` before running the scripts.

@@ -26,9 +26,10 @@ Options:
     --help, -h          Show this help message
 
 Use --minimal after OpenROAD and during floorplan or routing iteration. It
-catches common geometry errors quickly and is suitable for regular CI; it is
-not a tapeout signoff check. Use --full for the final pre-tapeout review; it
-runs slower, stricter checks for manufacturing risks.
+checks the generated interconnect and top-level layout while skipping the
+transistor layers inside library cells, making it suitable for regular CI.
+It is not a tapeout signoff check. Use --full for the final pre-tapeout review;
+it runs slower, stricter checks across all layers.
 
 Both modes use klayout/out/<PROJ_NAME>.sealed.gds.gz and top cell
 <TOP_DESIGN>_sealed. Results are written to klayout/drc-minimal or
@@ -105,7 +106,7 @@ command=(
     --density_thr=1
 )
 if [[ "$MODE" == "minimal" ]]; then
-    command+=(--no_recommended --no_offgrid --no_density --disable_extra_rules)
+    command+=(--precheck_drc --no_feol --no_recommended --no_offgrid --no_density --disable_extra_rules)
     echo "[INFO][KLayout] Running minimal DRC on $TOP_CELL with $JOBS worker(s)"
 else
     command+=(--antenna)
