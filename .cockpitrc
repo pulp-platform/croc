@@ -64,11 +64,7 @@
 
   libs    = SG13CMOS5L_0.2 \
             open_stdcell_rev0.1.3 \
-            sg13cmos5l_stdcell_v0.1 \
             sg13cmos5l_io_v0.1 \
-            SG13G2_1.3.1 \
-            ez130_8t_stdcell_v1.0 \
-            open_io_v0.2 \
             open_sram_v2.2 \
             bondpad5l_70x70_v0
 
