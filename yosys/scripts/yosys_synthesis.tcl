@@ -14,9 +14,6 @@ if {[info script] ne ""} {
 # Configuration variables are in yosys_common
 source scripts/yosys_common.tcl
 
-# ABC logic optimization script
-set abc_script [processAbcScript scripts/abc-opt.script]
-
 # read liberty files and prepare some variables
 set pdk_name [expr {[info exists ::env(CROC_PDK)] ? $::env(CROC_PDK) : "sg13cmos5l"}]
 source scripts/init_tech_${pdk_name}.tcl
@@ -144,9 +141,9 @@ yosys dfflibmap {*}$tech_cells_args
 # target period (per optimized block/module) in picoseconds
 set period_ps 10000
 # pre-process abc file (written to tmp directory)
-set abc_comb_script   [processAbcScript scripts/abc-opt.script]
+set abc_comb_script   [processAbcScript scripts/abc-opt.script $period_ps]
 # call ABC
-yosys abc {*}$tech_cells_args -D $period_ps -script $abc_comb_script -constr src/abc.constr {*}$dont_use_args -showtmp
+yosys abc {*}$tech_cells_args -script $abc_comb_script -constr src/abc.constr {*}$dont_use_args -showtmp
 
 yosys clean -purge
 

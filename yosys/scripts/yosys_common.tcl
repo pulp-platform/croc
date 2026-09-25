@@ -31,15 +31,18 @@ puts "using: tmp_dir    = '$tmp_dir'"
 puts "using: rep_dir    = '$rep_dir'"
 
 # process ABC script and write to temporary directory
-proc processAbcScript {abc_script} {
+proc processAbcScript {abc_script {period_ps ""}} {
     global tmp_dir
     set abc_out_path $tmp_dir/[file tail $abc_script]
 
     # substitute {STRING} placeholders with their value
+    set delay_target [expr {$period_ps eq "" ? "" : "-D $period_ps"}]
     set raw [read -nonewline [open $abc_script r]]
-    set abc_script_recaig [string map -nocase [list "{REC_AIG}" [subst "src/lazy_man_synth_library.aig"]] $raw]
+    set abc_script_subst [string map -nocase [list \
+        "{REC_AIG}" [subst "src/lazy_man_synth_library.aig"] \
+        "{D}"       $delay_target] $raw]
     set abc_out [open $abc_out_path w]
-    puts -nonewline $abc_out $abc_script_recaig
+    puts -nonewline $abc_out $abc_script_subst
 
     flush $abc_out
     close $abc_out
