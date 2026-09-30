@@ -25,6 +25,8 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     timeout-minutes: 60
     permissions:
+      contents: read
+      actions: read
       pages: write
       id-token: write
     environment:
@@ -62,7 +64,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y inkscape potrace
-          pip install --break-system-packages svgpathtools Pillow img2pdf
+          pip install --break-system-packages Pillow img2pdf
 
       # Logo
       - name: Prepare logo
@@ -82,27 +84,7 @@ jobs:
 
       # Optional module annotation
       - name: Create annotated render
-        run: |
-          source env.sh
-          python3 artistic/artistic/scripts/gen_outline.py \
-            -i "openroad/out/${PROJ_NAME}.def" \
-            -o artistic/work/croc_modules.svg \
-            -b artistic/work/croc_render.jpg \
-            --lef_files "${PDK_DIR_LEF_SRAMS}/*.lef" \
-            --px_scale 15000 \
-            --module_json artistic/src/croc_modules.json \
-            --opacity 0.65 \
-            --font_size 35 \
-            --luminosity 0.85 \
-            --scale 2.0
-          inkscape artistic/work/croc_modules.svg -o artistic/work/croc_modules.png
-          inkscape artistic/work/croc_modules.svg -o artistic/work/croc_modules.pdf
-          python3 - <<'PY'
-          from PIL import Image
-          with Image.open("artistic/work/croc_modules.png") as image:
-              with image.convert("RGB") as rgb:
-                  rgb.save("artistic/work/croc_modules.jpg", quality=95)
-          PY
+        run: make -C artistic/artistic PROJECT=../croc.toml render-annotate
 
       # Map
       - name: Generate map layer images
@@ -122,6 +104,7 @@ jobs:
             artistic/work/croc_logo.*
             artistic/work/croc_modules.*
             artistic/work/croc_render.*
+            artistic/work/croc_poster.pdf
             artistic/work/manifest.json
 
       # Deploy

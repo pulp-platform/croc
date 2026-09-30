@@ -225,19 +225,32 @@ The ASIC flow defaults to `CROC_PDK=sg13cmos5l`.
 To switch back to the original metal stack, export `CROC_PDK=sg13g2` before running the scripts.
 
 ArtistIC generates the optional top-metal logo, layout render, and zoomable
-layer map from [`artistic/croc.toml`](artistic/croc.toml). Run image processing
-on the host and the GDS stages in OSEDA:
+layer map from [`artistic/croc.toml`](artistic/croc.toml). Module outlines use
+the matching placed DEF in `openroad/out/croc.def`. Host image processing needs
+Python 3.11 or newer, Pillow, img2pdf, Inkscape, and potrace. Run the GDS stages
+in OSEDA:
 
 ```sh
 make -C artistic/artistic PROJECT=../croc.toml logo-prepare
 oseda sh -c 'source env.sh; make -C artistic/artistic PROJECT=../croc.toml logo-merge render-generate map-generate'
-make -C artistic/artistic PROJECT=../croc.toml render-compose map-build
+make -C artistic/artistic PROJECT=../croc.toml render-compose render-annotate map-build
 ```
 
 The project file contains the logo placement, selected routing layers, image
 sizes, map settings, and color theme. ArtistIC derives the GDS bounds, layer
 numbers, routing stack, and terminal metal from the layout and active KLayout
 technology.
+
+Croc uses a white background and opaque black-and-white map layer views; the
+composite map retains the color theme. Change `[palettes.croc].background` to
+black or `"transparent"` for PNG/PDF output. JPEGs use `[render].jpeg_background`
+when flattening transparency. Palette changes require only `render-compose`
+and `map-build`, followed by `render-annotate` for updated module outlines.
+
+Optional dithering, hue rotation, and multi-sheet posters are configured in
+the same TOML file; see the [ArtistIC configuration guide](artistic/artistic/README.md).
+Poster sheets are independent of the `segments` used to limit rendering memory.
+The workflow uploads a poster PDF when `[render.poster]` is configured.
 
 To simulate you can use:
 

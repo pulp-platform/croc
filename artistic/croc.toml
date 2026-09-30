@@ -16,6 +16,7 @@ offset_x_um = 0
 offset_y_um = 0
 feature_um = 2
 layer = "top-metal"
+dither = "threshold"
 
 [render]
 input = "logo"
@@ -26,6 +27,29 @@ layers = "routing"
 margin_um = 0
 palette = "croc"
 formats = ["png", "jpg", "pdf"]
+jpeg_background = "#ffffff"
+
+[render.outlines]
+def = "../openroad/out/croc.def"
+lef_files = ["../technology/lef/RM_*.lef"]
+resolution = 140
+min_area_pixels = 50
+background_opacity = 0.65
+font_size = 20
+stroke_width = 1.5
+label_lightness = 0.25
+formats = ["svg", "png", "pdf", "jpg"]
+
+[render.outlines.modules]
+i_uart = { label = "UART", color = "#f88c05" }
+i_dm_top = { label = "Debug", color = "#d489cc" }
+i_dmi_jtag = { label = "JTAG", color = "#80499c" }
+i_obi_timer = { label = "Timer", color = "#f3d408" }
+i_core_wrap = { label = "Core", color = "#fb120d" }
+i_user = { label = "User", color = "#1bb32c" }
+i_gpio = { label = "GPIO", color = "#43fdaa" }
+i_bootrom = { label = "ROM", color = "#8cf805" }
+gen_sram_bank = { label = "SRAM", color = "#39729f" }
 
 [map]
 input = "logo"
@@ -36,6 +60,7 @@ tile_size = 512
 layers = "routing"
 composite = true
 views = ["composite", "metals"]
+layer_style = "mask"
 margin_um = 24
 palette = "croc"
 output = "map"
