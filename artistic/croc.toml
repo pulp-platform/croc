@@ -14,7 +14,10 @@ width_um = 1320
 height_um = 1320
 offset_x_um = 0
 offset_y_um = 0
-feature_um = 2
+feature_um = 4
+pitch_um = 6
+spacing_um = 2
+max_feature_um = 30
 layer = "top-metal"
 dither = "threshold"
 

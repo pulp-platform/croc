@@ -242,7 +242,10 @@ numbers, routing stack, and terminal metal from the layout and active KLayout
 technology.
 
 Croc uses a white background and opaque black-and-white map layer views; the
-composite map retains the color theme. Change `[palettes.croc].background` to
+composite map retains the color theme. The logo uses isolated 4 um squares on
+a 6 um pitch, with at least 2 um spacing from existing metal. Run the applicable
+PDK checks on the merged GDS before tapeout; artwork spacing alone is not a
+full DRC check. Change `[palettes.croc].background` to
 black or `"transparent"` for PNG/PDF output. JPEGs use `[render].jpeg_background`
 when flattening transparency. Palette changes require only `render-compose`
 and `map-build`, followed by `render-annotate` for updated module outlines.
