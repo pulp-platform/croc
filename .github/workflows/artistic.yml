@@ -74,6 +74,11 @@ jobs:
         with:
           cmd: "source env.sh; make -C artistic/artistic PROJECT=../croc.toml logo-merge"
 
+      - name: Inspect layout and palettes
+        uses: ./.github/actions/oseda-cmd
+        with:
+          cmd: "source env.sh; make -C artistic/artistic PROJECT=../croc.toml inspect"
+
       # Render
       - name: Generate render layer images
         uses: ./.github/actions/oseda-cmd
@@ -102,6 +107,10 @@ jobs:
           path: |
             artistic/work/croc_chip.gds.gz
             artistic/work/croc_logo.*
+            artistic/work/croc_logo_geometry.svg
+            artistic/work/logo_merge.json
+            artistic/work/logo_prepare.json
+            artistic/work/croc_palette.svg
             artistic/work/croc_modules.*
             artistic/work/croc_render.*
             artistic/work/croc_poster.pdf
