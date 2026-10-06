@@ -232,9 +232,14 @@ in OSEDA:
 
 ```sh
 make -C artistic/artistic PROJECT=../croc.toml logo-prepare
-oseda sh -c 'source env.sh; make -C artistic/artistic PROJECT=../croc.toml logo-merge render-generate map-generate'
+oseda -2025.12 bash -c 'source env.sh; make -C artistic/artistic PROJECT=../croc.toml logo-merge render-generate map-generate'
 make -C artistic/artistic PROJECT=../croc.toml render-compose render-annotate map-build
 ```
+
+CI runs all stages inside the pinned OSEDA container with `make all`.
+KLayout and Pillow are already installed; CI adds Inkscape, potrace, and
+`python3-img2pdf` for PDF output. The separate commands above are useful when
+those programs are available on the host instead.
 
 The project file contains the logo placement, selected routing layers, image
 sizes, map settings, and color theme. ArtistIC derives the GDS bounds, layer

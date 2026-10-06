@@ -59,45 +59,13 @@ jobs:
           run-id: ${{ github.event.workflow_run.id || inputs.run_id }}
           path: openroad
 
-      # Install dependencies
-      - name: Install host image tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y inkscape potrace
-          pip install --break-system-packages Pillow img2pdf
-
-      # Logo
-      - name: Prepare logo
-        run: make -C artistic/artistic PROJECT=../croc.toml logo-prepare
-      - name: Merge logo into GDS
+      - name: Generate logo, render, outlines and map
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: "source env.sh; make -C artistic/artistic PROJECT=../croc.toml logo-merge"
-
-      - name: Inspect layout and palettes
-        uses: ./.github/actions/oseda-cmd
-        with:
-          cmd: "source env.sh; make -C artistic/artistic PROJECT=../croc.toml inspect"
-
-      # Render
-      - name: Generate render layer images
-        uses: ./.github/actions/oseda-cmd
-        with:
-          cmd: "source env.sh; make -C artistic/artistic PROJECT=../croc.toml render-generate"
-      - name: Compose render
-        run: make -C artistic/artistic PROJECT=../croc.toml render-compose
-
-      # Optional module annotation
-      - name: Create annotated render
-        run: make -C artistic/artistic PROJECT=../croc.toml render-annotate
-
-      # Map
-      - name: Generate map layer images
-        uses: ./.github/actions/oseda-cmd
-        with:
-          cmd: "source env.sh; make -C artistic/artistic PROJECT=../croc.toml map-generate"
-      - name: Build map
-        run: make -C artistic/artistic PROJECT=../croc.toml map-build
+          setup_cmd: |
+            apt-get update
+            apt-get install -y --no-install-recommends inkscape potrace python3-img2pdf
+          cmd: "source env.sh; make -C artistic/artistic PROJECT=../croc.toml all"
 
       # Upload artifacts
       - name: Upload ArtistIC artifacts
