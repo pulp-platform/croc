@@ -35,8 +35,10 @@ jpeg_background = "#ffffff"
 [render.outlines]
 def = "../openroad/out/croc.def"
 lef_files = ["../technology/lef/RM_*.lef"]
+# The seal ring translates the placed chip in the final GDS.
+offset_um = [42, 42]
 resolution = 140
-min_area_pixels = 50
+min_area_pixels = 14
 background_opacity = 0.65
 font_size = 20
 stroke_width = 1.5
