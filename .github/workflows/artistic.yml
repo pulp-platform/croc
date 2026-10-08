@@ -9,6 +9,11 @@ name: ArtistIC Render
 
 on:
     workflow_dispatch:
+      inputs:
+        run_id:
+          description: Full Flow run containing the GDS and OpenROAD artifacts
+          required: true
+          type: string
     workflow_run:
       workflows: ["Full Flow"]
       types: [completed]
@@ -17,20 +22,41 @@ on:
 jobs:
   artistic:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     timeout-minutes: 60
     permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      contents: read
+      actions: read
     steps:
-
+      - name: Validate Full Flow input run
+        uses: actions/github-script@v7
+        env:
+          SOURCE_RUN_ID: ${{ github.event.workflow_run.id || inputs.run_id }}
+        with:
+          script: |
+            const runId = process.env.SOURCE_RUN_ID;
+            if (!/^\d+$/.test(runId)) throw new Error('A Full Flow run ID is required');
+            const repo = { owner: context.repo.owner, repo: context.repo.repo };
+            const { data: run } = await github.rest.actions.getWorkflowRun({ ...repo, run_id: runId });
+            const { data: workflow } = await github.rest.actions.getWorkflow({ ...repo, workflow_id: 'full-flow.yml' });
+            if (run.workflow_id !== workflow.id || run.conclusion !== 'success') {
+              throw new Error('Input artifacts must come from a successful Full Flow run');
+            }
+            if (context.eventName === 'workflow_run' &&
+                (!['push', 'workflow_dispatch', 'release'].includes(run.event) ||
+                 run.head_branch !== 'main' || run.head_repository?.full_name !== `${repo.owner}/${repo.repo}`)) {
+              throw new Error('Automatic publication requires a trusted main-branch Full Flow run');
+            }
+            const renderRevision = context.eventName === 'workflow_run' ? run.head_sha : context.sha;
+            await core.summary.addHeading('Artistic inputs')
+              .addLink(`Full Flow ${run.id}`, run.html_url)
+              .addRaw(`\n\nSource revision: ${run.head_sha}\n\nRender revision: ${renderRevision}\n`)
+              .write();
       # Check out croc repo and cleanup
       - name: Checkout repository (with submodules)
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
           submodules: recursive
       - name: Free disk space
         uses: ./.github/actions/free-space
@@ -41,7 +67,7 @@ jobs:
           name: croc-gds-sealed
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
-          run-id: ${{ github.event.workflow_run.id }}
+          run-id: ${{ github.event.workflow_run.id || inputs.run_id }}
           path: klayout/out
       - name: Download DEF artifact from "Full Flow" workflow
         uses: actions/download-artifact@v4
@@ -49,51 +75,16 @@ jobs:
           name: croc-openroad-out
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
-          run-id: ${{ github.event.workflow_run.id }}
+          run-id: ${{ github.event.workflow_run.id || inputs.run_id }}
           path: openroad
 
-      # Install dependencies
-      - name: Update package lists and install Inkscape, img2pdf, Magick, potrace, Pillow
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y inkscape img2pdf imagemagick potrace
-          pip install --break-system-packages svgpathtools Pillow
-      - name: Install packages in OSEDA
+      - name: Generate logo, render, outlines and map
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: "pip install --break-system-packages gdspy"
-
-      # Prepare and create logo
-      - name: Prepare logo
-        run: |
-          cd artistic; ./run_artistic.sh --prepare-logo
-      - name: Create Logo
-        uses: ./.github/actions/oseda-cmd
-        with:
-          cmd: "cd artistic; ./run_artistic.sh --create-logo croc.sealed.gds.gz"
-
-      # Render Chip
-      - name: Render RAW
-        uses: ./.github/actions/oseda-cmd
-        with:
-          cmd: "cd artistic; ./run_artistic.sh --render-raw"
-      - name: Render PDF
-        run: |
-          cd artistic; ./run_artistic.sh --render-pdf
-
-      # Render Outlines
-      - name: Create annotated outlines SVG
-        run: |
-          cd artistic; ./run_artistic.sh --outline
-
-      # Render Map
-      - name: Render map RAW
-        uses: ./.github/actions/oseda-cmd
-        with:
-          cmd: "cd artistic; ./run_artistic.sh --render-map-raw"
-      - name: Render map DB
-        run: |
-          cd artistic; ./run_artistic.sh --render-map-db
+          setup_cmd: |
+            apt-get update
+            apt-get install -y --no-install-recommends inkscape potrace python3-img2pdf
+          cmd: "source env.sh; make -C artistic/artistic PROJECT=../croc.toml all; python3 .github/scripts/check_artistic.py"
 
       # Upload artifacts
       - name: Upload ArtistIC artifacts
@@ -101,27 +92,44 @@ jobs:
         with:
           name: croc-artistic
           path: |
-            artistic/meerkat_work/croc.sealed.gds.gz
-            artistic/meerkat_work/croc_logo.*
-            artistic/meerkat_work/*.log
-            artistic/renderics/croc_modules.*
-            artistic/renderics/croc_render.*
-            artistic/renderics/croc_colors.svg
-            artistic/renderics/*.log
-        continue-on-error: true
+            artistic/work/croc_chip.gds.gz
+            artistic/work/croc_logo.*
+            artistic/work/croc_logo_geometry.svg
+            artistic/work/logo_merge.json
+            artistic/work/logo_prepare.json
+            artistic/work/croc_palette.svg
+            artistic/work/croc_modules.*
+            artistic/work/croc_render.*
+            artistic/work/croc_poster.pdf
+            artistic/work/manifest.json
 
       # Deploy
       - name: Copy files to be deployed
         run: |
-          cp openroad/reports/04_croc.routed.png artistic/mapify/croc_routed.png
-          cp artistic/meerkat_work/croc_logo.gds artistic/mapify/croc_logo.gds
-          cp artistic/renderics/croc_modules.jpg artistic/mapify/croc_modules.jpg
-          cp artistic/renderics/croc_render.jpg artistic/mapify/croc_render.jpg
+          cp openroad/reports/04_croc.routed.png artistic/work/map/croc_routed.png
+          cp artistic/work/croc_logo.gds artistic/work/map/croc_logo.gds
+          cp artistic/work/croc_modules.jpg artistic/work/map/croc_modules.jpg
+          cp artistic/work/croc_render.jpg artistic/work/map/croc_render.jpg
       - name: Upload OpenStreetMap DB to pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: artistic/mapify
+          path: artistic/work/map
+
+  deploy:
+    needs: artistic
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: artistic-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Deploy pages
-        if: github.ref == 'refs/heads/main'
         id: deployment
         uses: actions/deploy-pages@v4

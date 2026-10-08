@@ -11,6 +11,10 @@ inputs:
   cmd:
     description: 'Command to run in the OSEDA container'
     required: true
+  setup_cmd:
+    description: 'Optional command to prepare the container as root'
+    required: false
+    default: ''
   service_name:
     description: 'Name of the Docker service (default: from ./docker-compose.yml)'
     required: false
@@ -53,9 +57,16 @@ runs:
 
     - name: Run commands in OSEDA container
       shell: bash
+      env:
+        OSEDA_SETUP_CMD: ${{ inputs.setup_cmd }}
+        OSEDA_CMD: ${{ inputs.cmd }}
       run: |
         # Avoid extra pulls now that we've already pulled
         docker compose up -d --pull=never
+        if [[ -n "$OSEDA_SETUP_CMD" ]]; then
+          docker compose exec -T --user root "${{ env.service_name }}" \
+            bash -ec "$OSEDA_SETUP_CMD"
+        fi
         docker compose exec -T "${{ env.service_name }}" \
-          bash -lc "source ~/.bashrc; ${{ inputs.cmd }}" | tee result.log
+          bash -lc "source ~/.bashrc; set -e; $OSEDA_CMD" | tee result.log
         echo "result_log=$(pwd)/result.log" >> "$GITHUB_ENV"

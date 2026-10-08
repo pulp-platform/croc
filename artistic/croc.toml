@@ -1,0 +1,133 @@
+# Copyright 2026 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+[design]
+name = "croc"
+gds = "../klayout/out/croc.sealed.gds.gz"
+work_dir = "work"
+repository = "gh.io/pulp-platform/croc"
+
+[logo]
+source = "src/logo_chip.svg"
+width_um = 1320
+height_um = 1320
+offset_x_um = 0
+offset_y_um = 0
+feature_um = 4
+pitch_um = 6
+spacing_um = 2
+max_feature_um = 30
+layer = "top-metal"
+dither = "threshold"
+
+[render]
+input = "logo"
+resolution = [1000, 1000]
+segments = [1, 1]
+overrender = 4
+layers = "routing"
+margin_um = 0
+palette = "croc"
+formats = ["png", "jpg", "pdf"]
+jpeg_background = "#ffffff"
+
+[render.outlines]
+def = "../openroad/out/croc.def"
+lef_files = ["../technology/lef/RM_*.lef"]
+# The seal ring translates the placed chip in the final GDS.
+offset_um = [42, 42]
+resolution = 140
+min_area_pixels = 14
+background_opacity = 0.65
+font_size = 20
+stroke_width = 1.5
+label_lightness = 0.25
+formats = ["svg", "png", "pdf", "jpg"]
+
+[render.outlines.modules]
+i_uart = { label = "UART", color = "#f88c05" }
+i_dm_top = { label = "Debug", color = "#d489cc" }
+i_dmi_jtag = { label = "JTAG", color = "#80499c" }
+i_obi_timer = { label = "Timer", color = "#f3d408" }
+i_core_wrap = { label = "Core", color = "#fb120d" }
+i_user = { label = "User", color = "#1bb32c" }
+i_gpio = { label = "GPIO", color = "#43fdaa" }
+i_bootrom = { label = "ROM", color = "#8cf805" }
+gen_sram_bank = { label = "SRAM", color = "#39729f" }
+
+[map]
+input = "logo"
+resolution = [20480, 20480]
+segments = [5, 5]
+overrender = 1
+tile_size = 512
+layers = "routing"
+composite = true
+views = ["composite", "metals"]
+layer_style = "mask"
+margin_um = 24
+palette = "croc"
+output = "map"
+
+[palettes.croc]
+background = "#ffffff"
+
+[palettes.croc.layers.Cont]
+color = "#0000cd"
+alpha = 0.8
+
+[palettes.croc.layers.Metal1]
+color = "#0000cd"
+alpha = 0.8
+
+[palettes.croc.layers.Via1]
+color = "#7ccd7c"
+alpha = 0.7
+
+[palettes.croc.layers.Metal2]
+color = "#7ccd7c"
+alpha = 0.7
+
+[palettes.croc.layers.Via2]
+color = "#5c0c02"
+alpha = 0.6
+
+[palettes.croc.layers.Metal3]
+color = "#5c0c02"
+alpha = 0.6
+
+[palettes.croc.layers.Via3]
+color = "#cd3700"
+alpha = 0.5
+
+[palettes.croc.layers.Metal4]
+color = "#cd3700"
+alpha = 0.5
+
+[palettes.croc.layers.Via4]
+color = "#00cd00"
+alpha = 0.5
+
+[palettes.croc.layers.Metal5]
+color = "#00cd00"
+alpha = 0.5
+
+[palettes.croc.layers.TopVia1]
+color = "#7fffd4"
+alpha = 0.5
+
+[palettes.croc.layers.TopMetal1]
+color = "#7fffd4"
+alpha = 0.5
+
+[palettes.croc.layers.TopVia2]
+color = "#1e90ff"
+alpha = 0.5
+
+[palettes.croc.layers.TopMetal2]
+color = "#ffffff"
+alpha = 0.4
+
+[map.colors.TopMetal2]
+alpha = 0.8
