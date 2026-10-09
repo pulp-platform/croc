@@ -28,7 +28,7 @@ jobs:
       contents: read
       actions: read
     steps:
-      - name: Validate Full Flow input run
+      - name: Check Full Flow run
         uses: actions/github-script@v7
         env:
           SOURCE_RUN_ID: ${{ github.event.workflow_run.id || inputs.run_id }}
@@ -52,16 +52,14 @@ jobs:
               .addLink(`Full Flow ${run.id}`, run.html_url)
               .addRaw(`\n\nSource revision: ${run.head_sha}\n\nRender revision: ${renderRevision}\n`)
               .write();
-      # Check out croc repo and cleanup
-      - name: Checkout repository (with submodules)
+      - name: Check out repository and submodules
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
           submodules: recursive
       - name: Free disk space
         uses: ./.github/actions/free-space
-      # Restore previous artifacts (GDS and DEF)
-      - name: Download GDS artifact from "Full Flow" workflow
+      - name: Download sealed GDS
         uses: actions/download-artifact@v4
         with:
           name: croc-gds-sealed
@@ -69,7 +67,7 @@ jobs:
           repository: ${{ github.repository }}
           run-id: ${{ github.event.workflow_run.id || inputs.run_id }}
           path: klayout/out
-      - name: Download DEF artifact from "Full Flow" workflow
+      - name: Download OpenROAD outputs
         uses: actions/download-artifact@v4
         with:
           name: croc-openroad-out
@@ -86,7 +84,6 @@ jobs:
             apt-get install -y --no-install-recommends inkscape potrace python3-img2pdf
           cmd: "source env.sh; make -C artistic/artistic PROJECT=../croc.toml all; python3 .github/scripts/check_artistic.py"
 
-      # Upload artifacts
       - name: Upload ArtistIC artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -100,17 +97,18 @@ jobs:
             artistic/work/croc_palette.svg
             artistic/work/croc_modules.*
             artistic/work/croc_render.*
+            artistic/work/croc_render_base.png
+            artistic/work/croc_shadow.png
             artistic/work/croc_poster.pdf
             artistic/work/manifest.json
 
-      # Deploy
-      - name: Copy files to be deployed
+      - name: Prepare map for publication
         run: |
           cp openroad/reports/04_croc.routed.png artistic/work/map/croc_routed.png
           cp artistic/work/croc_logo.gds artistic/work/map/croc_logo.gds
           cp artistic/work/croc_modules.jpg artistic/work/map/croc_modules.jpg
           cp artistic/work/croc_render.jpg artistic/work/map/croc_render.jpg
-      - name: Upload OpenStreetMap DB to pages
+      - name: Upload chip map to Pages
         uses: actions/upload-pages-artifact@v3
         with:
           path: artistic/work/map

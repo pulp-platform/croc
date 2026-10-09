@@ -23,6 +23,7 @@ sys.path.insert(0, str(ROOT / "artistic" / "artistic"))
 from artistic.outlines import (_canvas, _def_placements, _group_placements,
                                _lef_sizes, _options, _pixel_box)
 from artistic.project import Project
+from artistic.presentation import presentation_geometry
 
 
 def require(condition, message):
@@ -68,14 +69,15 @@ def main():
     settings, def_file, lef_files, modules, _ = _options(config)
     render = json.loads((work / "render.json").read_text())
     resolution = tuple(render["resolution"])
+    output_size = tuple(presentation_geometry(config.get("render", {}), render)["size"])
     for stem in (f"{project.name}_render", f"{project.name}_modules"):
         with Image.open(work / f"{stem}.png") as image:
-            require(image.size == resolution, f"Wrong dimensions: {stem}")
+            require(image.size == output_size, f"Wrong dimensions: {stem}")
             rgb = image.convert("RGB")
             require(any(low != high for low, high in rgb.getextrema()), f"Blank image: {stem}")
         with Image.open(work / f"{stem}.jpg") as image:
             image.load()
-            require(image.size == resolution, f"Wrong JPEG dimensions: {stem}")
+            require(image.size == output_size, f"Wrong JPEG dimensions: {stem}")
         with pikepdf.open(work / f"{stem}.pdf") as pdf:
             require(len(pdf.pages) == 1, f"Wrong PDF page count: {stem}")
 
@@ -99,6 +101,11 @@ def main():
             f"Outline offset {offset} does not match sealed GDS translation {transform.disp}")
 
     svg = ET.parse(work / f"{project.name}_modules.svg").getroot()
+    for image in svg.findall("{http://www.w3.org/2000/svg}image"):
+        reference = image.get("{http://www.w3.org/1999/xlink}href")
+        require(reference and Path(reference).name == reference,
+                f"Unexpected annotated SVG image reference: {reference}")
+        require((work / reference).is_file(), f"Missing annotated SVG image: {reference}")
     labels = collections.defaultdict(list)
     for text in svg.findall("{http://www.w3.org/2000/svg}text"):
         labels[text.text].append((float(text.attrib["x"]), float(text.attrib["y"])))
