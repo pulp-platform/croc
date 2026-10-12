@@ -224,6 +224,37 @@ when no mode is specified.
 The ASIC flow defaults to `CROC_PDK=sg13cmos5l`.
 To switch back to the original metal stack, export `CROC_PDK=sg13g2` before running the scripts.
 
+ArtistIC uses [`artistic/croc.toml`](artistic/croc.toml) to generate the logo,
+chip images, module outlines, and layer map. Outlines use the matching placed
+DEF in `openroad/out/croc.def`. Host image processing needs Python 3.11+,
+Pillow, img2pdf, Inkscape, and potrace. Run the GDS stages in OSEDA:
+
+```sh
+make -C artistic/artistic PROJECT=../croc.toml logo-prepare
+oseda -2025.12 bash -c 'source env.sh; make -C artistic/artistic PROJECT=../croc.toml logo-merge render-generate map-generate'
+make -C artistic/artistic PROJECT=../croc.toml render-compose render-annotate map-build
+```
+
+CI runs all stages in the pinned OSEDA container with `make all`.
+
+The TOML sets logo placement, image sizes, layers, and colors. ArtistIC discovers
+layout bounds and the metal stack from the GDS and active KLayout technology.
+
+Croc renders use a white background, opaque emerald TopMetal1, bordered labels,
+and a chip shadow. Set `[render.shadow].enabled = false` to remove the shadow.
+Map layer views are black-and-white; the composite uses the shared palette.
+Set `[palettes.croc].background` to `"black"` or `"transparent"` for other
+backgrounds. JPEGs flatten transparency onto `[render].jpeg_background`.
+After changing colors, rerun `render-compose`, `render-annotate`, and `map-build`.
+
+The logo uses 4 um squares on a 6 um pitch, with at least 2 um clearance from
+existing metal. Run the PDK checks on the merged GDS before tapeout; logo
+spacing is not a full DRC check.
+
+Dithering, hue rotation, and posters also use the TOML; see the
+[ArtistIC guide](artistic/artistic/README.md). Poster sheets are independent of
+rendering `segments`. CI uploads a poster PDF when `[render.poster]` is set.
+
 To simulate you can use:
 
 ```sh

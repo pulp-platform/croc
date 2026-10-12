@@ -72,7 +72,7 @@
        id="tspan835-6"
        x="95.329773"
        y="76.670319"
-       style="font-size:24px">#DATE#</tspan><tspan
+       style="font-size:24px">{{date}}</tspan><tspan
        id="tspan837-7"
        x="95.329773"
        y="106.67032"
@@ -87,7 +87,7 @@
        id="tspan835-6-3"
        x="98.377258"
        y="119.98215"
-       style="font-size:24px">#HASH#</tspan><tspan
+       style="font-size:24px">{{git_revision}}</tspan><tspan
        id="tspan837-7-5"
        x="98.377258"
        y="149.98215"
@@ -98,5 +98,5 @@
      text-anchor="middle"
      dominant-baseline="middle"
      id="text2-3-5-3"
-     style="font-size:13.3333px">#REPO#</text>
+     style="font-size:13.3333px">{{repository}}</text>
 </svg>
