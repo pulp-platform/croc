@@ -44,12 +44,15 @@ color = "#22c55e"
 alpha = 1
 
 [render.outlines]
+method = "density"
 def = "../openroad/out/croc.def"
 lef_files = ["../technology/lef/RM_*.lef"]
 # Match the chip's shift in the sealed GDS.
 offset_um = [42, 42]
-resolution = 140
-min_area_pixels = 14
+resolution = 384
+min_area_pixels = 105
+smoothing_px = 12
+fill_opacity = 0.2
 background_opacity = 1
 font_size = 28
 font_weight = "bold"
