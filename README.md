@@ -236,6 +236,8 @@ make -C artistic/artistic PROJECT=../croc.toml render-compose render-annotate ma
 ```
 
 CI runs all stages in the pinned OSEDA container with `make all`.
+The [flow report](https://pulp-platform.github.io/croc/) shows the chip, map,
+verification results, runtimes and downloadable logs from matching CI runs.
 
 The TOML sets logo placement, image sizes, layers, and colors. ArtistIC discovers
 layout bounds and the metal stack from the GDS and active KLayout technology.

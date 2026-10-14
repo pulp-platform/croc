@@ -12,6 +12,19 @@ on:
       - '**'
 
 jobs:
+  report-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Test report recording and generation
+        run: |
+          python3 -m unittest discover -s .github/scripts -p test_record_ci.py
+          python3 -m unittest discover -s .github/scripts -p test_build_report.py
+          node --test .github/scripts/test_report_context.js
   simulation:
     runs-on: ubuntu-latest
     timeout-minutes: 30

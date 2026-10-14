@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Croc SoC Flow Report · $SHORT_SHA</title>
+<link rel="stylesheet" href="theme.css">
+<script src="theme.js"></script>
+<style>
+:root{
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 var(--sans);letter-spacing:0}
+a{color:var(--link);text-underline-offset:2px}
+a:hover{color:var(--fg)}
+a:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:2px}
+code,.mono{font-family:var(--mono);font-size:.92em}
+.vh{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+
+/* Header */
+header{border-bottom:1px solid var(--rule);padding:28px 0 18px}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:14px 32px}
+.ttl{min-width:0}
+h1{margin:0;font-size:24px;line-height:1.2;font-weight:650;overflow-wrap:break-word}
+.tag{font-size:11.5px;font-weight:500;line-height:1;color:var(--muted);border:1px solid var(--rule-strong);border-radius:4px;padding:3px 6px;margin-left:12px;align-self:center}
+.prov{margin:8px 0 0;font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 0}
+.prov span+span::before{content:"·";padding:0 8px;color:var(--rule-strong)}
+.prov .tag::before{content:none}
+.prov code{color:var(--fg)}
+.prov a{color:var(--link)}
+.prov a code{color:inherit}
+.tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px 22px;min-width:0}
+nav ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px 22px}
+.tools a{color:var(--fg);text-decoration:none;font-size:14px}
+.tools a:hover{color:var(--link);text-decoration:underline}
+
+/* Sections */
+section{padding:32px 0 36px;border-bottom:1px solid var(--rule);scroll-margin-top:8px}
+h2{margin:0 0 18px;font-size:17px;line-height:1.3;font-weight:600}
+h3{margin:0 0 8px;font-size:12px;line-height:1.3;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0}
+.note{margin:8px 0 0;font-size:13px;color:var(--muted)}
+.block+.block{margin-top:28px}
+
+/* Tables */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+caption{caption-side:top;text-align:left;font-size:13px;color:var(--muted);padding:0 0 8px}
+th{font-size:12.5px;font-weight:500;color:var(--muted);text-align:left;vertical-align:bottom;padding:6px 14px 6px 0;border-bottom:1px solid var(--rule-strong)}
+td{padding:8px 14px 8px 0;vertical-align:top;border-bottom:1px solid var(--rule)}
+th:last-child,td:last-child{padding-right:0}
+.n th:not(:first-child),.n td:not(:first-child){text-align:right}
+.n td:not(:first-child){font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+:is(.area,.dur) tbody tr:last-child td{font-weight:600;border-top:1px solid var(--rule-strong);border-bottom:0}
+.kv td:first-child{color:var(--fg)}
+
+/* Status badges */
+.status{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:22px;padding:0 7px;border:1px solid;border-radius:3px;font-size:12.5px;font-weight:600;line-height:1;white-space:nowrap;vertical-align:middle}
+.status.pass{color:var(--ok-fg);background:var(--ok-bg);border-color:var(--ok-bd)}
+.status.fail{color:var(--fail-fg);background:var(--fail-bg);border-color:var(--fail-bd)}
+.status:is(.na,.unavailable){color:var(--na-fg);background:var(--na-bg);border-color:var(--na-bd)}
+
+/* Chip layout */
+.chip{display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"viewer" "stats";gap:32px}
+.viewer{grid-area:viewer;min-width:0;max-width:640px}
+.stats{grid-area:stats;min-width:0}
+details{margin-top:14px}
+summary{font-size:13px;color:var(--muted);cursor:pointer;width:max-content;max-width:100%}
+summary:hover{color:var(--fg)}
+summary:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:2px}
+details .tw{margin-top:8px}
+.mods td:first-child{overflow-wrap:anywhere}
+
+/* Wide view (in-page) */
+.chip.is-wide{grid-template-columns:minmax(0,1fr);grid-template-areas:"viewer" "stats";gap:32px}
+.chip.is-wide .viewer{max-width:none}
+.chip.is-wide .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:28px 48px;align-items:start}
+.chip.is-wide .stats>.block{margin-top:0}
+
+/* Viewer */
+.frame{position:relative;aspect-ratio:1/1;background:var(--surface);border:1px solid var(--rule)}
+.pane{position:absolute;inset:0;display:block;visibility:hidden}
+.pane:focus-visible{outline:2px solid var(--focus);outline-offset:-2px;border-radius:0}
+.pane img{display:block;width:100%;height:100%;object-fit:contain;background:var(--media-bg)}
+.v-modules{visibility:visible}
+.viewer:has(#view-render:checked) .v-render,
+.viewer:has(#view-map:checked) .v-map{visibility:visible}
+.viewer:has(#view-render:checked) .v-modules,
+.viewer:has(#view-map:checked) .v-modules{visibility:hidden}
+.v-map{display:flex;align-items:center;justify-content:center;font-size:14px}
+.v-map iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bg)}
+.dims{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.dims text{font-family:var(--sans);font-variant-numeric:tabular-nums;dominant-baseline:central}
+.viewer:has(#dimensions:not(:checked)) .dims,
+.viewer:has(#view-map:checked) .dims{display:none}
+
+/* Controls below viewer */
+.controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;margin-top:10px}
+.ctl{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;min-width:0}
+.ctl.end{margin-left:auto;gap:8px 12px}
+.seg{display:inline-flex;gap:2px;margin:0;padding:2px;border:1px solid var(--rule-strong);border-radius:6px;min-width:0}
+.seg label{position:relative;display:block}
+.seg input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.seg span{display:block;padding:4px 10px;font-size:13px;line-height:1.4;border-radius:4px;color:var(--muted)}
+.seg label:hover span{color:var(--fg)}
+.seg input:checked+span{background:var(--accent);color:var(--accent-fg)}
+.seg input:focus-visible+span{outline:2px solid var(--focus);outline-offset:2px}
+.chk{display:inline-flex;align-items:center;gap:6px;font-size:13px;cursor:pointer}
+.chk input{margin:0;accent-color:var(--accent)}
+.chk input:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.viewer:has(#view-map:checked) .chk{visibility:hidden}
+@supports not selector(:has(*)){.seg,.chk{display:none}}
+.dl{margin:0;font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 12px}
+.dl>span{display:inline-flex;gap:8px;align-items:baseline;white-space:nowrap}
+.dl a{font-family:var(--mono);font-size:12.5px}
+@supports selector(:has(*)){
+  .dl{display:grid;justify-items:end}
+  .dl>span{grid-area:1/1}
+}
+.viewer:has(#view-modules:checked) :is(.d-render,.d-map),
+.viewer:has(#view-render:checked) :is(.d-modules,.d-map),
+.viewer:has(#view-map:checked) :is(.d-modules,.d-render){visibility:hidden}
+.ex{display:none;align-items:center;justify-content:center;gap:6px;min-width:30px;height:30px;padding:0 6px;border:1px solid var(--rule-strong);border-radius:6px;background:var(--bg);color:var(--fg);font:inherit;font-size:13px;line-height:1;cursor:pointer}
+.ex:hover{border-color:var(--fg)}
+.ex:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.ex img{display:block;width:16px;height:16px;filter:var(--icon-filter)}
+.ex-l{display:none}
+.is-wide .ex{padding:0 10px}
+.is-wide .ex img{display:none}
+.is-wide .ex-l{display:inline}
+
+/* Verification */
+.verif{max-width:880px}
+.verif td:first-child{font-family:var(--mono);font-size:13px;white-space:nowrap}
+.verif th:nth-child(3),.verif th:nth-child(4),.verif td:nth-child(3),.verif td:nth-child(4){white-space:nowrap;width:1%}
+.drc{max-width:880px;margin-top:16px;font-size:14px;display:flex;align-items:flex-start;gap:4px 12px;flex-wrap:wrap}
+.drc .k{font-size:12px;line-height:22px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0}
+.drc .v{flex:1 1 240px;min-width:0}
+.drc .r{margin:0;display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.drc .note{margin-top:6px}
+
+/* Runtime: stage colours */
+.c-syn{--c:var(--st-syn)}
+.c-or-a{--c:var(--st-or-a)}
+.c-or-b{--c:var(--st-or-b)}
+.c-kl-a{--c:var(--st-kl-a)}
+.c-kl-b{--c:var(--st-kl-b)}
+.c-ci{--c:var(--st-ci)}
+
+/* Design flow: vertical by default */
+.flow-cap{margin:-2px 0 12px;font-size:12.5px;color:var(--muted)}
+.backend-flow{--bh:36px;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;max-width:560px}
+.backend-flow>li{position:relative;min-width:0}
+.node{position:relative;display:flex;align-items:center;gap:6px;min-width:0;min-height:var(--bh);padding:4px 4px 4px 9px;border:1px solid var(--rule-strong);border-left:3px solid var(--c,var(--rule-strong));border-radius:2px;background:var(--bg);font-size:13.5px;line-height:1.35}
+.node-main{flex:1 1 auto;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) 5em 3.4em;align-items:baseline;gap:0 10px;padding:3px 0;color:var(--fg);text-decoration:none}
+.node-main .t{font-weight:600;min-width:0;overflow-wrap:break-word;color:var(--link);text-decoration-line:underline;text-decoration-thickness:1px;text-decoration-color:var(--link-line);text-underline-offset:3px}
+.node-main .d{font-variant-numeric:tabular-nums;white-space:nowrap}
+.node-main .p{font-size:12.5px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.node-main:hover{color:var(--fg)}
+.node-main:hover .t{text-decoration-color:currentColor}
+.node-main:focus-visible{outline-offset:1px}
+.src>.node{border-style:dashed;border-left-style:solid}
+.src>.node .d{color:var(--muted)}
+.src>.node>.node-main{margin-right:82px}
+.acts{display:flex;flex:none;gap:2px}
+.ic{display:inline-flex;flex:none;align-items:center;justify-content:center;width:24px;height:24px;border-radius:4px}
+.ic img{display:block;width:16px;height:16px;filter:var(--icon-filter)}
+.ic:hover{background:var(--surface)}
+.ic:focus-visible{outline-offset:0;border-radius:4px}
+
+/* Main-path connectors (vertical) */
+.backend-flow>li+li>.node::before{content:"";position:absolute;left:16px;top:-13px;width:0;height:7px;border-left:1px solid var(--muted)}
+.backend-flow>li+li>.node::after{content:"";position:absolute;left:12.5px;top:-6px;width:0;height:0;border-style:solid;border-width:5px 4px 0;border-color:var(--muted) transparent transparent}
+
+/* Simulation branches (vertical: indented row under parent) */
+.flow-branch{position:relative;margin-top:10px;padding-left:52px}
+.flow-branch::before{content:"";position:absolute;left:19px;top:-10px;bottom:0;width:0;border-left:1px solid var(--muted)}
+.flow-branch::after{content:"";position:absolute;left:37px;top:-10px;width:9px;height:calc(10px + var(--bh) / 2);border:0 solid var(--muted);border-width:0 0 1px 1px}
+.flow-branch>i{position:absolute;left:46px;top:calc(var(--bh) / 2 - 4px);width:0;height:0;border-style:solid;border-width:4px 0 4px 6px;border-color:transparent transparent transparent var(--muted)}
+.flow-branch .node{--c:var(--st-ci)}
+.flow-branch .node-main{grid-template-columns:minmax(0,1fr) 5em}
+.flow-branch .node-main .status{grid-column:1 / -1;justify-self:start;margin-top:4px}
+
+/* Distribution strip */
+.runtime-distribution{margin-top:18px;max-width:none}
+.strip{list-style:none;margin:0;padding:0;display:flex;height:10px;overflow:hidden;border-radius:2px;background:var(--surface)}
+.strip>li{position:relative;flex:0 1 0;min-width:0;background:var(--c)}
+.rt-sum{margin:6px 0 0;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.rt-sum .v{color:var(--fg);margin-left:8px}
+.dur{max-width:640px}
+
+/* Footer */
+footer{padding:20px 0 40px;font-size:13px;color:var(--muted)}
+footer ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px 24px}
+footer li{min-width:0;overflow-wrap:anywhere}
+footer .k{color:var(--muted);margin-right:6px}
+
+@media (min-width:720px){
+  .ex{display:inline-flex}
+}
+@media (min-width:1000px){
+  .chip{grid-template-columns:minmax(0,1fr) minmax(0,560px);grid-template-areas:"stats viewer";gap:48px;align-items:start}
+
+  /* Horizontal main path, branches below the first two nodes */
+  .backend-flow{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));grid-template-rows:auto auto;gap:0 14px;max-width:none}
+  .backend-flow>li{grid-row:span 2;display:grid;grid-template-rows:subgrid;align-content:start}
+  .node{flex-direction:column;align-items:stretch;gap:4px;min-height:96px;padding:6px 6px 4px 8px}
+  .node-main{display:flex;flex-direction:column;gap:1px;padding:0}
+  .node-main .p{text-align:left}
+  .src>.node>.node-main{margin-right:0}
+  .acts{width:auto;flex-wrap:wrap;margin:auto 0 0 -4px}
+  .backend-flow>li+li>.node::before{left:-17px;top:50%;width:9px;height:0;border-left:0;border-top:1px solid var(--muted)}
+  .backend-flow>li+li>.node::after{left:-8px;top:calc(50% - 4px);border-width:4px 0 4px 5px;border-color:transparent transparent transparent var(--muted)}
+  .flow-branch{margin-top:18px;padding-left:0}
+  .flow-branch::before{display:none}
+  .flow-branch::after{left:calc(50% - .5px);top:-18px;width:0;height:13px;border-width:0 0 0 1px}
+  .flow-branch>i{left:calc(50% - 4px);top:-5px;border-width:5px 4px 0;border-color:var(--muted) transparent transparent}
+  .flow-branch .node{min-height:0}
+}
+@media (max-width:600px){
+  .dims text{font-size:34px;stroke-width:7}
+}
+@media (max-width:420px){
+  .wrap{padding:0 16px}
+  table{font-size:13px}
+  th{font-size:12px;padding-right:8px}
+  td{padding-right:8px}
+  .n td:not(:first-child){font-size:12.5px}
+  .prov span+span::before{padding:0 6px}
+  .node{font-size:13px}
+  .node-main{gap:0 8px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap head">
+    <div class="ttl">
+      <h1>Croc SoC Flow Report</h1>
+      <p class="prov">$PROVENANCE</p>
+    </div>
+    <div class="tools">
+      <nav aria-label="Sections">
+        <ul>
+          <li><a href="#chip">Chip</a></li>
+          <li><a href="#verification">Verification</a></li>
+          <li><a href="#runtime">Runtime</a></li>
+        </ul>
+      </nav>
+      <a href="$REPO_URL">GitHub</a>
+      <button id="appearance" type="button" aria-label="Switch to dark mode" title="Switch to dark mode" hidden><img class="theme-sun" src="assets/sun.svg" width="18" height="18" alt=""><img class="theme-moon" src="assets/moon.svg" width="18" height="18" alt=""></button>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<section id="chip" aria-labelledby="chip-h">
+  <div class="wrap">
+    <h2 id="chip-h">Chip</h2>
+    <div class="chip" id="chip-grid">
+
+      <div class="viewer" id="viewer">
+        <div class="frame" id="viewer-frame">
+          <a class="pane v-modules" href="assets/croc_modules.png">
+            <img src="assets/croc_modules.png" width="$IMAGE_WIDTH" height="$IMAGE_HEIGHT"
+                 alt="Croc chip layout with module outlines.">
+            <span class="vh">Open full-size modules PNG</span>
+          </a>
+          <a class="pane v-render" href="assets/croc_render.png">
+            <img src="assets/croc_render.png" width="$IMAGE_WIDTH" height="$IMAGE_HEIGHT" loading="lazy"
+                 alt="Rendered layout of the Croc chip die from the Full Flow GDS, showing the pad ring, macros and standard-cell core.">
+            <span class="vh">Open full-size render PNG</span>
+          </a>
+          <div class="pane v-map">
+            <a href="map/index.html">Open map</a>
+            <iframe id="map-frame" title="Croc chip map" data-src="map/index.html?embed=1" hidden></iframe>
+          </div>
+          $DIMENSIONS
+        </div>
+
+        <div class="controls">
+          <div class="ctl">
+            <fieldset class="seg">
+              <legend class="vh">Chip view</legend>
+              <label><input type="radio" name="chip-view" id="view-modules" value="modules" checked><span>Modules</span></label>
+              <label><input type="radio" name="chip-view" id="view-render" value="render"><span>Render</span></label>
+              <label><input type="radio" name="chip-view" id="view-map" value="map"><span>Map</span></label>
+            </fieldset>
+            <label class="chk"><input type="checkbox" id="dimensions" checked>Dimensions</label>
+          </div>
+          <div class="ctl end">
+            <p class="dl">
+              <span class="d-modules">Modules
+                <a href="assets/croc_modules.png" aria-label="Modules PNG">PNG</a>
+                <a href="assets/croc_modules.svg" aria-label="Modules SVG">SVG</a>
+                <a href="assets/croc_modules.pdf" aria-label="Modules PDF">PDF</a>
+              </span>
+              <span class="d-render">Render
+                <a href="assets/croc_render.png" aria-label="Render PNG">PNG</a>
+                <a href="assets/croc_render.pdf" aria-label="Render PDF">PDF</a>
+              </span>
+              <span class="d-map"><a href="map/index.html">Open map</a></span>
+            </p>
+            <button type="button" class="ex" id="expand-view" title="Expand view" aria-label="Expand view" aria-expanded="false" aria-controls="viewer" hidden><img src="assets/maximize.svg" width="16" height="16" alt=""><span class="ex-l">Collapse view</span></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="block">
+          <h3 id="area-h">Area</h3>
+          <div class="tw">
+            <table class="n area" aria-labelledby="area-h">
+              <thead>
+                <tr><th scope="col">Cells</th><th scope="col">Count</th><th scope="col">Area (µm²)</th><th scope="col">Area (GE)</th></tr>
+              </thead>
+              <tbody>
+$AREA_ROWS
+              </tbody>
+            </table>
+          </div>
+          <p class="note">1 GE = $GE_AREA µm² (NAND2). Excludes fillers, antenna cells, corners and bondpads.</p>
+          <details>
+            <summary>Module logic area</summary>
+            <div class="tw">
+              <table class="n mods" aria-label="Module area">
+                <thead>
+                  <tr><th scope="col">Module</th><th scope="col">Cells</th><th scope="col">Area (µm²)</th><th scope="col">Area (GE)</th></tr>
+                </thead>
+                <tbody>
+$MODULE_ROWS
+              </tbody>
+              </table>
+            </div>
+            <p class="note">Logic cell footprints. Macros excluded.</p>
+          </details>
+        </div>
+
+        <div class="block">
+          <h3 id="design-h">Design</h3>
+          <div class="tw">
+            <table class="n kv" aria-labelledby="design-h">
+              <thead>
+                <tr><th scope="col">Metric</th><th scope="col">Value</th></tr>
+              </thead>
+              <tbody>
+$DESIGN_ROWS
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="verification" aria-labelledby="verification-h">
+  <div class="wrap">
+    <h2 id="verification-h">Verification</h2>
+    <div class="tw verif">
+      <table class="verif">
+        <caption>Verilator &middot; RTL and post-Yosys netlist &middot; JTAG boot/result handshake</caption>
+        <thead>
+          <tr><th scope="col">Test</th><th scope="col">Exercises</th><th scope="col">RTL</th><th scope="col">Netlist</th></tr>
+        </thead>
+        <tbody>
+$TEST_ROWS
+              </tbody>
+      </table>
+    </div>
+    <div class="drc">
+      <span class="k">DRC</span>
+      <div class="v">
+        <p class="r">$DRC_RESULT</p>
+        <p class="note">Minimal metal, pin, angle and forbidden-geometry checks. Off-grid and recommended checks excluded.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="runtime" aria-labelledby="runtime-h">
+  <div class="wrap">
+    <h2 id="runtime-h">Runtime</h2>
+
+    <div class="block">
+      <h3 id="flow-h">Full Flow</h3>
+      <p class="flow-cap" id="flow-cap">Design flow; backend wall time. Simulation branches are not in the total.</p>
+
+      <ol class="backend-flow" aria-labelledby="flow-h" aria-describedby="flow-cap">$FLOW</ol>
+
+      <div class="runtime-distribution">$DISTRIBUTION</div>
+
+      <p class="note">CI reports: $CI_REPORTS</p>
+      <details>
+        <summary>Durations</summary>
+        <div class="tw">
+          <table class="n dur" aria-label="Backend stage wall time">
+            <thead>
+              <tr><th scope="col">Stage</th><th scope="col">Seconds</th><th scope="col">Share</th></tr>
+            </thead>
+            <tbody>
+$DURATION_ROWS
+              </tbody>
+          </table>
+        </div>
+        <p class="note">Measured stage wall time. Setup and PDK downloads excluded.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer><div class="wrap"><ul>$FOOTER</ul></div></footer>
+
+<script>
+(function(){
+  var d=document,g=d.getElementById('chip-grid'),v=d.getElementById('viewer'),
+      f=d.getElementById('map-frame'),b=d.getElementById('expand-view'),
+      m=d.getElementById('view-map');
+  function resize(){
+    requestAnimationFrame(function(){
+      try{if(f.hasAttribute('src')&&f.contentWindow)f.contentWindow.dispatchEvent(new Event('resize'))}catch(e){}
+    });
+  }
+  function map(){
+    if(!m.checked)return;
+    if(!f.hasAttribute('src')){f.hidden=false;f.src=f.dataset.src}
+    resize();
+  }
+  function setWide(w){
+    g.classList.toggle('is-wide',w);
+    var t=w?'Collapse view':'Expand view';
+    b.title=t;
+    b.setAttribute('aria-label',t);
+    b.setAttribute('aria-expanded',w?'true':'false');
+    resize();
+  }
+  v.addEventListener('change',map);
+  map();
+  b.hidden=false;
+  b.addEventListener('click',function(){setWide(!g.classList.contains('is-wide'))});
+})();
+</script>
+
+</body>
+</html>

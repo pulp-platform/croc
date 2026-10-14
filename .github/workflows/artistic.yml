@@ -8,16 +8,16 @@
 name: ArtistIC Render
 
 on:
-    workflow_dispatch:
-      inputs:
-        run_id:
-          description: Full Flow run containing the GDS and OpenROAD artifacts
-          required: true
-          type: string
-    workflow_run:
-      workflows: ["Full Flow"]
-      types: [completed]
-      branches: [main]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Full Flow run containing the GDS and OpenROAD artifacts
+        required: true
+        type: string
+  workflow_run:
+    workflows: ["Full Flow"]
+    types: [completed]
+    branches: [main]
 
 jobs:
   artistic:
@@ -27,8 +27,12 @@ jobs:
     permissions:
       contents: read
       actions: read
+    outputs:
+      source_run_id: ${{ steps.source-run.outputs.id }}
+      source_attempt: ${{ steps.context.outputs.backend_attempt }}
     steps:
       - name: Check Full Flow run
+        id: source-run
         uses: actions/github-script@v7
         env:
           SOURCE_RUN_ID: ${{ github.event.workflow_run.id || inputs.run_id }}
@@ -42,52 +46,126 @@ jobs:
             if (run.workflow_id !== workflow.id || run.conclusion !== 'success') {
               throw new Error('Input artifacts must come from a successful Full Flow run');
             }
+            if (!['push', 'workflow_dispatch', 'release'].includes(run.event)) {
+              throw new Error('Select a push, manual or release Full Flow run, not a pull-request merge build');
+            }
             if (context.eventName === 'workflow_run' &&
-                (!['push', 'workflow_dispatch', 'release'].includes(run.event) ||
-                 run.head_branch !== 'main' || run.head_repository?.full_name !== `${repo.owner}/${repo.repo}`)) {
+                (run.head_branch !== 'main' || run.head_repository?.full_name !== `${repo.owner}/${repo.repo}`)) {
               throw new Error('Automatic publication requires a trusted main-branch Full Flow run');
             }
-            const renderRevision = context.eventName === 'workflow_run' ? run.head_sha : context.sha;
-            await core.summary.addHeading('Artistic inputs')
-              .addLink(`Full Flow ${run.id}`, run.html_url)
-              .addRaw(`\n\nSource revision: ${run.head_sha}\n\nRender revision: ${renderRevision}\n`)
-              .write();
-      - name: Check out repository and submodules
+            core.setOutput('id', String(run.id));
+      - name: Check out source revision and submodules
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
           submodules: recursive
+      - name: Resolve exact report inputs
+        id: context
+        uses: actions/github-script@v7
+        env:
+          SOURCE_RUN_ID: ${{ steps.source-run.outputs.id }}
+          RENDER_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+          RENDER_RUN_ID: ${{ github.run_id }}
+        with:
+          script: |
+            const fs = require('fs');
+            const { resolveContext } = require('./.github/scripts/report_context.js');
+            const reportContext = await resolveContext({
+              github,
+              core,
+              sourceRunId: process.env.SOURCE_RUN_ID,
+              renderSha: process.env.RENDER_SHA,
+              renderRunId: process.env.RENDER_RUN_ID,
+            });
+            fs.mkdirSync('report-inputs', { recursive: true });
+            fs.writeFileSync('report-inputs/context.json', `${JSON.stringify(reportContext, null, 2)}\n`);
+            for (const name of ['rtl', 'netlist']) {
+              core.setOutput(name, String(reportContext.artifacts[name].available));
+            }
+            if (!reportContext.simulation) core.warning('No matching Short Flow run; simulation results will be reported as Not run.');
+            for (const name of ['rtl', 'netlist']) {
+              if (!reportContext.artifacts[name].available) core.warning(`${name} report inputs unavailable: ${reportContext.artifacts[name].reason}`);
+            }
       - name: Free disk space
         uses: ./.github/actions/free-space
       - name: Download sealed GDS
         uses: actions/download-artifact@v4
         with:
-          name: croc-gds-sealed
+          artifact-ids: ${{ steps.context.outputs.sealed_gds_artifact_id }}
+          merge-multiple: true
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
-          run-id: ${{ github.event.workflow_run.id || inputs.run_id }}
+          run-id: ${{ steps.source-run.outputs.id }}
           path: klayout/out
       - name: Download OpenROAD outputs
         uses: actions/download-artifact@v4
         with:
-          name: croc-openroad-out
+          artifact-ids: ${{ steps.context.outputs.openroad_artifact_id }}
+          merge-multiple: true
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
-          run-id: ${{ github.event.workflow_run.id || inputs.run_id }}
+          run-id: ${{ steps.source-run.outputs.id }}
           path: openroad
-
-      - name: Generate logo, render, outlines and map
+      - name: Download report backend
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ steps.context.outputs.backend_artifact_id }}
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ steps.source-run.outputs.id }}
+          path: report-inputs/backend
+      - name: Download Yosys report inputs
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ steps.context.outputs.yosys_artifact_id }}
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ steps.source-run.outputs.id }}
+          path: yosys
+      - name: Download DRC report inputs
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ steps.context.outputs.drc_artifact_id }}
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ steps.source-run.outputs.id }}
+          path: klayout/drc-minimal
+      - name: Download RTL simulation report inputs
+        if: steps.context.outputs.rtl == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ steps.context.outputs.rtl_artifact_id }}
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ steps.context.outputs.simulation_id }}
+          path: report-inputs/rtl
+      - name: Download netlist simulation report inputs
+        if: steps.context.outputs.netlist == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ steps.context.outputs.netlist_artifact_id }}
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ steps.context.outputs.simulation_id }}
+          path: report-inputs/netlist
+      - name: Generate logo, render, outlines and report
         uses: ./.github/actions/oseda-cmd
         with:
           setup_cmd: |
             apt-get update
             apt-get install -y --no-install-recommends inkscape potrace python3-img2pdf
-          cmd: "source env.sh; make -C artistic/artistic PROJECT=../croc.toml all; python3 .github/scripts/check_artistic.py"
+          cmd: "source env.sh; make -C artistic/artistic PROJECT=../croc.toml all; python3 .github/scripts/check_artistic.py; python3 .github/scripts/build_report.py --inputs report-inputs --output artistic/work/site"
 
       - name: Upload ArtistIC artifacts
         uses: actions/upload-artifact@v4
         with:
           name: croc-artistic
+          overwrite: true
           path: |
             artistic/work/croc_chip.gds.gz
             artistic/work/croc_logo.*
@@ -101,17 +179,15 @@ jobs:
             artistic/work/croc_shadow.png
             artistic/work/croc_poster.pdf
             artistic/work/manifest.json
+            artistic/work/render.json
+            artistic/work/render_output.json
+            artistic/work/map.json
+            report-inputs/context.json
 
-      - name: Prepare map for publication
-        run: |
-          cp openroad/reports/04_croc.routed.png artistic/work/map/croc_routed.png
-          cp artistic/work/croc_logo.gds artistic/work/map/croc_logo.gds
-          cp artistic/work/croc_modules.jpg artistic/work/map/croc_modules.jpg
-          cp artistic/work/croc_render.jpg artistic/work/map/croc_render.jpg
-      - name: Upload chip map to Pages
+      - name: Upload report site to Pages
         uses: actions/upload-pages-artifact@v3
         with:
-          path: artistic/work/map
+          path: artistic/work/site
 
   deploy:
     needs: artistic
@@ -119,15 +195,31 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
+      actions: read
+      contents: read
       pages: write
       id-token: write
     concurrency:
       group: artistic-pages
-      cancel-in-progress: false
+      queue: max
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/checkout@v4
+      - name: Check latest Full Flow attempt
+        id: current
+        uses: actions/github-script@v7
+        env:
+          SOURCE_RUN_ID: ${{ needs.artistic.outputs.source_run_id }}
+          SOURCE_ATTEMPT: ${{ needs.artistic.outputs.source_attempt }}
+        with:
+          script: |
+            const { canPublish } = require('./.github/scripts/report_context.js');
+            const publish = await canPublish({ github, sourceRunId: process.env.SOURCE_RUN_ID, sourceAttempt: process.env.SOURCE_ATTEMPT });
+            core.setOutput('publish', String(publish));
+            if (!publish) core.notice('Skipping an older Full Flow report.');
       - name: Deploy pages
+        if: steps.current.outputs.publish == 'true'
         id: deployment
         uses: actions/deploy-pages@v4
