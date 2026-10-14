@@ -39,10 +39,6 @@ blur_px = 16
 offset_px = [7, 12]
 padding_px = 80
 
-[render.colors.TopMetal1]
-color = "#22c55e"
-alpha = 1
-
 [render.outlines]
 method = "density"
 def = "../openroad/out/croc.def"
@@ -78,8 +74,8 @@ gen_sram_bank = { label = "SRAM", color = "#39729f" }
 
 [map]
 input = "logo"
-resolution = [20480, 20480]
-segments = [5, 5]
+resolution = [16384, 16384]
+segments = [4, 4]
 overrender = 1
 tile_size = 512
 layers = "routing"
@@ -138,8 +134,8 @@ color = "#7fffd4"
 alpha = 0.5
 
 [palettes.croc.layers.TopMetal1]
-color = "#7fffd4"
-alpha = 0.5
+color = "#02673b"
+alpha = 1
 
 [palettes.croc.layers.TopVia2]
 color = "#1e90ff"
