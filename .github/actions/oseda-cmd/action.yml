@@ -67,6 +67,10 @@ runs:
           docker compose exec -T --user root "${{ env.service_name }}" \
             bash -ec "$OSEDA_SETUP_CMD"
         fi
-        docker compose exec -T "${{ env.service_name }}" \
+        docker compose exec -T \
+          --env GITHUB_SHA="${GITHUB_SHA}" \
+          --env GITHUB_RUN_ID="${GITHUB_RUN_ID}" \
+          --env GITHUB_RUN_ATTEMPT="${GITHUB_RUN_ATTEMPT}" \
+          "${{ env.service_name }}" \
           bash -lc "source ~/.bashrc; set -e; $OSEDA_CMD" | tee result.log
         echo "result_log=$(pwd)/result.log" >> "$GITHUB_ENV"
