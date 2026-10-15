@@ -8,7 +8,7 @@
 
 variables:
   NONFREE_REMOTE: git@iis-git.ee.ethz.ch:pulp-restricted/croc-nonfree.git
-  NONFREE_COMMIT: paulsc/fpga   # TODO: replace with final commit
+  NONFREE_COMMIT: main
 
 stages:
   - nonfree

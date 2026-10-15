@@ -4,7 +4,7 @@
 
 # Author: Paul Scheffler <paulsc@iis.ee.ethz.ch>
 
-# bla
+# Mirror to the internal GitLab, where the nonfree sub-pipeline (FPGA tests) runs
 
 name: gitlab-ci
 
