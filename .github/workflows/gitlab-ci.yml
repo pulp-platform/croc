@@ -8,7 +8,13 @@
 
 name: gitlab-ci
 
-on: [ push, pull_request, workflow_dispatch ]
+# Pushes to branches are covered by their pull request, so only `main` is checked on push
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
 
 jobs:
 
