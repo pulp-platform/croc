@@ -5,6 +5,7 @@
 
 import json
 from pathlib import Path
+import re
 import tempfile
 import unittest
 
@@ -163,6 +164,70 @@ class ReportTest(unittest.TestCase):
         html = (self.root / "site/index.html").read_text()
         self.assertIn(">Incomplete</span>", html)
         self.assertIn('class="status pass">Pass</span></td>', html)
+
+    def add_fpga(self, exit_code=0, **overrides):
+        self.context["fpga"] = {"id": 126, "attempt": 1, "jobs": {"fpga": {"attempt": 1}}}
+        self.json("report-inputs/context.json", self.context)
+        report = {
+            "source_sha": self.sha,
+            "source_run": "126",
+            "source_attempt": "1",
+            "stages": [{"name": "fpga", "elapsed_seconds": 754, "exit_code": exit_code, "log": None}],
+            "tests": [],
+        }
+        report.update(overrides)
+        self.json("report-inputs/fpga/fpga.json", report)
+
+    def fpga_node(self):
+        build(self.inputs, self.root / "site", self.root)
+        html = (self.root / "site/index.html").read_text()
+        match = re.search(r'<div class="flow-branch" role="group" aria-label="FPGA \(Genesys2\)">.*?</div></div>', html)
+        self.assertIsNotNone(match)
+        return match.group(0), html
+
+    def test_fpga_absent_is_not_run(self):
+        node, html = self.fpga_node()
+        self.assertIn('class="status na">Not run', node)
+        self.assertNotIn("actions/runs/126", html)
+        self.assertIsNone(json.loads((self.root / "site/data.json").read_text())["fpga"])
+
+    def test_fpga_pass_links_to_the_public_run_without_logs(self):
+        self.add_fpga()
+        node, html = self.fpga_node()
+        self.assertIn('href="https://github.com/example/croc/actions/runs/126"', node)
+        self.assertIn('class="status pass">Pass', node)
+        self.assertIn("12m34s", node)
+        self.assertIn("Commit aaaaaaa", node)
+        self.assertIn('>FPGA</a>', html)
+        self.assertFalse((self.root / "site/logs/fpga.html").exists())
+
+    def test_fpga_artifact_extra_fields_are_not_published(self):
+        self.add_fpga(
+            internal_url="https://gitlab.example/run/1",
+            runner_hostname="runner-1",
+            stages=[{"name": "fpga", "elapsed_seconds": 754, "exit_code": 0, "log": "secret.log", "host": "fpga-host"}],
+        )
+        self.fpga_node()
+        published = (self.root / "site/data.json").read_text()
+        for leaked in ("gitlab.example", "runner-1", "secret.log", "fpga-host"):
+            self.assertNotIn(leaked, published)
+        self.assertEqual(json.loads(published)["fpga"]["stages"], [{"name": "fpga", "exit_code": 0, "elapsed_seconds": 754}])
+
+    def test_failed_fpga_is_shown_and_does_not_fail_the_build(self):
+        self.add_fpga(exit_code=1)
+        node, _ = self.fpga_node()
+        self.assertIn('class="status fail">Fail', node)
+
+    def test_fpga_report_of_another_commit_run_or_attempt_is_rejected(self):
+        for field, value in (("source_sha", "b" * 40), ("source_run", "127"), ("source_attempt", "2")):
+            self.add_fpga(**{field: value})
+            with self.assertRaisesRegex(ValueError, "different commit, run or attempt"):
+                build(self.inputs, self.root / "site", self.root)
+
+    def test_fpga_report_needs_exactly_one_fpga_stage(self):
+        self.add_fpga(stages=[])
+        with self.assertRaisesRegex(ValueError, "one fpga stage"):
+            build(self.inputs, self.root / "site", self.root)
 
 
 if __name__ == "__main__":

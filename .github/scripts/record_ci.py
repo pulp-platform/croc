@@ -6,6 +6,7 @@
 
 import argparse
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -21,7 +22,8 @@ ID_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
 
 
 def provenance(root: Path = ROOT) -> Dict[str, object]:
-    sha = os.environ.get("GITHUB_SHA")
+    # Pull request runs check out a merge commit; CROC_CI_SOURCE_SHA names the commit under test
+    sha = os.environ.get("CROC_CI_SOURCE_SHA") or os.environ.get("GITHUB_SHA")
     if not sha:
         sha = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, universal_newlines=True).strip()
     return {
@@ -33,7 +35,7 @@ def provenance(root: Path = ROOT) -> Dict[str, object]:
 
 
 def _result_path(root: Path, report: str) -> Path:
-    if report not in {"backend", "rtl", "netlist"}:
+    if report not in {"backend", "rtl", "netlist", "fpga"}:
         raise ValueError(f"unknown report: {report}")
     return root / "ci-results" / f"{report}.json"
 
@@ -109,6 +111,25 @@ def record_test(
         item["exit_code"] = exit_code
     tests.append(item)
     _write_result(root, report, data)
+
+
+def record_result(report: str, stage: str, outcome: str, elapsed_seconds: float, root: Path = ROOT) -> int:
+    """Record a stage that ran outside this script, such as a step with `uses:`, from its outcome."""
+    if not ID_RE.fullmatch(stage):
+        raise ValueError(f"invalid stage ID: {stage}")
+    if outcome not in {"success", "failure", "cancelled"}:
+        raise ValueError(f"invalid stage outcome: {outcome}")
+    if not math.isfinite(elapsed_seconds) or elapsed_seconds < 0:
+        raise ValueError(f"invalid elapsed time: {elapsed_seconds}")
+    data = _load_result(root, report)
+    if any(item["name"] == stage for item in data["stages"]):
+        raise ValueError(f"stage already recorded: {stage}")
+    exit_code = 0 if outcome == "success" else 1
+    data["stages"].append(
+        {"name": stage, "elapsed_seconds": round(elapsed_seconds, 3), "exit_code": exit_code, "log": None}
+    )
+    _write_result(root, report, data)
+    return exit_code
 
 
 def run_stage(
@@ -215,6 +236,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     parser = argparse.ArgumentParser(prog="record_ci.py")
     subparsers = parser.add_subparsers(dest="action")
+    result_parser = subparsers.add_parser("result")
+    result_parser.add_argument("--report", required=True, choices=("fpga",))
+    result_parser.add_argument("--stage", required=True)
+    result_parser.add_argument("--outcome", required=True, choices=("success", "failure", "cancelled"))
+    result_parser.add_argument("--elapsed-seconds", required=True, type=float)
     test_parser = subparsers.add_parser("test")
     test_parser.add_argument("--report", required=True, choices=("backend", "rtl", "netlist"))
     test_parser.add_argument("--name", required=True)
@@ -226,7 +252,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if parsed.action is None:
         parser.error("an action is required")
     try:
-        record_test(parsed.report, parsed.name, parsed.config, parsed.status, parsed.log, parsed.exit_code)
+        if parsed.action == "result":
+            record_result(parsed.report, parsed.stage, parsed.outcome, parsed.elapsed_seconds)
+        else:
+            record_test(parsed.report, parsed.name, parsed.config, parsed.status, parsed.log, parsed.exit_code)
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         print(f"record_ci.py: {exc}", file=sys.stderr)
         return 2

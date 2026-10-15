@@ -84,6 +84,39 @@ record_ci.record_test('rtl','test_uart','iDMA','pass','verilator/test_uart.log',
         self.assertEqual(data["stages"][0]["exit_code"], 127)
         self.assertIn(b"could not start", (self.root / "ci-results/logs/floorplan.log").read_bytes())
 
+    def test_result_records_outcome_of_a_step_without_a_command(self):
+        for outcome, exit_code in (("success", 0), ("failure", 1), ("cancelled", 1)):
+            with self.subTest(outcome=outcome):
+                self.assertEqual(record_ci.record_result("fpga", "fpga", outcome, 12.3456, self.root), exit_code)
+                data = json.loads((self.root / "ci-results/fpga.json").read_text())
+                self.assertEqual(data["stages"], [{"name": "fpga", "elapsed_seconds": 12.346, "exit_code": exit_code, "log": None}])
+                self.assertEqual(data["tests"], [])
+                self.assertEqual(
+                    (data["schema_version"], data["source_sha"], data["source_run"], data["source_attempt"]),
+                    (1, "abc123", "42", "2"),
+                )
+                (self.root / "ci-results/fpga.json").unlink()
+
+    def test_result_rejects_invalid_input_and_duplicates(self):
+        record_ci.record_result("fpga", "fpga", "success", 1, self.root)
+        with self.assertRaisesRegex(ValueError, "already recorded"):
+            record_ci.record_result("fpga", "fpga", "failure", 1, self.root)
+        with self.assertRaisesRegex(ValueError, "invalid stage outcome"):
+            record_ci.record_result("fpga", "other", "skipped", 1, self.root)
+        with self.assertRaisesRegex(ValueError, "invalid elapsed time"):
+            record_ci.record_result("fpga", "other", "success", float("nan"), self.root)
+        with self.assertRaisesRegex(ValueError, "invalid elapsed time"):
+            record_ci.record_result("fpga", "other", "success", -1, self.root)
+
+    def test_source_sha_override_names_the_pull_request_head(self):
+        with patch.dict(os.environ, {"CROC_CI_SOURCE_SHA": "head456"}):
+            record_ci.record_result("fpga", "fpga", "success", 1, self.root)
+        data = json.loads((self.root / "ci-results/fpga.json").read_text())
+        self.assertEqual(data["source_sha"], "head456")
+        self.assertEqual(data["source_run"], "42")
+        with patch.dict(os.environ, {"CROC_CI_SOURCE_SHA": ""}):
+            self.assertEqual(record_ci.provenance(self.root)["source_sha"], "abc123")
+
     def test_stale_provenance_is_refused(self):
         path = self.root / "ci-results/backend.json"
         path.parent.mkdir(parents=True)

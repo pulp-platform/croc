@@ -47,11 +47,15 @@ function artifact(name, runId, sha, id, createdAt) {
   };
 }
 
-function fakeGithub({ shortRuns, shortArtifacts, jobs }) {
+function fakeGithub({ shortRuns, shortArtifacts, jobs, fpgaRuns = [], fpgaArtifacts = {}, fpgaJobs = {} }) {
   const source = run({ id: 101, attempt: 4, workflowId: 1 });
   return {
     paginate: async (endpoint, params) => {
       if (params.workflow_id === 2) return shortRuns;
+      if (params.workflow_id === 3) return fpgaRuns;
+      if (fpgaRuns.some((candidate) => candidate.id === params.run_id)) {
+        return (params.filter === 'all' ? fpgaJobs : fpgaArtifacts)[params.run_id] || [];
+      }
       if (params.run_id === 202 && params.filter === 'all') return jobs;
       if (params.run_id === 101) return [
         artifact('croc-report-backend', 101, SOURCE_SHA, 1, '2026-10-14T12:01:00Z'),
@@ -67,7 +71,7 @@ function fakeGithub({ shortRuns, shortArtifacts, jobs }) {
     rest: {
       actions: {
         getWorkflowRun: async () => ({ data: source }),
-        getWorkflow: async ({ workflow_id }) => ({ data: { id: workflow_id === 'full-flow.yml' ? 1 : 2 } }),
+        getWorkflow: async ({ workflow_id }) => ({ data: { id: workflow_id === 'full-flow.yml' ? 1 : workflow_id === 'gitlab-ci.yml' ? 3 : 2 } }),
         listWorkflowRunArtifacts: Symbol('listWorkflowRunArtifacts'),
         listJobsForWorkflowRun: async () => ({ data: { jobs } }),
       },
@@ -78,8 +82,9 @@ function fakeGithub({ shortRuns, shortArtifacts, jobs }) {
   };
 }
 
+const outputs = {};
 const fakeCore = {
-  setOutput() {},
+  setOutput(name, value) { outputs[name] = value; },
   summary: {
     addHeading() { return this; },
     addLink() { return this; },
@@ -182,6 +187,110 @@ test('rejects a stale netlist report from an earlier job execution', async () =>
   }), /without required croc-report-netlist artifact/);
 });
 
+function resolveWithFpga(fpga) {
+  const github = fakeGithub({
+    shortRuns: [run({ id: 202 })],
+    shortArtifacts: [],
+    jobs: [
+      job('simulation', 1, 301, '2026-10-14T12:10:00Z', '2026-10-14T12:20:00Z', 'failure'),
+      job('netlist-simulation', 1, 300, '2026-10-14T12:21:00Z', '2026-10-14T12:25:00Z', 'failure'),
+    ],
+    ...fpga,
+  });
+  return resolveContext({ github, core: fakeCore, sourceRunId: '101', renderSha: SOURCE_SHA, renderRunId: '303' });
+}
+
+const fpgaJob = (attempt, id, conclusion) =>
+  job('check', attempt, id, '2026-10-14T12:00:00Z', '2026-10-14T14:00:00Z', conclusion);
+
+test('uses the finished gitlab-ci run of the same commit, passed or failed', async () => {
+  for (const conclusion of ['success', 'failure']) {
+    const context = await resolveWithFpga({
+      fpgaRuns: [run({ id: 401, workflowId: 3, conclusion })],
+      fpgaArtifacts: { 401: [artifact('croc-report-fpga', 401, SOURCE_SHA, 40, '2026-10-14T13:59:00Z')] },
+      fpgaJobs: { 401: [fpgaJob(1, 501, conclusion)] },
+    });
+    assert.equal(context.fpga.id, 401);
+    assert.equal(context.fpga.url, 'https://github.com/ethz-croc/croc/actions/runs/401');
+    assert.deepEqual(context.fpga.jobs.fpga, { attempt: 1, job_id: 501, conclusion });
+    assert.equal(context.artifacts.fpga.id, 40);
+    assert.equal(outputs.fpga_artifact_id, '40');
+    assert.equal(outputs.fpga_id, '401');
+  }
+});
+
+test('reports the FPGA check as unavailable without failing when no usable run exists', async () => {
+  const good = artifact('croc-report-fpga', 405, SOURCE_SHA, 45, '2026-10-14T13:59:00Z');
+  for (const [name, fpga] of [
+    ['no run', {}],
+    ['other commit', { fpgaRuns: [run({ id: 401, workflowId: 3, sha: OTHER_SHA })],
+      fpgaArtifacts: { 401: [artifact('croc-report-fpga', 401, OTHER_SHA, 40, '2026-10-14T13:59:00Z')] },
+      fpgaJobs: { 401: [fpgaJob(1, 501, 'success')] } }],
+    ['fork run', { fpgaRuns: [run({ id: 401, workflowId: 3, repository: 'fork/croc' })],
+      fpgaArtifacts: { 401: [artifact('croc-report-fpga', 401, SOURCE_SHA, 40, '2026-10-14T13:59:00Z')] },
+      fpgaJobs: { 401: [fpgaJob(1, 501, 'success')] } }],
+    ['unfinished run', { fpgaRuns: [run({ id: 401, workflowId: 3, status: 'in_progress', conclusion: null })],
+      fpgaArtifacts: { 401: [good] }, fpgaJobs: { 401: [fpgaJob(1, 501, null)] } }],
+    ['cancelled run', { fpgaRuns: [run({ id: 401, workflowId: 3, conclusion: 'cancelled' })],
+      fpgaArtifacts: { 401: [good] }, fpgaJobs: { 401: [fpgaJob(1, 501, 'cancelled')] } }],
+    ['missing artifact', { fpgaRuns: [run({ id: 401, workflowId: 3 })],
+      fpgaArtifacts: { 401: [] }, fpgaJobs: { 401: [fpgaJob(1, 501, 'success')] } }],
+    ['artifact outside the job execution', { fpgaRuns: [run({ id: 401, workflowId: 3 })],
+      fpgaArtifacts: { 401: [artifact('croc-report-fpga', 401, SOURCE_SHA, 40, '2026-10-14T15:00:00Z')] },
+      fpgaJobs: { 401: [fpgaJob(1, 501, 'success')] } }],
+    ['artifact of another run', { fpgaRuns: [run({ id: 401, workflowId: 3 })],
+      fpgaArtifacts: { 401: [artifact('croc-report-fpga', 999, SOURCE_SHA, 40, '2026-10-14T13:59:00Z')] },
+      fpgaJobs: { 401: [fpgaJob(1, 501, 'success')] } }],
+  ]) {
+    const context = await resolveWithFpga(fpga);
+    assert.equal(context.fpga, null, name);
+    assert.equal(context.artifacts.fpga.available, false, name);
+    assert.ok(context.artifacts.fpga.reason, name);
+    assert.equal(outputs.fpga_artifact_id, '', name);
+    assert.equal(context.simulation.id, 202, name);
+  }
+});
+
+test('prefers the newest FPGA run with a result and recovers its execution attempt', async () => {
+  const context = await resolveWithFpga({
+    fpgaRuns: [
+      run({ id: 401, workflowId: 3 }),
+      run({ id: 402, workflowId: 3, attempt: 2, conclusion: 'failure' }),
+      run({ id: 403, workflowId: 3 }),
+    ],
+    fpgaArtifacts: {
+      401: [artifact('croc-report-fpga', 401, SOURCE_SHA, 40, '2026-10-14T13:59:00Z')],
+      402: [artifact('croc-report-fpga', 402, SOURCE_SHA, 41, '2026-10-14T13:59:00Z')],
+      403: [],
+    },
+    fpgaJobs: {
+      401: [fpgaJob(1, 501, 'success')],
+      402: [fpgaJob(1, 502, 'failure'), fpgaJob(2, 503, 'failure')],
+      403: [fpgaJob(1, 504, 'success')],
+    },
+  });
+  assert.equal(context.fpga.id, 402);
+  assert.equal(context.fpga.attempt, 2);
+  assert.deepEqual(context.fpga.jobs.fpga, { attempt: 1, job_id: 502, conclusion: 'failure' });
+  assert.equal(context.artifacts.fpga.id, 41);
+});
+
+test('a failing FPGA lookup does not fail the report inputs', async () => {
+  const github = fakeGithub({ shortRuns: [run({ id: 202 })], shortArtifacts: [], jobs: [
+    job('simulation', 1, 301, '2026-10-14T12:10:00Z', '2026-10-14T12:20:00Z', 'failure'),
+    job('netlist-simulation', 1, 300, '2026-10-14T12:21:00Z', '2026-10-14T12:25:00Z', 'failure'),
+  ] });
+  const getWorkflow = github.rest.actions.getWorkflow;
+  github.rest.actions.getWorkflow = async (params) => {
+    if (params.workflow_id === 'gitlab-ci.yml') throw new Error('Not Found');
+    return getWorkflow(params);
+  };
+  const context = await resolveContext({ github, core: fakeCore, sourceRunId: '101', renderSha: SOURCE_SHA, renderRunId: '303' });
+  assert.equal(context.fpga, null);
+  assert.match(context.artifacts.fpga.reason, /Not Found/);
+  assert.equal(context.simulation.id, 202);
+});
+
 test('artifact-ID downloads merge files directly into the report input paths', () => {
   const workflowPath = path.join(__dirname, '..', 'workflows', 'artistic.yml');
   const workflow = fs.readFileSync(workflowPath, 'utf8');
@@ -193,6 +302,7 @@ test('artifact-ID downloads merge files directly into the report input paths', (
     ['Download DRC report inputs', 'klayout/drc-minimal'],
     ['Download RTL simulation report inputs', 'report-inputs/rtl'],
     ['Download netlist simulation report inputs', 'report-inputs/netlist'],
+    ['Download FPGA check report inputs', 'report-inputs/fpga'],
   ];
   for (const [name, destination] of downloads) {
     const start = workflow.indexOf(`      - name: ${name}\n`);
@@ -207,9 +317,9 @@ test('artifact-ID downloads merge files directly into the report input paths', (
 });
 
 test('rerunnable artifact uploads replace artifacts with the same name', () => {
-  for (const workflowName of ['full-flow.yml', 'short-flow.yml', 'artistic.yml']) {
+  for (const workflowName of ['full-flow.yml', 'short-flow.yml', 'gitlab-ci.yml', 'artistic.yml']) {
     const workflow = fs.readFileSync(path.join(__dirname, '..', 'workflows', workflowName), 'utf8');
-    const steps = [...workflow.matchAll(/      - name: [^\n]+\n([\s\S]*?)(?=\n      - name: |\n  deploy:|$)/g)];
+    const steps = [...workflow.matchAll(/      -(?: |\n        )name: [^\n]+\n([\s\S]*?)(?=\n      -(?: |\n        )name: |\n  deploy:|$)/g)];
     const uploads = steps.filter((match) => match[1].includes('uses: actions/upload-artifact@v4'));
     assert.ok(uploads.length > 0, `${workflowName} has no upload-artifact steps`);
     for (const upload of uploads) {

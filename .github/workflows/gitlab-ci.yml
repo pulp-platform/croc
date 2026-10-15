@@ -22,7 +22,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       -
+        name: Note start time
+        id: start
+        # Skip on forks or pull requests from forks due to missing secrets.
+        if: >
+          github.repository == 'pulp-platform/croc' &&
+          (github.event_name != 'pull_request' ||
+          github.event.pull_request.head.repo.full_name == github.repository)
+        run: echo "time=$(date +%s)" >> "$GITHUB_OUTPUT"
+      -
         name: Mirror and check
+        id: mirror
         uses: pulp-platform/pulp-actions/gitlab-ci@v2.4.1
         # Skip on forks or pull requests from forks due to missing secrets.
         if: >
@@ -34,3 +44,33 @@ jobs:
           repo: github-mirror/croc
           token: ${{ secrets.GITLAB_TOKEN }}
           poll-count: 10800 # (10800/60=180min=3hours)
+      # The Pages report shows this result; the mirror step above already fails the job on a failed check.
+      # The mirror action leaves a checkout of this commit in the workspace, which provides the script.
+      -
+        name: Record check result
+        if: >
+          always() &&
+          github.repository == 'pulp-platform/croc' &&
+          (github.event_name != 'pull_request' ||
+          github.event.pull_request.head.repo.full_name == github.repository)
+        env:
+          START_TIME: ${{ steps.start.outputs.time }}
+          MIRROR_OUTCOME: ${{ steps.mirror.outcome }}
+          # Pull request runs check out a merge commit, but the check tests the head commit
+          CROC_CI_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 .github/scripts/record_ci.py result --report fpga --stage fpga \
+            --outcome "$MIRROR_OUTCOME" --elapsed-seconds "$(( $(date +%s) - START_TIME ))"
+      -
+        name: Upload check result
+        if: >
+          always() &&
+          github.repository == 'pulp-platform/croc' &&
+          (github.event_name != 'pull_request' ||
+          github.event.pull_request.head.repo.full_name == github.repository)
+        uses: actions/upload-artifact@v4
+        with:
+          name: croc-report-fpga
+          overwrite: true
+          path: ci-results/
+          if-no-files-found: ignore

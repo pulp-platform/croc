@@ -2,7 +2,7 @@
 # Copyright 2026 ETH Zurich and University of Bologna.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-"""Build the Pages report from one layout run and matching simulation artifacts."""
+"""Build the Pages report from one layout run and matching simulation and FPGA artifacts."""
 
 import argparse
 import hashlib
@@ -210,6 +210,18 @@ def build(inputs, site, root=ROOT):
             report = read(path)
             check_provenance(report, context, "simulation", mode)
             simulations[mode] = report
+    fpga = None
+    if (inputs / "fpga/fpga.json").exists():
+        fpga = read(inputs / "fpga/fpga.json")
+        check_provenance(fpga, context, "fpga", "fpga")
+        # The artifact comes from a PR-triggered run and the site is public: keep only status fields
+        fpga = {
+            **{key: fpga.get(key) for key in ("schema_version", "source_sha", "source_run", "source_attempt")},
+            "stages": [
+                {key: stage.get(key) for key in ("name", "exit_code", "elapsed_seconds")}
+                for stage in fpga["stages"]
+            ],
+        }
     work = root / "artistic/work"
     render = read(work / "render.json")
     merge = read(work / "logo_merge.json")
@@ -292,8 +304,25 @@ def build(inputs, site, root=ROOT):
             )
         return f'<div class="flow-branch" role="group" aria-label="{title}"><i aria-hidden="true"></i><div class="node">{node}</div></div>'
 
+    def fpga_branch():
+        title = "FPGA (Genesys2)"
+        if fpga is None:
+            node = f'<span class="node-main"><span class="t">{title}</span>{badge("na")}</span>'
+        else:
+            stages = [s for s in fpga["stages"] if s["name"] == "fpga"]
+            if len(stages) != 1:
+                raise ValueError("Expected one fpga stage")
+            stage = stages[0]
+            status = "incomplete" if stage["exit_code"] is None else ("pass" if stage["exit_code"] == 0 else "fail")
+            elapsed = duration(stage["elapsed_seconds"]) if stage["elapsed_seconds"] is not None else "-"
+            node = (
+                f'<a class="node-main" href="{repo}/actions/runs/{context["fpga"]["id"]}" title="Commit {sha[:7]}">'
+                f'<span class="t">{title}</span><span class="d">{elapsed}</span>{badge(status)}</a>'
+            )
+        return f'<div class="flow-branch" role="group" aria-label="{title}"><i aria-hidden="true"></i><div class="node">{node}</div></div>'
+
     flow = [
-        f'<li class="src"><div class="node"><a class="node-main" href="{repo}/tree/{sha}/rtl"><span class="t">RTL</span><span class="d">Source</span></a></div>{simulation_branch("rtl")}</li>'
+        f'<li class="src"><div class="node"><a class="node-main" href="{repo}/tree/{sha}/rtl"><span class="t">RTL</span><span class="d">Source</span></a></div><div class="flow-branches">{simulation_branch("rtl")}{fpga_branch()}</div></li>'
     ]
     strip, times = [], []
     for name, title, color in STAGES:
@@ -381,6 +410,8 @@ def build(inputs, site, root=ROOT):
     )
     if context.get("simulation"):
         values["CI_REPORTS"] += f' · <a href="{repo}/actions/runs/{context["simulation"]["id"]}">Simulation</a>'
+    if context.get("fpga"):
+        values["CI_REPORTS"] += f' · <a href="{repo}/actions/runs/{context["fpga"]["id"]}">FPGA</a>'
     (site / "index.html").write_text(Template((assets / "index.html").read_text()).substitute(values))
     shutil.copytree(work / "map", site / "map", dirs_exist_ok=True)
     metadata = read(site / "map/map.json")
@@ -394,6 +425,7 @@ def build(inputs, site, root=ROOT):
         "design": metrics,
         "backend": backend,
         "simulations": simulations,
+        "fpga": fpga,
         "drc_violations": violations,
         "artifacts": downloads,
         "map": metadata,

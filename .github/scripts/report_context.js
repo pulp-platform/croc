@@ -29,12 +29,26 @@ function isMatchingShortRun(run, repository, sha) {
     run.event === 'push';
 }
 
+const newestFirst = (a, b) =>
+  (b.run_number - a.run_number) ||
+  (b.run_attempt - a.run_attempt) ||
+  (Date.parse(b.created_at) - Date.parse(a.created_at));
+
 function newestRun(runs) {
-  return [...runs].sort((a, b) =>
-    (b.run_number - a.run_number) ||
-    (b.run_attempt - a.run_attempt) ||
-    (Date.parse(b.created_at) - Date.parse(a.created_at))
-  )[0];
+  return [...runs].sort(newestFirst)[0];
+}
+
+function latestExecution(jobs, jobName) {
+  const job = jobs
+    .filter((candidate) => candidate.name === jobName)
+    .sort((a, b) => (b.run_attempt - a.run_attempt) || (b.id - a.id))[0];
+  if (!job || !Number.isInteger(job.run_attempt)) return null;
+  // Partial reruns clone successful jobs with a new attempt/id but the old execution timestamps.
+  const execution = jobs
+    .filter((candidate) => candidate.name === jobName &&
+      candidate.started_at === job.started_at && candidate.completed_at === job.completed_at)
+    .sort((a, b) => (a.run_attempt - b.run_attempt) || (a.id - b.id))[0];
+  return { job, execution };
 }
 
 async function listArtifacts(github, repo, run) {
@@ -61,6 +75,43 @@ function artifactState(artifacts, name, startedAt, completedAt) {
   return artifact
     ? { available: true, id: artifact.id, updated_at: artifact.updated_at }
     : { available: false, reason: 'missing, expired, or outside the relevant execution interval' };
+}
+
+// The internal FPGA check is optional and may still be running, so a lookup problem never fails the report.
+async function resolveFpga(github, repo, repository, sha) {
+  const unavailable = (reason) => ({ run: null, state: { available: false, reason } });
+  const { data: workflow } = await github.rest.actions.getWorkflow({ ...repo, workflow_id: 'gitlab-ci.yml' });
+  const runs = (await workflowRuns(github, repo, workflow.id, sha))
+    .filter((run) => run.head_sha === sha &&
+      run.head_repository?.full_name === repository &&
+      run.status === 'completed' && ['success', 'failure'].includes(run.conclusion))
+    .sort(newestFirst);
+  if (runs.length === 0) return unavailable('no completed gitlab-ci run for this commit');
+  for (const run of runs) {
+    const artifacts = await listArtifacts(github, repo, run);
+    if (!artifacts.some((candidate) => candidate.name === 'croc-report-fpga')) continue;
+    const jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
+      ...repo,
+      run_id: run.id,
+      per_page: 100,
+      filter: 'all',
+    });
+    const latest = latestExecution(jobs, 'check');
+    if (!latest) continue;
+    const state = artifactState(artifacts, 'croc-report-fpga', latest.job.started_at, latest.job.completed_at);
+    if (!state.available) continue;
+    return {
+      run: {
+        id: run.id,
+        attempt: run.run_attempt,
+        url: run.html_url,
+        conclusion: run.conclusion,
+        jobs: { fpga: { attempt: latest.execution.run_attempt, job_id: latest.execution.id, conclusion: latest.job.conclusion } },
+      },
+      state,
+    };
+  }
+  return unavailable('no completed gitlab-ci run has a result artifact');
 }
 
 async function resolveContext({ github, core, sourceRunId, renderSha, renderRunId }) {
@@ -142,17 +193,11 @@ async function resolveContext({ github, core, sourceRunId, renderSha, renderRunI
     });
     const simulationJobs = {};
     for (const [name, jobName] of [['rtl', 'simulation'], ['netlist', 'netlist-simulation']]) {
-      const job = jobs
-        .filter((candidate) => candidate.name === jobName)
-        .sort((a, b) => (b.run_attempt - a.run_attempt) || (b.id - a.id))[0];
-      if (!job || !Number.isInteger(job.run_attempt)) {
+      const latest = latestExecution(jobs, jobName);
+      if (!latest) {
         throw new Error(`Could not resolve the latest execution of Short Flow job ${jobName} (run ${shortRun.id})`);
       }
-      // Partial reruns clone successful jobs with a new attempt/id but the old execution timestamps.
-      const execution = jobs
-        .filter((candidate) => candidate.name === jobName &&
-          candidate.started_at === job.started_at && candidate.completed_at === job.completed_at)
-        .sort((a, b) => (a.run_attempt - b.run_attempt) || (a.id - b.id))[0];
+      const { job, execution } = latest;
       simulationJobs[name] = {
         attempt: execution.run_attempt,
         job_id: execution.id,
@@ -172,6 +217,14 @@ async function resolveContext({ github, core, sourceRunId, renderSha, renderRunI
     simulation.jobs = simulationJobs;
   }
 
+  let fpga = null;
+  let fpgaArtifact;
+  try {
+    ({ run: fpga, state: fpgaArtifact } = await resolveFpga(github, repo, repository, sourceRun.head_sha));
+  } catch (error) {
+    fpgaArtifact = { available: false, reason: `lookup failed: ${error.message}` };
+  }
+
   const context = {
     repository,
     source_sha: sourceRun.head_sha,
@@ -184,17 +237,20 @@ async function resolveContext({ github, core, sourceRunId, renderSha, renderRunI
       conclusion: sourceRun.conclusion,
     },
     simulation,
+    fpga,
     render_sha: renderSha,
     render_run_id: Number(renderRunId),
     artifacts: {
       ...sourceArtifactStates,
       ...reportArtifacts,
+      fpga: fpgaArtifact,
     },
   };
-  for (const name of ['backend', 'yosys', 'drc', 'sealed_gds', 'openroad', 'rtl', 'netlist']) {
+  for (const name of ['backend', 'yosys', 'drc', 'sealed_gds', 'openroad', 'rtl', 'netlist', 'fpga']) {
     core.setOutput(`${name}_artifact_id`, context.artifacts[name].available ? String(context.artifacts[name].id) : '');
   }
   core.setOutput('simulation_id', simulation ? String(simulation.id) : '');
+  core.setOutput('fpga_id', fpga ? String(fpga.id) : '');
   core.setOutput('backend_attempt', String(sourceRun.run_attempt));
   await core.summary.addHeading('Artistic inputs')
     .addLink(`Full Flow ${sourceRun.id}`, sourceRun.html_url)
