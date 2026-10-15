@@ -14,6 +14,9 @@
 
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CROC_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
 SIM_BINARY="obj_dir/Vtb_croc_soc"
 HEX_DIR="../sw/bin/test"
 FILTER="test_*"
@@ -67,19 +70,32 @@ for hex in "${hex_files[@]}"; do
     else
         sim_exit=$?
     fi
+    if [[ -n "${CROC_CI_REPORT:-}" ]]; then
+        log_rel="$(realpath --relative-to="$CROC_ROOT" "$log_file")"
+    fi
 
     # Check for timeout (exit code 124 from timeout command)
     if [[ $sim_exit -eq 124 ]]; then
         echo "FAIL (timeout after ${TIMEOUT}s)"
         results+=("FAIL $test_name (timeout after ${TIMEOUT}s)")
+        if [[ -n "${CROC_CI_REPORT:-}" ]]; then
+            python3 "$SCRIPT_DIR/record_ci.py" test --report "$CROC_CI_REPORT" \
+                --name "$test_name" --config iDMA --status fail \
+                --log "$log_rel" --exit-code "$sim_exit"
+        fi
         ((failed++)) || true
         continue
     fi
 
     # Check for SUCCESS/FAIL in the log
-    if grep -q '\[JTAG\] Simulation finished: SUCCESS' "$log_file"; then
+    if [[ $sim_exit -eq 0 ]] && grep -q '\[JTAG\] Simulation finished: SUCCESS' "$log_file"; then
         echo "PASS"
         results+=("PASS $test_name")
+        if [[ -n "${CROC_CI_REPORT:-}" ]]; then
+            python3 "$SCRIPT_DIR/record_ci.py" test --report "$CROC_CI_REPORT" \
+                --name "$test_name" --config iDMA --status pass \
+                --log "$log_rel" --exit-code "$sim_exit"
+        fi
         ((passed++)) || true
     else
         # Try to extract the return code from the FAIL line
@@ -91,6 +107,11 @@ for hex in "${hex_files[@]}"; do
         else
             echo "FAIL (no result line, sim exit=$sim_exit)"
             results+=("FAIL $test_name (no result line, sim exit=$sim_exit)")
+        fi
+        if [[ -n "${CROC_CI_REPORT:-}" ]]; then
+            python3 "$SCRIPT_DIR/record_ci.py" test --report "$CROC_CI_REPORT" \
+                --name "$test_name" --config iDMA --status fail \
+                --log "$log_rel" --exit-code "$sim_exit"
         fi
         ((failed++)) || true
     fi

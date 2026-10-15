@@ -2,6 +2,8 @@
 
 # all
 /.bender/
+/ci-results/
+/report-inputs/
 *.20[0-9]*-[0-9]*-[0-9]*-[0-9]*:[0-9]*:[0-9]*
 *.log
 *.log[0-9]

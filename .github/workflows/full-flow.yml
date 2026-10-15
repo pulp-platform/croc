@@ -31,12 +31,32 @@ jobs:
       - name: Run Yosys, OpenROAD and KLayout
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: ".github/scripts/run_full_flow.sh"
+          cmd: "openroad -exit -python .github/scripts/test_report_metrics.py; .github/scripts/run_full_flow.sh"
+      - name: Upload report backend metadata
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: croc-report-backend
+          overwrite: true
+          path: ci-results/
+          if-no-files-found: ignore
+      - name: Upload Yosys report inputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: croc-yosys-out
+          overwrite: true
+          path: |
+            yosys/out/croc_yosys.v
+            yosys/reports
+            yosys/*.log
+          if-no-files-found: ignore
       - name: Upload openroad outputs
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: croc-openroad-out
+          overwrite: true
           path: |
             openroad/out
             openroad/logs
@@ -47,6 +67,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: croc-gds
+          overwrite: true
           path: klayout/out/croc.gds.gz
           if-no-files-found: ignore
       - name: Upload sealed gds
@@ -54,6 +75,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: croc-gds-sealed
+          overwrite: true
           path: klayout/out/croc.sealed.gds.gz
           if-no-files-found: ignore
       - name: Upload DRC results
@@ -61,5 +83,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: croc-drc
+          overwrite: true
           path: klayout/drc-minimal
           if-no-files-found: ignore

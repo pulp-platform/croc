@@ -12,6 +12,19 @@ on:
       - '**'
 
 jobs:
+  report-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Test report recording and generation
+        run: |
+          python3 -m unittest discover -s .github/scripts -p test_record_ci.py
+          python3 -m unittest discover -s .github/scripts -p test_build_report.py
+          node --test .github/scripts/test_report_context.js
   simulation:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -25,16 +38,26 @@ jobs:
       - name: Run simulation flow in OSEDA
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: ".github/scripts/run_sim_flow.sh --rtl"
+          cmd: "python3 .github/scripts/record_ci.py stage --report rtl --stage rtl -- .github/scripts/run_sim_flow.sh --rtl"
+      - name: Upload RTL report metadata
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: croc-report-rtl
+          overwrite: true
+          path: ci-results/
+          if-no-files-found: ignore
       - name: Upload built software
         uses: actions/upload-artifact@v4
         with:
           name: croc-sw
+          overwrite: true
           path: sw/bin
       - name: Upload simulation output
         uses: actions/upload-artifact@v4
         with:
           name: simulation-output
+          overwrite: true
           path: |
             verilator/croc.fst
             verilator/croc_rtl.log
@@ -42,6 +65,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-logs
+          overwrite: true
           path: verilator/test_*.log
 
   synthesis:
@@ -62,6 +86,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: croc-synth-reports
+          overwrite: true
           path: |
             yosys/reports
             yosys/out
@@ -90,11 +115,20 @@ jobs:
       - name: Run CMOS5L netlist simulation suite in OSEDA
         uses: ./.github/actions/oseda-cmd
         with:
-          cmd: ".github/scripts/run_sim_flow.sh --netlist"
+          cmd: "python3 .github/scripts/record_ci.py stage --report netlist --stage netlist -- .github/scripts/run_sim_flow.sh --netlist"
+      - name: Upload netlist report metadata
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: croc-report-netlist
+          overwrite: true
+          path: ci-results/
+          if-no-files-found: ignore
       - name: Upload netlist simulation logs
         uses: actions/upload-artifact@v4
         with:
           name: netlist-simulation-logs
+          overwrite: true
           path: |
             verilator/croc_netlist_yosys.log
             verilator/test_*.log

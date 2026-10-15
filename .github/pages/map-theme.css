@@ -1,0 +1,26 @@
+/* Copyright 2026 ETH Zurich and University of Bologna.
+ * Licensed under the Apache License, Version 2.0, see LICENSE for details.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+html,body{height:100%;margin:0;background:var(--bg);color:var(--fg)}
+#map{position:absolute;inset:0}
+.leaflet-container{background:var(--surface);color:var(--fg);font:12px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;letter-spacing:0}
+.leaflet-container a{color:var(--link)}
+.leaflet-container a:focus-visible{outline:2px solid var(--focus);outline-offset:1px}
+.leaflet-container .leaflet-bar{border:1px solid var(--rule-strong);box-shadow:none}
+.leaflet-container .leaflet-bar a{background-color:var(--bg);color:var(--fg);border-bottom-color:var(--rule)}
+.leaflet-container .leaflet-bar a:hover,.leaflet-container .leaflet-bar a:focus{background-color:var(--surface);color:var(--fg)}
+.leaflet-container .leaflet-bar a.leaflet-disabled{background-color:var(--surface);color:var(--muted)}
+.leaflet-container .leaflet-control-layers{background:var(--bg);color:var(--fg);border:1px solid var(--rule-strong);box-shadow:none}
+.leaflet-container .leaflet-control-layers-expanded{background:var(--bg);color:var(--fg)}
+.leaflet-control-layers-toggle{filter:var(--icon-filter)}
+.leaflet-control-layers-separator{border-top-color:var(--rule)}
+.leaflet-control-layers label{color:var(--fg)}
+.leaflet-control-layers input{accent-color:var(--accent)}
+.leaflet-container .leaflet-control-attribution{background:var(--bg);color:var(--muted)}
+.leaflet-container .leaflet-control-attribution a{color:var(--link)}
+.physical-scale{color:var(--fg);background:var(--bg);border-color:var(--rule-strong)}
+.physical-scale span{color:inherit;border-color:currentColor}
+a.back{background:var(--bg);color:var(--link);border:1px solid var(--rule-strong);border-radius:4px;text-decoration:none}
+a.back:hover{background:var(--surface);color:var(--fg)}
+a.back:focus-visible{outline:2px solid var(--focus);outline-offset:2px}

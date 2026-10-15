@@ -49,10 +49,38 @@ esac
 
 cd "$CROC_ROOT"
 
-if [[ "$simulation_mode" == "rtl" ]]; then
-    # Always restore the checked-in default after a configuration-specific run.
-    trap '"$SCRIPT_DIR/set_croc_config.sh"' EXIT
+ci_report="${CROC_CI_REPORT:-}"
+active_test=""
+active_config=""
+active_log=""
+active_exit_code=1
 
+record_test_result() {
+    local name="$1" config="$2" status="$3" log="$4" exit_code="$5"
+    [[ -n "$ci_report" ]] || return 0
+    python3 "$SCRIPT_DIR/record_ci.py" test --report "$ci_report" --name "$name" \
+        --config "$config" --status "$status" --log "$log" --exit-code "$exit_code"
+}
+
+on_exit() {
+    local original_status=$?
+    trap - EXIT
+    if [[ -n "$active_test" ]]; then
+        record_test_result "$active_test" "$active_config" fail "$active_log" "$active_exit_code" || true
+    fi
+    if [[ "$simulation_mode" == "rtl" ]]; then
+        if "$SCRIPT_DIR/set_croc_config.sh"; then
+            :
+        else
+            local restore_status=$?
+            [[ "$original_status" -ne 0 ]] || original_status="$restore_status"
+        fi
+    fi
+    exit "$original_status"
+}
+trap on_exit EXIT
+
+if [[ "$simulation_mode" == "rtl" ]]; then
     build_option="--build"
     run_option="--run"
     simulation_binary="obj_dir_rtl/Vtb_croc_soc"
@@ -92,12 +120,44 @@ fi
 
 cd verilator
 ./run_verilator.sh "$build_option"
-./run_verilator.sh "$run_option" ../sw/bin/helloworld.hex
-grep -q "\[UART\] Hello World from Croc!" "$simulation_log"
+active_test="helloworld"
+active_config="Default"
+active_log="verilator/default_helloworld.log"
+active_exit_code=1
+rm -f "$simulation_log"
+if ./run_verilator.sh "$run_option" ../sw/bin/helloworld.hex; then
+    active_exit_code=0
+else
+    active_exit_code=$?
+fi
+cp "$simulation_log" default_helloworld.log 2>/dev/null || : > default_helloworld.log
+if [[ "$active_exit_code" -eq 0 ]] && grep -q "\[UART\] Hello World from Croc!" "$simulation_log"; then
+    record_test_result helloworld Default pass "$active_log" "$active_exit_code"
+    active_test=""
+else
+    echo "[ERROR] helloworld simulation failed" >&2
+    exit 1
+fi
 
-./run_verilator.sh "$run_option" ../sw/bin/test/print_config.hex
-"$SCRIPT_DIR/check_sim.sh" "$simulation_log"
-grep -q "\[JTAG\] Simulation finished: SUCCESS" "$simulation_log"
+active_test="print_config"
+active_config="Default"
+active_log="verilator/default_print_config.log"
+active_exit_code=1
+rm -f "$simulation_log"
+if ./run_verilator.sh "$run_option" ../sw/bin/test/print_config.hex; then
+    active_exit_code=0
+else
+    active_exit_code=$?
+fi
+cp "$simulation_log" default_print_config.log 2>/dev/null || : > default_print_config.log
+if [[ "$active_exit_code" -eq 0 ]] && "$SCRIPT_DIR/check_sim.sh" "$simulation_log" && \
+        grep -q "\[JTAG\] Simulation finished: SUCCESS" "$simulation_log"; then
+    record_test_result print_config Default pass "$active_log" "$active_exit_code"
+    active_test=""
+else
+    echo "[ERROR] print_config simulation failed" >&2
+    exit 1
+fi
 
 cd "$CROC_ROOT"
 

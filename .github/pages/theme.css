@@ -1,0 +1,49 @@
+/* Copyright 2026 ETH Zurich and University of Bologna.
+ * Licensed under the Apache License, Version 2.0, see LICENSE for details.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+:root,html[data-theme="light"]{
+  color-scheme:light;
+  --bg:#fff;--fg:#1d2125;--muted:#5b636c;--rule:#e3e6e9;--rule-strong:#c8cdd3;--surface:#f6f7f8;
+  --accent:#0a7a55;--accent-fg:#fff;--link:#0a7a55;--link-line:#9ccfb9;--focus:#0a7a55;
+  --code-bg:#f6f7f8;--code-fg:#1d2125;--icon-filter:none;
+  --ok-fg:#0b5a3e;--ok-bg:#e3f4ea;--ok-bd:#8fcaa9;
+  --fail-fg:#9b1c12;--fail-bg:#fdecea;--fail-bd:#eea59c;
+  --na-fg:#4f565e;--na-bg:#eef0f2;--na-bd:#c8cdd3;
+  --st-syn:#56779c;--st-or-a:#8dbcae;--st-or-b:#2e7a68;--st-kl-a:#dcc18e;--st-kl-b:#a97b2d;--st-ci:#9aa3ab;
+}
+/* Chip media background: constant in both themes so rendered pixels keep their palette */
+:root{--media-bg:#f6f7f8}
+@media (prefers-color-scheme:dark){
+  html:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#141615;--fg:#e4e7e5;--muted:#a0a7a3;--rule:#2b2f2d;--rule-strong:#474d4a;--surface:#1e2120;
+    --accent:#4cbb8b;--accent-fg:#0b1a13;--link:#6ccf9f;--link-line:#2f6f53;--focus:#6ccf9f;
+    --code-bg:#0f1110;--code-fg:#dde1de;--icon-filter:invert(.9);
+    --ok-fg:#aeeac6;--ok-bg:#133626;--ok-bd:#2e6a4c;
+    --fail-fg:#ffbdb5;--fail-bg:#461612;--fail-bd:#8b3026;
+    --na-fg:#c3c8c5;--na-bg:#252928;--na-bd:#4a504d;
+    --st-syn:#6f93bd;--st-or-a:#8dbcae;--st-or-b:#3a947d;--st-kl-a:#dcc18e;--st-kl-b:#b98a3a;--st-ci:#7d868e;
+  }
+}
+html[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#141615;--fg:#e4e7e5;--muted:#a0a7a3;--rule:#2b2f2d;--rule-strong:#474d4a;--surface:#1e2120;
+  --accent:#4cbb8b;--accent-fg:#0b1a13;--link:#6ccf9f;--link-line:#2f6f53;--focus:#6ccf9f;
+  --code-bg:#0f1110;--code-fg:#dde1de;--icon-filter:invert(.9);
+  --ok-fg:#aeeac6;--ok-bg:#133626;--ok-bd:#2e6a4c;
+  --fail-fg:#ffbdb5;--fail-bg:#461612;--fail-bd:#8b3026;
+  --na-fg:#c3c8c5;--na-bg:#252928;--na-bd:#4a504d;
+  --st-syn:#6f93bd;--st-or-a:#8dbcae;--st-or-b:#3a947d;--st-kl-a:#dcc18e;--st-kl-b:#b98a3a;--st-ci:#7d868e;
+}
+html{background:var(--bg);color:var(--fg)}
+[hidden]{display:none!important}
+
+/* Appearance control */
+#appearance{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;margin:0;padding:0;color:var(--fg);background:var(--bg);border:1px solid var(--rule-strong);border-radius:4px;cursor:pointer}
+#appearance:hover{border-color:var(--muted)}
+#appearance:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+#appearance img{display:block;width:18px;height:18px;filter:var(--icon-filter)}
+#appearance .theme-sun{display:none}
+html[data-theme="dark"] #appearance .theme-sun{display:block}
+html[data-theme="dark"] #appearance .theme-moon{display:none}

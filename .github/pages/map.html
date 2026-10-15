@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Croc chip map</title><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+<link rel="stylesheet" href="../theme.css"><link rel="stylesheet" href="../map-theme.css">
+<script src="../theme.js"></script>
+<style>.physical-scale{padding:4px 7px;font:12px system-ui;border-width:1px;border-style:solid}.physical-scale span{display:block;border-width:2px;border-style:solid;border-top:0;height:6px;margin-top:3px}a.back{position:fixed;z-index:1000;left:55px;top:12px;padding:7px 12px;font:14px system-ui}</style>
+<div id="map"></div><a class="back" href="../">Croc report</a>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+const config=$MAP_CONFIG,names=config.layers,maxZoom=config.max_zoom,map=L.map('map',{crs:L.CRS.Simple,minZoom:-3,maxZoom,zoomSnap:0});
+const bounds=L.latLngBounds(map.unproject([0,config.height],maxZoom),map.unproject([config.width,0],maxZoom));
+const layers=Object.fromEntries(names.map(n=>[n,L.tileLayer(`$${n}/{z}/{x}/{y}.png`,{tileSize:config.tile_size,noWrap:true,bounds,minZoom:-3,minNativeZoom:0,maxNativeZoom:maxZoom})]));
+layers[names[0]].addTo(map);L.control.layers(layers,null,{collapsed:!L.Browser.touch}).addTo(map);map.fitBounds(bounds,{padding:[20,20],animate:false});
+if(new URLSearchParams(location.search).has('embed')) document.querySelector('.back').hidden=true;
+const scale=new L.Control({position:'bottomleft'});
+scale.onAdd=()=>{const element=L.DomUtil.create('div','physical-scale');
+  function update(){
+    const umPerPixel=config.viewport_width_um/config.width*2**(maxZoom-map.getZoom()),target=100*umPerPixel;
+    const decade=10**Math.floor(Math.log10(target)),length=[5,2,1].find(n=>n*decade<=target)*decade;
+    element.innerHTML=`$${length>=1000?length/1000+' mm':length+' \u00b5m'}<span style="width:$${length/umPerPixel}px"></span>`;
+  }
+  map.on('zoomend resize',update);update();return element;
+};scale.addTo(map);
+let fitZoom=map.getZoom();
+window.addEventListener('resize',()=>{
+  const fitted=Math.abs(map.getZoom()-fitZoom)<1e-6&&map.getCenter().equals(bounds.getCenter(),1e-8);
+  map.invalidateSize();
+  if(fitted)map.fitBounds(bounds,{padding:[20,20],animate:false});
+  fitZoom=map.getBoundsZoom(bounds,false,L.point(40,40));
+});
+</script></html>
