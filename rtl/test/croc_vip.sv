@@ -284,7 +284,7 @@ module croc_vip #(
 
   typedef bit [7:0] byte_bt;
   localparam int unsigned ClkFrequency     = int'(1s / ClkPeriodSys);
-  localparam int unsigned UartDivisior     = ClkFrequency / (UartBaudRate*16);
+  localparam int unsigned UartDivisior     = (ClkFrequency + UartBaudRate*8) / (UartBaudRate*16); // rounded to nearest, as in sw/lib/src/uart.c
   localparam int unsigned UartRealBaudRate = ClkFrequency / (UartDivisior*16);
   localparam realtime     UartBaudPeriod   = 1s / UartRealBaudRate;
 
