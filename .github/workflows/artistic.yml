@@ -79,11 +79,11 @@ jobs:
             });
             fs.mkdirSync('report-inputs', { recursive: true });
             fs.writeFileSync('report-inputs/context.json', `${JSON.stringify(reportContext, null, 2)}\n`);
-            for (const name of ['rtl', 'netlist']) {
+            for (const name of ['rtl', 'netlist', 'fpga']) {
               core.setOutput(name, String(reportContext.artifacts[name].available));
             }
             if (!reportContext.simulation) core.warning('No matching Short Flow run; simulation results will be reported as Not run.');
-            for (const name of ['rtl', 'netlist']) {
+            for (const name of ['rtl', 'netlist', 'fpga']) {
               if (!reportContext.artifacts[name].available) core.warning(`${name} report inputs unavailable: ${reportContext.artifacts[name].reason}`);
             }
       - name: Free disk space
@@ -153,6 +153,25 @@ jobs:
           repository: ${{ github.repository }}
           run-id: ${{ steps.context.outputs.simulation_id }}
           path: report-inputs/netlist
+      - name: Download FPGA check report inputs
+        id: fpga-download
+        if: steps.context.outputs.fpga == 'true'
+        # Optional input: a failed download must not stop the report
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ steps.context.outputs.fpga_artifact_id }}
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ steps.context.outputs.fpga_id }}
+          path: report-inputs/fpga
+      - name: Discard unusable FPGA check report inputs
+        if: steps.fpga-download.outcome == 'failure'
+        shell: bash
+        run: |
+          echo "::warning::FPGA check report inputs could not be downloaded; the FPGA result is reported as Not run."
+          rm -rf report-inputs/fpga
       - name: Generate logo, render, outlines and report
         uses: ./.github/actions/oseda-cmd
         with:
