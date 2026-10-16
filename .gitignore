@@ -19,7 +19,6 @@ __pycache__/
 /.setPDK.csh
 # public PDK mirror
 /ihp13/pdk/gds/*.gds
-!/ihp13/pdk/gds/bondpad_70x70.gds
 !/ihp13/pdk/gds/bondpad5l_70x70.gds
 # dfii
 /dfii/
