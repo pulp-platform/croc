@@ -24,9 +24,9 @@ Usage: scripts/update_pdk.sh [--check] [--gds] [manifest]
 Update public PDK files from a manifest with these columns:
 source_type,source,revision,source_sha256,path,patch,output,sha256
 
-source_type is github, tar, or local. GitHub rows download one pinned file.
-Tar rows verify the archive digest before extracting path. Local rows only
-verify Croc-owned files. --gds limits processing to GDS rows; --check
+source_type is github, tar, zip, or local. GitHub rows download one pinned
+file. Tar and zip rows verify the archive digest before extracting path.
+Local rows only verify Croc-owned files. --gds limits processing to GDS rows; --check
 verifies existing files without downloading or modifying them.
 EOF
 }
@@ -97,9 +97,9 @@ while IFS=, read -r source_type source revision source_sha256 path patch_file ou
             url="https://raw.githubusercontent.com/$source/$revision/$path"
             curl --fail --location --silent --show-error "$url" --output "$temporary_file"
             ;;
-        tar)
+        tar|zip)
             [[ -n "$source_sha256" ]] || {
-                echo "[ERROR] Tar source requires source_sha256: $output" >&2
+                echo "[ERROR] Archive source requires source_sha256: $output" >&2
                 exit 1
             }
             temporary_archive="$temporary_directory/$source_sha256"
@@ -112,7 +112,11 @@ while IFS=, read -r source_type source revision source_sha256 path patch_file ou
                 fi
                 mv "$temporary_archive.tmp" "$temporary_archive"
             fi
-            tar --extract --to-stdout --file "$temporary_archive" "$path" > "$temporary_file"
+            if [[ "$source_type" == "tar" ]]; then
+                tar --extract --to-stdout --file "$temporary_archive" "$path" > "$temporary_file"
+            else
+                unzip -p "$temporary_archive" "$path" > "$temporary_file"
+            fi
             ;;
         *)
             echo "[ERROR] Unknown manifest source type: $source_type" >&2
