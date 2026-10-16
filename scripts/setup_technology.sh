@@ -44,7 +44,7 @@ log() {
     fi
 }
 
-link_cmos5l_klayout_dependencies() {
+link_klayout_dependencies() {
     local shared_pdk="$repo_root/ihp13/sg13g2/ihp-sg13g2"
     local upstream_layout="$repo_root/ihp13/ihp-sg13g2"
 
@@ -101,10 +101,10 @@ create_public_technology_link() {
 }
 
 create_public_technology_link
-link_cmos5l_klayout_dependencies
+link_klayout_dependencies
 
-if [[ ! -f "$public_pdk/verilog/sg13g2_stdcell.v" ]]; then
-    echo "[ERROR] Missing public standard-cell source: $public_pdk/verilog/sg13g2_stdcell.v" >&2
+if [[ ! -f "$public_pdk/verilog/ez130_8t.v" ]]; then
+    echo "[ERROR] Missing public standard-cell model: $public_pdk/verilog/ez130_8t.v" >&2
     exit 1
 fi
 

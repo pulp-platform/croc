@@ -1,13 +1,13 @@
 ########################################################################
 #
 # Copyright 2023 IHP PDK Authors
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #    https://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,6 +15,19 @@
 # limitations under the License.
 #
 ########################################################################
+# SG13CMOS5L Tech LEF - Metal stack: M1-M4-TM1
+# Removed: Via4, Metal5, TopVia2, TopMetal2
+########################################################################
+
+########################################################################
+##
+## Original file name: sg13cmos5l_tech.lef
+## This file was modified in 2026 by the authors of the EZ130 8T library:
+## - Changed PITCH for Metal2 and Metal4
+## - Changed OFFSET for Metal2, Metal4, and TopMetal1
+## - Added MINWIDTH to Metal1, Metal2, Metal3, and Metal4 
+##
+#########################################################################
 
 VERSION 5.7 ;
 #NAMESCASESENSITIVE ON ;
@@ -64,7 +77,7 @@ LAYER Cont
     ANTENNACUMAREARATIO 30 ;
     ANTENNACUMDIFFAREARATIO 10000 ;
   #PROPERTY contactLimit 10000 ;
-  
+
 END Cont
 
 LAYER Metal1
@@ -73,6 +86,7 @@ LAYER Metal1
   PITCH		0.42 ;
   OFFSET	0.0 ;
   WIDTH		0.16 ;
+  MINWIDTH	0.16 ;
   MAXWIDTH	30 ;
   AREA		0.09 ;
   MINIMUMDENSITY        35.0 ;
@@ -113,9 +127,10 @@ END Via1
 LAYER Metal2
   TYPE		ROUTING ;
   DIRECTION	VERTICAL ;
-  PITCH		0.48 ;
-  OFFSET	0.0 ;
+  PITCH		0.42 ;
+  OFFSET	0.21 ;
   WIDTH		0.20 ;
+  MINWIDTH	0.20 ;
   MAXWIDTH	30 ;
   MINIMUMDENSITY        35.0 ;
   MAXIMUMDENSITY        60.0 ;
@@ -133,6 +148,7 @@ LAYER Metal2
   THICKNESS 0.450 ;
   ANTENNACUMAREARATIO 200 ;
   ANTENNACUMDIFFAREARATIO PWL ( ( 0 200 ) ( 0.159 200 ) ( 0.16  3200 ) ( 100 2000000 ) ) ;
+  WIREEXTENSION 0.10 ;
   RESISTANCE RPERSQ 0.103 ;
   CAPACITANCE  CPERSQDIST 1.81E-05 ;
   EDGECAPACITANCE  4.47E-05 ;
@@ -158,6 +174,7 @@ LAYER Metal3
   PITCH		0.42 ;
   OFFSET	0.0 ;
   WIDTH		0.20 ;
+  MINWIDTH	0.20 ;
   MINIMUMDENSITY        35.0 ;
   MAXIMUMDENSITY        60.0 ;
   DENSITYCHECKSTEP 100 ;
@@ -197,9 +214,10 @@ END Via3
 LAYER Metal4
   TYPE		ROUTING ;
   DIRECTION	VERTICAL ;
-  PITCH		0.48 ;
-  OFFSET	0.0 ;
+  PITCH		0.42 ;
+  OFFSET	0.21 ;
   WIDTH		0.20 ;
+  MINWIDTH	0.20 ;
   MINIMUMDENSITY        35.0 ;
   MAXIMUMDENSITY        60.0 ;
   DENSITYCHECKSTEP 100 ;
@@ -222,47 +240,6 @@ LAYER Metal4
   DCCURRENTDENSITY AVERAGE 2 ; #mA/um
 END Metal4
 
-LAYER Via4
-  TYPE	CUT ;
-  SPACING	0.22 ;
-  WIDTH 0.19 ;
-  ENCLOSURE 0.005 0.05 ;
-  PREFERENCLOSURE 0.05 0.05 ;
-  RESISTANCE 20 ;
-  DCCURRENTDENSITY AVERAGE 0.4 ;
-  SPACING 0.29 ADJACENTCUTS 3 WITHIN 0.311 ;
-  ANTENNAAREARATIO 20 ;
-  ANTENNADIFFAREARATIO PWL ( ( 0 20 ) ( 0.159 20 ) ( 0.16 80 ) ( 100 50000 ) ) ;
-END Via4
-
-LAYER Metal5
-  TYPE		ROUTING ;
-  DIRECTION	HORIZONTAL ;
-  PITCH		0.42 ;
-  OFFSET	0.0 ;
-  WIDTH		0.20 ;
-  MINIMUMDENSITY        35.0 ;
-  MAXIMUMDENSITY        60.0 ;
-  DENSITYCHECKSTEP 100 ;
-  DENSITYCHECKWINDOW 200 200 ;
-  SPACINGTABLE
-  PARALLELRUNLENGTH 0.00    1.00    10.00
-  WIDTH 0.00        0.21    0.21    0.21
-  WIDTH 0.39        0.21    0.24    0.24
-  WIDTH 10.0        0.21    0.24    0.60 ;
-  MINIMUMCUT 2 WIDTH 1.4 ;
-  AREA      0.144 ;
-  HEIGHT 4.88 ;
- # CURRENTDEN 0 ;
-  THICKNESS 0.450 ;
-  ANTENNACUMAREARATIO 200 ;
-  ANTENNACUMDIFFAREARATIO PWL ( ( 0 200 ) ( 0.159 200 ) ( 0.16  3200 ) ( 100 2000000 ) ) ;
-  RESISTANCE RPERSQ 0.103 ;
-  CAPACITANCE  CPERSQDIST 7.13E-06 ;
-  EDGECAPACITANCE  4.37E-05 ;
-  DCCURRENTDENSITY AVERAGE 2 ;
-END Metal5
-
 LAYER TopVia1
   TYPE	CUT ;
   SPACING	0.42 ;
@@ -277,9 +254,9 @@ END TopVia1
 
 LAYER TopMetal1
   TYPE		ROUTING ;
-  DIRECTION	VERTICAL ;
-  PITCH		3.28 ;
-  OFFSET	1.64 ;
+  DIRECTION	HORIZONTAL ;
+  PITCH		2.28 ;
+  OFFSET	0 ;
   WIDTH		1.64 ;
   MINIMUMDENSITY        25.0 ;
   MAXIMUMDENSITY        70.0 ;
@@ -296,44 +273,6 @@ LAYER TopMetal1
   EDGECAPACITANCE  5.08E-05 ;
   DCCURRENTDENSITY AVERAGE 15 ;
 END TopMetal1
-
-LAYER TopVia2
-  TYPE	CUT ;
-  SPACING	1.06 ;
-  WIDTH 	0.9 ;
-  ENCLOSURE BELOW 0.5 0.5 ;
-  ENCLOSURE ABOVE 0.5 0.5 ;
-  RESISTANCE 2.2 ;
-  DCCURRENTDENSITY AVERAGE 10 ;
-  ANTENNAAREARATIO 20 ;
-  ANTENNADIFFAREARATIO PWL ( ( 0 20 ) ( 0.159 20 ) ( 0.16 80 ) ( 100 50000 ) ) ;
-END TopVia2
-
-LAYER TopMetal2
-  TYPE		ROUTING ;
-  DIRECTION	HORIZONTAL ;
-  PITCH		4 ;
-  OFFSET	2 ;
-  WIDTH		2 ;
-  MINIMUMDENSITY        25.0 ;
-  MAXIMUMDENSITY        70.0 ;
-  DENSITYCHECKSTEP 100 ;
-  DENSITYCHECKWINDOW 200 200 ;
-  SPACING 2 ;
-  SPACINGTABLE
-  PARALLELRUNLENGTH 0.00   50.00
-  WIDTH 0.00         2.0    2.0
-  WIDTH 5.00         2.0    5.0 ;
-  HEIGHT 11.160 ;
-#  CURRENTDEN 0 ;
-  THICKNESS 3.0 ;
-  ANTENNACUMAREARATIO 200 ;
-  ANTENNACUMDIFFAREARATIO PWL ( ( 0 200 ) ( 0.159 200 ) ( 0.16  3200 ) ( 100 2000000 ) ) ;
-  RESISTANCE RPERSQ 0.0145 ;
-  CAPACITANCE  CPERSQDIST 3.23E-06 ;
-  EDGECAPACITANCE  4.18E-05 ;
-  DCCURRENTDENSITY AVERAGE 16 ;
-END TopMetal2
 
 #######  Definitions of Via1 single cut ##############
 
@@ -908,202 +847,11 @@ Via Via3_DC2R DEFAULT
         RECT -0.515 -0.145 0.105 0.145 ;
 END Via3_DC2R
 
-#######  Definitions of Via4 single cut ##############
-
-Via  Via4_XX DEFAULT
-  RESISTANCE  20.00 ;
-  LAYER Metal4 ;
-      RECT -0.145 -0.105 0.145 0.105 ;
-    LAYER Via4 ;
-      RECT -0.095 -0.095 0.095 0.095 ;
-    LAYER Metal5 ;
-      RECT -0.145 -0.1 0.145 0.1 ;
-  END Via4_XX
-
-
-Via  Via4_XX_s DEFAULT
-  RESISTANCE  20.00 ;
-  LAYER Metal4 ;
-      RECT -0.145 -0.105 0.145 0.105 ;
-    LAYER Via4 ;
-      RECT -0.095 -0.095 0.095 0.095 ;
-    LAYER Metal5 ;
-      RECT -0.36 -0.1 0.36 0.1 ;
-  END Via4_XX_s
-
-Via  Via4_XY DEFAULT
-  RESISTANCE  20.00 ;
-  LAYER Metal4 ;
-      RECT -0.145 -0.105 0.145 0.105 ;
-    LAYER Via4 ;
-      RECT -0.095 -0.095 0.095 0.095 ;
-    LAYER Metal5 ;
-      RECT -0.1 -0.145 0.1 0.145 ;
-  END Via4_XY
-
-Via  Via4_XY_s DEFAULT
-  RESISTANCE  20.00 ;
-  LAYER Metal4 ;
-      RECT -0.145 -0.105 0.145 0.105 ;
-    LAYER Via4 ;
-      RECT -0.095 -0.095 0.095 0.095 ;
-    LAYER Metal5 ;
-      RECT -0.1 -0.36 0.1 0.36 ;
-  END Via4_XY_s
-
-Via  Via4_YX DEFAULT
-  RESISTANCE  20.00 ;
-  LAYER Metal4 ;
-      RECT -0.105 -0.145 0.105 0.145 ;
-    LAYER Via4 ;
-      RECT -0.095 -0.095 0.095 0.095 ;
-    LAYER Metal5 ;
-      RECT -0.145 -0.1 0.145 0.1 ;
-  END Via4_YX
-
-Via  Via4_YX_s DEFAULT
-  RESISTANCE  20.00 ;
-  LAYER Metal4 ;
-      RECT -0.105 -0.145 0.105 0.145 ;
-    LAYER Via4 ;
-      RECT -0.095 -0.095 0.095 0.095 ;
-    LAYER Metal5 ;
-      RECT -0.36 -0.1 0.36 0.1 ;
-  END Via4_YX_s
-
-Via  Via4_YY DEFAULT
-  RESISTANCE  20.00 ;
-  LAYER Metal4 ;
-      RECT -0.105 -0.145 0.105 0.145 ;
-    LAYER Via4 ;
-      RECT -0.095 -0.095 0.095 0.095 ;
-    LAYER Metal5 ;
-      RECT -0.1 -0.145 0.1 0.145 ;
-  END Via4_YY
-
-Via  Via4_YY_s DEFAULT
-  RESISTANCE  20.00 ;
-  LAYER Metal4 ;
-      RECT -0.105 -0.145 0.105 0.145 ;
-    LAYER Via4 ;
-      RECT -0.095 -0.095 0.095 0.095 ;
-    LAYER Metal5 ;
-      RECT -0.1 -0.36 0.1 0.36 ;
-  END Via4_YY_s
-
-Via  Via4_s DEFAULT
-  RESISTANCE  20.00 ;
-  LAYER Metal4 ;
-      RECT -0.145 -0.145 0.145 0.145 ;
-    LAYER Via4 ;
-      RECT -0.095 -0.095 0.095 0.095 ;
-    LAYER Metal5 ;
-      RECT -0.19 -0.19 0.19 0.19 ;
-  END Via4_s
-
-#######  Definitions of Via4 double cut ##############
-
-Via Via4_DC1B DEFAULT
-    RESISTANCE 20.0 ;
-    LAYER Metal4 ;
-        RECT -0.105 -0.145 0.105 0.555 ;
-    LAYER Via4 ;
-        RECT -0.095 -0.095 0.095 0.095 ;
-    LAYER Via4 ;
-        RECT -0.095 0.315 0.095 0.505 ;
-    LAYER Metal5 ;
-        RECT -0.1 -0.155 0.1 0.565 ;
-END Via4_DC1B
-
-Via Via4_DC1T DEFAULT
-    RESISTANCE 20.0 ;
-    LAYER Metal4 ;
-        RECT -0.105 -0.555 0.105 0.145 ;
-    LAYER Via4 ;
-        RECT -0.095 -0.095 0.095 0.095 ;
-    LAYER Via4 ;
-        RECT -0.095 -0.505 0.095 -0.315 ;
-    LAYER Metal5 ;
-        RECT -0.1 -0.565 0.1 0.155 ;
-END Via4_DC1T
-
-Via Via4_DC1L DEFAULT
-    RESISTANCE 20.0 ;
-    LAYER Metal4 ;
-        RECT -0.145 -0.105 0.555 0.105 ;
-    LAYER Via4 ;
-        RECT -0.095 -0.095 0.095 0.095 ;
-    LAYER Via4 ;
-        RECT 0.315 -0.095 0.505 0.095 ;
-    LAYER Metal5 ;
-        RECT -0.155 -0.1 0.565 0.1 ;
-END Via4_DC1L
-
-Via Via4_DC1R DEFAULT
-    RESISTANCE 20.0 ;
-    LAYER Metal4 ;
-        RECT -0.555 -0.105 0.145 0.105 ;
-    LAYER Via4 ;
-        RECT -0.095 -0.095 0.095 0.095 ;
-    LAYER Via4 ;
-        RECT -0.505 -0.095 -0.315 0.095 ;
-    LAYER Metal5 ;
-        RECT -0.565 -0.1 0.155 0.1 ;
-END Via4_DC1R
-
-Via Via4_DC2B DEFAULT
-    RESISTANCE 20.0 ;
-    LAYER Metal4 ;
-        RECT -0.105 -0.145 0.105 0.555 ;
-    LAYER Via4 ;
-        RECT -0.095 -0.095 0.095 0.095 ;
-    LAYER Via4 ;
-        RECT -0.095 0.315 0.095 0.505 ;
-    LAYER Metal5 ;
-        RECT -0.145 -0.105 0.145 0.515 ;
-END Via4_DC2B
-
-Via Via4_DC2T DEFAULT
-    RESISTANCE 20.0 ;
-    LAYER Metal4 ;
-        RECT -0.105 -0.555 0.105 0.145 ;
-    LAYER Via4 ;
-        RECT -0.095 -0.095 0.095 0.095 ;
-    LAYER Via4 ;
-        RECT -0.095 -0.505 0.095 -0.315 ;
-    LAYER Metal5 ;
-        RECT -0.145 -0.515 0.145 0.105 ;
-END Via4_DC2T
-
-Via Via4_DC2L DEFAULT
-    RESISTANCE 20.0 ;
-    LAYER Metal4 ;
-        RECT -0.1 -0.145 0.52 0.145 ;
-    LAYER Via4 ;
-        RECT -0.095 -0.095 0.095 0.095 ;
-    LAYER Via4 ;
-        RECT 0.32 -0.095 0.51 0.095 ;
-    LAYER Metal5 ;
-        RECT -0.1 -0.145 0.52 0.145 ;
-END Via4_DC2L
-
-Via Via4_DC2R DEFAULT
-    RESISTANCE 20.0 ;
-    LAYER Metal4 ;
-        RECT -0.555 -0.105 0.145 0.105 ;
-    LAYER Via4 ;
-        RECT -0.095 -0.095 0.095 0.095 ;
-    LAYER Via4 ;
-        RECT -0.505 -0.095 -0.315 0.095 ;
-    LAYER Metal5 ;
-        RECT -0.515 -0.145 0.105 0.145 ;
-END Via4_DC2R
-
-#######   TopVia1   ##############################
+#######   TopVia1 (M4 to TM1)  ##############################
 
 Via TopVia1EWNS DEFAULT
   RESISTANCE 4.0 ;
-  LAYER Metal5 ;
+  LAYER Metal4 ;
     RECT -0.31 -0.31 0.31 0.31 ;
   LAYER TopVia1 ;
     RECT -0.21 -0.21 0.21 0.21 ;
@@ -1111,17 +859,6 @@ Via TopVia1EWNS DEFAULT
     RECT -0.75 -0.75 0.75 0.75 ;
 END TopVia1EWNS
 
-########   TopVia2   #############################
-
-Via TopVia2EWNS DEFAULT
-  RESISTANCE 2.2 ;
-  LAYER TopMetal1 ;
-    RECT -0.95 -0.95 0.95 0.95 ;
-  LAYER TopVia2 ;
-    RECT -0.45 -0.45 0.45 0.45 ;
-  LAYER TopMetal2 ;
-    RECT -0.95 -0.95 0.95 0.95 ;
-END TopVia2EWNS
 #############################################
 ViaRULE via1Array GENERATE
     LAYER Metal1 ;
@@ -1162,39 +899,16 @@ ViaRULE via3Array GENERATE
         RESISTANCE 20.0 ;
 END via3Array
 
-ViaRULE via4Array GENERATE
-    LAYER Metal4 ;
-        ENCLOSURE 0.050 0.005 ;
-
-    LAYER Metal5 ;
-        ENCLOSURE 0.050 0.005 ;
-
-    LAYER Via4 ;
-        RECT -0.095 -0.095 0.095 0.095 ;
-        SPACING 0.480 BY 0.480 ;
-        RESISTANCE 20.0 ;
-END via4Array
 ###########################################
-ViaRULE viaTop1Array GENERATE
-  LAYER Metal5 ;
-    ENCLOSURE 0.1 0.1 ;
+ViaRULE viagen45 GENERATE
+  LAYER Metal4 ;
+    ENCLOSURE 0 0 ;
   LAYER TopMetal1 ;
-    ENCLOSURE 0.42 0.42 ;
+    ENCLOSURE 0.61 0.61 ;
   LAYER TopVia1 ;
     RECT -0.21 -0.21 0.21 0.21 ;
     SPACING 0.84 BY 0.84 ;
     RESISTANCE 4.0 ;
-END viaTop1Array
-
-ViaRULE viaTop2Array GENERATE
-  LAYER TopMetal1 ;
-    ENCLOSURE 0.5 0.5 ;
-  LAYER TopMetal2 ;
-    ENCLOSURE 0.5 0.5 ;
-  LAYER TopVia2 ;
-    RECT -0.45 -0.45 0.45 0.45 ;
-    SPACING 1.96 BY 1.96 ;
-    RESISTANCE 2.2 ;
-END viaTop2Array
+END viagen45
 
 END LIBRARY

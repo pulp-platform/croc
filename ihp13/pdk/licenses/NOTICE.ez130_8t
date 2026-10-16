@@ -1,0 +1,33 @@
+EZ130 8T Library
+Copyright 2026 ETH Zurich
+
+This product includes files developed by the IHP PDK authors
+(https://github.com/IHP-GmbH/IHP-Open-PDK)
+
+The characterization of the EZ130 8T library was performed with
+the LIBERATE Library Characterization Platform from 
+Cadence (https://www.cadence.com)
+Copyright 2006 - 2026 Cadence Design Systems, Inc. All Rights Reserved.
+
+If you use the EZ130 8T library (or parts of it),
+then please cite this reference:
+
+@article{castaneda2026ez130t8, 
+  author = {Casta\~neda, Oscar and Recchioni, Lavinia and
+    Senti, Tobias and Cahenzli, Flurin and Ferroni, Marco and
+    Heekenjann, Thorben and Kenter, Robert and Odermatt, Stefan and
+    Richner, Daniel and Altendorfer, Gabriel and Cannone, Davide and
+    Correa, Miguel and Herger, Ivan and Kr\"oger, Lars and
+    Nanzer, Nicolas and Nonaca, Darja and Reinwardt, Christopher and
+    Winklhofer, Lukas and Zelioli, Enrico and Zhang, Yiheng and
+    Zhang, Yingxue and Keller, Domenic and Mirfarshbafan, Seyed Hadi
+    and Jiang, Zerun and Muheim, Beat and Rubino, Arianna and
+    Guichemerre, J\'er\'emy and G\"urkaynak, Frank K. and
+    Studer, Christoph},
+  title = {An Open-Source Standard-Cell Library for {IHP} 130\,nm
+    Developed by Students},
+  journal = {arXiv preprint arXiv:2609.29965},
+  month = {September},
+  year = {2026},
+  url = {https://arxiv.org/abs/2609.29965}
+}

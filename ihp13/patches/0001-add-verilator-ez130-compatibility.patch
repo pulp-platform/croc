@@ -1,0 +1,587 @@
+--- a/ez130_8t.v
++++ b/ez130_8t.v
+@@ -1,3 +1,8 @@
++// Modified for Croc by Philippe Sauter for Verilator compatibility:
++// the delayed timing-check signals are tied to their inputs (VERILATOR only).
++// Copyright (c) 2026 ETH Zurich and University of Bologna.
++// SPDX-License-Identifier: Apache-2.0
++
+ ////////////////////////////////////////////////////////////////////////
+ //
+ // Copyright 2026 ETH Zurich
+@@ -1906,7 +1911,11 @@
+ 	output ECK;
+ 	input E, SE, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_E = E, delayed_SE = SE, delayed_CK = CK;
++`else
+ 	wire delayed_E, delayed_SE, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_clk, int_fwire_QE, int_fwire_test;
+@@ -1958,7 +1967,11 @@
+ 	output ECK;
+ 	input E, SE, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_E = E, delayed_SE = SE, delayed_CK = CK;
++`else
+ 	wire delayed_E, delayed_SE, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_clk, int_fwire_QE, int_fwire_test;
+@@ -2010,7 +2023,11 @@
+ 	output ECK;
+ 	input E, SE, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_E = E, delayed_SE = SE, delayed_CK = CK;
++`else
+ 	wire delayed_E, delayed_SE, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_clk, int_fwire_QE, int_fwire_test;
+@@ -2062,7 +2079,11 @@
+ 	output ECK;
+ 	input E, SE, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_E = E, delayed_SE = SE, delayed_CK = CK;
++`else
+ 	wire delayed_E, delayed_SE, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_clk, int_fwire_QE, int_fwire_test;
+@@ -2114,7 +2135,11 @@
+ 	output ECK;
+ 	input E, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_E = E, delayed_CK = CK;
++`else
+ 	wire delayed_E, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_clk, int_fwire_QE;
+@@ -2155,7 +2180,11 @@
+ 	output ECK;
+ 	input E, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_E = E, delayed_CK = CK;
++`else
+ 	wire delayed_E, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_clk, int_fwire_QE;
+@@ -2196,7 +2225,11 @@
+ 	output ECK;
+ 	input E, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_E = E, delayed_CK = CK;
++`else
+ 	wire delayed_E, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_clk, int_fwire_QE;
+@@ -2277,7 +2310,11 @@
+ 	output Q;
+ 	input D, SD, SE, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_SD = SD, delayed_SE = SE, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_SD, delayed_SE, delayed_RB, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire delayed_SE__bar, int_fwire_0, int_fwire_1;
+@@ -2376,7 +2413,11 @@
+ 	output Q;
+ 	input D, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ, xcr_0;
+@@ -2414,7 +2455,11 @@
+ 	output Q;
+ 	input D, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ, xcr_0;
+@@ -2452,7 +2497,11 @@
+ 	output Q;
+ 	input D, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ, xcr_0;
+@@ -2490,7 +2539,11 @@
+ 	output Q;
+ 	input D, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ, xcr_0;
+@@ -2528,7 +2581,11 @@
+ 	output Q;
+ 	input D, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ, xcr_0;
+@@ -2566,7 +2623,11 @@
+ 	output Q;
+ 	input D, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ, xcr_0;
+@@ -2604,7 +2665,11 @@
+ 	output Q0, Q1;
+ 	input D0, D1, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D0 = D0, delayed_D1 = D1, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D0, delayed_D1, delayed_RB, delayed_CK;
++`endif
+ 	// Missing function for pin Q1
+ 
+ 	// Function
+@@ -2668,7 +2733,11 @@
+ 	output Q0, Q1;
+ 	input D0, D1, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D0 = D0, delayed_D1 = D1, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D0, delayed_D1, delayed_RB, delayed_CK;
++`endif
+ 	// Missing function for pin Q1
+ 
+ 	// Function
+@@ -2732,7 +2801,11 @@
+ 	output Q0, Q1;
+ 	input D0, D1, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D0 = D0, delayed_D1 = D1, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D0, delayed_D1, delayed_RB, delayed_CK;
++`endif
+ 	// Missing function for pin Q1
+ 
+ 	// Function
+@@ -2796,7 +2869,11 @@
+ 	output Q0, Q1;
+ 	input D0, D1, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D0 = D0, delayed_D1 = D1, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D0, delayed_D1, delayed_RB, delayed_CK;
++`endif
+ 	// Missing function for pin Q1
+ 
+ 	// Function
+@@ -2860,7 +2937,11 @@
+ 	output Q0, Q1, Q2, Q3;
+ 	input D0, D1, D2, D3, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D0 = D0, delayed_D1 = D1, delayed_D2 = D2, delayed_D3 = D3, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D0, delayed_D1, delayed_D2, delayed_D3, delayed_RB, delayed_CK;
++`endif
+ 	// Missing function for pin Q1
+ 	// Missing function for pin Q2
+ 	// Missing function for pin Q3
+@@ -2956,7 +3037,11 @@
+ 	output Q0, Q1, Q2, Q3;
+ 	input D0, D1, D2, D3, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D0 = D0, delayed_D1 = D1, delayed_D2 = D2, delayed_D3 = D3, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D0, delayed_D1, delayed_D2, delayed_D3, delayed_RB, delayed_CK;
++`endif
+ 	// Missing function for pin Q1
+ 	// Missing function for pin Q2
+ 	// Missing function for pin Q3
+@@ -3052,7 +3137,11 @@
+ 	output Q0, Q1, Q2, Q3;
+ 	input D0, D1, D2, D3, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D0 = D0, delayed_D1 = D1, delayed_D2 = D2, delayed_D3 = D3, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D0, delayed_D1, delayed_D2, delayed_D3, delayed_RB, delayed_CK;
++`endif
+ 	// Missing function for pin Q1
+ 	// Missing function for pin Q2
+ 	// Missing function for pin Q3
+@@ -3148,7 +3237,11 @@
+ 	output Q0, Q1, Q2, Q3;
+ 	input D0, D1, D2, D3, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D0 = D0, delayed_D1 = D1, delayed_D2 = D2, delayed_D3 = D3, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D0, delayed_D1, delayed_D2, delayed_D3, delayed_RB, delayed_CK;
++`endif
+ 	// Missing function for pin Q1
+ 	// Missing function for pin Q2
+ 	// Missing function for pin Q3
+@@ -3244,7 +3337,11 @@
+ 	output Q;
+ 	input D, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_RB, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ, int_fwire_r, xcr_0;
+@@ -3305,7 +3402,11 @@
+ 	output Q;
+ 	input D, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_RB, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ, int_fwire_r, xcr_0;
+@@ -3366,7 +3467,11 @@
+ 	output Q;
+ 	input D, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_RB, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ, int_fwire_r, xcr_0;
+@@ -3427,7 +3532,11 @@
+ 	output Q;
+ 	input D, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_RB, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ, int_fwire_r, xcr_0;
+@@ -3488,7 +3597,11 @@
+ 	output Q;
+ 	input D, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_RB, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ, int_fwire_r, xcr_0;
+@@ -3549,7 +3662,11 @@
+ 	output Q;
+ 	input D, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_RB, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ, int_fwire_r, xcr_0;
+@@ -3610,7 +3727,11 @@
+ 	output Q, QB;
+ 	input D, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_RB, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ, int_fwire_IQB, int_fwire_r;
+@@ -3682,7 +3803,11 @@
+ 	output Q, QB;
+ 	input D, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_RB, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ, int_fwire_IQB, int_fwire_r;
+@@ -3754,7 +3879,11 @@
+ 	output Q, QB;
+ 	input D, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_RB, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ, int_fwire_IQB, int_fwire_r;
+@@ -3826,7 +3955,11 @@
+ 	output Q, QB;
+ 	input D, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_RB, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ, int_fwire_IQB, int_fwire_r;
+@@ -3898,7 +4031,11 @@
+ 	output Q, QB;
+ 	input D, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_RB, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ, int_fwire_IQB, int_fwire_r;
+@@ -3970,7 +4107,11 @@
+ 	output Q, QB;
+ 	input D, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_RB, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ, int_fwire_IQB, int_fwire_r;
+@@ -4337,7 +4478,11 @@
+ 	output Q;
+ 	input D, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_clk, int_fwire_IQ;
+@@ -4374,7 +4519,11 @@
+ 	output Q;
+ 	input D, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_clk, int_fwire_IQ;
+@@ -4411,7 +4560,11 @@
+ 	output Q;
+ 	input D, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_clk, int_fwire_IQ;
+@@ -4448,7 +4601,11 @@
+ 	output Q, QB;
+ 	input D, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_RB, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_clk, int_fwire_IQ, int_fwire_IQB;
+@@ -4520,7 +4677,11 @@
+ 	output Q, QB;
+ 	input D, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_RB, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_clk, int_fwire_IQ, int_fwire_IQB;
+@@ -4592,7 +4753,11 @@
+ 	output Q, QB;
+ 	input D, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_RB, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_clk, int_fwire_IQ, int_fwire_IQB;
+@@ -4664,7 +4829,11 @@
+ 	output Q, QB;
+ 	input D, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_RB, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_clk, int_fwire_IQ, int_fwire_IQB;
+@@ -4736,7 +4905,11 @@
+ 	output Q;
+ 	input D, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ;
+@@ -4772,7 +4945,11 @@
+ 	output Q;
+ 	input D, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ;
+@@ -4808,7 +4985,11 @@
+ 	output Q;
+ 	input D, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ;
+@@ -4844,7 +5025,11 @@
+ 	output Q, QB;
+ 	input D, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_RB, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ, int_fwire_IQB, int_fwire_r;
+@@ -4915,7 +5100,11 @@
+ 	output Q, QB;
+ 	input D, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_RB, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ, int_fwire_IQB, int_fwire_r;
+@@ -4986,7 +5175,11 @@
+ 	output Q, QB;
+ 	input D, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_RB, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ, int_fwire_IQB, int_fwire_r;
+@@ -5057,7 +5250,11 @@
+ 	output Q, QB;
+ 	input D, RB, CK;
+ 	reg notifier;
++`ifdef VERILATOR
++	wire delayed_D = D, delayed_RB = RB, delayed_CK = CK;
++`else
+ 	wire delayed_D, delayed_RB, delayed_CK;
++`endif
+ 
+ 	// Function
+ 	wire int_fwire_IQ, int_fwire_IQB, int_fwire_r;
