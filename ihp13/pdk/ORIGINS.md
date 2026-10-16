@@ -11,7 +11,7 @@ copyright and Apache-2.0 license headers. Full license copies are in
 
 | Croc files | Source and pinned revision | Copyright and license |
 | --- | --- | --- |
-| `lib/ez130_8t_*`, `lef/ez130_8t.lef`, `lef/ez130_cmos5l_tech.lef`, `verilog/ez130_8t.v`, and `gds/ez130_8t.gds` | [EZ130 8T v1.1](https://iip.ethz.ch/ez-library/ihp130-8t.html), archive `ez130_8t_v1p1.zip` pinned by SHA-256 digest | Copyright 2026 ETH Zurich, Apache-2.0; see `licenses/LICENSE.ez130_8t` and `licenses/NOTICE.ez130_8t` |
+| `lib/ez130_8t_*`, `lef/ez130_8t.lef`, `lef/ez130_cmos5l_tech.lef`, `verilog/ez130_8t.v`, and `gds/ez130_8t.gds` | [EZ130 8T v1.1](https://iip.ethz.ch/ez-library/ihp130-8t.html), archive `ez130_8t_v1p1.zip` pinned by SHA-256 digest | Copyright 2026 ETH Zurich, Apache-2.0 (`lef/ez130_cmos5l_tech.lef` is derived from the IHP CMOS5L tech LEF: Copyright 2023 IHP PDK Authors, Apache-2.0); see `licenses/LICENSE.ez130_8t` and `licenses/NOTICE.ez130_8t` |
 | All `RM_IHPSG13_*` Liberty, LEF, and Verilog SRAM models | [IHP Open PDK: sg13g2 SRAMs](https://github.com/IHP-GmbH/IHP-Open-PDK/tree/ee974c3adc69d0f36adbf20577079f0df419d702/ihp-sg13g2/libs.ref/sg13g2_sram) | Copyright IHP PDK Authors, Apache-2.0 |
 | `lib/sg13cmos5l_io_*`, `lef/sg13cmos5l_io.lef`, and `verilog/sg13cmos5l_io.v` | [IHP CMOS5L PDK: IO cells](https://github.com/IHP-GmbH/ihp-sg13cmos5l/tree/5958eb38973d5c56e7a26f65fc23d9f3a740ccd2/libs.ref/sg13cmos5l_io) | Copyright IHP PDK Authors, Apache-2.0 |
 | `lef/bondpad5l_70x70.lef`, `verilog/bondpad5l_70x70.v`, and `gds/bondpad5l_70x70.gds` | Croc files in this directory | Copyright 2024-2026 ETH Zurich and University of Bologna, SHL-0.51; see the repository [license](../../LICENSE.md) |

@@ -142,6 +142,7 @@ while IFS=, read -r source_type source revision source_sha256 path patch_file ou
     fi
 
     mkdir -p "$(dirname "$output_path")"
+    chmod 0644 "$temporary_file"
     mv "$temporary_file" "$output_path"
     echo "[INFO] Updated: $output"
 done < "$manifest"

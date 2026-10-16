@@ -1,15 +1,17 @@
 --- a/ez130_8t.v
 +++ b/ez130_8t.v
-@@ -1,3 +1,8 @@
+@@ -1,3 +1,10 @@
 +// Modified for Croc by Philippe Sauter for Verilator compatibility:
-+// the delayed timing-check signals are tied to their inputs (VERILATOR only).
++// the delayed timing-check signals are tied to their inputs and DFFQX1/DFFRQX1
++// use a behavioral flop with nonblocking assignment instead of the UDP, whose
++// blocking-assignment lowering races in flop chains (VERILATOR only).
 +// Copyright (c) 2026 ETH Zurich and University of Bologna.
 +// SPDX-License-Identifier: Apache-2.0
 +
  ////////////////////////////////////////////////////////////////////////
  //
  // Copyright 2026 ETH Zurich
-@@ -1906,7 +1911,11 @@
+@@ -1906,7 +1913,11 @@
  	output ECK;
  	input E, SE, CK;
  	reg notifier;
@@ -21,7 +23,7 @@
  
  	// Function
  	wire int_fwire_clk, int_fwire_QE, int_fwire_test;
-@@ -1958,7 +1967,11 @@
+@@ -1958,7 +1969,11 @@
  	output ECK;
  	input E, SE, CK;
  	reg notifier;
@@ -33,7 +35,7 @@
  
  	// Function
  	wire int_fwire_clk, int_fwire_QE, int_fwire_test;
-@@ -2010,7 +2023,11 @@
+@@ -2010,7 +2025,11 @@
  	output ECK;
  	input E, SE, CK;
  	reg notifier;
@@ -45,7 +47,7 @@
  
  	// Function
  	wire int_fwire_clk, int_fwire_QE, int_fwire_test;
-@@ -2062,7 +2079,11 @@
+@@ -2062,7 +2081,11 @@
  	output ECK;
  	input E, SE, CK;
  	reg notifier;
@@ -57,7 +59,7 @@
  
  	// Function
  	wire int_fwire_clk, int_fwire_QE, int_fwire_test;
-@@ -2114,7 +2135,11 @@
+@@ -2114,7 +2137,11 @@
  	output ECK;
  	input E, CK;
  	reg notifier;
@@ -69,7 +71,7 @@
  
  	// Function
  	wire int_fwire_clk, int_fwire_QE;
-@@ -2155,7 +2180,11 @@
+@@ -2155,7 +2182,11 @@
  	output ECK;
  	input E, CK;
  	reg notifier;
@@ -81,7 +83,7 @@
  
  	// Function
  	wire int_fwire_clk, int_fwire_QE;
-@@ -2196,7 +2225,11 @@
+@@ -2196,7 +2227,11 @@
  	output ECK;
  	input E, CK;
  	reg notifier;
@@ -93,7 +95,7 @@
  
  	// Function
  	wire int_fwire_clk, int_fwire_QE;
-@@ -2277,7 +2310,11 @@
+@@ -2277,7 +2312,11 @@
  	output Q;
  	input D, SD, SE, RB, CK;
  	reg notifier;
@@ -105,7 +107,7 @@
  
  	// Function
  	wire delayed_SE__bar, int_fwire_0, int_fwire_1;
-@@ -2376,7 +2413,11 @@
+@@ -2376,14 +2415,25 @@
  	output Q;
  	input D, CK;
  	reg notifier;
@@ -117,7 +119,21 @@
  
  	// Function
  	wire int_fwire_IQ, xcr_0;
-@@ -2414,7 +2455,11 @@
+ 
++`ifdef VERILATOR
++	reg int_q;
++	always @(posedge CK)
++		int_q <= D;
++	assign Q = int_q;
++`else
+ 	altos_dff_err (xcr_0, delayed_CK, delayed_D);
+ 	altos_dff (int_fwire_IQ, notifier, delayed_CK, delayed_D, xcr_0);
+ 	buf (Q, int_fwire_IQ);
++`endif
+ 
+ 	// Timing
+ 
+@@ -2414,7 +2464,11 @@
  	output Q;
  	input D, CK;
  	reg notifier;
@@ -129,7 +145,7 @@
  
  	// Function
  	wire int_fwire_IQ, xcr_0;
-@@ -2452,7 +2497,11 @@
+@@ -2452,7 +2506,11 @@
  	output Q;
  	input D, CK;
  	reg notifier;
@@ -141,7 +157,7 @@
  
  	// Function
  	wire int_fwire_IQ, xcr_0;
-@@ -2490,7 +2539,11 @@
+@@ -2490,7 +2548,11 @@
  	output Q;
  	input D, CK;
  	reg notifier;
@@ -153,7 +169,7 @@
  
  	// Function
  	wire int_fwire_IQ, xcr_0;
-@@ -2528,7 +2581,11 @@
+@@ -2528,7 +2590,11 @@
  	output Q;
  	input D, CK;
  	reg notifier;
@@ -165,7 +181,7 @@
  
  	// Function
  	wire int_fwire_IQ, xcr_0;
-@@ -2566,7 +2623,11 @@
+@@ -2566,7 +2632,11 @@
  	output Q;
  	input D, CK;
  	reg notifier;
@@ -177,7 +193,7 @@
  
  	// Function
  	wire int_fwire_IQ, xcr_0;
-@@ -2604,7 +2665,11 @@
+@@ -2604,7 +2674,11 @@
  	output Q0, Q1;
  	input D0, D1, RB, CK;
  	reg notifier;
@@ -189,7 +205,7 @@
  	// Missing function for pin Q1
  
  	// Function
-@@ -2668,7 +2733,11 @@
+@@ -2668,7 +2742,11 @@
  	output Q0, Q1;
  	input D0, D1, RB, CK;
  	reg notifier;
@@ -201,7 +217,7 @@
  	// Missing function for pin Q1
  
  	// Function
-@@ -2732,7 +2801,11 @@
+@@ -2732,7 +2810,11 @@
  	output Q0, Q1;
  	input D0, D1, RB, CK;
  	reg notifier;
@@ -213,7 +229,7 @@
  	// Missing function for pin Q1
  
  	// Function
-@@ -2796,7 +2869,11 @@
+@@ -2796,7 +2878,11 @@
  	output Q0, Q1;
  	input D0, D1, RB, CK;
  	reg notifier;
@@ -225,7 +241,7 @@
  	// Missing function for pin Q1
  
  	// Function
-@@ -2860,7 +2937,11 @@
+@@ -2860,7 +2946,11 @@
  	output Q0, Q1, Q2, Q3;
  	input D0, D1, D2, D3, RB, CK;
  	reg notifier;
@@ -237,7 +253,7 @@
  	// Missing function for pin Q1
  	// Missing function for pin Q2
  	// Missing function for pin Q3
-@@ -2956,7 +3037,11 @@
+@@ -2956,7 +3046,11 @@
  	output Q0, Q1, Q2, Q3;
  	input D0, D1, D2, D3, RB, CK;
  	reg notifier;
@@ -249,7 +265,7 @@
  	// Missing function for pin Q1
  	// Missing function for pin Q2
  	// Missing function for pin Q3
-@@ -3052,7 +3137,11 @@
+@@ -3052,7 +3146,11 @@
  	output Q0, Q1, Q2, Q3;
  	input D0, D1, D2, D3, RB, CK;
  	reg notifier;
@@ -261,7 +277,7 @@
  	// Missing function for pin Q1
  	// Missing function for pin Q2
  	// Missing function for pin Q3
-@@ -3148,7 +3237,11 @@
+@@ -3148,7 +3246,11 @@
  	output Q0, Q1, Q2, Q3;
  	input D0, D1, D2, D3, RB, CK;
  	reg notifier;
@@ -273,7 +289,7 @@
  	// Missing function for pin Q1
  	// Missing function for pin Q2
  	// Missing function for pin Q3
-@@ -3244,7 +3337,11 @@
+@@ -3244,15 +3346,27 @@
  	output Q;
  	input D, RB, CK;
  	reg notifier;
@@ -285,7 +301,23 @@
  
  	// Function
  	wire int_fwire_IQ, int_fwire_r, xcr_0;
-@@ -3305,7 +3402,11 @@
+ 
++`ifdef VERILATOR
++	reg int_q;
++	always @(posedge CK or negedge RB)
++		if (!RB) int_q <= 1'b0;
++		else int_q <= D;
++	assign Q = int_q;
++`else
+ 	not (int_fwire_r, delayed_RB);
+ 	altos_dff_r_err (xcr_0, delayed_CK, delayed_D, int_fwire_r);
+ 	altos_dff_r (int_fwire_IQ, notifier, delayed_CK, delayed_D, int_fwire_r, xcr_0);
+ 	buf (Q, int_fwire_IQ);
++`endif
+ 
+ 	// Timing
+ 
+@@ -3305,7 +3419,11 @@
  	output Q;
  	input D, RB, CK;
  	reg notifier;
@@ -297,7 +329,7 @@
  
  	// Function
  	wire int_fwire_IQ, int_fwire_r, xcr_0;
-@@ -3366,7 +3467,11 @@
+@@ -3366,7 +3484,11 @@
  	output Q;
  	input D, RB, CK;
  	reg notifier;
@@ -309,7 +341,7 @@
  
  	// Function
  	wire int_fwire_IQ, int_fwire_r, xcr_0;
-@@ -3427,7 +3532,11 @@
+@@ -3427,7 +3549,11 @@
  	output Q;
  	input D, RB, CK;
  	reg notifier;
@@ -321,7 +353,7 @@
  
  	// Function
  	wire int_fwire_IQ, int_fwire_r, xcr_0;
-@@ -3488,7 +3597,11 @@
+@@ -3488,7 +3614,11 @@
  	output Q;
  	input D, RB, CK;
  	reg notifier;
@@ -333,7 +365,7 @@
  
  	// Function
  	wire int_fwire_IQ, int_fwire_r, xcr_0;
-@@ -3549,7 +3662,11 @@
+@@ -3549,7 +3679,11 @@
  	output Q;
  	input D, RB, CK;
  	reg notifier;
@@ -345,7 +377,7 @@
  
  	// Function
  	wire int_fwire_IQ, int_fwire_r, xcr_0;
-@@ -3610,7 +3727,11 @@
+@@ -3610,7 +3744,11 @@
  	output Q, QB;
  	input D, RB, CK;
  	reg notifier;
@@ -357,7 +389,7 @@
  
  	// Function
  	wire int_fwire_IQ, int_fwire_IQB, int_fwire_r;
-@@ -3682,7 +3803,11 @@
+@@ -3682,7 +3820,11 @@
  	output Q, QB;
  	input D, RB, CK;
  	reg notifier;
@@ -369,7 +401,7 @@
  
  	// Function
  	wire int_fwire_IQ, int_fwire_IQB, int_fwire_r;
-@@ -3754,7 +3879,11 @@
+@@ -3754,7 +3896,11 @@
  	output Q, QB;
  	input D, RB, CK;
  	reg notifier;
@@ -381,7 +413,7 @@
  
  	// Function
  	wire int_fwire_IQ, int_fwire_IQB, int_fwire_r;
-@@ -3826,7 +3955,11 @@
+@@ -3826,7 +3972,11 @@
  	output Q, QB;
  	input D, RB, CK;
  	reg notifier;
@@ -393,7 +425,7 @@
  
  	// Function
  	wire int_fwire_IQ, int_fwire_IQB, int_fwire_r;
-@@ -3898,7 +4031,11 @@
+@@ -3898,7 +4048,11 @@
  	output Q, QB;
  	input D, RB, CK;
  	reg notifier;
@@ -405,7 +437,7 @@
  
  	// Function
  	wire int_fwire_IQ, int_fwire_IQB, int_fwire_r;
-@@ -3970,7 +4107,11 @@
+@@ -3970,7 +4124,11 @@
  	output Q, QB;
  	input D, RB, CK;
  	reg notifier;
@@ -417,7 +449,7 @@
  
  	// Function
  	wire int_fwire_IQ, int_fwire_IQB, int_fwire_r;
-@@ -4337,7 +4478,11 @@
+@@ -4337,7 +4495,11 @@
  	output Q;
  	input D, CK;
  	reg notifier;
@@ -429,7 +461,7 @@
  
  	// Function
  	wire int_fwire_clk, int_fwire_IQ;
-@@ -4374,7 +4519,11 @@
+@@ -4374,7 +4536,11 @@
  	output Q;
  	input D, CK;
  	reg notifier;
@@ -441,7 +473,7 @@
  
  	// Function
  	wire int_fwire_clk, int_fwire_IQ;
-@@ -4411,7 +4560,11 @@
+@@ -4411,7 +4577,11 @@
  	output Q;
  	input D, CK;
  	reg notifier;
@@ -453,7 +485,7 @@
  
  	// Function
  	wire int_fwire_clk, int_fwire_IQ;
-@@ -4448,7 +4601,11 @@
+@@ -4448,7 +4618,11 @@
  	output Q, QB;
  	input D, RB, CK;
  	reg notifier;
@@ -465,7 +497,7 @@
  
  	// Function
  	wire int_fwire_clk, int_fwire_IQ, int_fwire_IQB;
-@@ -4520,7 +4677,11 @@
+@@ -4520,7 +4694,11 @@
  	output Q, QB;
  	input D, RB, CK;
  	reg notifier;
@@ -477,7 +509,7 @@
  
  	// Function
  	wire int_fwire_clk, int_fwire_IQ, int_fwire_IQB;
-@@ -4592,7 +4753,11 @@
+@@ -4592,7 +4770,11 @@
  	output Q, QB;
  	input D, RB, CK;
  	reg notifier;
@@ -489,7 +521,7 @@
  
  	// Function
  	wire int_fwire_clk, int_fwire_IQ, int_fwire_IQB;
-@@ -4664,7 +4829,11 @@
+@@ -4664,7 +4846,11 @@
  	output Q, QB;
  	input D, RB, CK;
  	reg notifier;
@@ -501,7 +533,7 @@
  
  	// Function
  	wire int_fwire_clk, int_fwire_IQ, int_fwire_IQB;
-@@ -4736,7 +4905,11 @@
+@@ -4736,7 +4922,11 @@
  	output Q;
  	input D, CK;
  	reg notifier;
@@ -513,7 +545,7 @@
  
  	// Function
  	wire int_fwire_IQ;
-@@ -4772,7 +4945,11 @@
+@@ -4772,7 +4962,11 @@
  	output Q;
  	input D, CK;
  	reg notifier;
@@ -525,7 +557,7 @@
  
  	// Function
  	wire int_fwire_IQ;
-@@ -4808,7 +4985,11 @@
+@@ -4808,7 +5002,11 @@
  	output Q;
  	input D, CK;
  	reg notifier;
@@ -537,7 +569,7 @@
  
  	// Function
  	wire int_fwire_IQ;
-@@ -4844,7 +5025,11 @@
+@@ -4844,7 +5042,11 @@
  	output Q, QB;
  	input D, RB, CK;
  	reg notifier;
@@ -549,7 +581,7 @@
  
  	// Function
  	wire int_fwire_IQ, int_fwire_IQB, int_fwire_r;
-@@ -4915,7 +5100,11 @@
+@@ -4915,7 +5117,11 @@
  	output Q, QB;
  	input D, RB, CK;
  	reg notifier;
@@ -561,7 +593,7 @@
  
  	// Function
  	wire int_fwire_IQ, int_fwire_IQB, int_fwire_r;
-@@ -4986,7 +5175,11 @@
+@@ -4986,7 +5192,11 @@
  	output Q, QB;
  	input D, RB, CK;
  	reg notifier;
@@ -573,7 +605,7 @@
  
  	// Function
  	wire int_fwire_IQ, int_fwire_IQB, int_fwire_r;
-@@ -5057,7 +5250,11 @@
+@@ -5057,7 +5267,11 @@
  	output Q, QB;
  	input D, RB, CK;
  	reg notifier;

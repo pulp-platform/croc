@@ -1,5 +1,7 @@
 // Modified for Croc by Philippe Sauter for Verilator compatibility:
-// the delayed timing-check signals are tied to their inputs (VERILATOR only).
+// the delayed timing-check signals are tied to their inputs and DFFQX1/DFFRQX1
+// use a behavioral flop with nonblocking assignment instead of the UDP, whose
+// blocking-assignment lowering races in flop chains (VERILATOR only).
 // Copyright (c) 2026 ETH Zurich and University of Bologna.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -2422,9 +2424,16 @@ module DFFQX1 (Q, D, CK);
 	// Function
 	wire int_fwire_IQ, xcr_0;
 
+`ifdef VERILATOR
+	reg int_q;
+	always @(posedge CK)
+		int_q <= D;
+	assign Q = int_q;
+`else
 	altos_dff_err (xcr_0, delayed_CK, delayed_D);
 	altos_dff (int_fwire_IQ, notifier, delayed_CK, delayed_D, xcr_0);
 	buf (Q, int_fwire_IQ);
+`endif
 
 	// Timing
 
@@ -3346,10 +3355,18 @@ module DFFRQX1 (Q, D, RB, CK);
 	// Function
 	wire int_fwire_IQ, int_fwire_r, xcr_0;
 
+`ifdef VERILATOR
+	reg int_q;
+	always @(posedge CK or negedge RB)
+		if (!RB) int_q <= 1'b0;
+		else int_q <= D;
+	assign Q = int_q;
+`else
 	not (int_fwire_r, delayed_RB);
 	altos_dff_r_err (xcr_0, delayed_CK, delayed_D, int_fwire_r);
 	altos_dff_r (int_fwire_IQ, notifier, delayed_CK, delayed_D, int_fwire_r, xcr_0);
 	buf (Q, int_fwire_IQ);
+`endif
 
 	// Timing
 
