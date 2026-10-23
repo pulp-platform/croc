@@ -95,7 +95,7 @@ build_rtl_verilator() {
         -j $VERILATOR_JOBS \
         --timing \
         --autoflush \
-        --trace-fst \
+        --trace \
         --trace-threads 2 \
         --trace-structs \
         --unroll-count 1 \
@@ -119,6 +119,7 @@ build_netlist_verilator() {
         exit 1
     fi
 
+    # no waveform tracing here: FST needs lz4.h (missing in the oseda image) and VCD gets huge
     run_cmd "echo [INFO][Verilator] Build Yosys-netlist simulation"
     run_cmd "verilator \
         -Wno-fatal \
@@ -183,6 +184,10 @@ generate_netlist_flist() {
 run_rtl_binary() {
     run_cmd "echo [INFO][Verilator] Run RTL simulation"
     run_cmd "obj_dir_rtl/Vtb_croc_soc +binary="$1" | tee ${PROJ_NAME}_rtl.log"
+    # VCD instead of --trace-fst (needs lz4.h, not in the oseda image yet): store it as FST
+    if [ "$DRYRUN" = 1 ] || command -v vcd2fst >/dev/null 2>&1; then
+        run_cmd "vcd2fst croc.vcd croc.fst && rm croc.vcd"
+    fi
 }
 
 run_netlist_binary() {
