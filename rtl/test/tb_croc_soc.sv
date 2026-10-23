@@ -163,13 +163,8 @@ module tb_croc_soc #(
   // start waveform dump at time 0, independent of stimuli
   initial begin
     `ifdef TRACE_WAVE
-      `ifdef VERILATOR
-        $dumpfile("croc.fst");
-        $dumpvars(1, i_croc_soc);
-      `else
-        $dumpfile("croc.vcd");
-        $dumpvars(1, i_croc_soc);
-      `endif
+      $dumpfile("croc.vcd");
+      $dumpvars(1, i_croc_soc);
     `endif
   end
 
