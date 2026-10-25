@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 proc source_compile_script {script} {
+    global NETLIST_FILE
     set status [catch {source $script} result]
     if {$status || $result ne ""} {
         puts stderr "\[ERROR\] Compilation failed in $script"
@@ -10,6 +11,8 @@ proc source_compile_script {script} {
     }
 }
 
+# Yosys netlist chosen by run_vsim.sh
+set NETLIST_FILE $::env(NETLIST)
 source_compile_script compile_netlist.tcl
 source_compile_script compile_tech.tcl
 exit 0

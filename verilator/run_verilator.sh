@@ -49,6 +49,8 @@ Options:
     --flist             Regenerate RTL and Yosys-netlist file lists
     --flist-rtl         Regenerate croc_rtl.f
     --flist-netlist     Regenerate croc_netlist_yosys.f
+    --netlist FILE      Yosys netlist for the netlist simulation (default: $NETLIST or the
+                        newest ../yosys/out/*_yosys_debug.v)
     --build, --build-rtl
                         Build the RTL simulation binary
     --build-netlist     Build the Yosys-netlist simulation binary
@@ -109,15 +111,37 @@ build_rtl_verilator() {
         tee ${PROJ_NAME}_rtl_build.log"
 }
 
+# Netlist for the gate-level simulation: --netlist FILE or $NETLIST, else the newest
+# out/*_yosys_debug.v of the Yosys synthesis
+resolve_netlist() {
+    local requested="${NETLIST:-}"
+    local i
+    for ((i = 1; i <= $#; i++)); do
+        [[ "${!i}" == --netlist ]] && { local j=$((i + 1)); requested="${!j:-}"; }
+    done
+    if [[ -z "$requested" ]]; then
+        requested="$(ls -t ../yosys/out/*_yosys_debug.v 2>/dev/null | head -n 1 || true)"
+    fi
+    if [[ -n "$requested" ]]; then
+        NETLIST="$(realpath -m "$requested")"
+    else
+        NETLIST=""
+    fi
+    export NETLIST
+}
+
 build_netlist_verilator() {
     if [ "$NETLIST_FLIST_GENERATED" = 0 ]; then
         generate_netlist_flist
     fi
 
-    if [[ "$DRYRUN" -eq 0 && ! -f ../yosys/out/netlist_debug.v ]]; then
-        echo "[ERROR][Verilator] Missing ../yosys/out/netlist_debug.v. Run Yosys synthesis first." >&2
+    if [[ "$DRYRUN" -eq 0 && ! -f "$NETLIST" ]]; then
+        echo "[ERROR][Verilator] Missing Yosys netlist (${NETLIST:-none found in ../yosys/out}). Run Yosys synthesis first or pass --netlist." >&2
         exit 1
     fi
+    run_cmd "echo [INFO][Verilator] Netlist: $NETLIST"
+    # Verilator does not notice a different netlist behind the same file list
+    run_cmd "rm -rf obj_dir_netlist_yosys"
 
     # no waveform tracing here: FST needs lz4.h (missing in the oseda image) and VCD gets huge
     run_cmd "echo [INFO][Verilator] Build Yosys-netlist simulation"
@@ -177,6 +201,9 @@ generate_netlist_flist() {
     run_cmd "echo [INFO][Bender] Remove absolute paths"
     run_cmd "sed -i 's|${CROC_ROOT}|..|g' croc_netlist_yosys.f"
 
+    # the netlist is chosen at build time (Verilator expands environment variables in file lists)
+    run_cmd "sed -i 's|[^ ]*yosys/out/netlist_debug\\.v|\\\$NETLIST|' croc_netlist_yosys.f"
+
     run_cmd "echo [INFO][Bender] File list generated: croc_netlist_yosys.f"
     NETLIST_FLIST_GENERATED=1
 }
@@ -208,6 +235,8 @@ if [ $# -eq 0 ]; then
     return 0
 fi
 
+resolve_netlist "$@"
+
 # check for global arguments
 for arg in "$@"; do
     [[ "$arg" == -v || "$arg" == --verbose ]] && set -x
@@ -225,6 +254,9 @@ while [[ $# -gt 0 ]]; do
             ;;
         --dry-run|-n)
             shift
+            ;;
+        --netlist)
+            shift 2
             ;;
         # script-specific commands
         --flist)

@@ -80,11 +80,13 @@ on_exit() {
 }
 trap on_exit EXIT
 
+build_args=()
 if [[ "$simulation_mode" == "rtl" ]]; then
     build_option="--build"
     run_option="--run"
     simulation_binary="obj_dir_rtl/Vtb_croc_soc"
     simulation_log="croc_rtl.log"
+    build_args=("$build_option")
 else
     default_netlist="yosys/out/croc_yosys_debug.v"
     idma_netlist="yosys/out/croc_idma_yosys_debug.v"
@@ -113,11 +115,11 @@ if [[ "$simulation_mode" == "rtl" ]]; then
     "$SCRIPT_DIR/set_croc_config.sh"
     make -C sw
 else
-    cp "$default_netlist" yosys/out/netlist_debug.v
+    build_args=("$build_option" --netlist "$CROC_ROOT/$default_netlist")
 fi
 
 cd verilator
-./run_verilator.sh "$build_option"
+./run_verilator.sh "${build_args[@]}"
 active_test="helloworld"
 active_config="Default"
 active_log="verilator/default_helloworld.log"
@@ -167,11 +169,11 @@ echo "============================================="
 if [[ "$simulation_mode" == "rtl" ]]; then
     "$SCRIPT_DIR/set_croc_config.sh" iDMAEnable=1
 else
-    cp "$idma_netlist" yosys/out/netlist_debug.v
+    build_args=("$build_option" --netlist "$CROC_ROOT/$idma_netlist")
 fi
 
 cd verilator
-./run_verilator.sh "$build_option"
+./run_verilator.sh "${build_args[@]}"
 
 "$SCRIPT_DIR/run_tests.sh" --sim "$simulation_binary"
 cd "$CROC_ROOT"

@@ -52,6 +52,8 @@ Options:
     --flist             Regenerate compile script reading sources (compile_rtl.tcl, compile_netlist.tcl)
     --build             Compile Croc RTL in VSIM
     --build-netlist     Compile Croc post-synthesis netlist in VSIM
+    --netlist FILE      Yosys netlist for --build-netlist (default: $NETLIST or the newest
+                        ../yosys/out/*_yosys_debug.v)
     --run BINARY        Run binary in VSIM
     --run-gui BINARY    Prepare running binary in VSIM, open GUI
 
@@ -72,6 +74,25 @@ run_cmd() {
     fi
 }
 
+
+# Netlist for the gate-level simulation: --netlist FILE or $NETLIST, else the newest
+# out/*_yosys_debug.v of the Yosys synthesis
+resolve_netlist() {
+    local requested="${NETLIST:-}"
+    local i
+    for ((i = 1; i <= $#; i++)); do
+        [[ "${!i}" == --netlist ]] && { local j=$((i + 1)); requested="${!j:-}"; }
+    done
+    if [[ -z "$requested" ]]; then
+        requested="$(ls -t ../yosys/out/*_yosys_debug.v 2>/dev/null | head -n 1 || true)"
+    fi
+    if [[ -n "$requested" ]]; then
+        NETLIST="$(realpath -m "$requested")"
+    else
+        NETLIST=""
+    fi
+    export NETLIST
+}
 
 generate_rtl_flist() {
     run_cmd "echo [INFO][Bender] Generate compile_rtl.tcl"
@@ -110,6 +131,9 @@ generate_netlist_flist() {
     run_cmd "echo [INFO][Bender] Remove absolute paths"
     run_cmd "sed -i 's|${CROC_ROOT}|..|g' compile_netlist.tcl"
 
+    # the netlist is chosen at build time (compile_netlist_with_tech.tcl sets NETLIST_FILE)
+    run_cmd "sed -i 's|[^\"]*yosys/out/netlist_debug\\.v|\\\$NETLIST_FILE|' compile_netlist.tcl"
+
     run_cmd "echo [INFO][Bender] File list generated: compile_netlist.tcl"
 }
 
@@ -143,6 +167,11 @@ compile_rtl() {
 
 
 compile_netlist() {
+    if [[ "$DRYRUN" -eq 0 && ! -f "$NETLIST" ]]; then
+        echo "[ERROR][VSIM] Missing Yosys netlist (${NETLIST:-none found in ../yosys/out}). Run Yosys synthesis first or pass --netlist." >&2
+        exit 1
+    fi
+    run_cmd "echo [INFO][VSIM] Netlist: $NETLIST"
     run_cmd "echo [INFO][VSIM] Compile post-synthesis netlist"
     run_cmd "${VSIM} \
         -c \
@@ -207,6 +236,8 @@ if [ $# -eq 0 ]; then
     return 0
 fi
 
+resolve_netlist "$@"
+
 # check for global arguments
 for arg in "$@"; do
     [[ "$arg" == -v || "$arg" == --verbose ]] && set -x
@@ -224,6 +255,9 @@ while [[ $# -gt 0 ]]; do
             ;;
         --dry-run|-n)
             shift
+            ;;
+        --netlist)
+            shift 2
             ;;
         # script-specific commands
         --flist)

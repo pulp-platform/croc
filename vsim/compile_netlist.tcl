@@ -445,7 +445,7 @@ if {[catch { vlog -incr -sv \
     "+incdir+$ROOT/rtl/common_cells/include" \
     "+incdir+$ROOT/rtl/idma/include" \
     "+incdir+$ROOT/rtl/obi/include" \
-    "$ROOT/yosys/out/netlist_debug.v" \
+    "$NETLIST_FILE" \
 }]} {return 1}
 
 # Package(croc_soc) Target(any(simulation, verilator))
