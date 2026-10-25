@@ -105,7 +105,6 @@ generate_flist() {
         -t ihp13 \
         -t rtl \
         -t synthesis \
-        ${BENDER_PDK_ARGS} \
         -D VERILATOR=1 \
         -D SYNTHESIS=1 \
         -D COMMON_CELLS_ASSERTS_OFF=1 \

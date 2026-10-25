@@ -11,7 +11,6 @@ import pya
 
 croc_root = os.environ["CROC_ROOT"]
 klayout_path = os.environ["KLAYOUT_PATH"]
-pdk = os.environ["CROC_PDK"]
 klayout_python = os.path.join(klayout_path, "python")
 shared_klayout_python = os.path.join(croc_root, "ihp13", "sg13g2", "ihp-sg13g2", "libs.tech", "klayout", "python")
 sys.path.extend(
@@ -24,14 +23,8 @@ sys.path.extend(
 from cni.dlo import PyCellContext
 from cni.tech import Tech
 
-if pdk == "sg13cmos5l":
-    pcell_package = "sg13cmos5l_pycell_lib"
-elif pdk == "sg13g2":
-    pcell_package = "sg13g2_pycell_lib"
-else:
-    raise RuntimeError(f"Unsupported Croc PDK: {pdk}")
-
-package_name = f"croc_{pdk}_pcell"
+pcell_package = "sg13cmos5l_pycell_lib"
+package_name = "croc_sg13cmos5l_pcell"
 pcell_root = os.path.join(klayout_python, pcell_package)
 ihp_root = os.path.join(pcell_root, "ihp")
 package = types.ModuleType(package_name)

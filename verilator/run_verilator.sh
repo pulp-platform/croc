@@ -151,7 +151,6 @@ generate_rtl_flist() {
         -t rtl \
         -t verilator \
         -t synthesis \
-        ${BENDER_PDK_ARGS} \
         -D VERILATOR=1 \
         -D COMMON_CELLS_ASSERTS_OFF=1 \
         > croc_rtl.f"
@@ -170,7 +169,6 @@ generate_netlist_flist() {
         -t netlist_yosys \
         -t verilator \
         -t synthesis \
-        ${BENDER_PDK_ARGS} \
         -D VERILATOR=1 \
         -D COMMON_CELLS_ASSERTS_OFF=1 \
         > croc_netlist_yosys.f"

@@ -5,5 +5,5 @@
 # Authors:
 # - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
-set_driving_cell sg13g2_buf_1
+set_driving_cell BUFX2
 set_load 0.015

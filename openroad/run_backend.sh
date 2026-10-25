@@ -78,7 +78,7 @@ Examples:
 Inputs:
     - Synthesized netlist: yosys/${PROJ_NAME}_yosys.v
     - Constraints: openroad/src/constraints.sdc
-    - PDK libraries: Auto-discovered from ${PDK_ROOT}
+    - PDK libraries: technology/
 
 Outputs:
     - Checkpoints: openroad/save/*.zip

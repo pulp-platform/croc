@@ -11,7 +11,7 @@ module tc_clk_inverter (
     output logic clk_o
   );
   (* keep *)(* dont_touch = "true" *)
-  sg13g2_inv_1 i_inv (
+  INVX2 i_inv (
     .A ( clk_i ),
     .Y ( clk_o )
   );
@@ -23,9 +23,9 @@ module tc_clk_buffer (
   output logic clk_o
 );
   (* keep *)(* dont_touch = "true" *)
-  sg13g2_buf_1 i_buf (
+  BUFX2 i_buf (
     .A ( clk_i ),
-    .X ( clk_o )
+    .Y ( clk_o )
   );
 
 endmodule
@@ -37,11 +37,11 @@ module tc_clk_mux2 (
     output logic clk_o
   );
   (* keep *)(* dont_touch = "true" *)
-  sg13g2_mux2_1 i_mux (
+  MUX2X2 i_mux (
     .A0 ( clk0_i    ),
     .A1 ( clk1_i    ),
-    .S  ( clk_sel_i ),
-    .X  ( clk_o     )
+    .S0 ( clk_sel_i ),
+    .Y  ( clk_o     )
   );
 endmodule
 
@@ -52,10 +52,10 @@ module tc_clk_xor2 (
 );
 
   (* keep *)(* dont_touch = "true" *)
-  sg13g2_xor2_1 i_mux (
+  XOR2X2 i_mux (
     .A ( clk0_i ),
     .B ( clk1_i ),
-    .X ( clk_o  )
+    .Y ( clk_o  )
   );
 endmodule
 
@@ -70,11 +70,11 @@ module tc_clk_gating #(
 
   if (IS_FUNCTIONAL || `ifdef USE_CLKGATE 1 `else 0 `endif) begin : gen_clkgate
     (* keep *)(* dont_touch = "true" *)
-    sg13g2_slgcp_1 i_clkgate (
-      .GATE ( en_i  ),
-      .SCE  ( test_en_i ),
-      .CLK  ( clk_i ),
-      .GCLK ( clk_o )
+    CGTSX2 i_clkgate (
+      .E   ( en_i  ),
+      .SE  ( test_en_i ),
+      .CK  ( clk_i ),
+      .ECK ( clk_o )
     );
   end else begin : gen_no_clkgate
     assign clk_o = clk_i;
