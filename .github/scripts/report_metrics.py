@@ -188,7 +188,7 @@ def main():
         raise ValueError(f"Invalid source SHA {sha!r}")
     metrics = {
         "source_sha": sha,
-        "technology": os.environ.get("CROC_PDK", "sg13cmos5l"),
+        "technology": "sg13cmos5l",
         **database_metrics(root / "openroad/out/croc.odb", modules),
         **timing_metrics(
             (root / "openroad/reports/05_croc.final.rpt").read_text(),

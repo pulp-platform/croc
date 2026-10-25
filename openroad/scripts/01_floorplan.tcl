@@ -172,7 +172,7 @@ report_image "01-04_${proj_name}.pre_pdn" true
 utl::report "###############################################################################"
 utl::report "# 01-05: Power Grid"
 utl::report "###############################################################################"
-source scripts/power_grid_${pdk_name}.tcl
+source scripts/power_grid.tcl
 
 # Save checkpoint
 save_checkpoint 01_${proj_name}.floorplan

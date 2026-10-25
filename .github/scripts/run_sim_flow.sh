@@ -86,8 +86,6 @@ if [[ "$simulation_mode" == "rtl" ]]; then
     simulation_binary="obj_dir_rtl/Vtb_croc_soc"
     simulation_log="croc_rtl.log"
 else
-    export CROC_PDK=sg13cmos5l
-
     default_netlist="yosys/out/croc_yosys_debug.v"
     idma_netlist="yosys/out/croc_idma_yosys_debug.v"
     for required_file in \

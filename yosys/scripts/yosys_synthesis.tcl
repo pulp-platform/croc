@@ -18,8 +18,7 @@ source scripts/yosys_common.tcl
 set abc_script [processAbcScript scripts/abc-opt.script]
 
 # read liberty files and prepare some variables
-set pdk_name [expr {[info exists ::env(CROC_PDK)] ? $::env(CROC_PDK) : "sg13cmos5l"}]
-source scripts/init_tech_${pdk_name}.tcl
+source scripts/init_tech.tcl
 
 yosys plugin -i slang.so
 # default from yosys_common.tcl: top_design=croc_chip; sv_flist=./croc.flist

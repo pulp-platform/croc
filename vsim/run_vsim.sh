@@ -81,7 +81,6 @@ generate_rtl_flist() {
         -t vsim \
         -t simulation \
         -t verilator \
-        ${BENDER_PDK_ARGS} \
         -DSYNTHESIS \
         -DSIMULATION \
         --vlog-arg=\"-svinputport=compat\" \
@@ -103,7 +102,6 @@ generate_netlist_flist() {
         -t simulation \
         -t verilator \
         -t netlist_yosys \
-        ${BENDER_PDK_ARGS} \
         -DSYNTHESIS \
         -DSIMULATION \
         --vlog-arg=\"-svinputport=compat\" \

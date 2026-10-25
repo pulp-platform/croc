@@ -1,6 +1,6 @@
 # Croc System-on-Chip
 
-A simple SoC for education using PULP IPs. Croc includes all scripts necessary to produce a nearly finished chip in [IHPs open-source 130nm technology](https://github.com/IHP-GmbH/IHP-Open-PDK/tree/main).
+A simple SoC for education using PULP IPs. Croc includes all scripts necessary to produce a nearly finished chip in [IHPs open-source 130nm technology](https://github.com/IHP-GmbH/IHP-Open-PDK/tree/main), using the open [EZ130 8T standard cells](https://iip.ethz.ch/ez-library/ihp130-8t.html) and the 5-metal CMOS5L back-end.
 
 As it is oriented towards education, it forgoes some configurability to increase readability of the RTL and scripts.
 
@@ -94,11 +94,11 @@ graph LR;
 ## Requirements
 
 We are using the excellent docker container maintained by Harald Pretl. If you get stuck with installing the tools, we urge you to check the [Tool Repository](https://github.com/iic-jku/IIC-OSIC-TOOLS).  
-The current supported version is 2025.12, no other version is officially supported.
+The current supported version is 2026.09, no other version is officially supported.
 
 ### ETHZ systems
 
-ETHZ Design Center maintains an internal version of the IHP PDK, with integrations into all tools we have access to. For this reason if you work on the ETH systems, it is recommended to use the `icdesign` tool (cockpit) instead of the linked GitHub PDK repositories.
+ETHZ Design Center maintains an internal version of the IHP PDK, with integrations into all tools we have access to, including the EZ130 8T standard cells. For this reason if you work on the ETH systems, it is recommended to use the `icdesign` tool (cockpit) instead of the linked GitHub PDK repositories.
 You can directly create a cockpit `technology/` directory inside the Croc repository:
 
 ```sh
@@ -113,7 +113,7 @@ You may want to start a shell in the pre-installed osic-tools container using:
 
 ```sh
 oseda bash
-# specific version eg: oseda -2025.12 bash
+# specific version eg: oseda -2026.09 bash
 ```
 
 ### Other systems
@@ -160,19 +160,16 @@ You need to build/install the required tools manually:
 
 ### PDK versions and sources
 
-The ASIC flow supports two IHP PDKs selected via the `CROC_PDK` environmental variable:
+The ASIC flow uses the [EZ130 8T standard-cell library](https://iip.ethz.ch/ez-library/ihp130-8t.html) with the IHP SG13CMOS5L 5-metal back-end, the SG13CMOS5L IO cells, and the IHP SRAM macros.
+Synthesis, place and route, simulation, and DEF-to-GDS conversion all use one active view:
 
-- `sg13cmos5l`: the default 5-metal CMOS5L option.
-- `sg13g2`: the original SG13G2 7-metal option.
-
-`CROC_PDK` is the only PDK setting users select. There is one active view used by synthesis, place and route, simulation, and DEF-to-GDS conversion:
-
-- `technology/`: Liberty, LEF, Verilog models, and GDS files for the selected PDK.
+- `technology/`: Liberty, LEF, Verilog models, and GDS files of these libraries.
 
 On ETH systems, the `technology/` directory is set up by the ETHZ Design Center cockpit and takes priority.
 Outside ETH, `env.sh` creates `technology -> ihp13/pdk` symbolic link on demand if `technology/` does not already exist.
+If you use the EZ130 8T cells, please cite the reference given in `ihp13/pdk/licenses/NOTICE.ez130_8t`.
 The committed `ihp13/pdk` mirror contains the Apache-2.0 Liberty, LEF, and Verilog files needed by the flow.
-The two Croc bondpad GDS files are committed in `ihp13/pdk/gds`; IHP GDS files are kept out of git and can be downloaded with:
+The Croc bondpad GDS file is committed in `ihp13/pdk/gds`; the EZ130 8T, IO, and SRAM GDS files are kept out of git and can be downloaded with:
 
 ```sh
 scripts/download_gds.sh
@@ -184,8 +181,8 @@ Maintainers can update the pinned PDK mirror with `scripts/update_pdk.sh`.
 You can also run `scripts/setup_technology.sh` manually to print the active technology view. `env.sh` runs the same setup quietly before the ASIC scripts use the PDK.
 
 KLayout needs technology scripts, filling rules, and layer properties in addition to the files mentioned above.
-KLayout tool files are always taken from the pinned PDK submodule, either
-`ihp13/sg13cmos5l` or `ihp13/sg13g2`.
+KLayout tool files are taken from the pinned `ihp13/sg13cmos5l` submodule.
+It relies on `ihp13/sg13g2` for the shared PCell API and default DRC rules.
 
 The OSIC/oseda container also contains a PDK under `/foss/pdks`, but Croc does not currently use it.
 
@@ -221,9 +218,6 @@ Use `./run_drc.sh --full` when reviewing the final layout before tapeout. It
 runs the slower and stricter checks across all layers. Full DRC is the default
 when no mode is specified.
 
-The ASIC flow defaults to `CROC_PDK=sg13cmos5l`.
-To switch back to the original metal stack, export `CROC_PDK=sg13g2` before running the scripts.
-
 ArtistIC uses [`artistic/croc.toml`](artistic/croc.toml) to generate the logo,
 chip images, module outlines, and layer map. Outlines use the matching placed
 DEF in `openroad/out/croc.def`. Host image processing needs Python 3.11+,
@@ -231,7 +225,7 @@ Pillow, img2pdf, Inkscape, and potrace. Run the GDS stages in OSEDA:
 
 ```sh
 make -C artistic/artistic PROJECT=../croc.toml logo-prepare
-oseda -2025.12 bash -c 'source env.sh; make -C artistic/artistic PROJECT=../croc.toml logo-merge render-generate map-generate'
+oseda -2026.09 bash -c 'source env.sh; make -C artistic/artistic PROJECT=../croc.toml logo-merge render-generate map-generate'
 make -C artistic/artistic PROJECT=../croc.toml render-compose render-annotate map-build
 ```
 

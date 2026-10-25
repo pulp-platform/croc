@@ -6,19 +6,19 @@
 # - Philippe Sauter <phsauter@iis.ee.ethz.ch>
 
 # All paths relative to yosys/
-# PDK: sg13g2
+# PDK: EZ130 8T standard cells, SG13CMOS5L IO cells, IHP SRAM macros
 
-set pdk_cells_lib $::env(PDK_DIR_LIB_CELLS)
-set pdk_sram_lib  $::env(PDK_DIR_LIB_SRAMS)
-set pdk_io_lib    $::env(PDK_DIR_LIB_IOS)
+set pdk_cells_lib ../technology/lib
+set pdk_sram_lib  ../technology/lib
+set pdk_io_lib    ../technology/lib
 
-set tech_cells [list "$pdk_cells_lib/$::env(PDK_STDCELL_LIB_TT_FILE)"]
+set tech_cells [list "$pdk_cells_lib/ez130_8t_tt_1p20v_25c.lib"]
 set tech_macros [glob -directory $pdk_sram_lib RM_IHPSG13*_typ_1p20V_25C.lib]
-lappend tech_macros "$pdk_io_lib/$::env(PDK_IO_LIB_TT_FILE)"
+lappend tech_macros "$pdk_io_lib/sg13cmos5l_io_typ_1p2V_3p3V_25C.lib"
 
 # for hilomap
-set tech_cell_tiehi [list sg13g2_tiehi L_HI]
-set tech_cell_tielo [list sg13g2_tielo L_LO]
+set tech_cell_tiehi {TIEHI Y}
+set tech_cell_tielo {TIELO Y}
 
 # pre-formated for easier use in yosys commands
 # all liberty files
@@ -38,7 +38,7 @@ set dont_use_list [list]
 set dont_use_args [list]
 
 foreach cell $dont_use_list {
-	#ENL function of clock gating cells do not work
+	# cells that synthesis must not use
 	lappend dont_use_args [concat "-dont_use " $cell]
 }
 

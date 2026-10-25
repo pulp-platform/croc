@@ -23,6 +23,9 @@ source src/instances.tcl
 set_load [expr 2 * 5.0 + 5.0] [all_outputs]
 set_driving_cell [all_inputs] -lib_cell $ioDrivingCell -pin pad
 
+# Not set in the Liberty files of the EZ cells; limiting fanout often reduces routing stress
+set_max_fanout 16 [current_design]
+
 
 ##################
 ## Input Clocks ##

@@ -58,12 +58,12 @@ class MetricsTests(unittest.TestCase):
             metrics.timing_metrics(self.report.replace("0.4431", "1.1"), self.sdc)
 
     def test_functional_classification(self):
-        self.assertEqual(metrics.category(Master("sg13g2_buf_1")), "Logic cells")
+        self.assertEqual(metrics.category(Master("BUFX2")), "Logic cells")
         self.assertEqual(metrics.category(Master("pad", "PAD_POWER")), "Signal + power pads")
         self.assertEqual(metrics.category(Master("memory", "BLOCK")), "Macros")
         for master in (
             Master("filler", "CORE_SPACER"),
-            Master("sg13g2_decap_1"),
+            Master("DECAP4"),
             Master("antenna", "CORE_ANTENNACELL"),
             Master("bondpad", "COVER"),
         ):

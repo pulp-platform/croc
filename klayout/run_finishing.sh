@@ -75,23 +75,21 @@ run_cmd() {
 }
 
 
-supports_split_topmetal_fill() {
-    grep -q "no_topmetal_1" "$KLAYOUT_PATH/tech/scripts/filler.py"
-}
-
-
 collect_def_to_gds_inputs() {
-    lef_files="$(find "$PDK_DIR_LEF_TECH" -name "$PDK_TECH_LEF_FILE" -exec realpath {} \;) \
-         $(find "$PDK_DIR_LEF_CELLS" -name "$PDK_STDCELL_LEF_FILE" -exec realpath {} \;) \
-         $(find "$PDK_DIR_LEF_SRAMS" -name 'RM_IHPSG13*.lef' -exec realpath {} \;) \
-         $(find "$PDK_DIR_LEF_IOS" -name "$PDK_IO_LEF_FILE" -exec realpath {} \;) \
-         $(find "$PDK_DIR_LEF_BOND" -name "$PDK_BONDPAD_LEF" -exec realpath {} \;)"
+    local pdk_lef="$CROC_ROOT/technology/lef"
+    local pdk_gds="$CROC_ROOT/technology/gds"
+
+    lef_files="$pdk_lef/ez130_cmos5l_tech.lef \
+         $pdk_lef/ez130_8t.lef \
+         $(find "$pdk_lef" -name 'RM_IHPSG13*.lef' -exec realpath {} \;) \
+         $pdk_lef/sg13cmos5l_io.lef \
+         $pdk_lef/bondpad5l_70x70.lef"
 
     local required_gds_files=(
-        "$PDK_DIR_GDS_CELLS/$PDK_STDCELL_GDS_FILE"
-        "$PDK_DIR_GDS_SRAMS/RM_IHPSG13_1P_512x32_c2_bm_bist.gds"
-        "$PDK_DIR_GDS_IOS/$PDK_IO_GDS_FILE"
-        "$PDK_DIR_GDS_BOND/$PDK_BONDPAD_GDS"
+        "$pdk_gds/ez130_8t.gds"
+        "$pdk_gds/RM_IHPSG13_1P_512x32_c2_bm_bist.gds"
+        "$pdk_gds/sg13cmos5l_io.gds"
+        "$pdk_gds/bondpad5l_70x70.gds"
     )
 
     gds_files="${required_gds_files[*]}"
@@ -105,7 +103,7 @@ collect_def_to_gds_inputs() {
         fi
     done
 
-    if [[ "$missing_gds" -eq 1 && "$CROC_TECHNOLOGY_VIEW" == "public mirror" ]]; then
+    if [[ "$missing_gds" -eq 1 && "$(realpath -m "$CROC_ROOT/technology")" == "$(realpath -m "$CROC_ROOT/ihp13/pdk")" ]]; then
         echo "[INFO][KLayout] Downloading missing public PDK GDS"
         "$CROC_ROOT/scripts/download_gds.sh"
     fi
@@ -117,10 +115,10 @@ collect_def_to_gds_inputs() {
         fi
     done
 
-    gds_files="$(find "$PDK_DIR_GDS_CELLS" -name "$PDK_STDCELL_GDS_FILE" -exec realpath {} \;) \
-         $(find "$PDK_DIR_GDS_SRAMS" -name 'RM_IHPSG13*.gds' -exec realpath {} \;) \
-         $(find "$PDK_DIR_GDS_IOS" -name "$PDK_IO_GDS_FILE" -exec realpath {} \;) \
-         $(find "$PDK_DIR_GDS_BOND" -name "$PDK_BONDPAD_GDS" -exec realpath {} \;)"
+    gds_files="$pdk_gds/ez130_8t.gds \
+         $(find "$pdk_gds" -name 'RM_IHPSG13*.gds' -exec realpath {} \;) \
+         $pdk_gds/sg13cmos5l_io.gds \
+         $pdk_gds/bondpad5l_70x70.gds"
 }
 
 
@@ -200,14 +198,8 @@ merge_seal_ring() {
 
 
 fill_metal() {
-    run_cmd "echo [INFO][KLayout] Filling routing metals for $CROC_PDK"
-    if [[ "$CROC_PDK" == "sg13cmos5l" ]]; then
-        fill_flags="-rd no_activ"
-    elif supports_split_topmetal_fill; then
-        fill_flags="-rd no_topmetal_2 -rd no_activ"
-    else
-        fill_flags="-rd no_topmetal -rd no_activ"
-    fi
+    run_cmd "echo [INFO][KLayout] Filling routing metals"
+    fill_flags="-rd no_activ"
     run_cmd "klayout -n $KLAYOUT_TECH -zz \
         -r $KLAYOUT_PATH/tech/scripts/filler.py \
         -rd output_file=out/${PROJ_NAME}.metfilled.gds.gz \
@@ -218,14 +210,8 @@ fill_metal() {
 
 
 fill_activ() {
-    run_cmd "echo [INFO][KLayout] Filling active layers for $CROC_PDK"
-    if [[ "$CROC_PDK" == "sg13cmos5l" ]]; then
-        fill_flags="-rd no_metal"
-    elif supports_split_topmetal_fill; then
-        fill_flags="-rd no_topmetal_2 -rd no_topmetal_1 -rd no_metal"
-    else
-        fill_flags="-rd no_topmetal -rd no_metal"
-    fi
+    run_cmd "echo [INFO][KLayout] Filling active layers"
+    fill_flags="-rd no_metal"
     run_cmd "klayout -n $KLAYOUT_TECH -zz \
         -r $KLAYOUT_PATH/tech/scripts/filler.py \
         -rd output_file=out/${PROJ_NAME}.filled.gds.gz \

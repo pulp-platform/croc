@@ -7,28 +7,28 @@
 # - Jannis Schönleber <janniss@iis.ee.ethz.ch>
 # - Philippe Sauter   <phsauter@iis.ee.ethz.ch>
 
-# Initialize the PDK for sg13cmos5l.
-# Standard cells and SRAMs are reused from sg13g2.
+# All paths relative to openroad/
+# Initialize the PDK: EZ130 8T standard cells, SG13CMOS5L IO cells,
+# IHP SRAM macros and the 5-metal SG13CMOS5L back-end.
 
-set pdk_cells_lib $::env(PDK_DIR_LIB_CELLS)
-set pdk_tech_lef  $::env(PDK_DIR_LEF_TECH)
-set pdk_cells_lef $::env(PDK_DIR_LEF_CELLS)
-set pdk_sram_lib  $::env(PDK_DIR_LIB_SRAMS)
-set pdk_sram_lef  $::env(PDK_DIR_LEF_SRAMS)
-set pdk_io_lib    $::env(PDK_DIR_LIB_IOS)
-set pdk_io_lef    $::env(PDK_DIR_LEF_IOS)
-set pdk_pad_lef   $::env(PDK_DIR_LEF_BOND)
+set pdk_cells_lib ../technology/lib
+set pdk_cells_lef ../technology/lef
+set pdk_sram_lib  ../technology/lib
+set pdk_sram_lef  ../technology/lef
+set pdk_io_lib    ../technology/lib
+set pdk_io_lef    ../technology/lef
+set pdk_pad_lef   ../technology/lef
 
 # LIB
 define_corners tt ff
 
 puts "Init standard cells"
-read_liberty -corner tt ${pdk_cells_lib}/$::env(PDK_STDCELL_LIB_TT_FILE)
-read_liberty -corner ff ${pdk_cells_lib}/$::env(PDK_STDCELL_LIB_FF_FILE)
+read_liberty -corner tt ${pdk_cells_lib}/ez130_8t_tt_1p20v_25c.lib
+read_liberty -corner ff ${pdk_cells_lib}/ez130_8t_ff_1p32v_m40c.lib
 
 puts "Init IO cells"
-read_liberty -corner tt ${pdk_io_lib}/$::env(PDK_IO_LIB_TT_FILE)
-read_liberty -corner ff ${pdk_io_lib}/$::env(PDK_IO_LIB_FF_FILE)
+read_liberty -corner tt ${pdk_io_lib}/sg13cmos5l_io_typ_1p2V_3p3V_25C.lib
+read_liberty -corner ff ${pdk_io_lib}/sg13cmos5l_io_fast_1p32V_3p6V_m40C.lib
 
 puts "Init SRAM macros"
 foreach file [glob -directory $pdk_sram_lib RM_IHPSG13*_typ_1p20V_25C.lib] {
@@ -40,12 +40,12 @@ foreach file [glob -directory $pdk_sram_lib RM_IHPSG13*_fast_1p32V_m55C.lib] {
 }
 
 puts "Init tech-lef"
-read_lef ${pdk_tech_lef}/$::env(PDK_TECH_LEF_FILE)
+read_lef ${pdk_cells_lef}/ez130_cmos5l_tech.lef
 
 puts "Init cell-lef"
-read_lef ${pdk_cells_lef}/$::env(PDK_STDCELL_LEF_FILE)
-read_lef ${pdk_io_lef}/$::env(PDK_IO_LEF_FILE)
-read_lef ${pdk_pad_lef}/$::env(PDK_BONDPAD_LEF)
+read_lef ${pdk_cells_lef}/ez130_8t.lef
+read_lef ${pdk_io_lef}/sg13cmos5l_io.lef
+read_lef ${pdk_pad_lef}/bondpad5l_70x70.lef
 
 foreach file [glob -directory $pdk_sram_lef RM_IHPSG13*.lef] {
 	read_lef "$file"
@@ -58,22 +58,27 @@ proc setDefaultParasitics {} {
 }
 
 # Tie cell pins
-set tieHiPin "sg13g2_tiehi/L_HI"
-set tieLoPin "sg13g2_tielo/L_LO"
+set tieHiPin "TIEHI/Y"
+set tieLoPin "TIELO/Y"
 
 # Tap cell insertion
 proc insertTapCells {} {
-	# no tap cells in this PDK
+	utl::report "Inserting tap cells"
+	tapcell \
+		-distance       40 \
+		-tapcell_master WELLTAP \
+		-endcap_master  WELLTAP \
+		-halo_width_x 1 -halo_width_y 1
 }
 
-set ctsBuf [ list sg13g2_buf_16 sg13g2_buf_8 sg13g2_buf_4 sg13g2_buf_2 ]
-set ctsBufRoot sg13g2_buf_8
+set ctsBuf [ list BUFX64 BUFX48 BUFX44 BUFX32 BUFX24 BUFX16 BUFX12 ]
+set ctsBufRoot BUFX64
 
 # disallow OR from inserting these cells
 set dont_use_cells [list sg13cmos5l_IOPad* ]
 set ioDrivingCell sg13cmos5l_IOPadOut16mA
 
-set stdfill [ list sg13g2_fill_8 sg13g2_fill_4 sg13g2_fill_2 sg13g2_fill_1 ]
+set stdfill [ list FILLER16 FILLER8 FILLER4 FILLER2 FILLER1 ]
 
 
 set iocorner sg13cmos5l_Corner
