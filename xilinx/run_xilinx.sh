@@ -70,12 +70,18 @@ run_cmd() {
 
 generate_flist() {
     run_cmd "echo [INFO][Bender] Generate add_sources.${TARGET}.tcl"
+    run_cmd "printf '%s\n' \
+        '# Copyright (c) 2024 ETH Zurich and University of Bologna.' \
+        '# Licensed under the Apache License, Version 2.0, see LICENSE for details.' \
+        '# SPDX-License-Identifier: Apache-2.0' \
+        '#' \
+        > scripts/add_sources.${TARGET}.tcl"
     run_cmd "bender \
         script vivado \
         -t ${TARGET} \
         -t synthesis \
         -D COMMON_CELLS_ASSERTS_OFF=1 \
-        > scripts/add_sources.${TARGET}.tcl"
+        >> scripts/add_sources.${TARGET}.tcl"
 
     run_cmd "echo [INFO][Bender] Remove absolute paths"
     run_cmd "sed -i 's|${CROC_ROOT}|../../..|g' scripts/add_sources.${TARGET}.tcl"
