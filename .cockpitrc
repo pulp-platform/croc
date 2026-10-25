@@ -49,6 +49,7 @@
   #                   ez130_8t_stdcell_v0
   #                   ez130_8t_stdcell_v0.12
   #                   ez130_8t_stdcell_v1.0
+  #                   ez130_8t_stdcell_v1.1
   #                   ez130_7t_stdcell_v0
   #  
   #   memories      : RM_IHPSG13_v1.0
@@ -63,7 +64,7 @@
   #    
 
   libs    = SG13CMOS5L_0.2 \
-            ez130_8t_stdcell_v1.0 \
+            ez130_8t_stdcell_v1.1 \
             sg13cmos5l_io_v0.1 \
             open_sram_v2.2 \
             bondpad5l_70x70_v0
@@ -128,7 +129,7 @@
   calibre   =  calibre-2021.3
 
   #this is actually the oseda version
-  klayout   =  klayout-2026.09
+  klayout   =  klayout-2026.04
    
 [command]
   # Startup commands available through the GUI buttons.
