@@ -45,6 +45,11 @@ filler_placement $stdfill
 utl::report "Global connect"
 global_connect
 
+# Wires of the detailed route: the parasitics are not part of the checkpoint, without this
+# the final report is for ideal wires (and the setup slack is much too good)
+utl::report "Estimate parasitics"
+estimate_parasitics -global_routing
+
 save_checkpoint 05_${proj_name}.final
 report_image "05_${proj_name}.final" true true false true
 report_metrics "05_${proj_name}.final"

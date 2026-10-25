@@ -24,8 +24,8 @@ yosys plugin -i slang.so
 # default from yosys_common.tcl: top_design=croc_chip; sv_flist=./croc.flist
 yosys read_slang --top $top_design -f $sv_flist \
         --cmd-rename +define,+define \
-        --compat-mode --keep-hierarchy \
-        --allow-use-before-declare --ignore-unknown-modules
+        --keep-hierarchy \
+        --allow-use-before-declare
 
 # preserve hierarchy of selected modules/instances
 # 't' means type as in select all instances of this type/module

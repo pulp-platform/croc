@@ -113,6 +113,11 @@ def module_label(instance_name, modules):
     return "Other logic"
 
 
+def is_nand2(name):
+    # plain two-input NAND (NAND2X1, NAND2X1P5, ...), not the NAND2B variants with an inverted input
+    return re.search(r"(?:^|_)nand2(?=x|_|\d|$)", name, re.IGNORECASE) is not None
+
+
 def database_metrics(path, modules):
     db = odb.dbDatabase.create()
     odb.read_db(db, str(path))
@@ -130,7 +135,7 @@ def database_metrics(path, modules):
         area(master)
         for library in db.getLibs()
         for master in library.getMasters()
-        if str(master.getType()) == "CORE" and re.search(r"(?:^|_)nand2(?:_|$)", master.getName(), re.IGNORECASE)
+        if str(master.getType()) == "CORE" and is_nand2(master.getName())
     ]
     if not nand_areas or min(nand_areas) <= 0:
         raise ValueError("No positive-area NAND2 master for GE reference")
