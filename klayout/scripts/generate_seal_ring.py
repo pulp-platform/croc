@@ -9,14 +9,11 @@ import types
 
 import pya
 
-
 croc_root = os.environ["CROC_ROOT"]
 klayout_path = os.environ["KLAYOUT_PATH"]
 pdk = os.environ["CROC_PDK"]
 klayout_python = os.path.join(klayout_path, "python")
-shared_klayout_python = os.path.join(
-    croc_root, "ihp13", "sg13g2", "ihp-sg13g2", "libs.tech", "klayout", "python"
-)
+shared_klayout_python = os.path.join(croc_root, "ihp13", "sg13g2", "ihp-sg13g2", "libs.tech", "klayout", "python")
 sys.path.extend(
     [
         klayout_python,
@@ -26,7 +23,6 @@ sys.path.extend(
 
 from cni.dlo import PyCellContext
 from cni.tech import Tech
-
 
 if pdk == "sg13cmos5l":
     pcell_package = "sg13cmos5l_pycell_lib"
@@ -55,9 +51,7 @@ def load_module(name, path):
 
 
 load_module(f"{package_name}.sg13_tech", os.path.join(pcell_root, "sg13_tech.py"))
-sealring_module = load_module(
-    f"{package_name}.ihp.sealring_code", os.path.join(ihp_root, "sealring_code.py")
-)
+sealring_module = load_module(f"{package_name}.ihp.sealring_code", os.path.join(ihp_root, "sealring_code.py"))
 
 tech = Tech.get("SG13_dev")
 Tech.techInUse = tech.getTechParams()["libName"]
