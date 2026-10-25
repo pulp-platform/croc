@@ -107,6 +107,8 @@ detailed_route -output_drc ${report_dir}/04_${proj_name}_route_drc.rpt \
                -verbose 1
 
 utl::report "Saving detailed route"
+# the parasitics from before the detailed route are stale, use the routed wires
+estimate_parasitics -global_routing
 save_checkpoint 04_${proj_name}.routed
 report_metrics "04_${proj_name}.routed"
 report_image "04_${proj_name}.routed" true false false true

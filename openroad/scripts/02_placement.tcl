@@ -75,10 +75,18 @@ set_thread_count 8
 
 # Rough placement to get parasitics from steiner-tree estimate so we can run repair_timing
 utl::report "Global Placement (1)"
-global_placement -density 0.60
+global_placement -density 0.70
 report_metrics "02-02_${proj_name}.gpl1"
 report_image "02-02_${proj_name}.gpl1" true true
 save_checkpoint 02-02_${proj_name}.gpl1
+
+# Merge flops into the 2-bit and 4-bit flops of the library
+# (with the default clock_power_weight 0 nothing is merged)
+# All merged flops of a module must share one reset net (true for croc)
+utl::report "Cluster flops"
+cluster_flops -clock_power_weight 5
+report_metrics "02-02_${proj_name}.gpl1_mbff"
+save_checkpoint 02-02_${proj_name}.gpl1_mbff
 
 utl::report "Estimate parasitics"
 estimate_parasitics -placement
@@ -92,7 +100,7 @@ save_checkpoint 02-02_${proj_name}.gpl1_repaired
 
 # Actual global placement with routability and timing driven
 utl::report "Global Placement (2)"
-global_placement -density 0.60 \
+global_placement -density 0.70 \
                  -routability_driven \
                  -routability_check_overflow 0.30 \
                  -timing_driven
@@ -108,6 +116,9 @@ utl::report "###################################################################
 # Legalize overlapping cells
 utl::report "Detailed placement"
 detailed_placement
+
+utl::report "Improve placement"
+improve_placement
 
 utl::report "Optimize mirroring"
 optimize_mirroring

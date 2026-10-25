@@ -2,10 +2,9 @@
 # Solderpad Hardware License, Version 0.51, see LICENSE for details.
 # SPDX-License-Identifier: SHL-0.51
 
-# Power grid for sg13cmos5l.
+# Power grid for the EZ130 8T cells on the sg13cmos5l stack.
 
 utl::report "Power Grid"
-# ToDo: Check connectivity on left and right power pad cells
 source scripts/floorplan_util.tcl
 
 ##########################################################################
@@ -24,34 +23,35 @@ if {[info exists power_grid_defined]} {
 ##########################################################################
 
 # Core Power Ring
-## Space between pads and core -> used for power ring
-set PowRingSpace  35
-## Spacing must meet TM1 rules
-set pgcrSpacing 4
-## Width must meet TM1 rules
-set pgcrWidth 8
-## Offset from core to power ring
-set pgcrOffset [expr {($PowRingSpace - $pgcrSpacing - 2 * $pgcrWidth) / 2}]
+# Width, spacing and clearance are set together with the space they need in 01_floorplan.tcl
+set pgcrWidth   $powerRingWidth
+set pgcrSpacing $powerRingSpacing
+## Offset from core to power ring (the same clearance remains to the pads)
+set pgcrOffset  $powerRingClearance
 
-# TopMetal1 Core Power Grid
-set tpg1Width     3; # arbitrary number
-set tpg1Pitch    90
-set tpg1Spacing   4
-set tpg1Offset   -5; # offset from core bottom
+# RM_IHPSG13_1P_512x32_c2_bm_bist TopMetal1 stripe positions relative to the macro origin
+# (shifted up by 7 um from the centers of the power windows, which moves all TopMetal1 stripes)
+set sramLogicPowerStripeOffset 27
+set sramArrayPowerStripeOffset 125
 
-# Metal4 core distribution grid. Adjacent power/ground rails are one pad
-# pitch apart so they line up with the pad connections to the power ring.
-set pg4Width      1
-set pg4StripePitch 90
-set pg4Pitch     [expr {2 * $pg4StripePitch}]
-set pg4Spacing   [expr {$pg4StripePitch - $pg4Width}]
-set pg4Offset    45
+# TopMetal1 core stripes: pitch is the pad pitch so they stay clear of the pad straps.
+# Offset and count are fixed so the last VSS stripe lies one pitch below the SRAM logic stripe.
+set tpg1Width   3
+set tpg1Spacing 4
+set tpg1Pitch   $westPitch
+set tpg1Offset  48.54
+set tpg1Straps  13
+
+# Metal4 core stripes: one rail per pad pitch, centered on the pads
+set pg4Width       1
+set pg4StripePitch $southPitch
+set pg4Pitch       [expr {2 * $pg4StripePitch}]
+set pg4Spacing     [expr {$pg4StripePitch - $pg4Width}]
+set pg4Offset      28.76
 
 # RM_IHPSG13_1P_512x32_c2_bm_bist Metal4 power pin windows:
 # VDD        y = 0.000 ..  38.825 (logic power)
 # VDDARRAY   y = 45.465 .. 191.340 (array power)
-set sramLogicPowerStripeOffset 20
-set sramArrayPowerStripeOffset 118
 
 # Horizontal TopMetal1 stripes run from ring to ring and cross both top SRAMs.
 # Insert the SRAM logic and array pairs explicitly so both the array and logic in the SRAM get power
@@ -64,6 +64,20 @@ set sramPowerStripeCoreOffset [expr {fmod($sramLogicPowerCoreOffset, $sramPowerS
 ##########################################################################
 # Core Power
 ##########################################################################
+
+# The offsets above and this grid are specific to the 512x32 macro used by the
+# default SRAM configuration; other macro sizes need their own pin windows.
+# The SRAM Metal4 power pins are only reached by the TopMetal1 stripes if the
+# macros have their own grid that is connected to the core grid.
+define_pdn_grid -macro -cells RM_IHPSG13_1P_512x32_c2_bm_bist -name sram_grid \
+    -grid_over_pg_pins -voltage_domains {CORE}
+add_pdn_connect -grid sram_grid -layers {Metal4 TopMetal1}
+# Power ring around each SRAM, the TopMetal1 stripes drop onto it
+# width 0.62: TopVia1 cut plus enclosure (TV1.c), spacing 0.24: wide lines (Mn.e), offset: macro obstruction (Mn.f)
+add_pdn_ring -grid sram_grid -layers {Metal3 Metal4} -widths {0.62 0.62} -spacings {0.24 0.24} \
+    -core_offsets {1.1 1.1}
+add_pdn_connect -grid sram_grid -layers {Metal3 Metal4}
+add_pdn_connect -grid sram_grid -layers {Metal4 Metal1}
 
 add_pdn_ring -grid {core_grid} \
     -layer        {TopMetal1 Metal4} \
@@ -86,7 +100,7 @@ add_pdn_stripe -grid {core_grid} -layer {TopMetal1} -width $tpg1Width -spacing $
 
 # TM1+M4 power grid over core logic
 add_pdn_stripe -grid {core_grid} -layer {TopMetal1} -width $tpg1Width -spacing $tpg1Spacing \
-    -pitch $tpg1Pitch -offset $tpg1Offset -extend_to_core_ring -snap_to_grid -number_of_straps 12
+    -pitch $tpg1Pitch -offset $tpg1Offset -extend_to_core_ring -snap_to_grid -number_of_straps $tpg1Straps
 
 add_pdn_stripe -grid {core_grid} -layer {Metal4} -width $pg4Width -spacing $pg4Spacing \
     -pitch $pg4Pitch -offset $pg4Offset -extend_to_core_ring -starts_with POWER -snap_to_grid
@@ -100,3 +114,8 @@ add_pdn_connect -grid {core_grid} -layers {Metal4 Metal1}
 ##########################################################################
 
 pdngen -failed_via_report ${report_dir}/01_${proj_name}_pdngen.rpt
+
+# Report unconnected shapes or instances in the power grid
+foreach net {VDD VSS} {
+    check_power_grid -net $net
+}

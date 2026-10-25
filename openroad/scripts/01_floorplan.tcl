@@ -61,9 +61,10 @@ utl::report "###################################################################
 #   seal ring thickness       42.0 ,   42.0 x2
 #   bonding pad               70.0 ,   70.0 x2
 #   io cell depth            180.0 ,  180.0 x2
+#   power ring                10.92,   10.92x2
 #   ---------------------------------------
 #   -> OR die area          1916.0 x 1916.0
-#   -> OR core area         1416.0 x 1416.0
+#   -> OR core area         1394.2 x 1394.2
 # The sealring is added after OpenROAD
 # hence the OR die area is the final chip size minus the sealring thickness on each side
 
@@ -72,7 +73,12 @@ set chipW    1916; # OR die width (left to right)
 set padD      180; # pad depth (edge to core)
 set padW       80; # pad width (beachfront)
 set padBond    70; # bonding pad size
-set powerRing  80; # reserved space for power ring
+# power ring: VDD and VSS lines side by side, each wide enough for 3 TopVia1 cuts side by side
+# (TV1.d: 3 * 0.42 + 2 * 0.42 + 2 * 0.42 = 2.94 um of TopMetal1)
+set powerRingWidth     3.0;  # per line
+set powerRingSpacing   1.64; # between the two lines, TM1.b
+set powerRingClearance 1.64; # to core and to pads, TM1.b (Metal4 needs at most 0.6, Mn.f)
+set powerRing [expr {2 * $powerRingClearance + $powerRingSpacing + 2 * $powerRingWidth}]
 
 # starting from the outside and working towards the core area on each side
 set coreMargin [expr {$padD + $padBond + $powerRing}];
@@ -137,14 +143,17 @@ set floor_rightX      [expr $core_rightX - $floorPaddingX]
 set floor_topY        [expr $core_topY - $floorPaddingY]
 set floor_midpointX   [expr $floor_leftX + ($floor_rightX - $floor_leftX)/2]
 set floor_midpointY   [expr $floor_bottomY + ($floor_topY - $floor_bottomY)/2]
-set sramHaloX          10.0
-set sramHaloY          10.0
+set sramHaloX          1.5
+set sramHaloY          1.5
 
 utl::report "Place Macros"
 
 # Bank0: top-left, pins facing down
 set bank0X $floor_leftX
-set bankY [expr $floor_topY - $RamSize512x32_H]
+# tapcell removes the rows above a macro when fewer than 6 rows remain between macro and core
+# edge, so the SRAMs sit exactly 6 rows below the core edge (this also fixes the SRAM stripe
+# position relative to the core stripes, see power_grid.tcl)
+set bankY [expr $core_topY - 6 * $siteHeight - $RamSize512x32_H]
 placeInstance $bank0_sram0 $bank0X $bankY R0
 
 # Bank1: top-right, pins facing down

@@ -90,6 +90,12 @@ class MetricsTests(unittest.TestCase):
         self.assertEqual(metrics.module_label("soc/gen_sram_bank[1].cell", modules), "SRAM")
         self.assertEqual(metrics.module_label("soc/i_uart2/cell", modules), "UART")
 
+    def test_nand2_reference(self):
+        for name in ("NAND2X1", "NAND2X1P5", "NAND2X4", "nand2_1"):
+            self.assertTrue(metrics.is_nand2(name), name)
+        for name in ("NAND2BX1", "NAND3X1", "AND2X1", "NOR2X1"):
+            self.assertFalse(metrics.is_nand2(name), name)
+
 
 if __name__ == "__main__":
     suite = unittest.defaultTestLoader.loadTestsFromTestCase(MetricsTests)
