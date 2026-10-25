@@ -7,5 +7,5 @@
 [tool.black]
 line-length = 120
 target-version = ['py38']
-include = '\\.pyi?$'
-exclude = ''
+include = '\.pyi?$'
+exclude = '^/(artistic/artistic|ihp13/sg13cmos5l|ihp13/sg13g2)/'
