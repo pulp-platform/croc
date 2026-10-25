@@ -12,7 +12,6 @@
 import sys
 import pya
 
-
 chip = pya.Layout()
 chip.read(chip_gds)
 chip.read(seal_gds)

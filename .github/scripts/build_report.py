@@ -218,8 +218,7 @@ def build(inputs, site, root=ROOT):
         fpga = {
             **{key: fpga.get(key) for key in ("schema_version", "source_sha", "source_run", "source_attempt")},
             "stages": [
-                {key: stage.get(key) for key in ("name", "exit_code", "elapsed_seconds")}
-                for stage in fpga["stages"]
+                {key: stage.get(key) for key in ("name", "exit_code", "elapsed_seconds")} for stage in fpga["stages"]
             ],
         }
     work = root / "artistic/work"
@@ -252,7 +251,7 @@ def build(inputs, site, root=ROOT):
     def archive(name, source, folders=None):
         target = site / "downloads" / name
         with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as output:
-            for directory in ([source / name for name in folders] if folders else [source]):
+            for directory in [source / name for name in folders] if folders else [source]:
                 for path in sorted(directory.rglob("*")):
                     if path.is_file():
                         output.write(path, path.relative_to(source))

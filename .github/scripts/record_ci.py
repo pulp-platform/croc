@@ -16,7 +16,6 @@ import sys
 import time
 from typing import BinaryIO, Dict, Optional, Sequence
 
-
 ROOT = Path(__file__).resolve().parents[2]
 ID_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
 

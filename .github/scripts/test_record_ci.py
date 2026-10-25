@@ -11,7 +11,6 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-
 SCRIPT = Path(__file__).with_name("record_ci.py")
 SPEC = importlib.util.spec_from_file_location("record_ci", SCRIPT)
 record_ci = importlib.util.module_from_spec(SPEC)
@@ -89,7 +88,9 @@ record_ci.record_test('rtl','test_uart','iDMA','pass','verilator/test_uart.log',
             with self.subTest(outcome=outcome):
                 self.assertEqual(record_ci.record_result("fpga", "fpga", outcome, 12.3456, self.root), exit_code)
                 data = json.loads((self.root / "ci-results/fpga.json").read_text())
-                self.assertEqual(data["stages"], [{"name": "fpga", "elapsed_seconds": 12.346, "exit_code": exit_code, "log": None}])
+                self.assertEqual(
+                    data["stages"], [{"name": "fpga", "elapsed_seconds": 12.346, "exit_code": exit_code, "log": None}]
+                )
                 self.assertEqual(data["tests"], [])
                 self.assertEqual(
                     (data["schema_version"], data["source_sha"], data["source_run"], data["source_attempt"]),

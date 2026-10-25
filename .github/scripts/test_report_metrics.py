@@ -8,7 +8,6 @@ import importlib.util
 from pathlib import Path
 import unittest
 
-
 spec = importlib.util.spec_from_file_location("report_metrics", Path(__file__).with_name("report_metrics.py"))
 metrics = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(metrics)

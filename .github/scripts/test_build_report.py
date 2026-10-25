@@ -198,7 +198,7 @@ class ReportTest(unittest.TestCase):
         self.assertIn('class="status pass">Pass', node)
         self.assertIn("12m34s", node)
         self.assertIn("Commit aaaaaaa", node)
-        self.assertIn('>FPGA</a>', html)
+        self.assertIn(">FPGA</a>", html)
         self.assertFalse((self.root / "site/logs/fpga.html").exists())
 
     def test_fpga_artifact_extra_fields_are_not_published(self):
@@ -211,7 +211,9 @@ class ReportTest(unittest.TestCase):
         published = (self.root / "site/data.json").read_text()
         for leaked in ("gitlab.example", "runner-1", "secret.log", "fpga-host"):
             self.assertNotIn(leaked, published)
-        self.assertEqual(json.loads(published)["fpga"]["stages"], [{"name": "fpga", "exit_code": 0, "elapsed_seconds": 754}])
+        self.assertEqual(
+            json.loads(published)["fpga"]["stages"], [{"name": "fpga", "exit_code": 0, "elapsed_seconds": 754}]
+        )
 
     def test_failed_fpga_is_shown_and_does_not_fail_the_build(self):
         self.add_fpga(exit_code=1)

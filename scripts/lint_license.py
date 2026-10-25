@@ -6,6 +6,7 @@
 # - Thomas Benz <tbenz@iis.ee.ethz.ch>
 
 """Lints the header ensuring consistent file headers"""
+
 import glob
 import os
 import sys
