@@ -13,6 +13,8 @@
 /tmp
 /calibre
 /docs
+__pycache__/
+*.pyc
 /technology
 /.setPDK.csh
 # public PDK mirror
