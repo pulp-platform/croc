@@ -9,10 +9,13 @@
 #include "config.h"
 
 uint64_t clint_get_mtime() {
-    uint64_t mtime;
-    mtime = ((uint64_t)*reg32(CLINT_BASE_ADDR, CLINT_MTIME_HIGH_REG_OFFSET)) << 32;
-    mtime |= ((uint64_t)*reg32(CLINT_BASE_ADDR, CLINT_MTIME_LOW_REG_OFFSET));
-    return mtime;
+    uint32_t mtime_high, mtime_low;
+    // Read the high register again in case the low register wrapped in between
+    do {
+        mtime_high = *reg32(CLINT_BASE_ADDR, CLINT_MTIME_HIGH_REG_OFFSET);
+        mtime_low  = *reg32(CLINT_BASE_ADDR, CLINT_MTIME_LOW_REG_OFFSET);
+    } while (mtime_high != *reg32(CLINT_BASE_ADDR, CLINT_MTIME_HIGH_REG_OFFSET));
+    return ((uint64_t)mtime_high << 32) | mtime_low;
 }
 
 void clint_set_mtimecmp(uint64_t value) {
