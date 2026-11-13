@@ -14,7 +14,7 @@ on:
 
 jobs:
   lint-python:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - name: Check Python with black
       uses: rickstaa/action-black@v1
@@ -22,7 +22,7 @@ jobs:
         black_args: ". --check"
 
   lint-cxx:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     -
       name: Checkout
