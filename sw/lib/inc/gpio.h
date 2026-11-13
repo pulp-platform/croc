@@ -32,7 +32,7 @@ uint32_t gpio_read(void);
 void gpio_enable_rising_interrupts(uint32_t mask);
 void gpio_enable_falling_interrupts(uint32_t mask);
 void gpio_disable_interrupts(uint32_t mask);
-uint32_t gpio_get_interrupt_status(void);
+uint32_t gpio_get_interrupt_status(void); // the status register is cleared on read
 
 // functions applying to only one GPIO pin
 // LSB is considered GPIO number 0
@@ -48,4 +48,6 @@ uint8_t gpio_pin_read(uint8_t gpio_pin);
 void gpio_pin_enable_rising_interrupt(uint8_t gpio_pin);
 void gpio_pin_enable_falling_interrupt(uint8_t gpio_pin);
 void gpio_pin_disable_interrupts(uint8_t gpio_pin);
+// reads and clears the interrupt status of all pins, not only gpio_pin;
+// to check several pins, call gpio_get_interrupt_status() once and test the bits
 uint8_t gpio_pin_get_interrupt_status(uint8_t gpio_pin);
