@@ -13,7 +13,7 @@ on:
 
 jobs:
   report-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - name: Checkout repository (with submodules)
@@ -26,7 +26,7 @@ jobs:
           python3 -m unittest discover -s .github/scripts -p test_build_report.py
           node --test .github/scripts/test_report_context.js
   simulation:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - name: Checkout repository (with submodules)
@@ -69,7 +69,7 @@ jobs:
           path: verilator/test_*.log
 
   synthesis:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - name: Checkout repository (with submodules)
@@ -93,7 +93,7 @@ jobs:
 
   netlist-simulation:
     needs: [simulation, synthesis]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
       - name: Checkout repository (with submodules)
