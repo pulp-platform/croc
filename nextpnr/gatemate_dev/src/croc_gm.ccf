@@ -1,0 +1,24 @@
+# Copyright (c) 2025 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Authors:
+# - Thomas Benz <tbenz@iis.ee.ethz.ch>
+
+# Sample constraints file for the gatemate dev board
+
+Net "pad_clk_i"       Loc = "IO_SB_A8" | SCHMITT_TRIGGER=true;
+Net "pad_button_i"    Loc = "IO_EB_B0"; # SW3
+Net "pad_status_o"    Loc = "IO_EB_B1"; # D1
+
+Net "pad_jtag_tck_i"  Loc = "IO_NB_A0"; # PMODA IO1
+Net "pad_jtag_tdi_i"  Loc = "IO_NB_B0"; # PMODA IO2
+Net "pad_jtag_tdo_o"  Loc = "IO_NB_A1"; # PMODA IO3
+Net "pad_jtag_tms_i"  Loc = "IO_NB_B1"; # PMODA IO4
+
+Net "pad_uart_rx_i"   Loc = "IO_NB_A4"; # PMODB IO1
+Net "pad_uart_tx_o"   Loc = "IO_NB_B4"; # PMODB IO2
+
+Net "pad_gpio_0_io"   Loc = "IO_EB_B2"; # D2
+Net "pad_gpio_1_io"   Loc = "IO_EB_B3"; # D3
+Net "pad_gpio_2_io"   Loc = "IO_EB_B4"; # D4
